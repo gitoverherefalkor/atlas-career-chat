@@ -1,8 +1,9 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+
 const Hero = () => {
-  return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pt-20 pb-32">
+  return <section className="bg-gradient-to-br from-atlas-blue via-atlas-teal to-atlas-teal pt-20 pb-32">
       <div className="container-atlas">
         <div className="flex flex-col lg:flex-row items-center">
           <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
@@ -70,4 +71,5 @@ const Hero = () => {
       </div>
     </section>;
 };
+
 export default Hero;

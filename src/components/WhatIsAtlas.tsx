@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 
@@ -8,7 +7,7 @@ const WhatIsAtlas = () => {
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Understand Yourself, Define Your Future</h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto"></div>
+          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-teal mx-auto"></div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -44,7 +43,7 @@ const WhatIsAtlas = () => {
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-atlas-teal/20 to-atlas-purple/20 rounded-lg transform -rotate-2"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-atlas-blue/20 to-atlas-teal/20 rounded-lg transform -rotate-2"></div>
             <div className="relative bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <img 
                 src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=600&h=400" 
