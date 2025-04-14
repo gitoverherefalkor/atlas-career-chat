@@ -1,9 +1,10 @@
+
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 
 const WhatIsAtlas = () => {
   return (
-    <section id="what-is-atlas" className="section bg-gradient-to-r from-atlas-blue to-atlas-teal">
+    <section id="what-is-atlas" className="section bg-white">
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Understand Yourself, Define Your Future</h2>

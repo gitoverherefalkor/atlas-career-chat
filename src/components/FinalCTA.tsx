@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 const FinalCTA = () => {
   return (
-    <section className="py-20 bg-gradient-to-r from-atlas-blue to-atlas-teal text-white">
+    <section className="py-20 bg-gradient-to-br from-atlas-blue via-atlas-indigo to-atlas-purple text-white">
       <div className="container-atlas text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
           Ready to Take Control of Your Career Narrative?
