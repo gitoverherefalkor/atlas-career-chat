@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -22,9 +21,15 @@ const Hero = () => {
               Atlas Assessment combines deep psychometric principles with state-of-the-art AI in a unique, interactive chat experience. Get personalized, actionable insights to navigate your professional future with confidence.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button className="btn-primary text-lg flex items-center gap-2">
-                Get Your Atlas Assessment Now
-                <ArrowRight className="h-5 w-5" />
+              <Button asChild className="btn-primary text-lg flex items-center gap-2">
+                <a 
+                  href="https://www.sendowl.com/s/consulting/career-assessment-personality-test-career-coaching/atlas-assessment-career-exploration-2025-regular-by-atlas-assessments/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  Get Your Atlas Assessment Now
+                  <ArrowRight className="h-5 w-5" />
+                </a>
               </Button>
               <a href="#how-it-works" className="btn-outline text-lg flex items-center justify-center">
                 Learn More
