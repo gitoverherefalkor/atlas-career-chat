@@ -43,7 +43,7 @@ const WhatIsAtlas = () => {
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-atlas-teal/20 to-atlas-purple/20 rounded-lg transform -rotate-2"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-atlas-teal/20 to-atlas-navy/20 rounded-lg transform -rotate-2"></div>
             <div className="relative bg-white rounded-lg shadow-lg overflow-hidden border border-gray-100">
               <img 
                 src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=600&h=400" 
