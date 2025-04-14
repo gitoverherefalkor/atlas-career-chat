@@ -13,6 +13,8 @@ const Pricing = () => {
     "Beta program early access"
   ];
 
+  const sendowlUrl = "https://www.sendowl.com/s/consulting/career-assessment-personality-test-career-coaching/atlas-assessment-career-exploration-2025-regular-by-atlas-assessments/";
+
   return (
     <section id="pricing" className="section bg-gray-50">
       <div className="container-atlas">
@@ -49,8 +51,14 @@ const Pricing = () => {
                 ))}
               </ul>
               
-              <Button className="w-full btn-primary text-lg py-6">
-                Get Beta Access Now
+              <Button asChild className="w-full btn-primary text-lg py-6">
+                <a 
+                  href={sendowlUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                >
+                  Get Beta Access Now
+                </a>
               </Button>
               
               <p className="text-sm text-gray-500 mt-4 text-center">

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -9,6 +8,8 @@ const Navbar = () => {
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
+
+  const sendowlUrl = "https://www.sendowl.com/s/consulting/career-assessment-personality-test-career-coaching/atlas-assessment-career-exploration-2025-regular-by-atlas-assessments/";
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -22,7 +23,6 @@ const Navbar = () => {
             </a>
           </div>
 
-          {/* Desktop navigation */}
           <div className="hidden md:flex space-x-8 items-center">
             <a href="#how-it-works" className="text-gray-700 hover:text-primary font-medium">
               How It Works
@@ -36,10 +36,17 @@ const Navbar = () => {
             <a href="#about" className="text-gray-700 hover:text-primary font-medium">
               About Us
             </a>
-            <Button className="btn-primary">Get Started</Button>
+            <Button asChild className="btn-primary">
+              <a 
+                href={sendowlUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                Get Started
+              </a>
+            </Button>
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden">
             <button 
               type="button" 
@@ -56,7 +63,6 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden bg-white shadow-lg animate-fade-in">
           <div className="container-atlas py-4 space-y-3">
@@ -72,7 +78,15 @@ const Navbar = () => {
             <a href="#about" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
               About Us
             </a>
-            <Button className="btn-primary w-full mt-4">Get Started</Button>
+            <Button asChild className="btn-primary w-full mt-4">
+              <a 
+                href={sendowlUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                Get Started
+              </a>
+            </Button>
           </div>
         </div>
       )}
