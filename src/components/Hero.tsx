@@ -35,7 +35,7 @@ const Hero = () => {
           </div>
           <div className="lg:w-1/2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-purple/20 rounded-lg transform rotate-3"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-teal/20 rounded-lg transform rotate-3"></div>
               <div className="relative bg-white rounded-lg shadow-xl overflow-hidden border border-gray-100">
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-4">
