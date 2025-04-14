@@ -63,11 +63,10 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
         atlas: {
-          blue: '#3b82f6',
-          indigo: '#4f46e5',
-          navy: '#1A2C54',
-          teal: '#0d9488',
-          purple: '#7e22ce',
+          blue: '#3989AF',
+          orange: '#EA7923',
+          navy: '#012F64',
+          teal: '#27A1A1',
           slate: '#334155'
         }
 			},
