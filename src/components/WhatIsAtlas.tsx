@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 
@@ -32,7 +31,7 @@ const WhatIsAtlas = () => {
                   "\"I need more than just a report; I want to explore my results.\""
                 ].map((question, index) => (
                   <li key={index} className="flex items-start">
-                    <CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" />
+                    <CheckCircle className="h-5 w-5 text-primary mr-3 mt-1 flex-shrink-0" color="#EA7923" />
                     <span>{question}</span>
                   </li>
                 ))}

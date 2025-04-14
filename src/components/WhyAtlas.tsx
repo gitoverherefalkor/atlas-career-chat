@@ -5,27 +5,27 @@ import { MessageSquare, Target, Award, DollarSign, Zap } from 'lucide-react';
 const WhyAtlas = () => {
   const features = [
     {
-      icon: <MessageSquare className="h-6 w-6 text-atlas-blue" />,
+      icon: <MessageSquare className="h-6 w-6" color="#EA7923" />,
       title: "Interactive & Dynamic",
       description: "Don't just read a report – discuss it! Our AI chat allows you to explore your profile in a conversational way, getting clarification and drilling down into what matters most to you."
     },
     {
-      icon: <Target className="h-6 w-6 text-atlas-blue" />,
+      icon: <Target className="h-6 w-6" color="#EA7923" />,
       title: "Actionable Insights",
       description: "We focus on practical application. Get concrete recommendations for industries, roles, and development opportunities tailored to your unique profile."
     },
     {
-      icon: <Award className="h-6 w-6 text-atlas-blue" />,
+      icon: <Award className="h-6 w-6" color="#EA7923" />,
       title: "Expert-Developed, AI-Enhanced",
       description: "Built upon proven psychometric principles with input from experienced practitioners, then supercharged with AI for deeper personalization and dynamic delivery."
     },
     {
-      icon: <DollarSign className="h-6 w-6 text-atlas-blue" />,
+      icon: <DollarSign className="h-6 w-6" color="#EA7923" />,
       title: "Affordable & Efficient",
       description: "Leveraging technology allows us to offer this powerful tool at a fraction of the cost of traditional, consultant-led assessments, especially during our Beta phase."
     },
     {
-      icon: <Zap className="h-6 w-6 text-atlas-blue" />,
+      icon: <Zap className="h-6 w-6" color="#EA7923" />,
       title: "Modern Approach",
       description: "Addresses today's career challenges, focusing on adaptability, continuous learning, and finding fulfilling work in an ever-changing landscape."
     }
