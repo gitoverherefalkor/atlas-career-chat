@@ -1,32 +1,38 @@
 
 import React from 'react';
+import { ShoppingCart, Mail, ClipboardCheck, Search, Sparkles, FileText } from 'lucide-react';
 
 const NextSteps = () => {
   const steps = [
     {
-      number: 1,
+      icon: ShoppingCart,
       title: "Purchase Your License Key",
-      description: "Click the purchase button and securely buy your license key via Sendowl."
+      description: "Click the purchase button and securely buy your license key"
     },
     {
-      number: 2,
+      icon: Mail,
       title: "Access Your Questionnaire",
-      description: "You'll receive an email with your unique access key and a link to the Atlas Assessment questionnaire."
+      description: "Find your unique access key and a link to the Atlas Assessment questionnaire in your email"
     },
     {
-      number: 3,
+      icon: ClipboardCheck,
       title: "Complete the Assessment",
       description: "Complete the questionnaire at your own pace, answering honestly for the most accurate results."
     },
     {
-      number: 4,
+      icon: Search,
       title: "Results Processing",
       description: "Once submitted, your results are processed (usually within minutes). You'll receive another email with a unique link to your personal, interactive AI chat report."
     },
     {
-      number: 5,
+      icon: Sparkles,
       title: "Explore Your Insights",
-      description: "Engage with your AI career coach! Explore your profile, ask questions, and discover your tailored recommendations. A summary of your key insights can also be requested via the chat."
+      description: "Engage with your AI career coach! Explore your profile, ask questions, and discover your tailored career recommendations. - Top fits, runner-ups, out of the box and dream job assessment."
+    },
+    {
+      icon: FileText,
+      title: "Receive Your Consolidated Report",
+      description: "Find the final Atlas Assessment Report, now with the nuances and specific insights discussed during your AI coaching session, in your email – a valuable, personalized reference for your ongoing career exploration and planning."
     }
   ];
 
@@ -45,17 +51,20 @@ const NextSteps = () => {
             
             {/* Steps */}
             <div className="space-y-12">
-              {steps.map((step, index) => (
-                <div key={index} className="flex flex-col md:flex-row gap-6">
-                  <div className="flex flex-shrink-0 items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-atlas-blue to-atlas-indigo text-white text-xl font-bold md:z-10">
-                    {step.number}
+              {steps.map((step, index) => {
+                const Icon = step.icon;
+                return (
+                  <div key={index} className="flex flex-col md:flex-row gap-6">
+                    <div className="flex flex-shrink-0 items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-atlas-blue to-atlas-indigo text-white md:z-10">
+                      <Icon className="w-8 h-8" />
+                    </div>
+                    <div className="flex-1 pt-2">
+                      <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                      <p className="text-gray-600">{step.description}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 pt-2">
-                    <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                    <p className="text-gray-600">{step.description}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
