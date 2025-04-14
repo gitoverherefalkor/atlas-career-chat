@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { ShoppingCart, Mail, ClipboardCheck, Search, Sparkles, FileText } from 'lucide-react';
+import { ShoppingCart, Mail, ClipboardCheck, Gears, Sparkles, FileText } from 'lucide-react';
 
 const NextSteps = () => {
   const steps = [
@@ -20,7 +19,7 @@ const NextSteps = () => {
       description: "Complete the questionnaire at your own pace, answering honestly for the most accurate results."
     },
     {
-      icon: Search,
+      icon: Gears,
       title: "Results Processing",
       description: "Once submitted, your results are processed (usually within minutes). You'll receive another email with a unique link to your personal, interactive AI chat report."
     },
