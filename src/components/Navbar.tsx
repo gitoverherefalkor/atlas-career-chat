@@ -17,7 +17,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center">
             <a href="#" className="flex items-center">
-              <span className="text-2xl font-bold bg-gradient-to-r from-atlas-blue to-atlas-indigo bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent">
                 Atlas Assessment
               </span>
             </a>

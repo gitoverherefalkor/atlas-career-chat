@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Star } from 'lucide-react';
@@ -30,7 +29,7 @@ const Testimonials = () => {
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Hear From Our Beta Users</h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto"></div>
+          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-navy mx-auto"></div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">

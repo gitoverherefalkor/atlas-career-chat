@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ShoppingCart, Mail, ClipboardCheck, Cog, Sparkles, FileText } from 'lucide-react';
 
@@ -53,7 +52,7 @@ const NextSteps = () => {
                 const Icon = step.icon;
                 return (
                   <div key={index} className="flex flex-col md:flex-row gap-6">
-                    <div className="flex flex-shrink-0 items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-atlas-blue to-atlas-indigo text-white md:z-10">
+                    <div className="flex flex-shrink-0 items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-atlas-blue to-atlas-navy text-white md:z-10">
                       <Icon color="white" className="w-8 h-8" />
                     </div>
                     <div className="flex-1 pt-2">

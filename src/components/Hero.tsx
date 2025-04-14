@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+
 const Hero = () => {
   return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
@@ -8,7 +9,7 @@ const Hero = () => {
           <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Stop Guessing. <br />
-              <span className=" bg-gradient-to-r from-atlas-blue to-atlas-teal bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent">
                 Start Thriving.
               </span>
             </h1>
@@ -70,4 +71,5 @@ const Hero = () => {
       </div>
     </section>;
 };
+
 export default Hero;

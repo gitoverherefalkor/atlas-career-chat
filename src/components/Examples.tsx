@@ -9,7 +9,7 @@ const Examples = () => {
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">See Atlas Assessment in Action</h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto"></div>
+          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-navy mx-auto"></div>
         </div>
 
         <Tabs defaultValue="questionnaire" className="w-full max-w-4xl mx-auto">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ClipboardList, Brain, MessageSquare } from 'lucide-react';
 
@@ -29,7 +28,7 @@ const HowItWorks = () => {
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Your Path to Clarity in 3 Steps</h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto"></div>
+          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-navy mx-auto"></div>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8">
@@ -46,7 +45,7 @@ const HowItWorks = () => {
           ))}
         </div>
 
-        <div className="mt-16 bg-gradient-to-r from-atlas-blue to-atlas-purple rounded-xl shadow-lg overflow-hidden">
+        <div className="mt-16 bg-gradient-to-r from-atlas-blue to-atlas-navy rounded-xl shadow-lg overflow-hidden">
           <div className="p-8 md:p-12 text-white">
             <div className="md:max-w-2xl mx-auto text-center">
               <h3 className="text-2xl md:text-3xl font-bold mb-4">Start Your Journey Today</h3>
