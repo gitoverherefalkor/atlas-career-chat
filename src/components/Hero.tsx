@@ -8,7 +8,7 @@ const Hero = () => {
           <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Stop Guessing. <br />
-              <span className=" bg-gradient-to-r from-atlas-blue to-atlas-teal bg-clip-text text-transparent">
+              <span className=" bg-gradient-to-r from-atlas-navy to-atlas-teal bg-clip-text text-transparent">
                 Start Thriving.
               </span>
             </h1>
@@ -35,7 +35,7 @@ const Hero = () => {
           </div>
           <div className="lg:w-1/2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-teal/20 rounded-lg transform rotate-3"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-purple/20 rounded-lg transform rotate-3"></div>
               <div className="relative bg-white rounded-lg shadow-xl overflow-hidden border border-gray-100">
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-4">
