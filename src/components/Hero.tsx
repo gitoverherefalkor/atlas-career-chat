@@ -1,16 +1,14 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-
 const Hero = () => {
-  return (
-    <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pt-20 pb-32">
+  return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pt-20 pb-32">
       <div className="container-atlas">
         <div className="flex flex-col lg:flex-row items-center">
           <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               Stop Guessing. <br />
-              <span className="bg-gradient-to-r from-atlas-blue to-atlas-indigo bg-clip-text text-transparent">
+              <span className=" bg-gradient-to-r from-atlas-blue to-atlas-teal bg-clip-text text-transparent">
                 Start Thriving.
               </span>
             </h1>
@@ -22,11 +20,7 @@ const Hero = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild className="btn-primary text-lg flex items-center gap-2">
-                <a 
-                  href="https://www.sendowl.com/s/consulting/career-assessment-personality-test-career-coaching/atlas-assessment-career-exploration-2025-regular-by-atlas-assessments/" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
+                <a href="https://www.sendowl.com/s/consulting/career-assessment-personality-test-career-coaching/atlas-assessment-career-exploration-2025-regular-by-atlas-assessments/" target="_blank" rel="noopener noreferrer">
                   Get Your Atlas Assessment Now
                   <ArrowRight className="h-5 w-5" />
                 </a>
@@ -74,8 +68,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
