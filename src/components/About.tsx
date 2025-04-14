@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 const About = () => {
@@ -7,7 +8,7 @@ const About = () => {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Why We Built Atlas Assessment</h2>
-            <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-navy mx-auto"></div>
+            <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto"></div>
           </div>
 
           <div className="bg-white rounded-xl shadow-md p-8 md:p-12">

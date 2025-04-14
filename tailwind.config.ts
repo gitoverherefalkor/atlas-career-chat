@@ -68,6 +68,7 @@ export default {
           navy: '#012F64',
           teal: '#27A1A1',
           indigo: '#4f46e5',
+          purple: '#7E69AB',
           slate: '#334155'
         }
       },
