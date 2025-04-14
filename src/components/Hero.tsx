@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 const Hero = () => {
-  return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 pt-20 pb-32">
+  return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
         <div className="flex flex-col lg:flex-row items-center">
           <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
@@ -35,7 +35,7 @@ const Hero = () => {
           </div>
           <div className="lg:w-1/2">
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-purple/20 rounded-lg transform rotate-3"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-navy/20 rounded-lg transform rotate-3"></div>
               <div className="relative bg-white rounded-lg shadow-xl overflow-hidden border border-gray-100">
                 <div className="p-6">
                   <div className="flex items-center gap-3 mb-4">
