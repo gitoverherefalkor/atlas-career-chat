@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,11 +62,10 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-        // Custom Atlas colors
         atlas: {
           blue: '#3b82f6',
           indigo: '#4f46e5',
-          navy: '#1e3a8a',
+          navy: '#1A2C54',
           teal: '#0d9488',
           purple: '#7e22ce',
           slate: '#334155'
