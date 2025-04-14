@@ -1,0 +1,67 @@
+
+import React from 'react';
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Star } from 'lucide-react';
+
+const Pricing = () => {
+  const features = [
+    "Complete assessment questionnaire",
+    "Interactive AI chat report",
+    "Personalized career insights",
+    "Ask unlimited follow-up questions",
+    "Request summary of key insights",
+    "Beta program early access"
+  ];
+
+  return (
+    <section id="pricing" className="section bg-gray-50">
+      <div className="container-atlas">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Invest in Your Future - Beta Access</h2>
+          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto mb-6"></div>
+          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
+            Atlas Assessment is currently in Beta. This means you get early access to a cutting-edge tool while helping us refine it with your valuable feedback.
+          </p>
+        </div>
+
+        <div className="max-w-lg mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="bg-gradient-to-r from-atlas-blue to-atlas-indigo p-6 text-white text-center">
+              <div className="inline-flex items-center gap-2 bg-white/20 rounded-full py-1 px-3 mb-4">
+                <Star className="h-4 w-4" fill="currentColor" />
+                <span className="font-medium">Beta Access</span>
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Complete Atlas Assessment</h3>
+              <div className="flex items-baseline justify-center">
+                <span className="text-4xl font-bold">€49</span>
+                <span className="text-lg ml-2 opacity-80"><s>€99</s></span>
+              </div>
+              <p className="mt-2 opacity-80">Limited time introductory price</p>
+            </div>
+            
+            <div className="p-8">
+              <ul className="space-y-4 mb-8">
+                {features.map((feature, index) => (
+                  <li key={index} className="flex items-start">
+                    <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              <Button className="w-full btn-primary text-lg py-6">
+                Get Beta Access Now
+              </Button>
+              
+              <p className="text-sm text-gray-500 mt-4 text-center">
+                What Beta means: You receive full functionality. As we continuously improve the AI and user experience, your feedback during this phase is invaluable.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Pricing;
