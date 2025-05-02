@@ -50,7 +50,7 @@ const Hero = () => {
                       <p className="text-gray-800 text-base font-normal">
                         Hi, and great to have you here!<br /><br />
                         
-                        Welcome to your career insights session. My goal is to walk you through your <strong>personality profile</strong> and career recommendations in a way that's clear, engaging, and actionable.<br /><br />
+                        <strong>Welcome to your career insights session.</strong> My goal is to walk you through your personality profile and career recommendations in a way that's clear, engaging, and actionable.<br /><br />
                         
                         Here's how this will work:<br />
                         - We'll start with a quick Executive Summary.<br />
@@ -64,7 +64,7 @@ const Hero = () => {
                         
                         No need to take notes - you'll receive a full report with all the details at the end of this session!<br /><br />
                         
-                        Feel free to ask anything along the way - whether it's clarification, exploring a career further, or sharing feedback on your results.<br /><br />
+                        <strong>Feel free to ask anything along the way</strong> - whether it's clarification, exploring a career further, or sharing feedback on your results.<br /><br />
                         
                         Ok, let's get to it. Let me know when you're ready!
                       </p>
