@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-
 const Hero = () => {
   return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
@@ -47,21 +46,36 @@ const Hero = () => {
                   </div>
                   <div className="space-y-4">
                     <div className="bg-gray-100 rounded-lg p-4 max-w-[80%]">
-                      <p className="text-gray-800">Based on your responses, I see that you have strong analytical skills combined with creative thinking. This unique combination suggests you might excel in roles that require both problem-solving and innovation.</p>
+                      <p className="text-gray-800">Hi, and great to have you here! Welcome to your career insights session. My goal is to walk you through your personality profile and career recommendations in a way that’s clear, engaging, and actionable.
+
+This conversation is designed to help you understand your professional strengths, potential blind spots, and the career paths that best align with your goals.
+
+Here’s how this will work:
+
+We’ll start with a quick Executive Summary.
+
+Then do a deeper dive into your Personality Insights —exploring what drives you, how you work best, and key takeaways that shape your career direction.
+
+Then, we’ll move on to your Career matches:
+
+Top 3 best fits
+
+Suitable Runner-up suggestions
+
+Some Out-of-the-box careers you might not have considered
+
+And an assessment on your Dream job(s) you provided
+
+No need to take notes—you’ll receive a full report with all the details at the end of this session!
+
+Feel free to ask anything along the way—whether it’s clarification, exploring a career further, or sharing feedback on your results.
+
+Can you a</p>
                     </div>
                     <div className="bg-primary/10 rounded-lg p-4 max-w-[80%] ml-auto">
                       <p className="text-gray-800">Can you tell me more about what specific career paths would fit these skills?</p>
                     </div>
-                    <div className="bg-gray-100 rounded-lg p-4 max-w-[80%]">
-                      <p className="text-gray-800">Certainly! With your profile, consider careers in:</p>
-                      <ul className="list-disc ml-5 mt-2 space-y-1">
-                        <li>UX Research</li>
-                        <li>Data Visualization</li>
-                        <li>Product Management</li>
-                        <li>Strategy Consulting</li>
-                      </ul>
-                      <p className="mt-2 text-gray-800">Would you like me to elaborate on any of these options?</p>
-                    </div>
+                    
                   </div>
                 </div>
               </div>
@@ -71,5 +85,4 @@ const Hero = () => {
       </div>
     </section>;
 };
-
 export default Hero;
