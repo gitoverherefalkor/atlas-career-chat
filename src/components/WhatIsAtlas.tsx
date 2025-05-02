@@ -1,21 +1,23 @@
+
 import React from 'react';
+import { Brain, BookUser, MessageSquare } from 'lucide-react';
 
 const WhatIsAtlas = () => {
   const features = [
     {
       title: "Combines Psychometrics and AI",
       description: "Integrates proven psychological assessment principles with cutting-edge artificial intelligence for unparalleled career insights.",
-      image: "/images/feature-psychometrics-ai.svg"
+      icon: <Brain className="w-12 h-12 text-atlas-blue" />
     },
     {
       title: "Delivers Personalized Guidance",
       description: "Offers tailored recommendations and actionable steps based on your unique profile, helping you make informed career decisions.",
-      image: "/images/feature-personalized-guidance.svg"
+      icon: <BookUser className="w-12 h-12 text-atlas-blue" />
     },
     {
       title: "Provides an Interactive Experience",
       description: "Engages you in a dynamic chat format, allowing you to explore your results, ask questions, and gain deeper understanding.",
-      image: "/images/feature-interactive-experience.svg"
+      icon: <MessageSquare className="w-12 h-12 text-atlas-blue" />
     }
   ];
 
@@ -33,7 +35,9 @@ const WhatIsAtlas = () => {
         <div className="grid md:grid-cols-3 gap-8">
           {features.map((feature, index) => (
             <div key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-              <img src={feature.image} alt={feature.title} className="h-20 w-20 mx-auto mb-4" />
+              <div className="flex justify-center mb-4">
+                {feature.icon}
+              </div>
               <h3 className="text-xl font-semibold mb-2 text-center">{feature.title}</h3>
               <p className="text-gray-600 text-center">{feature.description}</p>
             </div>
