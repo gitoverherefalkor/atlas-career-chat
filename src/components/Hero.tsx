@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+
 const Hero = () => {
   return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
@@ -70,7 +71,7 @@ const Hero = () => {
                       </p>
                     </div>
                     <div className="bg-primary/10 rounded-lg p-4 max-w-[80%] ml-auto">
-                      <p className="text-gray-800">Can you tell me more about what specific career paths would fit these skills?</p>
+                      <p className="text-gray-800">Sounds good. Let's go!</p>
                     </div>
                     
                   </div>
@@ -82,4 +83,5 @@ const Hero = () => {
       </div>
     </section>;
 };
+
 export default Hero;
