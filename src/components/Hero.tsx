@@ -46,31 +46,11 @@ const Hero = () => {
                   </div>
                   <div className="space-y-4">
                     <div className="bg-gray-100 rounded-lg p-4 max-w-[80%]">
-                      <p className="text-gray-800">Hi, and great to have you here! Welcome to your career insights session. My goal is to walk you through your personality profile and career recommendations in a way that’s clear, engaging, and actionable.
+                      <p className="text-gray-800 text-base font-normal">Hi, and great to have you here! 
 
-This conversation is designed to help you understand your professional strengths, potential blind spots, and the career paths that best align with your goals.
+Welcome to your career insights session. My goal is to walk you through your personality profile and career recommendations in a way that’s clear, engaging, and actionable. 
 
-Here’s how this will work:
-
-We’ll start with a quick Executive Summary.
-
-Then do a deeper dive into your Personality Insights —exploring what drives you, how you work best, and key takeaways that shape your career direction.
-
-Then, we’ll move on to your Career matches:
-
-Top 3 best fits
-
-Suitable Runner-up suggestions
-
-Some Out-of-the-box careers you might not have considered
-
-And an assessment on your Dream job(s) you provided
-
-No need to take notes—you’ll receive a full report with all the details at the end of this session!
-
-Feel free to ask anything along the way—whether it’s clarification, exploring a career further, or sharing feedback on your results.
-
-Can you a</p>
+Here’s how this will work: We’ll start with a quick Executive Summary. Then do a deeper dive into your Personality Insights —exploring what drives you, how you work best, and key takeaways that shape your career direction. Then, we’ll move on to your Career matches: Top 3 best fits Suitable Runner-up suggestions Some Out-of-the-box careers you might not have considered And an assessment on your Dream job(s) you provided No need to take notes—you’ll receive a full report with all the details at the end of this session! Feel free to ask anything along the way—whether it’s clarification, exploring a career further, or sharing feedback on your results. Can you a</p>
                     </div>
                     <div className="bg-primary/10 rounded-lg p-4 max-w-[80%] ml-auto">
                       <p className="text-gray-800">Can you tell me more about what specific career paths would fit these skills?</p>
