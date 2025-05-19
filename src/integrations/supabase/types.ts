@@ -9,7 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      access_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          is_used: boolean | null
+          used_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_used?: boolean | null
+          used_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean | null
+          used_at?: string | null
+        }
+        Relationships: []
+      }
+      purchases: {
+        Row: {
+          access_code_id: string | null
+          country: string
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          stripe_session_id: string | null
+        }
+        Insert: {
+          access_code_id?: string | null
+          country: string
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          stripe_session_id?: string | null
+        }
+        Update: {
+          access_code_id?: string | null
+          country?: string
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          stripe_session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_access_code_id_fkey"
+            columns: ["access_code_id"]
+            isOneToOne: false
+            referencedRelation: "access_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

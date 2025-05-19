@@ -1,9 +1,20 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Star } from 'lucide-react';
+import { CheckoutForm } from './CheckoutForm';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const Pricing = () => {
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  
   const features = [
     "Complete assessment questionnaire",
     "Interactive AI chat report",
@@ -12,8 +23,6 @@ const Pricing = () => {
     "Request summary of key insights",
     "Beta program early access"
   ];
-
-  const sendowlUrl = "https://www.sendowl.com/s/consulting/career-assessment-personality-test-career-coaching/atlas-assessment-career-exploration-2025-regular-by-atlas-assessments/";
 
   return (
     <section id="pricing" className="section bg-gray-50">
@@ -51,15 +60,22 @@ const Pricing = () => {
                 ))}
               </ul>
               
-              <Button asChild className="w-full btn-primary text-lg py-6">
-                <a 
-                  href={sendowlUrl} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  Get Beta Access Now
-                </a>
-              </Button>
+              <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                <DialogTrigger asChild>
+                  <Button className="w-full btn-primary text-lg py-6">
+                    Get Beta Access Now
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Complete Your Purchase</DialogTitle>
+                    <DialogDescription>
+                      Enter your details to receive your Atlas Assessment access code.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <CheckoutForm />
+                </DialogContent>
+              </Dialog>
               
               <p className="text-sm text-gray-500 mt-4 text-center">
                 What Beta means: You receive full functionality. As we continuously improve the AI and user experience, your feedback during this phase is invaluable.
