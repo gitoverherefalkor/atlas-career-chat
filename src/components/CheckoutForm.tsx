@@ -72,6 +72,7 @@ export function CheckoutForm() {
     setError(null);
     
     try {
+      console.log("Submitting checkout form:", values);
       const { data, error: apiError } = await supabase.functions.invoke("create-checkout", {
         body: {
           firstName: values.firstName,
@@ -82,14 +83,21 @@ export function CheckoutForm() {
       });
 
       if (apiError) {
+        console.error("API error:", apiError);
         throw new Error(apiError.message);
       }
+
+      if (!data) {
+        throw new Error("No data returned from API");
+      }
+
+      console.log("Checkout session created:", data);
 
       if (data?.url) {
         // Redirect to Stripe checkout
         window.location.href = data.url;
       } else {
-        throw new Error("Failed to create checkout session");
+        throw new Error("Failed to create checkout session: No URL returned");
       }
     } catch (error) {
       console.error("Checkout error:", error);

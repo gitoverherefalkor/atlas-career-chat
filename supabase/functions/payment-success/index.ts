@@ -87,6 +87,8 @@ serve(async (req) => {
       );
     }
 
+    console.log("Processing payment for session:", sessionId);
+    
     // Retrieve session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
@@ -165,6 +167,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
+        accessCode: accessCode,
         message: "Payment processed successfully" 
       }),
       { 

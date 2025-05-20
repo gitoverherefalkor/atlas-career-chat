@@ -17,6 +17,7 @@ serve(async (req) => {
   try {
     const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeKey) {
+      console.error("Stripe API key not configured");
       throw new Error("Stripe API key not configured");
     }
 
@@ -28,13 +29,14 @@ serve(async (req) => {
     try {
       // A simple call to check if the Stripe API key is valid and account is active
       await stripe.balance.retrieve();
+      console.log("Stripe account validated successfully");
     } catch (stripeError) {
       console.error("Stripe account error:", stripeError);
       const errorMsg = stripeError instanceof Error ? stripeError.message : "Stripe account error";
       
       // Create a more user-friendly message
       if (errorMsg.includes("invalid api key") || errorMsg.includes("Invalid API Key")) {
-        throw new Error("Payment system is not properly configured.");
+        throw new Error("Payment system is not properly configured: Invalid API key.");
       } else if (errorMsg.includes("account") && (errorMsg.includes("inactive") || errorMsg.includes("not activated"))) {
         throw new Error("Payment system account is not active yet.");
       } else {
@@ -51,6 +53,8 @@ serve(async (req) => {
       );
     }
 
+    console.log("Creating checkout session for:", email);
+    
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -78,6 +82,8 @@ serve(async (req) => {
       },
     });
 
+    console.log("Checkout session created:", session.id);
+    
     return new Response(
       JSON.stringify({ 
         sessionId: session.id,
