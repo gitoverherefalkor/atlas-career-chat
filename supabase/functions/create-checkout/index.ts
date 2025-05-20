@@ -42,11 +42,11 @@ serve(async (req) => {
       }
     }
 
-    const { firstName, email, country } = await req.json();
+    const { firstName, lastName, email, country } = await req.json();
 
-    if (!firstName || !email || !country) {
+    if (!firstName || !lastName || !email || !country) {
       return new Response(
-        JSON.stringify({ error: "First name, email, and country are required" }),
+        JSON.stringify({ error: "First name, last name, email, and country are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -73,6 +73,7 @@ serve(async (req) => {
       customer_email: email,
       metadata: {
         firstName,
+        lastName,
         country,
       },
     });

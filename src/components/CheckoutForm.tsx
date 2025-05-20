@@ -17,20 +17,40 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
     message: "First name must be at least 2 characters.",
   }),
+  lastName: z.string().min(2, {
+    message: "Last name must be at least 2 characters.",
+  }),
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
   country: z.string().min(2, {
-    message: "Country must be at least 2 characters.",
+    message: "Please select a country.",
   }),
 });
 
 type CheckoutFormValues = z.infer<typeof formSchema>;
+
+// Common countries list
+const countries = [
+  "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", 
+  "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", 
+  "Hungary", "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", 
+  "Malta", "Netherlands", "Poland", "Portugal", "Romania", "Slovakia", 
+  "Slovenia", "Spain", "Sweden", "United Kingdom", "United States", 
+  "Canada", "Australia", "New Zealand", "Japan", "China", "India"
+];
 
 export function CheckoutForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -41,6 +61,7 @@ export function CheckoutForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       firstName: "",
+      lastName: "",
       email: "",
       country: "",
     },
@@ -54,6 +75,7 @@ export function CheckoutForm() {
       const { data, error: apiError } = await supabase.functions.invoke("create-checkout", {
         body: {
           firstName: values.firstName,
+          lastName: values.lastName,
           email: values.email,
           country: values.country,
         },
@@ -111,6 +133,20 @@ export function CheckoutForm() {
         
         <FormField
           control={form.control}
+          name="lastName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Last Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
           name="email"
           render={({ field }) => (
             <FormItem>
@@ -129,9 +165,20 @@ export function CheckoutForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Country</FormLabel>
-              <FormControl>
-                <Input placeholder="United States" {...field} />
-              </FormControl>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a country" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {countries.map((country) => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

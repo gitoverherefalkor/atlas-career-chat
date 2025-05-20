@@ -26,7 +26,7 @@ function generateAccessCode(): string {
 }
 
 // Function to send the access code email
-async function sendAccessCodeEmail(email: string, firstName: string, accessCode: string) {
+async function sendAccessCodeEmail(email: string, firstName: string, lastName: string, accessCode: string) {
   try {
     const { data, error } = await resend.emails.send({
       from: "Atlas Assessment <no-reply@atlasassessment.com>",
@@ -39,7 +39,7 @@ async function sendAccessCodeEmail(email: string, firstName: string, accessCode:
           </div>
           <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px;">
             <h2 style="color: #4361ee; margin-bottom: 20px;">Your Purchase was Successful!</h2>
-            <p>Hello ${firstName},</p>
+            <p>Hello ${firstName} ${lastName},</p>
             <p>Thank you for purchasing the Atlas Assessment. Your access code is:</p>
             <div style="background-color: #edf2ff; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0; font-size: 24px; font-weight: bold; letter-spacing: 1px;">
               ${accessCode}
@@ -131,6 +131,7 @@ serve(async (req) => {
     // Extract customer information
     const customerEmail = session.customer_details?.email;
     const firstName = session.metadata?.firstName || "Customer";
+    const lastName = session.metadata?.lastName || "";
     const country = session.metadata?.country || "Unknown";
 
     // Store the purchase details
@@ -139,6 +140,7 @@ serve(async (req) => {
       .insert({
         email: customerEmail,
         first_name: firstName,
+        last_name: lastName,
         country: country,
         stripe_session_id: session.id,
         access_code_id: codeData.id,
@@ -154,7 +156,7 @@ serve(async (req) => {
 
     // Send the access code via email
     if (customerEmail) {
-      const emailSent = await sendAccessCodeEmail(customerEmail, firstName, accessCode);
+      const emailSent = await sendAccessCodeEmail(customerEmail, firstName, lastName, accessCode);
       if (!emailSent) {
         console.warn("Warning: Email could not be sent, but purchase was successful");
       }
@@ -173,7 +175,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error processing payment:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { 
         status: 500, 
         headers: { ...corsHeaders, "Content-Type": "application/json" } 
