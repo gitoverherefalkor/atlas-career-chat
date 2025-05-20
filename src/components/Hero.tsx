@@ -22,7 +22,7 @@ const Hero = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild className="btn-primary text-lg flex items-center gap-2">
-                <a href="https://www.sendowl.com/s/consulting/career-assessment-personality-test-career-coaching/atlas-assessment-career-exploration-2025-regular-by-atlas-assessments/" target="_blank" rel="noopener noreferrer">
+                <a href="#pricing">
                   Get Your Atlas Assessment Now
                   <ArrowRight className="h-5 w-5" />
                 </a>
