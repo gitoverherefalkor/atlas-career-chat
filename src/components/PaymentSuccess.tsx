@@ -10,11 +10,25 @@ const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
+  const [accessCode, setAccessCode] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
+    const isDemo = searchParams.get('demo') === 'true';
+    
+    // Handle demo mode
+    if (isDemo) {
+      setIsProcessing(false);
+      setIsComplete(true);
+      setAccessCode('ATLAS-DEMO12345');
+      toast({
+        title: "Demo Purchase Successful!",
+        description: "This is a demo purchase with a sample access code.",
+      });
+      return;
+    }
     
     if (!sessionId) {
       navigate('/');
@@ -31,6 +45,10 @@ const PaymentSuccess = () => {
         
         if (error) {
           throw new Error(error.message);
+        }
+        
+        if (data?.accessCode) {
+          setAccessCode(data.accessCode);
         }
         
         setIsComplete(true);
@@ -74,10 +92,27 @@ const PaymentSuccess = () => {
               <CheckCircle className="h-10 w-10 text-green-600" />
             </div>
             <h1 className="text-2xl font-bold mb-4">Payment Successful!</h1>
+            
+            {accessCode && (
+              <div className="mb-6">
+                <p className="text-gray-600 mb-2">Your access code:</p>
+                <div className="bg-gray-100 p-3 rounded font-mono text-lg tracking-wide">
+                  {accessCode}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {searchParams.get('demo') === 'true' 
+                    ? 'This is a demo access code for testing purposes only.'
+                    : 'This code has also been sent to your email.'}
+                </p>
+              </div>
+            )}
+            
             <p className="text-gray-600 mb-8">
-              Thank you for your purchase. We've sent your access code to your email. 
-              Please check your inbox (and spam folder) for instructions on how to access your assessment.
+              {searchParams.get('demo') === 'true' 
+                ? 'Thank you for trying our demo purchase flow.'
+                : 'Thank you for your purchase. We\'ve sent your access code to your email. Please check your inbox (and spam folder) for instructions on how to access your assessment.'}
             </p>
+            
             <Button 
               onClick={() => navigate('/')} 
               className="w-full flex items-center justify-center gap-2"

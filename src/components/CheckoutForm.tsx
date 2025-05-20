@@ -4,6 +4,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 import {
@@ -33,6 +34,7 @@ type CheckoutFormValues = z.infer<typeof formSchema>;
 
 export function CheckoutForm() {
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   
   const form = useForm<CheckoutFormValues>({
@@ -46,9 +48,10 @@ export function CheckoutForm() {
 
   async function onSubmit(values: CheckoutFormValues) {
     setIsLoading(true);
+    setError(null);
     
     try {
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
+      const { data, error: apiError } = await supabase.functions.invoke("create-checkout", {
         body: {
           firstName: values.firstName,
           email: values.email,
@@ -56,8 +59,8 @@ export function CheckoutForm() {
         },
       });
 
-      if (error) {
-        throw new Error(error.message);
+      if (apiError) {
+        throw new Error(apiError.message);
       }
 
       if (data?.url) {
@@ -68,9 +71,20 @@ export function CheckoutForm() {
       }
     } catch (error) {
       console.error("Checkout error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred";
+      
+      // Show a more detailed error for common issues
+      if (errorMessage.includes("Invalid API Key")) {
+        setError("Payment system is not properly configured. Please try again later or contact support.");
+      } else if (errorMessage.includes("account") && errorMessage.includes("active")) {
+        setError("Payment system is not activated yet. Please try again later.");
+      } else {
+        setError(errorMessage);
+      }
+      
       toast({
         title: "Checkout Failed",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -123,9 +137,19 @@ export function CheckoutForm() {
           )}
         />
         
+        {error && (
+          <div className="text-destructive text-sm p-3 bg-destructive/10 rounded-md">
+            {error}
+          </div>
+        )}
+        
         <Button type="submit" className="w-full" disabled={isLoading}>
           {isLoading ? "Processing..." : "Proceed to Checkout"}
         </Button>
+        
+        <p className="text-xs text-center text-muted-foreground">
+          This will redirect you to our secure payment processor
+        </p>
       </form>
     </Form>
   );
