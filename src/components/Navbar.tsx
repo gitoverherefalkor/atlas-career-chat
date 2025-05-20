@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -8,8 +9,6 @@ const Navbar = () => {
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
-
-  const sendowlUrl = "https://www.sendowl.com/s/consulting/career-assessment-personality-test-career-coaching/atlas-assessment-career-exploration-2025-regular-by-atlas-assessments/";
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -37,11 +36,7 @@ const Navbar = () => {
               About Us
             </a>
             <Button asChild className="btn-primary">
-              <a 
-                href={sendowlUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
+              <a href="#pricing">
                 Get Started
               </a>
             </Button>
@@ -79,11 +74,7 @@ const Navbar = () => {
               About Us
             </a>
             <Button asChild className="btn-primary w-full mt-4">
-              <a 
-                href={sendowlUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
+              <a href="#pricing" onClick={toggleMenu}>
                 Get Started
               </a>
             </Button>
