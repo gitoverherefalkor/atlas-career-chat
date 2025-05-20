@@ -55,9 +55,56 @@ serve(async (req) => {
 
     console.log("Creating checkout session for:", email);
     
+    // Define payment methods based on country
+    const paymentMethods = ["card"];
+    
+    // Add European payment methods
+    if (["Netherlands", "Belgium", "Germany"].includes(country)) {
+      paymentMethods.push("ideal");
+    }
+    
+    // Add Klarna for supported countries
+    if (["Germany", "Austria", "Finland", "Netherlands", "Belgium", "Sweden", "United Kingdom"].includes(country)) {
+      paymentMethods.push("klarna");
+    }
+    
+    // Add SEPA Direct Debit for EU countries
+    const euCountries = [
+      "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", 
+      "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", 
+      "Hungary", "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", 
+      "Malta", "Netherlands", "Poland", "Portugal", "Romania", "Slovakia", 
+      "Slovenia", "Spain", "Sweden"
+    ];
+    if (euCountries.includes(country)) {
+      paymentMethods.push("sepa_debit");
+    }
+    
+    // Add Bancontact for Belgium
+    if (country === "Belgium") {
+      paymentMethods.push("bancontact");
+    }
+    
+    // Add EPS for Austria
+    if (country === "Austria") {
+      paymentMethods.push("eps");
+    }
+    
+    // Add Giropay for Germany
+    if (country === "Germany") {
+      paymentMethods.push("giropay");
+    }
+    
+    // Add P24 for Poland
+    if (country === "Poland") {
+      paymentMethods.push("p24");
+    }
+    
+    console.log("Available payment methods:", paymentMethods);
+    
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
+      payment_method_types: paymentMethods,
       line_items: [
         {
           price_data: {
@@ -80,6 +127,7 @@ serve(async (req) => {
         lastName,
         country,
       },
+      locale: country === "Netherlands" ? "nl" : country === "Germany" ? "de" : "auto",
     });
 
     console.log("Checkout session created:", session.id);
