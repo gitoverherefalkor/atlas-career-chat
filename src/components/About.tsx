@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const About = () => {
   return (
@@ -13,9 +14,10 @@ const About = () => {
 
           <div className="bg-white rounded-xl shadow-md p-8 md:p-12">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-8">
-              <div className="bg-gray-200 rounded-full w-24 h-24 flex items-center justify-center text-2xl font-bold text-gray-600 flex-shrink-0">
-                SG
-              </div>
+              <Avatar className="w-24 h-24 border-2 border-gray-200">
+                <AvatarImage src="/lovable-uploads/b98f8149-b536-4651-8f90-8dc8870880d0.png" alt="Sjoerd Geurts" />
+                <AvatarFallback className="bg-gray-200 text-2xl font-bold text-gray-600">SG</AvatarFallback>
+              </Avatar>
               <div>
                 <h3 className="text-2xl font-semibold mb-2">Sjoerd Geurts</h3>
                 <p className="text-gray-500">Founder, Atlas Assessment</p>
