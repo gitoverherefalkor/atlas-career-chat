@@ -1,9 +1,10 @@
+
 import React from 'react';
-import { Code2, Lightbulb, Rocket, MessageSquare, Settings } from 'lucide-react';
+import { Code2, Lightbulb, Briefcase, MessageSquare, Settings } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 const WhatIsAtlas = () => {
   const cards = [{
-    icon: <Rocket className="h-8 w-8 text-atlas-orange" />,
+    icon: <Briefcase className="h-8 w-8 text-atlas-orange" />,
     title: "Tailored to business professionals",
     description: "Built for office and knowledge workers in corporate, tech, finance, and service industries. Assessment for different professions are in development."
   }, {
