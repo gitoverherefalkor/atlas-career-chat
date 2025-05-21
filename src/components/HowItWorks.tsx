@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ClipboardList, Brain, MessageSquare } from 'lucide-react';
 
@@ -5,20 +6,20 @@ const HowItWorks = () => {
   const steps = [
     {
       icon: <ClipboardList className="h-10 w-10 text-white" />,
-      title: "Complete the Insightful Questionnaire",
-      description: "Answer a series of carefully crafted questions designed to understand your skills, interests, values, and working style. Takes approximately 20 minutes to complete.",
+      title: "Complete an Insightful Questionnaire",
+      description: "Thoughtfully designed to capture your skills, interests, values, work style, and current life context (approximately 20 minutes).",
       color: "bg-atlas-blue"
     },
     {
       icon: <Brain className="h-10 w-10 text-white" />,
-      title: "Expert-Informed AI Analysis",
-      description: "Our system, built on established psychometric frameworks and enhanced by AI, analyzes your responses to create a detailed, personalized profile.",
+      title: "AI-driven Expert Analysis",
+      description: "Your responses are analyzed through advanced AI, developed in collaboration with career coaching professionals, generating your personalized career profile.",
       color: "bg-atlas-indigo"
     },
     {
       icon: <MessageSquare className="h-10 w-10 text-white" />,
-      title: "Engage with Your AI Career Coach",
-      description: "Receive a link to a private, interactive chat session. Here, your results are presented dynamically. Ask questions, explore specific areas deeper, and receive tailored career recommendations.",
+      title: "Interactive AI Career Coaching Chat",
+      description: "Receive your personalized insights through an intuitive, interactive AI chat session. Explore detailed recommendations, realistic suitability analyses, and clear next steps to achieve your goals.",
       color: "bg-atlas-purple"
     }
   ];

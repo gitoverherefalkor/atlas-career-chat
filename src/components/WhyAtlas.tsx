@@ -6,23 +6,23 @@ const WhyAtlas = () => {
   const features = [
     {
       icon: <MessageSquare className="h-6 w-6" color="#EA7923" />,
-      title: "Interactive & Dynamic",
-      description: "Don't just read a report – discuss it! Our AI chat allows you to explore your profile in a conversational way, getting clarification and drilling down into what matters most to you."
+      title: "Interactive and Conversational",
+      description: "Engage directly with your personalized AI-powered career coach. Ask follow-up questions and explore your results in depth."
     },
     {
       icon: <Target className="h-6 w-6" color="#EA7923" />,
-      title: "Actionable Insights",
-      description: "We focus on practical application. Get concrete recommendations for industries, roles, and development opportunities tailored to your unique profile."
+      title: "Practical and Actionable",
+      description: "Clear explanations and realistic assessments tailored to your profile with concrete recommendations for industries, roles, and development opportunities."
     },
     {
       icon: <Award className="h-6 w-6" color="#EA7923" />,
-      title: "Expert-Developed, AI-Enhanced",
-      description: "Built upon proven psychometric principles with input from experienced practitioners, then supercharged with AI for deeper personalization and dynamic delivery."
+      title: "Expert-Driven and AI-Enhanced",
+      description: "Designed by career professionals and continuously refined through advanced AI analysis that adapts to your unique profile and needs."
     },
     {
       icon: <DollarSign className="h-6 w-6" color="#EA7923" />,
-      title: "Affordable & Efficient",
-      description: "Leveraging technology allows us to offer this powerful tool at a fraction of the cost of traditional, consultant-led assessments, especially during our Beta phase."
+      title: "Affordable and Efficient",
+      description: "Leveraging technology for an accessible premium service at an introductory beta rate - a fraction of traditional career coaching costs."
     },
     {
       icon: <Zap className="h-6 w-6" color="#EA7923" />,
@@ -35,10 +35,10 @@ const WhyAtlas = () => {
     <section id="why-atlas" className="section bg-white">
       <div className="container-atlas">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Beyond Traditional Assessments</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Beyond Traditional Career Assessments</h2>
           <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto mb-6"></div>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-            Traditional psychometric tests often provide lengthy, static reports that can be overwhelming and lack clear next steps. Atlas Assessment offers a smarter, more effective approach:
+            Traditional career assessments often leave you with overwhelming, static reports. Atlas Assessment offers a smarter, more engaging solution:
           </p>
         </div>
 
@@ -55,9 +55,9 @@ const WhyAtlas = () => {
         </div>
 
         <div className="mt-16 bg-gray-50 rounded-xl p-8 border border-gray-100">
-          <h3 className="text-2xl font-semibold mb-6 text-center">Our Scientific Approach</h3>
+          <h3 className="text-2xl font-semibold mb-6 text-center">Our Approach</h3>
           <p className="text-lg text-center max-w-4xl mx-auto">
-            Our methodology integrates established principles of personality and career assessment with cutting-edge Natural Language Processing (NLP) and machine learning techniques. This allows for a highly personalized interpretation and recommendation engine, validated through expert review and ongoing refinement based on user feedback and research.
+            Our approach combines established career coaching methodologies with innovative AI technologies, ensuring customized, accurate, and continually improving career guidance.
           </p>
         </div>
       </div>

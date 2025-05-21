@@ -18,7 +18,13 @@ const Hero = () => {
               Discover Your Ideal Career Path
             </h2>
             <p className="text-lg text-gray-700 mb-8">
-              Atlas Assessment combines deep psychometric principles with state-of-the-art AI in a unique, interactive chat experience. Get personalized, actionable insights to navigate your professional future with confidence.
+              Many of us chose our initial career direction as teenagers, deciding on business, sciences, arts, or other areas long before fully knowing ourselves. Life circumstances change. Family, new interests, evolving values. And the uncertainty of today's professional world, marked by AI-driven automation and constant upskilling pressures, can add further complexity. It's completely natural to question your current path and explore new possibilities better aligned with who you are now.
+            </p>
+            <p className="text-lg text-gray-700 mb-8">
+              That's why we built Atlas Assessment, to make professional career guidance more accessible, insightful, and affordable. Instead of spending hundreds on a career coach, you can now get a deeply personalized evaluation for a fraction of the cost, tailored to who you are today and where you want to go next.
+            </p>
+            <p className="text-lg text-gray-700 mb-8">
+              Atlas Assessment combines state-of-the-art AI analysis and expert-designed surveys, guided by professional career coaches, to uncover your top 3 best-suited jobs, 7 strong alternative career options, and 3 surprising paths you might not have considered. As a bonus, you'll also receive a practical evaluation on whether there is a realistic pathway to pivot toward your dream job(s).
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild className="btn-primary text-lg flex items-center gap-2">

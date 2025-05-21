@@ -30,10 +30,10 @@ const FinalCTA = () => {
     <section className="py-20 bg-gradient-to-br from-atlas-blue via-atlas-navy to-atlas-navy text-white">
       <div className="container-atlas text-center">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">
-          Ready to Take Control of Your Career Narrative?
+          Ready to Take Control of Your Career?
         </h2>
         <p className="text-xl mb-10 max-w-2xl mx-auto opacity-90">
-          Get the clarity and direction you need. Purchase your Atlas Assessment license key today and start your journey towards a more fulfilling professional future.
+          Get clarity and direction today. Secure your Atlas Assessment access code now and start your journey toward a more fulfilling professional future.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>

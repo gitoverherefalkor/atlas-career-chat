@@ -31,7 +31,7 @@ const Pricing = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Invest in Your Future - Beta Access</h2>
           <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto mb-6"></div>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-            Atlas Assessment is currently in Beta. This means you get early access to a cutting-edge tool while helping us refine it with your valuable feedback.
+            Atlas Assessment is currently available as a beta version, giving you early access at an introductory price. Your insights and feedback will help shape the future of personalized career guidance.
           </p>
         </div>
 
@@ -78,7 +78,7 @@ const Pricing = () => {
               </Dialog>
               
               <p className="text-sm text-gray-500 mt-4 text-center">
-                What Beta means: You receive full functionality. As we continuously improve the AI and user experience, your feedback during this phase is invaluable.
+                Your journey begins here. After purchase, you'll receive immediate access to the questionnaire, get quick results, and start your interactive AI coaching session.
               </p>
             </div>
           </div>
