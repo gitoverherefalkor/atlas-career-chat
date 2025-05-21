@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -28,11 +29,11 @@ const Hero = () => {
             
             {/* Paragraphs under image */}
             <div>
-              <p className="text-lg text-gray-700 mb-6 font-bold">
-                Many of us chose our career path as teenagers, long before truly knowing ourselves. As life evolves with new interests and values, it's natural to question your current direction.
+              <p className="text-lg text-gray-700 mb-6">
+                <span className="font-bold">Many of us were influenced early on by school subjects, expectations, or limited options, leading to choices that shaped our studies, our first job, and eventually our career path.</span> As life unfolds and your interests, values, and priorities change, it's completely natural to question whether your current direction still fits.
               </p>
               <p className="text-lg text-gray-700">
-                Atlas Assessment makes professional career guidance more accessible and affordable, giving you personalized insights tailored to who you are today.
+                Atlas Assessment makes professional career guidance more accessible and affordable, offering personalized insights based on who you are today.
               </p>
             </div>
           </div>
