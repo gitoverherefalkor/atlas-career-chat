@@ -12,14 +12,16 @@ const Hero = () => {
           <div className="flex flex-col">
             <div className="mb-8">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                Stop Guessing. Start Thriving.
+                <span className="bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent">
+                  Stop Guessing. Start Thriving.
+                </span>
               </h1>
               <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-gray-800">
                 Discover Your Ideal Career Path
               </h2>
             </div>
             
-            {/* Crossroads Image */}
+            {/* Crossroads Image - Aligned with chat window */}
             <div className="relative rounded-lg overflow-hidden mb-8">
               <img 
                 src="/lovable-uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" 
@@ -42,7 +44,7 @@ const Hero = () => {
           
           {/* Right column: Chat example and CTA */}
           <div className="flex flex-col">
-            {/* Chat example */}
+            {/* Chat example - Aligned with woman image */}
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-navy/20 rounded-lg transform rotate-3"></div>
               <div className="relative bg-white rounded-lg shadow-xl overflow-hidden border border-gray-100">
