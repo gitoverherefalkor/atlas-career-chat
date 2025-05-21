@@ -79,8 +79,8 @@ const WhatIsAtlas = () => {
               </div>
               <div className="flex justify-center">
                 <img 
-                  src="https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" 
-                  alt="Person using laptop for career assessment" 
+                  src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1600&q=80" 
+                  alt="Foggy mountain path representing career choices and decisions" 
                   className="max-w-md rounded-lg shadow-lg" 
                 />
               </div>
