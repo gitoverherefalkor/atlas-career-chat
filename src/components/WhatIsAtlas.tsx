@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Code2, Lightbulb, Rocket, MessageSquare, Settings } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,7 +12,7 @@ const WhatIsAtlas = () => {
     {
       icon: <Lightbulb className="h-8 w-8 text-atlas-orange" />,
       title: "Insightful and Personalized",
-      description: "Atlas doesn't just tell you what you're good at—it connects the dots to specific career paths that align with your skills, values, and goals."
+      description: "Atlas doesn't just tell you what you're good at, it connects the dots to specific career paths that align with your skills, values, and goals."
     },
     {
       icon: <MessageSquare className="h-8 w-8 text-atlas-orange" />,
