@@ -29,7 +29,7 @@ const Pricing = () => {
           </p>
         </div>
 
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="bg-gradient-to-r from-atlas-blue to-atlas-indigo p-6 text-white text-center">
               <div className="inline-flex items-center gap-2 bg-white/20 rounded-full py-1 px-3 mb-4">
