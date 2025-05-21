@@ -1,31 +1,12 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Star } from 'lucide-react';
 import { CheckoutForm } from './CheckoutForm';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 const Pricing = () => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  
-  const features = [
-    "Complete assessment questionnaire",
-    "Interactive AI chat report",
-    "Personalized career insights",
-    "Ask unlimited follow-up questions",
-    "Request summary of key insights",
-    "Beta program early access"
-  ];
-
-  return (
-    <section id="pricing" className="section bg-gray-50">
+  const features = ["Complete assessment questionnaire", "Interactive AI chat report", "Personalized career insights", "Ask unlimited follow-up questions", "Request summary of key insights", "Beta program early access"];
+  return <section id="pricing" className="section bg-gray-50">
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Invest in Your Future - Beta Access</h2>
@@ -44,7 +25,7 @@ const Pricing = () => {
               </div>
               <h3 className="text-2xl font-bold mb-2">Complete Atlas Assessment</h3>
               <div className="flex items-baseline justify-center">
-                <span className="text-4xl font-bold">€49</span>
+                <span className="text-4xl font-bold">€39</span>
                 <span className="text-lg ml-2 opacity-80"><s>€99</s></span>
               </div>
               <p className="mt-2 opacity-80">Limited time introductory price</p>
@@ -52,12 +33,10 @@ const Pricing = () => {
             
             <div className="p-8">
               <ul className="space-y-4 mb-8">
-                {features.map((feature, index) => (
-                  <li key={index} className="flex items-start">
+                {features.map((feature, index) => <li key={index} className="flex items-start">
                     <CheckCircle className="h-5 w-5 text-primary mr-3 mt-0.5 flex-shrink-0" />
                     <span>{feature}</span>
-                  </li>
-                ))}
+                  </li>)}
               </ul>
               
               <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
@@ -84,8 +63,6 @@ const Pricing = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Pricing;
