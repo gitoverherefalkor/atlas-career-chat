@@ -1,20 +1,17 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-
 const Hero = () => {
-  return (
-    <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
+  return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
         {/* Headings at the top */}
         <div className="mb-10">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-            <span className="bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 leading-tight text-center lg:text-6xl">
+            <span className="bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent text-center">
               Stop Guessing. Start Thriving.
             </span>
           </h1>
-          <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-gray-800">
+          <h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center md:text-4xl">
             Discover Your Ideal Career Path
           </h2>
         </div>
@@ -25,11 +22,7 @@ const Hero = () => {
           <div className="flex flex-col">
             {/* Woman image */}
             <div className="relative rounded-lg overflow-hidden mb-8">
-              <img 
-                src="/lovable-uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" 
-                alt="Woman at career crossroads" 
-                className="w-full object-cover rounded-lg shadow-md"
-              />
+              <img src="/lovable-uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" alt="Woman at career crossroads" className="w-full object-cover rounded-lg shadow-md" />
               <div className="absolute inset-0 bg-gradient-to-t from-atlas-navy/40 to-transparent"></div>
             </div>
             
@@ -107,8 +100,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
