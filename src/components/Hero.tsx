@@ -7,21 +7,23 @@ const Hero = () => {
   return (
     <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
+        {/* Headings at the top */}
+        <div className="mb-10">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            <span className="bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent">
+              Stop Guessing. Start Thriving.
+            </span>
+          </h1>
+          <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-gray-800">
+            Discover Your Ideal Career Path
+          </h2>
+        </div>
+        
+        {/* Two columns with images aligned at top */}
         <div className="grid lg:grid-cols-2 gap-10">
-          {/* Left column: Main content and image */}
+          {/* Left column: Image */}
           <div className="flex flex-col">
-            <div className="mb-8">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                <span className="bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent">
-                  Stop Guessing. Start Thriving.
-                </span>
-              </h1>
-              <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-gray-800">
-                Discover Your Ideal Career Path
-              </h2>
-            </div>
-            
-            {/* Crossroads Image - Aligned with chat window */}
+            {/* Woman image */}
             <div className="relative rounded-lg overflow-hidden mb-8">
               <img 
                 src="/lovable-uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" 
@@ -31,9 +33,9 @@ const Hero = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-atlas-navy/40 to-transparent"></div>
             </div>
             
-            {/* Paragraphs */}
+            {/* Paragraphs under image */}
             <div>
-              <p className="text-lg text-gray-700 mb-6">
+              <p className="text-lg text-gray-700 mb-6 font-bold">
                 Many of us chose our career path as teenagers, long before truly knowing ourselves. As life evolves with new interests and values, it's natural to question your current direction.
               </p>
               <p className="text-lg text-gray-700">
@@ -44,7 +46,7 @@ const Hero = () => {
           
           {/* Right column: Chat example and CTA */}
           <div className="flex flex-col">
-            {/* Chat example - Aligned with woman image */}
+            {/* Chat example aligned with woman image */}
             <div className="relative mb-8">
               <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-navy/20 rounded-lg transform rotate-3"></div>
               <div className="relative bg-white rounded-lg shadow-xl overflow-hidden border border-gray-100">
@@ -87,7 +89,7 @@ const Hero = () => {
               </div>
             </div>
             
-            {/* CTA area - aligned with paragraphs */}
+            {/* CTA buttons aligned with paragraphs */}
             <div className="flex flex-col">
               <Button asChild className="btn-primary text-lg flex items-center gap-2 mb-4">
                 <a href="#pricing">
