@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Star } from 'lucide-react';
@@ -26,7 +27,7 @@ const Pricing = () => {
               <h3 className="text-2xl font-bold mb-2">Complete Atlas Assessment</h3>
               <div className="flex items-baseline justify-center">
                 <span className="text-4xl font-bold">€39</span>
-                <span className="text-lg ml-2 opacity-80"><s>€99</s></span>
+                <span className="text-lg ml-2 opacity-80"><s>€79</s></span>
               </div>
               <p className="mt-2 opacity-80">Limited time introductory price</p>
             </div>
