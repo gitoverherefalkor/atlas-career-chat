@@ -53,13 +53,6 @@ const WhyAtlas = () => {
             </div>
           ))}
         </div>
-
-        <div className="mt-16 bg-gray-50 rounded-xl p-8 border border-gray-100">
-          <h3 className="text-2xl font-semibold mb-6 text-center">Our Approach</h3>
-          <p className="text-lg text-center max-w-4xl mx-auto">
-            Our approach combines established career coaching methodologies with innovative AI technologies, ensuring customized, accurate, and continually improving career guidance.
-          </p>
-        </div>
       </div>
     </section>
   );

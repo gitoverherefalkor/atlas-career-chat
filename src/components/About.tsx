@@ -31,6 +31,13 @@ const About = () => {
                 Atlas Assessment was created to provide clear, empathetic, and actionable career guidance. It's designed not just to deliver insights, but to initiate meaningful career exploration tailored to the evolving realities of your personal and professional life.
               </p>
             </div>
+
+            <div className="mt-10 bg-gray-50 rounded-xl p-8 border border-gray-100">
+              <h3 className="text-2xl font-semibold mb-6 text-center">Our Approach</h3>
+              <p className="text-lg text-center max-w-4xl mx-auto">
+                Our approach combines established career coaching methodologies with innovative AI technologies, ensuring customized, accurate, and continually improving career guidance.
+              </p>
+            </div>
           </div>
         </div>
       </div>
