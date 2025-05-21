@@ -42,8 +42,8 @@ const WhyAtlas = () => {
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Beyond Traditional Career Assessments</h2>
           <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto mb-6"></div>
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-            Traditional career assessments often leave you with overwhelming, static reports. Atlas Assessment offers a smarter, more engaging solution:
+          <p className="text-lg bg-gradient-to-br from-atlas-blue to-atlas-teal bg-clip-text text-transparent font-medium max-w-4xl mx-auto mb-8">
+            Traditional career assessments often leave you with overwhelming, static reports. Atlas Assessment offers a smarter, more engaging solution. It combines state-of-the-art AI analysis and expert-designed surveys, guided by professional career coaches, to uncover your top 3 best-suited jobs, 7 strong alternative career options, and 3 surprising paths you might not have considered. As a bonus, you'll also receive a practical evaluation on whether there is a realistic pathway to pivot toward your dream job(s).
           </p>
         </div>
 

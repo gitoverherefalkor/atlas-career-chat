@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -22,9 +21,6 @@ const Hero = () => {
             </p>
             <p className="text-lg text-gray-700 mb-8">
               That's why we built Atlas Assessment, to make professional career guidance more accessible, insightful, and affordable. Instead of spending hundreds on a career coach, you can now get a deeply personalized evaluation for a fraction of the cost, tailored to who you are today and where you want to go next.
-            </p>
-            <p className="text-lg text-gray-700 mb-8">
-              Atlas Assessment combines state-of-the-art AI analysis and expert-designed surveys, guided by professional career coaches, to uncover your top 3 best-suited jobs, 7 strong alternative career options, and 3 surprising paths you might not have considered. As a bonus, you'll also receive a practical evaluation on whether there is a realistic pathway to pivot toward your dream job(s).
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button asChild className="btn-primary text-lg flex items-center gap-2">
