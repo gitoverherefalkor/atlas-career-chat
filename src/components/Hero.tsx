@@ -1,28 +1,39 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 const Hero = () => {
-  return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
+  return (
+    <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
-        <div className="flex flex-col lg:flex-row items-center">
-          <div className="lg:w-1/2 lg:pr-12 mb-10 lg:mb-0">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-              Stop Guessing. <br />
-              <span className="bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent">
-                Start Thriving.
-              </span>
-            </h1>
-            <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-gray-800">
-              Discover Your Ideal Career Path
-            </h2>
-            <p className="text-lg text-gray-700 mb-8">
-              Many of us chose our initial career direction as teenagers, deciding on business, sciences, arts, or other areas long before fully knowing ourselves. Life circumstances change. Family, new interests, evolving values. And the uncertainty of today's professional world, marked by AI-driven automation and constant upskilling pressures, can add further complexity. It's completely natural to question your current path and explore new possibilities better aligned with who you are now.
-            </p>
-            <p className="text-lg text-gray-700 mb-8">
-              That's why we built Atlas Assessment, to make professional career guidance more accessible, insightful, and affordable. Instead of spending hundreds on a career coach, you can now get a deeply personalized evaluation for a fraction of the cost, tailored to who you are today and where you want to go next.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+        <div className="grid lg:grid-cols-2 gap-10">
+          {/* Left column: Main content and image */}
+          <div className="flex flex-col">
+            <div className="mb-8">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Stop Guessing. <br />
+                <span className="bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent">
+                  Start Thriving.
+                </span>
+              </h1>
+              <h2 className="text-2xl md:text-3xl font-semibold mb-6 text-gray-800">
+                Discover Your Ideal Career Path
+              </h2>
+            </div>
+            
+            {/* Crossroads Image */}
+            <div className="relative rounded-lg overflow-hidden mb-8">
+              <img 
+                src="/lovable-uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" 
+                alt="Woman at career crossroads" 
+                className="w-full object-cover rounded-lg shadow-md"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-atlas-navy/40 to-transparent"></div>
+            </div>
+            
+            {/* CTA buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-auto">
               <Button asChild className="btn-primary text-lg flex items-center gap-2">
                 <a href="#pricing">
                   Get Your Atlas Assessment Now
@@ -37,7 +48,17 @@ const Hero = () => {
               Currently in Beta. Get full access at an introductory price.
             </p>
           </div>
-          <div className="lg:w-1/2">
+          
+          {/* Right column: Chat example */}
+          <div>
+            <p className="text-lg text-gray-700 mb-6">
+              Many of us chose our career path as teenagers, long before truly knowing ourselves. As life evolves with new interests and values, it's natural to question your current direction.
+            </p>
+            <p className="text-lg text-gray-700 mb-8">
+              Atlas Assessment makes professional career guidance more accessible and affordable, giving you personalized insights tailored to who you are today.
+            </p>
+            
+            {/* Chat example */}
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-navy/20 rounded-lg transform rotate-3"></div>
               <div className="relative bg-white rounded-lg shadow-xl overflow-hidden border border-gray-100">
@@ -75,7 +96,6 @@ const Hero = () => {
                     <div className="bg-primary/10 rounded-lg p-4 max-w-[80%] ml-auto">
                       <p className="text-gray-800">Sounds good. Let's go!</p>
                     </div>
-                    
                   </div>
                 </div>
               </div>
@@ -83,7 +103,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
 
 export default Hero;
