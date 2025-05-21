@@ -53,8 +53,8 @@ const Examples = () => {
                           </div>
                           <span><strong className="text-blue-700">Step back to analyze</strong> before contributing.</span>
                         </div>
-                        <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                          <div className="h-5 w-5 border border-primary bg-primary/10 rounded-full mr-3 flex items-center justify-center text-xs font-medium">
+                        <div className="flex items-center p-3 border border-blue-300 bg-blue-50 rounded-lg hover:bg-blue-100 cursor-pointer transition-colors">
+                          <div className="h-5 w-5 border border-blue-500 bg-blue-100 rounded-full mr-3 flex items-center justify-center text-xs font-medium text-blue-700">
                             C
                           </div>
                           <span><strong className="text-blue-700">Offer ideas</strong> and actively engage in discussions.</span>
