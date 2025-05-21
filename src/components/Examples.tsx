@@ -1,6 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 const Examples = () => {
   return <section id="examples" className="section bg-gray-50">
       <div className="container-atlas">
@@ -37,25 +39,37 @@ const Examples = () => {
                   
                   <div className="space-y-8">
                     <div>
-                      <h4 className="text-lg font-medium mb-4">In a team, you tend to</h4>
+                      <h4 className="text-lg font-medium mb-4">In a team, you tend to:*</h4>
                       <div className="space-y-3">
                         <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                          <div className="h-5 w-5 border border-gray-400 rounded-full mr-4"></div>
-                          <span className="font-normal">Take charge and guide the direction of the group.</span>
-                        </div>
-                        <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                          <div className="h-5 w-5 border border-gray-400 rounded-full mr-4"></div>
-                          <span>Step back to analyze before contributing.</span>
-                        </div>
-                        <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                          <div className="h-5 w-5 border border-primary bg-primary/10 rounded-full mr-4 flex items-center justify-center">
-                            <div className="h-2.5 w-2.5 bg-primary rounded-full"></div>
+                          <div className="h-5 w-5 border border-gray-400 rounded-full mr-3 flex items-center justify-center text-xs font-medium">
+                            A
                           </div>
-                          <span>Offer ideas and actively engage in discussions.</span>
+                          <span><strong className="text-blue-700">Take charge</strong> and guide the direction of the group.</span>
                         </div>
                         <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
-                          <div className="h-5 w-5 border border-gray-400 rounded-full mr-4"></div>
-                          <span>Ensure execution by keeping tasks organized and on track.</span>
+                          <div className="h-5 w-5 border border-gray-400 rounded-full mr-3 flex items-center justify-center text-xs font-medium">
+                            B
+                          </div>
+                          <span><strong className="text-blue-700">Step back to analyze</strong> before contributing.</span>
+                        </div>
+                        <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                          <div className="h-5 w-5 border border-primary bg-primary/10 rounded-full mr-3 flex items-center justify-center text-xs font-medium">
+                            C
+                          </div>
+                          <span><strong className="text-blue-700">Offer ideas</strong> and actively engage in discussions.</span>
+                        </div>
+                        <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                          <div className="h-5 w-5 border border-gray-400 rounded-full mr-3 flex items-center justify-center text-xs font-medium">
+                            D
+                          </div>
+                          <span><strong className="text-blue-700">Ensure execution</strong> by keeping tasks organized and on track.</span>
+                        </div>
+                        <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
+                          <div className="h-5 w-5 border border-gray-400 rounded-full mr-3 flex items-center justify-center text-xs font-medium">
+                            E
+                          </div>
+                          <span><strong className="text-blue-700">Work independently</strong> but provide support when needed.</span>
                         </div>
                       </div>
                     </div>
