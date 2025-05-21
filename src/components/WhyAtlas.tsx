@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageSquare, Target, Award, DollarSign, Zap } from 'lucide-react';
+import { MessageSquare, Target, Award, DollarSign, Zap, Briefcase } from 'lucide-react';
 
 const WhyAtlas = () => {
   const features = [
@@ -22,12 +22,17 @@ const WhyAtlas = () => {
     {
       icon: <DollarSign className="h-6 w-6" color="#EA7923" />,
       title: "Affordable and Efficient",
-      description: "Leveraging technology for an accessible premium service at an introductory beta rate - a fraction of traditional career coaching costs."
+      description: "Leveraging technology to provide premium career guidance at a fraction of traditional coaching costs, with immediate insights available anytime."
     },
     {
       icon: <Zap className="h-6 w-6" color="#EA7923" />,
       title: "Modern Approach",
       description: "Addresses today's career challenges, focusing on adaptability, continuous learning, and finding fulfilling work in an ever-changing landscape."
+    },
+    {
+      icon: <Briefcase className="h-6 w-6" color="#EA7923" />,
+      title: "Specific and personalized career matches",
+      description: "Get clear, data-backed recommendations for real-world roles that align with your values, skills, preferences, and future goals—plus a realistic assessment of how well your dream job fits."
     }
   ];
 
