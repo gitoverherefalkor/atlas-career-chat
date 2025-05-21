@@ -32,7 +32,7 @@ const WhyAtlas = () => {
     {
       icon: <Briefcase className="h-6 w-6" color="#EA7923" />,
       title: "Specific and personalized career matches",
-      description: "Get clear, data-backed recommendations for real-world roles that align with your values, skills, preferences, and future goals—plus a realistic assessment of how well your dream job fits."
+      description: "Get clear, data-backed recommendations for real-world roles that align with your values, skills, preferences, and future goals."
     }
   ];
 
