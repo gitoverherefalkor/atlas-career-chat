@@ -4,9 +4,21 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Star } from 'lucide-react';
 import { CheckoutForm } from './CheckoutForm';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
 const Pricing = () => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const features = ["Complete assessment questionnaire", "Interactive AI chat report", "Personalized career insights", "Ask unlimited follow-up questions", "Request summary of key insights", "Beta program early access"];
+  const features = [
+    "Analyses adjusted to your primary goals",
+    "Top 3 suggestions + 7 runner-ups + 3 out-of-the-box careers",
+    "Tailored dynamic AI coaching chat",
+    "Ask follows up Q's and role deep dives",
+    "Clear, actionable insights and recommendations",
+    "Localized role nuances & salary ranges",
+    "Strengths & growth strategies",
+    "AI impact rating on suggested roles",
+    "Bonus: Realistic dream job pivot assessment"
+  ];
+
   return <section id="pricing" className="section bg-gray-50">
       <div className="container-atlas">
         <div className="text-center mb-16">
@@ -66,4 +78,5 @@ const Pricing = () => {
       </div>
     </section>;
 };
+
 export default Pricing;
