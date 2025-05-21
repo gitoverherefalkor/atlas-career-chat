@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -51,7 +52,7 @@ const Hero = () => {
                     <div className="ml-2 text-sm text-gray-500">Atlas Assessment Chat</div>
                   </div>
                   <div className="space-y-4">
-                    <div className="bg-gray-100 rounded-lg p-4 max-w-[80%]">
+                    <div className="bg-gray-100 rounded-lg p-4 max-w-[95%]">
                       <p className="text-gray-800 text-base font-normal">
                         Hi, and great to have you here!<br /><br />
                         
