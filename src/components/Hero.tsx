@@ -32,34 +32,21 @@ const Hero = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-atlas-navy/40 to-transparent"></div>
             </div>
             
-            {/* CTA buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 mt-auto">
-              <Button asChild className="btn-primary text-lg flex items-center gap-2">
-                <a href="#pricing">
-                  Get Your Atlas Assessment Now
-                  <ArrowRight className="h-5 w-5" />
-                </a>
-              </Button>
-              <a href="#how-it-works" className="btn-outline text-lg flex items-center justify-center">
-                Learn More
-              </a>
+            {/* Paragraphs - Moved below the image */}
+            <div className="mb-6">
+              <p className="text-lg text-gray-700 mb-6">
+                Many of us chose our career path as teenagers, long before truly knowing ourselves. As life evolves with new interests and values, it's natural to question your current direction.
+              </p>
+              <p className="text-lg text-gray-700">
+                Atlas Assessment makes professional career guidance more accessible and affordable, giving you personalized insights tailored to who you are today.
+              </p>
             </div>
-            <p className="text-sm text-gray-500 mt-4">
-              Currently in Beta. Get full access at an introductory price.
-            </p>
           </div>
           
           {/* Right column: Chat example */}
-          <div>
-            <p className="text-lg text-gray-700 mb-6">
-              Many of us chose our career path as teenagers, long before truly knowing ourselves. As life evolves with new interests and values, it's natural to question your current direction.
-            </p>
-            <p className="text-lg text-gray-700 mb-8">
-              Atlas Assessment makes professional career guidance more accessible and affordable, giving you personalized insights tailored to who you are today.
-            </p>
-            
+          <div className="flex flex-col">
             {/* Chat example */}
-            <div className="relative">
+            <div className="relative mb-8">
               <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-navy/20 rounded-lg transform rotate-3"></div>
               <div className="relative bg-white rounded-lg shadow-xl overflow-hidden border border-gray-100">
                 <div className="p-6">
@@ -100,6 +87,22 @@ const Hero = () => {
                 </div>
               </div>
             </div>
+            
+            {/* CTA buttons - Moved below the chat example */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button asChild className="btn-primary text-lg flex items-center gap-2">
+                <a href="#pricing">
+                  Get Your Atlas Assessment Now
+                  <ArrowRight className="h-5 w-5" />
+                </a>
+              </Button>
+              <a href="#how-it-works" className="btn-outline text-lg flex items-center justify-center">
+                Learn More
+              </a>
+            </div>
+            <p className="text-sm text-gray-500 mt-4">
+              Currently in Beta. Get full access at an introductory price.
+            </p>
           </div>
         </div>
       </div>
