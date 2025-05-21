@@ -45,7 +45,7 @@ const Footer = () => {
             <h4 className="font-semibold text-white mb-4">Contact</h4>
             <ul className="space-y-2">
               <li>
-                <a href="mailto:info@atlasassessment.com" className="hover:text-white transition-colors">info@atlasassessment.com</a>
+                <a href="mailto:info@atlas-assessments.com" className="hover:text-white transition-colors">info@atlas-assessments.com</a>
               </li>
               <li>
                 <p>Currently in Beta</p>
