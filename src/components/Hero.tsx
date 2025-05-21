@@ -51,8 +51,8 @@ const Hero = () => {
                     <div className="ml-2 text-sm text-gray-500">Atlas Assessment Chat</div>
                   </div>
                   <div className="space-y-4">
-                    <div className="bg-gray-100 rounded-lg p-4 max-w-[80%]">
-                      <p className="text-gray-800 text-base font-normal">
+                    <div className="bg-gray-100 rounded-lg p-4 max-w-[80%] px-[2px]">
+                      <p className="text-gray-800 text-base font-normal px-[12px]">
                         Hi, and great to have you here!<br /><br />
                         
                         <strong>Welcome to your career insights session.</strong> My goal is to walk you through your personality profile and career recommendations in a way that's clear, engaging, and actionable.<br /><br />
@@ -93,7 +93,7 @@ const Hero = () => {
               <a href="#how-it-works" className="btn-outline text-lg flex items-center justify-center mb-4">
                 Learn More
               </a>
-              <p className="text-sm text-gray-500">
+              <p className="text-slate-50 text-base text-center">
                 Currently in Beta. Get full access at an introductory price.
               </p>
             </div>
