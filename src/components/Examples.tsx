@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 const Examples = () => {
-  return (
-    <section id="examples" className="section bg-gray-50">
+  return <section id="examples" className="section bg-gray-50">
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">See Atlas Assessment in Action</h2>
@@ -32,31 +29,33 @@ const Examples = () => {
                   <div className="mb-6">
                     <h3 className="text-xl font-semibold mb-1">Question 12 of 40</h3>
                     <div className="w-full bg-gray-200 h-2 rounded-full">
-                      <div className="bg-primary h-2 rounded-full" style={{ width: '30%' }}></div>
+                      <div className="bg-primary h-2 rounded-full" style={{
+                      width: '30%'
+                    }}></div>
                     </div>
                   </div>
                   
                   <div className="space-y-8">
                     <div>
-                      <h4 className="text-lg font-medium mb-4">When faced with a complex problem, I prefer to:</h4>
+                      <h4 className="text-lg font-medium mb-4">In a team, you tend to</h4>
                       <div className="space-y-3">
                         <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                           <div className="h-5 w-5 border border-gray-400 rounded-full mr-4"></div>
-                          <span>Analyze it methodically, breaking it down into smaller parts</span>
+                          <span className="font-normal">Take charge and guide the direction of the group.</span>
                         </div>
                         <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                           <div className="h-5 w-5 border border-gray-400 rounded-full mr-4"></div>
-                          <span>Look for creative solutions by thinking outside the box</span>
+                          <span>Step back to analyze before contributing.</span>
                         </div>
                         <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                           <div className="h-5 w-5 border border-primary bg-primary/10 rounded-full mr-4 flex items-center justify-center">
                             <div className="h-2.5 w-2.5 bg-primary rounded-full"></div>
                           </div>
-                          <span>Discuss it with others to get different perspectives</span>
+                          <span>Offer ideas and actively engage in discussions.</span>
                         </div>
                         <div className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors">
                           <div className="h-5 w-5 border border-gray-400 rounded-full mr-4"></div>
-                          <span>Trust my intuition and experience to guide me</span>
+                          <span>Ensure execution by keeping tasks organized and on track.</span>
                         </div>
                       </div>
                     </div>
@@ -162,8 +161,6 @@ const Examples = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Examples;
