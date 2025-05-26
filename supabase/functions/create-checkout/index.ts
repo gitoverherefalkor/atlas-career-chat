@@ -132,12 +132,6 @@ serve(async (req) => {
         email,
         country,
       },
-      // Fix the iDEAL configuration - use 'none' instead of 'off_session'
-      payment_method_options: {
-        ideal: {
-          setup_future_usage: 'none',
-        },
-      },
       locale: country === "Netherlands" ? "nl" : country === "Germany" ? "de" : "auto",
       billing_address_collection: 'required',
     });
