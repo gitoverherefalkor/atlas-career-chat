@@ -36,6 +36,35 @@ export type Database = {
         }
         Relationships: []
       }
+      answers: {
+        Row: {
+          id: string
+          payload: Json
+          submitted_at: string | null
+          survey_id: string | null
+        }
+        Insert: {
+          id?: string
+          payload: Json
+          submitted_at?: string | null
+          survey_id?: string | null
+        }
+        Update: {
+          id?: string
+          payload?: Json
+          submitted_at?: string | null
+          survey_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "answers_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       purchases: {
         Row: {
           access_code_id: string | null
@@ -76,6 +105,103 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      questions: {
+        Row: {
+          allow_multiple: boolean | null
+          allow_other: boolean | null
+          config: Json | null
+          created_at: string | null
+          id: string
+          label: string
+          order_num: number | null
+          required: boolean | null
+          section_id: string | null
+          type: string
+        }
+        Insert: {
+          allow_multiple?: boolean | null
+          allow_other?: boolean | null
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          label: string
+          order_num?: number | null
+          required?: boolean | null
+          section_id?: string | null
+          type: string
+        }
+        Update: {
+          allow_multiple?: boolean | null
+          allow_other?: boolean | null
+          config?: Json | null
+          created_at?: string | null
+          id?: string
+          label?: string
+          order_num?: number | null
+          required?: boolean | null
+          section_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sections: {
+        Row: {
+          created_at: string | null
+          id: string
+          order_num: number | null
+          survey_id: string | null
+          title: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          order_num?: number | null
+          survey_id?: string | null
+          title?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          order_num?: number | null
+          survey_id?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sections_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveys: {
+        Row: {
+          created_at: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: []
       }
     }
     Views: {
