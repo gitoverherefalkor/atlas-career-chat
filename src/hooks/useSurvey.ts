@@ -59,14 +59,30 @@ export const useSurvey = (surveyId: string) => {
 
       if (questionsError) throw questionsError;
 
-      // Group questions by section
-      const sectionsWithQuestions = sections.map(section => ({
-        ...section,
-        questions: questions.filter(q => q.section_id === section.id)
+      // Group questions by section and transform to match our interfaces
+      const sectionsWithQuestions: Section[] = sections.map(section => ({
+        id: section.id,
+        title: section.title || '',
+        order_num: section.order_num || 0,
+        questions: questions
+          .filter(q => q.section_id === section.id)
+          .map(q => ({
+            id: q.id,
+            type: q.type,
+            label: q.label,
+            required: q.required || false,
+            allow_multiple: q.allow_multiple || false,
+            allow_other: q.allow_other || false,
+            order_num: q.order_num || 0,
+            config: typeof q.config === 'object' && q.config !== null 
+              ? q.config as { choices?: string[]; min?: number; max?: number; }
+              : {}
+          }))
       }));
 
       return {
-        ...survey,
+        id: survey.id,
+        title: survey.title,
         sections: sectionsWithQuestions
       };
     }
