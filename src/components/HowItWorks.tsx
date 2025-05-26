@@ -32,21 +32,76 @@ const HowItWorks = () => {
           <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-navy mx-auto"></div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {steps.map((step, index) => (
-            <div key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-1">
-              <div className="border border-gray-100 rounded-lg p-6">
-                <div className={`${step.color} rounded-full w-16 h-16 flex items-center justify-center mb-6 mx-auto`}>
-                  {step.icon}
+        <div className="grid lg:grid-cols-2 gap-12 mb-16">
+          {/* Left column: 3 Steps */}
+          <div className="space-y-8">
+            {steps.map((step, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-1">
+                <div className="border border-gray-100 rounded-lg p-6">
+                  <div className="flex items-start gap-4">
+                    <div className={`${step.color} rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0`}>
+                      {step.icon}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
+                      <p className="text-gray-600">{step.description}</p>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold mb-3 text-center">{step.title}</h3>
-                <p className="text-gray-600 text-center">{step.description}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Right column: Chat Interface */}
+          <div className="flex items-center justify-center">
+            <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-200">
+                <div className="flex gap-1">
+                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                </div>
+                <span className="text-sm font-medium text-gray-600 ml-2">Atlas Assessment Chat</span>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="bg-gray-100 rounded-lg p-3">
+                  <p className="text-sm text-gray-800 font-medium mb-2">Hi, and great to have you here!</p>
+                  <p className="text-sm text-gray-700 mb-3">
+                    <span className="font-medium">Welcome to your career insights session.</span> My goal is to walk you through your personality profile and career recommendations in a way that's clear, engaging, and actionable.
+                  </p>
+                  <p className="text-sm text-gray-700 mb-3">Here's how this will work:</p>
+                  <ul className="text-sm text-gray-700 space-y-1 mb-3">
+                    <li>- We'll start with a quick Executive Summary.</li>
+                    <li>- Then do a deeper dive into your <span className="font-medium">Personality Insights</span> - exploring what drives you, how you work best, and key takeaways that shape your career direction.</li>
+                  </ul>
+                  <p className="text-sm text-gray-700 mb-3">
+                    Then, we'll move on to your <span className="font-medium">Career matches</span>:
+                  </p>
+                  <ul className="text-sm text-gray-700 space-y-1 mb-3">
+                    <li>- Top 3 best fits</li>
+                    <li>- Suitable Runner-up suggestions</li>
+                    <li>- Some Out-of-the-box careers you might not have considered</li>
+                    <li>- And an assessment on your Dream job(s) you provided</li>
+                  </ul>
+                  <p className="text-sm text-gray-700 mb-3">
+                    No need to take notes - you'll receive a full report with all the details at the end of this session!
+                  </p>
+                  <p className="text-sm text-gray-700 mb-3">
+                    <span className="font-medium">Feel free to ask anything along the way</span> - whether it's clarification, exploring a career further, or sharing feedback on your results.
+                  </p>
+                  <p className="text-sm text-gray-700">Ok, let's get to it. Let me know when you're ready!</p>
+                </div>
+                
+                <div className="bg-atlas-blue text-white rounded-lg p-3 ml-8">
+                  <p className="text-sm">Sounds good. Let's go!</p>
+                </div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
 
-        <div className="mt-16 bg-gradient-to-r from-atlas-blue to-atlas-navy rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-gradient-to-r from-atlas-blue to-atlas-navy rounded-xl shadow-lg overflow-hidden">
           <div className="p-8 md:p-12 text-white">
             <div className="md:max-w-2xl mx-auto text-center">
               <h3 className="text-2xl md:text-3xl font-bold mb-4">Start Your Journey Today</h3>
