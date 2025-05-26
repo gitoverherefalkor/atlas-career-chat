@@ -1,12 +1,9 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ClipboardCheck, MessageCircle, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
 const Hero = () => {
-  return (
-    <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
+  return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
         {/* Headings at the top */}
         <div className="mb-10">
@@ -15,7 +12,7 @@ const Hero = () => {
               Stop Guessing. Start Thriving.
             </span>
           </h1>
-          <h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center md:text-4xl">
+          <h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center py-[40px] md:text-4xl">
             Discover your ideal career path
           </h2>
         </div>
@@ -35,7 +32,7 @@ const Hero = () => {
             {/* Introductory text */}
             <div className="mb-8">
               <p className="text-lg text-gray-700 mb-6">
-                <span className="font-bold">Many of us were influenced early on by school subjects, expectations, or limited options, leading to choices that shaped our studies, our first job, and eventually our career path.</span> As life unfolds and your interests, values, and priorities change, it's completely natural to question whether your current direction still fits.
+                <span className="font-bold text-xl">Many of us were influenced early on by school subjects, expectations, or limited options, leading to choices that shaped our studies, our first job, and eventually our career path.</span> As life unfolds and your interests, values, and priorities change, it's completely natural to question whether your current direction still fits.
               </p>
               <p className="text-lg text-gray-700 mb-6">
                 Atlas Assessment makes professional career guidance more accessible and affordable, offering personalized insights based on who you are today.
@@ -44,7 +41,7 @@ const Hero = () => {
 
             {/* Your Path to Clarity section */}
             <div className="mb-8">
-              <h3 className="text-2xl font-bold mb-6 text-gray-800">Your Path to Clarity</h3>
+              
               
               <div className="space-y-4">
                 <Card className="border-l-4 border-l-atlas-blue">
@@ -52,8 +49,8 @@ const Hero = () => {
                     <div className="flex items-start gap-3">
                       <ClipboardCheck className="h-6 w-6 text-atlas-blue mt-1 flex-shrink-0" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-1">Complete Assessment</h4>
-                        <p className="text-gray-600 text-sm">Take our comprehensive personality and career assessment</p>
+                        <h4 className="font-semibold text-gray-900 mb-1 text-lg">Complete Assessment</h4>
+                        <p className="text-gray-600 text-base">Take our comprehensive personality and career assessment</p>
                       </div>
                     </div>
                   </CardContent>
@@ -64,8 +61,8 @@ const Hero = () => {
                     <div className="flex items-start gap-3">
                       <MessageCircle className="h-6 w-6 text-atlas-blue mt-1 flex-shrink-0" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-1">AI-Powered Insights</h4>
-                        <p className="text-gray-600 text-sm">Receive personalized career recommendations through AI chat</p>
+                        <h4 className="font-semibold text-gray-900 mb-1 text-lg">AI-Powered Insights</h4>
+                        <p className="text-gray-600 text-base">Receive personalized career recommendations through AI chat</p>
                       </div>
                     </div>
                   </CardContent>
@@ -76,8 +73,8 @@ const Hero = () => {
                     <div className="flex items-start gap-3">
                       <Target className="h-6 w-6 text-atlas-blue mt-1 flex-shrink-0" />
                       <div>
-                        <h4 className="font-semibold text-gray-900 mb-1">Take Action</h4>
-                        <p className="text-gray-600 text-sm">Get actionable steps for your career transition</p>
+                        <h4 className="font-semibold text-gray-900 mb-1 text-lg">Take Action</h4>
+                        <p className="text-gray-600 text-base">Get actionable steps for your career transition</p>
                       </div>
                     </div>
                   </CardContent>
@@ -103,8 +100,6 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default Hero;
