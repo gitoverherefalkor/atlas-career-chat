@@ -53,10 +53,10 @@ serve(async (req) => {
 
     console.log("Creating checkout session for:", email, "Country:", country);
     
-    // Define payment methods based on country with proper iDEAL configuration
+    // Define payment methods based on country
     const paymentMethods = ["card"];
     
-    // Add iDEAL for Netherlands - this should show bank selection, not name input
+    // Add iDEAL for Netherlands
     if (country === "Netherlands") {
       paymentMethods.push("ideal");
     }
@@ -132,10 +132,10 @@ serve(async (req) => {
         email,
         country,
       },
-      // Configure iDEAL properly to show bank selection
+      // Fix the iDEAL configuration - use 'none' instead of 'off_session'
       payment_method_options: {
         ideal: {
-          setup_future_usage: 'off_session',
+          setup_future_usage: 'none',
         },
       },
       locale: country === "Netherlands" ? "nl" : country === "Germany" ? "de" : "auto",
