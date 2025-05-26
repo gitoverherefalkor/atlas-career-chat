@@ -86,20 +86,20 @@ const Hero = () => {
             </div>
             
             {/* CTA buttons */}
-            <div className="flex flex-col">
-              <Button asChild className="btn-primary text-lg flex items-center gap-2 mb-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button asChild className="btn-primary text-lg flex items-center gap-2">
                 <a href="#pricing">
                   Get Your Atlas Assessment Now
                   <ArrowRight className="h-5 w-5" />
                 </a>
               </Button>
-              <a href="#how-it-works" className="btn-outline text-lg flex items-center justify-center mb-4">
+              <a href="#how-it-works" className="btn-outline text-lg flex items-center justify-center">
                 Learn More
               </a>
-              <p className="text-slate-50 text-base text-center">
-                Currently in Beta. Get full access at an introductory price.
-              </p>
             </div>
+            <p className="text-slate-50 text-base text-center mt-4">
+              Currently in Beta. Get full access at an introductory price.
+            </p>
           </div>
         </div>
       </div>
