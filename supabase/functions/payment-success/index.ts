@@ -28,8 +28,9 @@ function generateAccessCode(): string {
 // Function to send the access code email
 async function sendAccessCodeEmail(email: string, firstName: string, lastName: string, accessCode: string) {
   try {
+    console.log("Attempting to send email to:", email);
     const { data, error } = await resend.emails.send({
-      from: "Atlas Assessment <no-reply@atlasassessment.com>",
+      from: "Atlas Assessment <no-reply@atlas-assessments.com>",
       to: [email],
       subject: "Your Atlas Assessment Access Code",
       html: `
@@ -46,7 +47,7 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
             </div>
             <p>To use your access code:</p>
             <ol>
-              <li>Visit <a href="https://atlasassessment.com" style="color: #4361ee; text-decoration: none;">atlasassessment.com</a></li>
+              <li>Visit <a href="https://atlas-assessments.com" style="color: #4361ee; text-decoration: none;">atlas-assessments.com</a></li>
               <li>Click "Start Assessment"</li>
               <li>Enter your access code when prompted</li>
             </ol>
@@ -64,6 +65,7 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
       console.error("Email sending error:", error);
       return false;
     }
+    console.log("Email sent successfully:", data);
     return true;
   } catch (error) {
     console.error("Email sending error:", error);
@@ -91,6 +93,7 @@ serve(async (req) => {
     
     // Retrieve session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
+    console.log("Session status:", session.payment_status);
 
     if (session.payment_status !== "paid") {
       return new Response(
@@ -112,6 +115,8 @@ serve(async (req) => {
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
+    console.log("Creating access code:", accessCode);
+
     // Store the access code in the database
     const { data: codeData, error: codeError } = await supabaseAdmin
       .from("access_codes")
@@ -130,11 +135,13 @@ serve(async (req) => {
       );
     }
 
-    // Extract customer information
+    // Extract customer information from session metadata
     const customerEmail = session.customer_details?.email;
     const firstName = session.metadata?.firstName || "Customer";
     const lastName = session.metadata?.lastName || "";
     const country = session.metadata?.country || "Unknown";
+
+    console.log("Customer details:", { customerEmail, firstName, lastName, country });
 
     // Store the purchase details
     const { error: purchaseError } = await supabaseAdmin
@@ -155,6 +162,8 @@ serve(async (req) => {
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    console.log("Purchase recorded successfully");
 
     // Send the access code via email
     if (customerEmail) {

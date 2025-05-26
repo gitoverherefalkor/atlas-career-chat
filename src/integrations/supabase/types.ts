@@ -44,6 +44,7 @@ export type Database = {
           email: string
           first_name: string
           id: string
+          last_name: string
           stripe_session_id: string | null
         }
         Insert: {
@@ -53,6 +54,7 @@ export type Database = {
           email: string
           first_name: string
           id?: string
+          last_name: string
           stripe_session_id?: string | null
         }
         Update: {
@@ -62,6 +64,7 @@ export type Database = {
           email?: string
           first_name?: string
           id?: string
+          last_name?: string
           stripe_session_id?: string | null
         }
         Relationships: [

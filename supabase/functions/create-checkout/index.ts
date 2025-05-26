@@ -27,14 +27,12 @@ serve(async (req) => {
 
     // Verify the Stripe account is active before proceeding
     try {
-      // A simple call to check if the Stripe API key is valid and account is active
       await stripe.balance.retrieve();
       console.log("Stripe account validated successfully");
     } catch (stripeError) {
       console.error("Stripe account error:", stripeError);
       const errorMsg = stripeError instanceof Error ? stripeError.message : "Stripe account error";
       
-      // Create a more user-friendly message
       if (errorMsg.includes("invalid api key") || errorMsg.includes("Invalid API Key")) {
         throw new Error("Payment system is not properly configured: Invalid API key.");
       } else if (errorMsg.includes("account") && (errorMsg.includes("inactive") || errorMsg.includes("not activated"))) {
@@ -53,13 +51,18 @@ serve(async (req) => {
       );
     }
 
-    console.log("Creating checkout session for:", email);
+    console.log("Creating checkout session for:", email, "Country:", country);
     
-    // Define payment methods based on country
+    // Define payment methods based on country with proper iDEAL configuration
     const paymentMethods = ["card"];
     
+    // Add iDEAL for Netherlands - this should show bank selection, not name input
+    if (country === "Netherlands") {
+      paymentMethods.push("ideal");
+    }
+    
     // Add European payment methods
-    if (["Netherlands", "Belgium", "Germany"].includes(country)) {
+    if (["Germany", "Belgium"].includes(country)) {
       paymentMethods.push("ideal");
     }
     
@@ -80,27 +83,28 @@ serve(async (req) => {
       paymentMethods.push("sepa_debit");
     }
     
-    // Add Bancontact for Belgium
+    // Add other country-specific payment methods
     if (country === "Belgium") {
       paymentMethods.push("bancontact");
     }
     
-    // Add EPS for Austria
     if (country === "Austria") {
       paymentMethods.push("eps");
     }
     
-    // Add Giropay for Germany
     if (country === "Germany") {
       paymentMethods.push("giropay");
     }
     
-    // Add P24 for Poland
     if (country === "Poland") {
       paymentMethods.push("p24");
     }
     
     console.log("Available payment methods:", paymentMethods);
+    
+    // Get the origin from request headers or use the live domain
+    const origin = req.headers.get("origin") || "https://atlas-assessments.com";
+    console.log("Using origin for URLs:", origin);
     
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -113,24 +117,32 @@ serve(async (req) => {
               name: "Atlas Assessment",
               description: "Complete assessment with personalized career insights",
             },
-            unit_amount: 4900, // €49.00
+            unit_amount: 3900, // €39.00 (beta price)
           },
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get("origin")}/#pricing`,
+      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/#pricing`,
       customer_email: email,
       metadata: {
         firstName,
         lastName,
+        email,
         country,
       },
+      // Configure iDEAL properly to show bank selection
+      payment_method_options: {
+        ideal: {
+          setup_future_usage: 'off_session',
+        },
+      },
       locale: country === "Netherlands" ? "nl" : country === "Germany" ? "de" : "auto",
+      billing_address_collection: 'required',
     });
 
-    console.log("Checkout session created:", session.id);
+    console.log("Checkout session created:", session.id, "URL:", session.url);
     
     return new Response(
       JSON.stringify({ 
