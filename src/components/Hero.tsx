@@ -1,9 +1,12 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ClipboardCheck, MessageCircle, Target } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+
 const Hero = () => {
-  return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
+  return (
+    <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
         {/* Headings at the top */}
         <div className="mb-10">
@@ -13,77 +16,76 @@ const Hero = () => {
             </span>
           </h1>
           <h2 className="text-2xl font-semibold mb-6 text-gray-800 text-center md:text-4xl">
-            Discover Your Ideal Career Path
+            Discover your ideal career path
           </h2>
         </div>
         
-        {/* Two columns with images aligned at top */}
+        {/* Two columns layout */}
         <div className="grid lg:grid-cols-2 gap-10">
-          {/* Left column: Image */}
+          {/* Left column: Woman image */}
           <div className="flex flex-col">
-            {/* Woman image */}
-            <div className="relative rounded-lg overflow-hidden mb-8">
+            <div className="relative rounded-lg overflow-hidden">
               <img src="/lovable-uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" alt="Woman at career crossroads" className="w-full object-cover rounded-lg shadow-md" />
               <div className="absolute inset-0 bg-gradient-to-t from-atlas-navy/40 to-transparent"></div>
             </div>
-            
-            {/* Paragraphs under image */}
-            <div>
+          </div>
+          
+          {/* Right column: Text and Cards */}
+          <div className="flex flex-col">
+            {/* Introductory text */}
+            <div className="mb-8">
               <p className="text-lg text-gray-700 mb-6">
                 <span className="font-bold">Many of us were influenced early on by school subjects, expectations, or limited options, leading to choices that shaped our studies, our first job, and eventually our career path.</span> As life unfolds and your interests, values, and priorities change, it's completely natural to question whether your current direction still fits.
               </p>
-              <p className="text-lg text-gray-700">
+              <p className="text-lg text-gray-700 mb-6">
                 Atlas Assessment makes professional career guidance more accessible and affordable, offering personalized insights based on who you are today.
               </p>
             </div>
-          </div>
-          
-          {/* Right column: Chat example and CTA */}
-          <div className="flex flex-col">
-            {/* Chat example aligned with woman image */}
-            <div className="relative mb-8">
-              <div className="absolute inset-0 bg-gradient-to-r from-atlas-blue/20 to-atlas-navy/20 rounded-lg transform rotate-3"></div>
-              <div className="relative bg-white rounded-lg shadow-xl overflow-hidden border border-gray-100">
-                <div className="p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="h-3 w-3 rounded-full bg-red-500"></div>
-                    <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-                    <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                    <div className="ml-2 text-sm text-gray-500">Atlas Assessment Chat</div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="bg-gray-100 rounded-lg p-4 max-w-[80%] px-[2px]">
-                      <p className="text-gray-800 text-base font-normal px-[12px]">
-                        Hi, and great to have you here!<br /><br />
-                        
-                        <strong>Welcome to your career insights session.</strong> My goal is to walk you through your personality profile and career recommendations in a way that's clear, engaging, and actionable.<br /><br />
-                        
-                        Here's how this will work:<br />
-                        - We'll start with a quick Executive Summary.<br />
-                        - Then do a deeper dive into your <strong>Personality Insights</strong> - exploring what drives you, how you work best, and key takeaways that shape your career direction.<br /><br />
-                        
-                        Then, we'll move on to your <strong>Career matches</strong>:<br />
-                        - Top 3 best fits<br />
-                        - Suitable Runner-up suggestions<br />
-                        - Some Out-of-the-box careers you might not have considered<br />
-                        - And an assessment on your Dream job(s) you provided<br /><br />
-                        
-                        No need to take notes - you'll receive a full report with all the details at the end of this session!<br /><br />
-                        
-                        <strong>Feel free to ask anything along the way</strong> - whether it's clarification, exploring a career further, or sharing feedback on your results.<br /><br />
-                        
-                        Ok, let's get to it. Let me know when you're ready!
-                      </p>
+
+            {/* Your Path to Clarity section */}
+            <div className="mb-8">
+              <h3 className="text-2xl font-bold mb-6 text-gray-800">Your Path to Clarity</h3>
+              
+              <div className="space-y-4">
+                <Card className="border-l-4 border-l-atlas-blue">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <ClipboardCheck className="h-6 w-6 text-atlas-blue mt-1 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">Complete Assessment</h4>
+                        <p className="text-gray-600 text-sm">Take our comprehensive personality and career assessment</p>
+                      </div>
                     </div>
-                    <div className="bg-primary/10 rounded-lg p-4 max-w-[80%] ml-auto">
-                      <p className="text-gray-800">Sounds good. Let's go!</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-atlas-blue">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <MessageCircle className="h-6 w-6 text-atlas-blue mt-1 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">AI-Powered Insights</h4>
+                        <p className="text-gray-600 text-sm">Receive personalized career recommendations through AI chat</p>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-atlas-blue">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Target className="h-6 w-6 text-atlas-blue mt-1 flex-shrink-0" />
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-1">Take Action</h4>
+                        <p className="text-gray-600 text-sm">Get actionable steps for your career transition</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
             
-            {/* CTA buttons aligned with paragraphs */}
+            {/* CTA buttons */}
             <div className="flex flex-col">
               <Button asChild className="btn-primary text-lg flex items-center gap-2 mb-4">
                 <a href="#pricing">
@@ -101,6 +103,8 @@ const Hero = () => {
           </div>
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default Hero;
