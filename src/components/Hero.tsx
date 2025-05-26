@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ClipboardCheck, MessageCircle, Target } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-
 const Hero = () => {
   return <section className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy pt-20 pb-32">
       <div className="container-atlas">
@@ -25,12 +23,12 @@ const Hero = () => {
           <div className="flex flex-col">
             <div className="relative rounded-lg overflow-hidden">
               <img src="/lovable-uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" alt="Woman at career crossroads" className="w-full object-cover rounded-lg shadow-md" />
-              <div className="absolute inset-0 bg-gradient-to-t from-atlas-navy/40 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-atlas-navy/40 to-transparent py-0"></div>
             </div>
           </div>
           
           {/* Right column: Text and Cards */}
-          <div className="flex flex-col">
+          <div className="flex flex-col py-0">
             {/* Introductory text */}
             <div className="mb-8">
               <p className="text-lg text-gray-700 mb-6">
@@ -45,9 +43,9 @@ const Hero = () => {
             </div>
 
             {/* CTA buttons */}
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-4 gap-4 mb-8 py-[20px]">
               <Button asChild className="btn-primary text-lg flex items-center justify-center gap-2 h-12 col-span-3">
-                <a href="#pricing">
+                <a href="#pricing" className="py-0">
                   Get Your Atlas Assessment Now
                   <ArrowRight className="h-5 w-5" />
                 </a>
@@ -56,12 +54,12 @@ const Hero = () => {
                 Learn More
               </a>
             </div>
-            <p className="text-slate-50 text-base text-center mb-8">
+            <p className="text-slate-50 text-center mb-8 text-lg">
               Currently in Beta. Get full access at an introductory price.
             </p>
 
             {/* Your Path to Clarity section */}
-            <div className="space-y-4">
+            <div className="space-y-4 my-0 px-0 py-0">
               <Card className="border-l-4 border-l-atlas-blue">
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
@@ -103,5 +101,4 @@ const Hero = () => {
       </div>
     </section>;
 };
-
 export default Hero;
