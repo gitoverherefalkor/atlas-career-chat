@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.payment-success]
 verify_jwt = false
+
+[functions.test-email]
+verify_jwt = false
