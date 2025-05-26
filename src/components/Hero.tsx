@@ -86,14 +86,14 @@ const Hero = () => {
             </div>
             
             {/* CTA buttons */}
-            <div className="grid sm:grid-cols-2 gap-4">
-              <Button asChild className="btn-primary text-lg flex items-center justify-center gap-2 h-12">
+            <div className="grid grid-cols-4 gap-4">
+              <Button asChild className="btn-primary text-lg flex items-center justify-center gap-2 h-12 col-span-3">
                 <a href="#pricing">
                   Get Your Atlas Assessment Now
                   <ArrowRight className="h-5 w-5" />
                 </a>
               </Button>
-              <a href="#how-it-works" className="btn-outline text-lg flex items-center justify-center h-12">
+              <a href="#how-it-works" className="btn-outline text-lg flex items-center justify-center h-12 col-span-1">
                 Learn More
               </a>
             </div>
