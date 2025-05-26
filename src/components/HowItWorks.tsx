@@ -1,31 +1,23 @@
-
 import React from 'react';
 import { ClipboardList, Brain, MessageSquare } from 'lucide-react';
-
 const HowItWorks = () => {
-  const steps = [
-    {
-      icon: <ClipboardList className="h-10 w-10 text-white" />,
-      title: "Complete an Insightful Questionnaire",
-      description: "Thoughtfully designed to capture your skills, interests, values, work style, and current life context (approximately 20 minutes).",
-      color: "bg-atlas-blue"
-    },
-    {
-      icon: <Brain className="h-10 w-10 text-white" />,
-      title: "AI-driven Expert Analysis",
-      description: "Your responses are analyzed through advanced AI, developed in collaboration with career coaching professionals, generating your personalized career profile.",
-      color: "bg-atlas-indigo"
-    },
-    {
-      icon: <MessageSquare className="h-10 w-10 text-white" />,
-      title: "Interactive AI Career Coaching Chat",
-      description: "Receive your personalized insights through an intuitive, interactive AI chat session. Explore detailed recommendations, realistic suitability analyses, and clear next steps to achieve your goals.",
-      color: "bg-atlas-purple"
-    }
-  ];
-
-  return (
-    <section id="how-it-works" className="section bg-gray-50">
+  const steps = [{
+    icon: <ClipboardList className="h-10 w-10 text-white" />,
+    title: "Complete an Insightful Questionnaire",
+    description: "Thoughtfully designed to capture your skills, interests, values, work style, and current life context (approximately 20 minutes).",
+    color: "bg-atlas-blue"
+  }, {
+    icon: <Brain className="h-10 w-10 text-white" />,
+    title: "AI-driven Expert Analysis",
+    description: "Your responses are analyzed through advanced AI, developed in collaboration with career coaching professionals, generating your personalized career profile.",
+    color: "bg-atlas-indigo"
+  }, {
+    icon: <MessageSquare className="h-10 w-10 text-white" />,
+    title: "Interactive AI Career Coaching Chat",
+    description: "Receive your personalized insights through an intuitive, interactive AI chat session. Explore detailed recommendations, realistic suitability analyses, and clear next steps to achieve your goals.",
+    color: "bg-atlas-purple"
+  }];
+  return <section id="how-it-works" className="section bg-gray-50">
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Your Path to Clarity in 3 Steps</h2>
@@ -35,21 +27,19 @@ const HowItWorks = () => {
         <div className="grid lg:grid-cols-5 gap-12 mb-16">
           {/* Left column: 3 Steps - takes 2 columns */}
           <div className="lg:col-span-2 space-y-8">
-            {steps.map((step, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-1">
-                <div className="border border-gray-100 rounded-lg p-6">
+            {steps.map((step, index) => <div key={index} className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-1 px-[10px] py-[6px]">
+                <div className="border border-gray-100 rounded-lg p-6 px-[12px]">
                   <div className="flex items-start gap-4">
                     <div className={`${step.color} rounded-full w-16 h-16 flex items-center justify-center flex-shrink-0`}>
                       {step.icon}
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold mb-3">{step.title}</h3>
+                      <h3 className="font-semibold mb-3 text-lg">{step.title}</h3>
                       <p className="text-gray-600">{step.description}</p>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              </div>)}
           </div>
 
           {/* Right column: Chat Interface - takes 3 columns */}
@@ -115,8 +105,6 @@ const HowItWorks = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default HowItWorks;
