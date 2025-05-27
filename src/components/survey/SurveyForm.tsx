@@ -1,3 +1,4 @@
+
 import React, { useState, useReducer } from 'react';
 import { useSurvey, Survey, Section, Question } from '@/hooks/useSurvey';
 import { QuestionRenderer } from './QuestionRenderer';
@@ -7,16 +8,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, Send } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+
 interface SurveyFormProps {
   surveyId: string;
   onComplete?: (responses: Record<string, any>) => void;
 }
+
 type SurveyState = Record<string, any>;
+
 interface SurveyAction {
   type: 'SET_ANSWER';
   questionId: string;
   value: any;
 }
+
 const surveyReducer = (state: SurveyState, action: SurveyAction): SurveyState => {
   switch (action.type) {
     case 'SET_ANSWER':
@@ -28,6 +33,7 @@ const surveyReducer = (state: SurveyState, action: SurveyAction): SurveyState =>
       return state;
   }
 };
+
 export const SurveyForm: React.FC<SurveyFormProps> = ({
   surveyId,
   onComplete
@@ -39,11 +45,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   } = useSurvey(surveyId);
   const [responses, dispatch] = useReducer(surveyReducer, {});
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const {
     toast
   } = useToast();
+
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">
         <div className="animate-pulse">
@@ -52,6 +60,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         </div>
       </div>;
   }
+
   if (error || !survey) {
     return <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
@@ -60,37 +69,53 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         </div>
       </div>;
   }
+
   const currentSection = survey.sections[currentSectionIndex];
-  const totalQuestions = survey.sections.reduce((sum, section) => sum + section.questions.length, 0);
-  const answeredQuestions = Object.keys(responses).length;
-  const progress = answeredQuestions / totalQuestions * 100;
-  const validateSection = (section: Section): boolean => {
-    const errors: Record<string, string> = {};
-    let isValid = true;
-    section.questions.forEach(question => {
-      if (question.required) {
-        const value = responses[question.id];
-        if (!value || Array.isArray(value) && value.length === 0) {
-          errors[question.id] = 'This field is required';
-          isValid = false;
-        }
+  const currentQuestion = currentSection.questions[currentQuestionIndex];
+  const sectionProgress = ((currentQuestionIndex + 1) / currentSection.questions.length) * 100;
+
+  const validateCurrentQuestion = (): boolean => {
+    if (currentQuestion.required) {
+      const value = responses[currentQuestion.id];
+      if (!value || (Array.isArray(value) && value.length === 0)) {
+        setValidationErrors({ [currentQuestion.id]: 'This field is required' });
+        return false;
       }
-    });
-    setValidationErrors(errors);
-    return isValid;
-  };
-  const handleNext = () => {
-    if (validateSection(currentSection)) {
-      setCurrentSectionIndex(prev => Math.min(prev + 1, survey.sections.length - 1));
-      setValidationErrors({});
     }
+    setValidationErrors({});
+    return true;
   };
-  const handlePrevious = () => {
-    setCurrentSectionIndex(prev => Math.max(prev - 1, 0));
+
+  const handleNextQuestion = () => {
+    if (!validateCurrentQuestion()) {
+      return;
+    }
+
+    if (currentQuestionIndex < currentSection.questions.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
+    } else {
+      // Move to next section
+      if (currentSectionIndex < survey.sections.length - 1) {
+        setCurrentSectionIndex(prev => prev + 1);
+        setCurrentQuestionIndex(0);
+      }
+    }
     setValidationErrors({});
   };
+
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    } else if (currentSectionIndex > 0) {
+      // Move to previous section
+      setCurrentSectionIndex(prev => prev - 1);
+      setCurrentQuestionIndex(survey.sections[currentSectionIndex - 1].questions.length - 1);
+    }
+    setValidationErrors({});
+  };
+
   const handleSubmit = async () => {
-    if (!validateSection(currentSection)) {
+    if (!validateCurrentQuestion()) {
       return;
     }
 
@@ -101,13 +126,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       section.questions.forEach(question => {
         if (question.required) {
           const value = responses[question.id];
-          if (!value || Array.isArray(value) && value.length === 0) {
+          if (!value || (Array.isArray(value) && value.length === 0)) {
             allErrors[question.id] = 'This field is required';
             allValid = false;
           }
         }
       });
     });
+
     if (!allValid) {
       setValidationErrors(allErrors);
       toast({
@@ -117,6 +143,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       });
       return;
     }
+
     setIsSubmitting(true);
     try {
       const {
@@ -142,16 +169,23 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       setIsSubmitting(false);
     }
   };
-  const isLastSection = currentSectionIndex === survey.sections.length - 1;
+
+  const isLastQuestion = currentSectionIndex === survey.sections.length - 1 && 
+                        currentQuestionIndex === currentSection.questions.length - 1;
+  const isFirstQuestion = currentSectionIndex === 0 && currentQuestionIndex === 0;
+
   return <div className="max-w-4xl mx-auto p-6">
       <div className="mb-8">
         <h1 className="font-bold mb-2 text-xl text-center">{survey.title}</h1>
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-600">
             <span>Section {currentSectionIndex + 1} of {survey.sections.length}</span>
-            <span>{answeredQuestions} of {totalQuestions} questions answered</span>
+            <span>Question {currentQuestionIndex + 1} of {currentSection.questions.length}</span>
           </div>
-          <Progress value={progress} className="w-full" />
+          <Progress 
+            value={sectionProgress} 
+            className="w-full [&>div]:bg-[rgb(57,137,175)]" 
+          />
         </div>
       </div>
 
@@ -160,29 +194,42 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           <CardTitle>{currentSection.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-8">
-          {currentSection.questions.map(question => <QuestionRenderer key={question.id} question={question} value={responses[question.id]} onChange={value => dispatch({
-          type: 'SET_ANSWER',
-          questionId: question.id,
-          value
-        })} error={validationErrors[question.id]} />)}
+          <QuestionRenderer 
+            key={currentQuestion.id} 
+            question={currentQuestion} 
+            value={responses[currentQuestion.id]} 
+            onChange={value => dispatch({
+              type: 'SET_ANSWER',
+              questionId: currentQuestion.id,
+              value
+            })} 
+            error={validationErrors[currentQuestion.id]} 
+          />
         </CardContent>
       </Card>
 
       <div className="flex justify-between mt-8">
-        <Button variant="outline" onClick={handlePrevious} disabled={currentSectionIndex === 0}>
+        <Button 
+          variant="outline" 
+          onClick={handlePreviousQuestion} 
+          disabled={isFirstQuestion}
+        >
           <ChevronLeft className="h-4 w-4 mr-2" />
           Previous
         </Button>
 
-        {isLastSection ? <Button onClick={handleSubmit} disabled={isSubmitting}>
+        {isLastQuestion ? 
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
             {isSubmitting ? "Submitting..." : <>
                 <Send className="h-4 w-4 mr-2" />
                 Submit Survey
               </>}
-          </Button> : <Button onClick={handleNext}>
+          </Button> : 
+          <Button onClick={handleNextQuestion}>
             Next
             <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>}
+          </Button>
+        }
       </div>
     </div>;
 };
