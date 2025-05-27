@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export const MockDataSubmitter: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isTestSubmitting, setIsTestSubmitting] = useState(false);
   const { toast } = useToast();
 
   const mockResponses = [
@@ -271,6 +272,40 @@ export const MockDataSubmitter: React.FC = () => {
     }
   ];
 
+  const submitTestResponse = async () => {
+    setIsTestSubmitting(true);
+    try {
+      console.log('Submitting test response to trigger Relevance AI integration...');
+      
+      // Submit just the first mock response for testing
+      const testResponse = mockResponses[0];
+      const { error } = await supabase
+        .from('answers')
+        .insert({
+          survey_id: "00000000-0000-0000-0000-000000000001",
+          payload: testResponse
+        });
+      
+      if (error) throw error;
+
+      toast({
+        title: "Test Response Sent!",
+        description: "Alex Chen's profile has been sent to Relevance AI. Check your agent dashboard!"
+      });
+      
+      console.log('Test response submitted successfully. Check the edge function logs and your Relevance AI agent.');
+    } catch (error) {
+      console.error('Error submitting test response:', error);
+      toast({
+        title: "Test Submission Error",
+        description: "Failed to submit test response. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsTestSubmitting(false);
+    }
+  };
+
   const submitMockData = async () => {
     setIsSubmitting(true);
     try {
@@ -305,26 +340,44 @@ export const MockDataSubmitter: React.FC = () => {
   return (
     <Card className="max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Complete Survey Test Data</CardTitle>
+        <CardTitle>Survey Test Data</CardTitle>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-gray-600 mb-4">
-          Click the button below to submit {mockResponses.length} comprehensive survey responses covering all 7 sections and personality profiles:
-        </p>
-        <ul className="text-xs text-gray-500 mb-4 space-y-1">
-          <li>• Tech-savvy Software Engineer</li>
-          <li>• Creative Marketing Professional</li>
-          <li>• People-focused HR Professional</li>
-          <li>• Analytical Finance Professional</li>
-          <li>• Entrepreneurial Sales Professional</li>
-        </ul>
-        <Button 
-          onClick={submitMockData} 
-          disabled={isSubmitting}
-          className="w-full"
-        >
-          {isSubmitting ? "Submitting..." : "Submit Complete Mock Data"}
-        </Button>
+      <CardContent className="space-y-4">
+        <div>
+          <h3 className="font-medium mb-2">Test Single Response</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            Send one test response (Alex Chen - Software Engineer) to verify Relevance AI integration:
+          </p>
+          <Button 
+            onClick={submitTestResponse} 
+            disabled={isTestSubmitting}
+            className="w-full mb-4"
+            variant="outline"
+          >
+            {isTestSubmitting ? "Sending Test..." : "Send Test Response to Agent"}
+          </Button>
+        </div>
+        
+        <div className="border-t pt-4">
+          <h3 className="font-medium mb-2">Full Mock Dataset</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            Submit {mockResponses.length} comprehensive survey responses covering all personality profiles:
+          </p>
+          <ul className="text-xs text-gray-500 mb-4 space-y-1">
+            <li>• Tech-savvy Software Engineer</li>
+            <li>• Creative Marketing Professional</li>
+            <li>• People-focused HR Professional</li>
+            <li>• Analytical Finance Professional</li>
+            <li>• Entrepreneurial Sales Professional</li>
+          </ul>
+          <Button 
+            onClick={submitMockData} 
+            disabled={isSubmitting}
+            className="w-full"
+          >
+            {isSubmitting ? "Submitting..." : "Submit All Mock Data"}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
