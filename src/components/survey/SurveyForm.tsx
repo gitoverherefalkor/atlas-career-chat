@@ -1,4 +1,3 @@
-
 import React, { useState, useReducer } from 'react';
 import { useSurvey, Survey, Section, Question } from '@/hooks/useSurvey';
 import { QuestionRenderer } from './QuestionRenderer';
@@ -183,8 +182,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           </div>
           <div className="w-full bg-white rounded-full h-4 border border-gray-200">
             <div 
-              className="bg-green-500 h-full rounded-full transition-all duration-300 ease-out"
-              style={{ width: `${sectionProgress}%` }}
+              className="h-full rounded-full transition-all duration-300 ease-out"
+              style={{ 
+                width: `${sectionProgress}%`,
+                backgroundColor: 'rgb(57 137 175 / var(--tw-bg-opacity, 1))'
+              }}
             />
           </div>
         </div>
