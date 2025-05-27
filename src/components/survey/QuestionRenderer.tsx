@@ -187,6 +187,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     const min = config.min || 1;
     const max = config.max || 10;
     const currentValue = value || min;
+    
+    // Calculate the color based on the current value
+    const percentage = ((currentValue - min) / (max - min)) * 100;
+    const red = Math.round(255 * (1 - percentage / 100));
+    const green = Math.round(255 * (percentage / 100));
+    const currentColor = `rgb(${red}, ${green}, 0)`;
 
     return (
       <div className="space-y-4">
@@ -196,18 +202,34 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">{min}</span>
-            <Slider
-              value={[currentValue]}
-              onValueChange={(values) => onChange(values[0])}
-              min={min}
-              max={max}
-              step={1}
-              className="flex-1"
-            />
+            <div className="flex-1 relative">
+              <div 
+                className="absolute inset-0 h-2 rounded-full"
+                style={{
+                  background: `linear-gradient(to right, rgb(255, 0, 0), rgb(255, 255, 0), rgb(0, 255, 0))`
+                }}
+              />
+              <Slider
+                value={[currentValue]}
+                onValueChange={(values) => onChange(values[0])}
+                min={min}
+                max={max}
+                step={1}
+                className="relative z-10"
+              />
+            </div>
             <span className="text-sm text-gray-600">{max}</span>
           </div>
           <div className="text-center">
-            <span className="text-lg font-semibold">{currentValue}</span>
+            <span 
+              className="text-lg font-semibold px-3 py-1 rounded-full"
+              style={{ 
+                backgroundColor: currentColor,
+                color: percentage > 50 ? 'black' : 'white'
+              }}
+            >
+              {currentValue}
+            </span>
           </div>
         </div>
       </div>
