@@ -178,14 +178,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       <div className="mb-8">
         <h1 className="font-bold mb-2 text-xl text-center">{survey.title}</h1>
         <div className="space-y-2">
-          <div className="flex justify-between text-sm text-gray-600">
+          <div className="text-sm text-gray-600 text-center">
             <span>Section {currentSectionIndex + 1} of {survey.sections.length}</span>
-            <span>Question {currentQuestionIndex + 1} of {currentSection.questions.length}</span>
           </div>
-          <Progress 
-            value={sectionProgress} 
-            className="w-full [&>div]:bg-[rgb(57,137,175)]" 
-          />
+          <div className="w-full bg-white rounded-full h-4 border border-gray-200">
+            <div 
+              className="bg-green-500 h-full rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${sectionProgress}%` }}
+            />
+          </div>
         </div>
       </div>
 
