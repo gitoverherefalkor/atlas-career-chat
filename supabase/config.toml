@@ -9,3 +9,6 @@ verify_jwt = false
 
 [functions.test-email]
 verify_jwt = false
+
+[functions.forward-to-relevance]
+verify_jwt = false
