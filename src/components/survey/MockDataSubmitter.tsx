@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 
 export const MockDataSubmitter: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isTestSubmitting, setIsTestSubmitting] = useState(false);
   const { toast } = useToast();
 
   const mockResponses = [
@@ -271,89 +270,6 @@ export const MockDataSubmitter: React.FC = () => {
     }
   ];
 
-  const submitTestResponse = async () => {
-    setIsTestSubmitting(true);
-    try {
-      console.log('Starting test response submission...');
-      
-      // First, check if survey exists or create it
-      let surveyId = "00000000-0000-0000-0000-000000000001";
-      
-      console.log('Checking if survey exists...');
-      const { data: existingSurvey, error: surveyCheckError } = await supabase
-        .from('surveys')
-        .select('id')
-        .eq('id', surveyId)
-        .single();
-      
-      if (surveyCheckError && surveyCheckError.code === 'PGRST116') {
-        // Survey doesn't exist, create it
-        console.log('Survey not found, creating...');
-        const { data: newSurvey, error: createError } = await supabase
-          .from('surveys')
-          .insert({
-            id: surveyId,
-            title: "Atlas Career Assessment"
-          })
-          .select()
-          .single();
-        
-        if (createError) {
-          console.error('Error creating survey:', createError);
-          throw createError;
-        }
-        console.log('Survey created:', newSurvey);
-      } else if (surveyCheckError) {
-        console.error('Error checking survey:', surveyCheckError);
-        throw surveyCheckError;
-      } else {
-        console.log('Survey exists:', existingSurvey);
-      }
-      
-      // Submit the test response
-      const testResponse = mockResponses[0];
-      console.log('Test response data:', testResponse);
-      
-      const { data, error } = await supabase
-        .from('answers')
-        .insert({
-          survey_id: surveyId,
-          payload: testResponse
-        })
-        .select();
-      
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-
-      console.log('Insert successful:', data);
-      
-      toast({
-        title: "Test Response Sent!",
-        description: "Alex Chen's profile has been sent to Relevance AI. Check your agent dashboard and edge function logs!"
-      });
-      
-      console.log('Test response submitted successfully. The database trigger should now call the edge function.');
-    } catch (error) {
-      console.error('Detailed error submitting test response:', error);
-      
-      // More specific error handling
-      let errorMessage = "Failed to submit test response.";
-      if (error.message) {
-        errorMessage = error.message;
-      }
-      
-      toast({
-        title: "Test Submission Error",
-        description: errorMessage,
-        variant: "destructive"
-      });
-    } finally {
-      setIsTestSubmitting(false);
-    }
-  };
-
   const submitMockData = async () => {
     setIsSubmitting(true);
     try {
@@ -364,9 +280,9 @@ export const MockDataSubmitter: React.FC = () => {
         .from('surveys')
         .select('id')
         .eq('id', surveyId)
-        .single();
+        .maybeSingle();
       
-      if (surveyCheckError && surveyCheckError.code === 'PGRST116') {
+      if (!existingSurvey && (!surveyCheckError || surveyCheckError.code === 'PGRST116')) {
         const { error: createError } = await supabase
           .from('surveys')
           .insert({
@@ -375,6 +291,8 @@ export const MockDataSubmitter: React.FC = () => {
           });
         
         if (createError) throw createError;
+      } else if (surveyCheckError) {
+        throw surveyCheckError;
       }
 
       // Submit all mock responses
@@ -408,25 +326,10 @@ export const MockDataSubmitter: React.FC = () => {
   return (
     <Card className="max-w-md mx-auto">
       <CardHeader>
-        <CardTitle>Survey Test Data</CardTitle>
+        <CardTitle>Survey Mock Data</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <h3 className="font-medium mb-2">Test Single Response</h3>
-          <p className="text-sm text-gray-600 mb-3">
-            Send one test response (Alex Chen - Software Engineer) to verify Relevance AI integration:
-          </p>
-          <Button 
-            onClick={submitTestResponse} 
-            disabled={isTestSubmitting}
-            className="w-full mb-4"
-            variant="outline"
-          >
-            {isTestSubmitting ? "Sending Test..." : "Send Test Response to Agent"}
-          </Button>
-        </div>
-        
-        <div className="border-t pt-4">
           <h3 className="font-medium mb-2">Full Mock Dataset</h3>
           <p className="text-sm text-gray-600 mb-4">
             Submit {mockResponses.length} comprehensive survey responses covering all personality profiles:
@@ -445,6 +348,16 @@ export const MockDataSubmitter: React.FC = () => {
           >
             {isSubmitting ? "Submitting..." : "Submit All Mock Data"}
           </Button>
+        </div>
+        
+        <div className="border-t pt-4">
+          <h3 className="font-medium mb-2">Backend Integration Test</h3>
+          <p className="text-sm text-gray-600 mb-3">
+            To test the Relevance AI integration, call the backend test function directly:
+          </p>
+          <code className="text-xs bg-gray-100 p-2 rounded block">
+            https://pcoyafgsirrznhmdaiji.supabase.co/functions/v1/test-survey-integration
+          </code>
         </div>
       </CardContent>
     </Card>
