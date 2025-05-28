@@ -15,12 +15,24 @@ serve(async (req) => {
   try {
     console.log('Forward to Relevance function called');
     
-    // Get the payload from the trigger
-    const { payload } = await req.json();
-    console.log('Received payload:', JSON.stringify(payload, null, 2));
+    // Get the request body
+    const requestBody = await req.json();
+    console.log('Full request body:', JSON.stringify(requestBody, null, 2));
+    
+    // Extract the payload from the request body
+    const surveyData = requestBody.payload || requestBody;
+    console.log('Survey data to send:', JSON.stringify(surveyData, null, 2));
 
-    // Convert the entire payload to a JSON string as expected by Relevance AI
-    const content = JSON.stringify(payload);
+    if (!surveyData) {
+      console.error('No survey data found in request');
+      return new Response(JSON.stringify({ error: 'No survey data provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Convert the survey data to a JSON string as expected by Relevance AI
+    const content = JSON.stringify(surveyData);
 
     // Build the Relevance AI request body
     const body = {
@@ -29,6 +41,7 @@ serve(async (req) => {
     };
 
     console.log('Sending to Relevance AI with agent_id:', Deno.env.get("RELEVANCE_AGENT_ID"));
+    console.log('Request body for Relevance AI:', JSON.stringify(body, null, 2));
 
     // POST to Relevance AI
     const resp = await fetch(
