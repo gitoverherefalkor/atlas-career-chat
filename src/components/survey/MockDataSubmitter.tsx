@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -277,14 +276,48 @@ export const MockDataSubmitter: React.FC = () => {
     try {
       console.log('Starting test response submission...');
       
-      // Submit just the first mock response for testing
+      // First, check if survey exists or create it
+      let surveyId = "00000000-0000-0000-0000-000000000001";
+      
+      console.log('Checking if survey exists...');
+      const { data: existingSurvey, error: surveyCheckError } = await supabase
+        .from('surveys')
+        .select('id')
+        .eq('id', surveyId)
+        .single();
+      
+      if (surveyCheckError && surveyCheckError.code === 'PGRST116') {
+        // Survey doesn't exist, create it
+        console.log('Survey not found, creating...');
+        const { data: newSurvey, error: createError } = await supabase
+          .from('surveys')
+          .insert({
+            id: surveyId,
+            title: "Atlas Career Assessment"
+          })
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Error creating survey:', createError);
+          throw createError;
+        }
+        console.log('Survey created:', newSurvey);
+      } else if (surveyCheckError) {
+        console.error('Error checking survey:', surveyCheckError);
+        throw surveyCheckError;
+      } else {
+        console.log('Survey exists:', existingSurvey);
+      }
+      
+      // Submit the test response
       const testResponse = mockResponses[0];
       console.log('Test response data:', testResponse);
       
       const { data, error } = await supabase
         .from('answers')
         .insert({
-          survey_id: "00000000-0000-0000-0000-000000000001",
+          survey_id: surveyId,
           payload: testResponse
         })
         .select();
@@ -324,12 +357,32 @@ export const MockDataSubmitter: React.FC = () => {
   const submitMockData = async () => {
     setIsSubmitting(true);
     try {
+      // First ensure survey exists
+      let surveyId = "00000000-0000-0000-0000-000000000001";
+      
+      const { data: existingSurvey, error: surveyCheckError } = await supabase
+        .from('surveys')
+        .select('id')
+        .eq('id', surveyId)
+        .single();
+      
+      if (surveyCheckError && surveyCheckError.code === 'PGRST116') {
+        const { error: createError } = await supabase
+          .from('surveys')
+          .insert({
+            id: surveyId,
+            title: "Atlas Career Assessment"
+          });
+        
+        if (createError) throw createError;
+      }
+
       // Submit all mock responses
       for (const mockResponse of mockResponses) {
         const { error } = await supabase
           .from('answers')
           .insert({
-            survey_id: "00000000-0000-0000-0000-000000000001",
+            survey_id: surveyId,
             payload: mockResponse
           });
         
