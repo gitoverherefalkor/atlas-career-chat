@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.test-survey-integration]
 verify_jwt = false
+
+[functions.verify-access-code]
+verify_jwt = false

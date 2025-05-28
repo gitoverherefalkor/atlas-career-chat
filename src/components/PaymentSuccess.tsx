@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
+import { CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -110,16 +110,27 @@ const PaymentSuccess = () => {
             <p className="text-gray-600 mb-8">
               {searchParams.get('demo') === 'true' 
                 ? 'Thank you for trying our demo purchase flow.'
-                : 'Thank you for your purchase. We\'ve sent your access code to your email. Please check your inbox (and spam folder) for instructions on how to access your assessment.'}
+                : 'Thank you for your purchase. We\'ve sent your access code to your email. You can now start your assessment!'}
             </p>
             
-            <Button 
-              onClick={() => navigate('/')} 
-              className="w-full flex items-center justify-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Return to Home
-            </Button>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => navigate('/assessment')} 
+                className="w-full flex items-center justify-center gap-2"
+              >
+                Start Assessment Now
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/')} 
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Return to Home
+              </Button>
+            </div>
           </>
         ) : (
           <div className="py-10">

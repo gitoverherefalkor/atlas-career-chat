@@ -18,9 +18,14 @@ const corsHeaders = {
 // Function to generate a random access code
 function generateAccessCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Removed similar looking characters
-  let code = "ATLAS-";
-  for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  let code = "";
+  
+  // Generate 4 groups of 4 characters
+  for (let group = 0; group < 4; group++) {
+    if (group > 0) code += "-";
+    for (let i = 0; i < 4; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
   }
   return code;
 }
@@ -47,10 +52,13 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
             </div>
             <p>To use your access code:</p>
             <ol>
-              <li>Visit <a href="https://atlas-assessments.com" style="color: #4361ee; text-decoration: none;">atlas-assessments.com</a></li>
-              <li>Click "Start Assessment"</li>
+              <li>Visit <a href="https://atlas-assessments.com/assessment" style="color: #4361ee; text-decoration: none;">atlas-assessments.com/assessment</a></li>
               <li>Enter your access code when prompted</li>
+              <li>Complete your personalized career assessment</li>
             </ol>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://atlas-assessments.com/assessment" style="background-color: #4361ee; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Start Assessment Now</a>
+            </div>
             <p>Your access code is valid for one year from today.</p>
             <p>If you have any questions, please contact our support team.</p>
           </div>
@@ -117,12 +125,19 @@ serve(async (req) => {
 
     console.log("Creating access code:", accessCode);
 
-    // Store the access code in the database
+    // Extract pricing information from session
+    const amountTotal = session.amount_total ? session.amount_total / 100 : 39; // Convert from cents
+    const currency = session.currency?.toUpperCase() || 'EUR';
+
+    // Store the access code in the database with pricing info
     const { data: codeData, error: codeError } = await supabaseAdmin
       .from("access_codes")
       .insert({
         code: accessCode,
         expires_at: expiresAt.toISOString(),
+        price_paid: amountTotal,
+        currency: currency,
+        survey_type: 'Office / Business Pro - 2025 v1 EN'
       })
       .select("id")
       .single();

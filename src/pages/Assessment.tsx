@@ -1,17 +1,27 @@
 
 import React, { useState } from 'react';
 import { SurveyForm } from '@/components/survey/SurveyForm';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AccessCodeVerification } from '@/components/survey/AccessCodeVerification';
+import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 const Assessment = () => {
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+  const [accessCodeData, setAccessCodeData] = useState<any>(null);
   const navigate = useNavigate();
+
+  const handleAccessCodeVerified = (data: any) => {
+    console.log('Access code verified:', data);
+    setAccessCodeData(data);
+    setIsVerified(true);
+  };
 
   const handleSurveyComplete = (responses: Record<string, any>) => {
     console.log('Survey completed with responses:', responses);
+    console.log('Using access code:', accessCodeData);
     setIsCompleted(true);
   };
 
@@ -37,11 +47,16 @@ const Assessment = () => {
     );
   }
 
+  if (!isVerified) {
+    return <AccessCodeVerification onVerified={handleAccessCodeVerified} />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <SurveyForm
         surveyId="00000000-0000-0000-0000-000000000001"
         onComplete={handleSurveyComplete}
+        accessCodeData={accessCodeData}
       />
     </div>
   );

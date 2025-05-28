@@ -1,238 +1,251 @@
-import React, { useState, useReducer } from 'react';
-import { useSurvey, Survey, Section, Question } from '@/hooks/useSurvey';
+
+import React, { useState } from 'react';
+import { useSurvey } from '@/hooks/useSurvey';
 import { QuestionRenderer } from './QuestionRenderer';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight, Send } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface SurveyFormProps {
   surveyId: string;
-  onComplete?: (responses: Record<string, any>) => void;
+  onComplete: (responses: Record<string, any>) => void;
+  accessCodeData?: any;
 }
 
-type SurveyState = Record<string, any>;
-
-interface SurveyAction {
-  type: 'SET_ANSWER';
-  questionId: string;
-  value: any;
-}
-
-const surveyReducer = (state: SurveyState, action: SurveyAction): SurveyState => {
-  switch (action.type) {
-    case 'SET_ANSWER':
-      return {
-        ...state,
-        [action.questionId]: action.value
-      };
-    default:
-      return state;
-  }
-};
-
-export const SurveyForm: React.FC<SurveyFormProps> = ({
-  surveyId,
-  onComplete
+export const SurveyForm: React.FC<SurveyFormProps> = ({ 
+  surveyId, 
+  onComplete, 
+  accessCodeData 
 }) => {
-  const {
-    data: survey,
-    isLoading,
-    error
-  } = useSurvey(surveyId);
-  const [responses, dispatch] = useReducer(surveyReducer, {});
+  const { data: survey, isLoading, error } = useSurvey(surveyId);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [responses, setResponses] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
-          <div className="h-4 bg-gray-200 rounded w-48"></div>
-        </div>
-      </div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   if (error || !survey) {
-    return <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">Survey Not Found</h2>
-          <p className="text-gray-600">The requested survey could not be loaded.</p>
-        </div>
-      </div>;
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Failed to load survey. Please try again.</p>
+      </div>
+    );
   }
 
   const currentSection = survey.sections[currentSectionIndex];
-  const currentQuestion = currentSection.questions[currentQuestionIndex];
-  const sectionProgress = ((currentQuestionIndex + 1) / currentSection.questions.length) * 100;
+  const totalSections = survey.sections.length;
+  const progress = ((currentSectionIndex + 1) / totalSections) * 100;
 
-  const validateCurrentQuestion = (): boolean => {
-    if (currentQuestion.required) {
-      const value = responses[currentQuestion.id];
-      if (!value || (Array.isArray(value) && value.length === 0)) {
-        setValidationErrors({ [currentQuestion.id]: 'This field is required' });
-        return false;
-      }
-    }
-    setValidationErrors({});
-    return true;
+  const handleResponseChange = (questionId: string, value: any) => {
+    setResponses(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
   };
 
-  const handleNextQuestion = () => {
-    if (!validateCurrentQuestion()) {
-      return;
-    }
-
-    if (currentQuestionIndex < currentSection.questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-    } else {
-      // Move to next section
-      if (currentSectionIndex < survey.sections.length - 1) {
-        setCurrentSectionIndex(prev => prev + 1);
-        setCurrentQuestionIndex(0);
-      }
-    }
-    setValidationErrors({});
+  const isCurrentSectionComplete = () => {
+    return currentSection.questions.every(question => {
+      if (!question.required) return true;
+      const response = responses[question.id];
+      return response !== undefined && response !== null && response !== '';
+    });
   };
 
-  const handlePreviousQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
-    } else if (currentSectionIndex > 0) {
-      // Move to previous section
-      setCurrentSectionIndex(prev => prev - 1);
-      setCurrentQuestionIndex(survey.sections[currentSectionIndex - 1].questions.length - 1);
+  const handleNext = () => {
+    if (currentSectionIndex < totalSections - 1) {
+      setCurrentSectionIndex(currentSectionIndex + 1);
     }
-    setValidationErrors({});
+  };
+
+  const handleBack = () => {
+    if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(currentSectionIndex - 1);
+    }
+  };
+
+  const markAccessCodeAsUsed = async () => {
+    if (!accessCodeData?.id) return;
+
+    try {
+      console.log('Marking access code as used:', accessCodeData.id);
+      
+      const { error } = await supabase
+        .from('access_codes')
+        .update({ 
+          usage_count: supabase.sql`usage_count + 1`,
+          used_at: new Date().toISOString()
+        })
+        .eq('id', accessCodeData.id);
+
+      if (error) {
+        console.error('Error marking access code as used:', error);
+      } else {
+        console.log('Access code marked as used successfully');
+      }
+    } catch (error) {
+      console.error('Error marking access code as used:', error);
+    }
   };
 
   const handleSubmit = async () => {
-    if (!validateCurrentQuestion()) {
-      return;
-    }
-
-    // Validate all required questions across all sections
-    let allValid = true;
-    const allErrors: Record<string, string> = {};
-    survey.sections.forEach(section => {
-      section.questions.forEach(question => {
-        if (question.required) {
-          const value = responses[question.id];
-          if (!value || (Array.isArray(value) && value.length === 0)) {
-            allErrors[question.id] = 'This field is required';
-            allValid = false;
-          }
-        }
-      });
-    });
-
-    if (!allValid) {
-      setValidationErrors(allErrors);
+    if (!isCurrentSectionComplete()) {
       toast({
-        title: "Incomplete Survey",
-        description: "Please complete all required questions before submitting.",
-        variant: "destructive"
+        title: "Incomplete Section",
+        description: "Please answer all required questions before submitting.",
+        variant: "destructive",
       });
       return;
     }
 
     setIsSubmitting(true);
+
     try {
-      const {
-        error
-      } = await supabase.from('answers').insert({
-        survey_id: surveyId,
-        payload: responses
-      });
-      if (error) throw error;
+      console.log('Submitting survey responses:', responses);
+      console.log('Access code data:', accessCodeData);
+
+      // Submit to database with access code reference
+      const { data: submissionData, error: submissionError } = await supabase
+        .from('answers')
+        .insert({
+          survey_id: surveyId,
+          payload: responses,
+          access_code_id: accessCodeData?.id
+        })
+        .select();
+
+      if (submissionError) {
+        console.error('Error submitting survey:', submissionError);
+        toast({
+          title: "Submission Failed",
+          description: "Failed to submit your responses. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Survey submitted successfully:', submissionData);
+
+      // Mark access code as used after successful submission
+      await markAccessCodeAsUsed();
+
       toast({
         title: "Survey Submitted",
-        description: "Thank you for completing the assessment!"
+        description: "Your responses have been submitted successfully!",
       });
-      onComplete?.(responses);
+
+      // Call completion handler
+      onComplete(responses);
     } catch (error) {
       console.error('Error submitting survey:', error);
       toast({
-        title: "Submission Error",
-        description: "Failed to submit survey. Please try again.",
-        variant: "destructive"
+        title: "Submission Failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const isLastQuestion = currentSectionIndex === survey.sections.length - 1 && 
-                        currentQuestionIndex === currentSection.questions.length - 1;
-  const isFirstQuestion = currentSectionIndex === 0 && currentQuestionIndex === 0;
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Header with access code info */}
+      {accessCodeData && (
+        <Card className="mb-6 bg-green-50 border-green-200">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-green-800">
+                  Access Code Verified: {accessCodeData.code}
+                </p>
+                <p className="text-xs text-green-600">
+                  Survey: {accessCodeData.survey_type}
+                </p>
+              </div>
+              <div className="text-xs text-green-600">
+                Remaining uses: {accessCodeData.remaining_uses}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-  return <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="font-bold mb-2 text-xl text-center">{survey.title}</h1>
-        <div className="space-y-2">
-          <div className="text-sm text-gray-600 text-center">
-            <span>Section {currentSectionIndex + 1} of {survey.sections.length}</span>
-          </div>
-          <div className="w-full bg-white rounded-full h-4 border border-gray-200">
-            <div 
-              className="h-full rounded-full transition-all duration-300 ease-out"
-              style={{ 
-                width: `${sectionProgress}%`,
-                backgroundColor: 'rgb(57 137 175 / var(--tw-bg-opacity, 1))'
-              }}
-            />
-          </div>
+      {/* Progress */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <h1 className="text-2xl font-bold">{survey.title}</h1>
+          <span className="text-sm text-gray-500">
+            Section {currentSectionIndex + 1} of {totalSections}
+          </span>
         </div>
+        <Progress value={progress} className="w-full" />
       </div>
 
+      {/* Current Section */}
       <Card>
         <CardHeader>
           <CardTitle>{currentSection.title}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8">
-          <QuestionRenderer 
-            key={currentQuestion.id} 
-            question={currentQuestion} 
-            value={responses[currentQuestion.id]} 
-            onChange={value => dispatch({
-              type: 'SET_ANSWER',
-              questionId: currentQuestion.id,
-              value
-            })} 
-            error={validationErrors[currentQuestion.id]} 
-          />
+        <CardContent className="space-y-6">
+          {currentSection.questions.map((question) => (
+            <QuestionRenderer
+              key={question.id}
+              question={question}
+              value={responses[question.id]}
+              onChange={(value) => handleResponseChange(question.id, value)}
+            />
+          ))}
+
+          {/* Navigation */}
+          <div className="flex justify-between pt-6">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={currentSectionIndex === 0}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+
+            {currentSectionIndex < totalSections - 1 ? (
+              <Button
+                onClick={handleNext}
+                disabled={!isCurrentSectionComplete()}
+              >
+                Next
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={!isCurrentSectionComplete() || isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    Submit Assessment
+                    <Send className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
-
-      <div className="flex justify-between mt-8">
-        <Button 
-          variant="outline" 
-          onClick={handlePreviousQuestion} 
-          disabled={isFirstQuestion}
-        >
-          <ChevronLeft className="h-4 w-4 mr-2" />
-          Previous
-        </Button>
-
-        {isLastQuestion ? 
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : <>
-                <Send className="h-4 w-4 mr-2" />
-                Submit Survey
-              </>}
-          </Button> : 
-          <Button onClick={handleNextQuestion}>
-            Next
-            <ChevronRight className="h-4 w-4 ml-2" />
-          </Button>
-        }
-      </div>
-    </div>;
+    </div>
+  );
 };

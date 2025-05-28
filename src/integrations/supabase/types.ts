@@ -13,49 +13,74 @@ export type Database = {
         Row: {
           code: string
           created_at: string
+          currency: string | null
           expires_at: string
           id: string
           is_used: boolean | null
+          max_usage: number | null
+          price_paid: number | null
+          survey_type: string | null
+          usage_count: number | null
           used_at: string | null
         }
         Insert: {
           code: string
           created_at?: string
+          currency?: string | null
           expires_at: string
           id?: string
           is_used?: boolean | null
+          max_usage?: number | null
+          price_paid?: number | null
+          survey_type?: string | null
+          usage_count?: number | null
           used_at?: string | null
         }
         Update: {
           code?: string
           created_at?: string
+          currency?: string | null
           expires_at?: string
           id?: string
           is_used?: boolean | null
+          max_usage?: number | null
+          price_paid?: number | null
+          survey_type?: string | null
+          usage_count?: number | null
           used_at?: string | null
         }
         Relationships: []
       }
       answers: {
         Row: {
+          access_code_id: string | null
           id: string
           payload: Json
           submitted_at: string | null
           survey_id: string | null
         }
         Insert: {
+          access_code_id?: string | null
           id?: string
           payload: Json
           submitted_at?: string | null
           survey_id?: string | null
         }
         Update: {
+          access_code_id?: string | null
           id?: string
           payload?: Json
           submitted_at?: string | null
           survey_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "answers_access_code_id_fkey"
+            columns: ["access_code_id"]
+            isOneToOne: false
+            referencedRelation: "access_codes"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "answers_survey_id_fkey"
             columns: ["survey_id"]
