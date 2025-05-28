@@ -22,6 +22,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 }) => {
   const { data: survey, isLoading, error } = useSurvey(surveyId);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -43,8 +44,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   }
 
   const currentSection = survey.sections[currentSectionIndex];
-  const totalSections = survey.sections.length;
-  const progress = ((currentSectionIndex + 1) / totalSections) * 100;
+  const currentQuestion = currentSection.questions[currentQuestionIndex];
+  
+  // Calculate total questions across all sections for progress
+  const totalQuestions = survey.sections.reduce((total, section) => total + section.questions.length, 0);
+  const currentQuestionNumber = survey.sections.slice(0, currentSectionIndex).reduce((total, section) => total + section.questions.length, 0) + currentQuestionIndex + 1;
+  const progress = (currentQuestionNumber / totalQuestions) * 100;
 
   const handleResponseChange = (questionId: string, value: any) => {
     setResponses(prev => ({
@@ -53,24 +58,44 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     }));
   };
 
-  const isCurrentSectionComplete = () => {
-    return currentSection.questions.every(question => {
-      if (!question.required) return true;
-      const response = responses[question.id];
-      return response !== undefined && response !== null && response !== '';
-    });
+  const isCurrentQuestionComplete = () => {
+    if (!currentQuestion.required) return true;
+    const response = responses[currentQuestion.id];
+    return response !== undefined && response !== null && response !== '';
   };
 
   const handleNext = () => {
-    if (currentSectionIndex < totalSections - 1) {
+    // Move to next question in current section
+    if (currentQuestionIndex < currentSection.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } 
+    // Move to first question of next section
+    else if (currentSectionIndex < survey.sections.length - 1) {
       setCurrentSectionIndex(currentSectionIndex + 1);
+      setCurrentQuestionIndex(0);
     }
   };
 
   const handleBack = () => {
-    if (currentSectionIndex > 0) {
-      setCurrentSectionIndex(currentSectionIndex - 1);
+    // Move to previous question in current section
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
     }
+    // Move to last question of previous section
+    else if (currentSectionIndex > 0) {
+      const prevSection = survey.sections[currentSectionIndex - 1];
+      setCurrentSectionIndex(currentSectionIndex - 1);
+      setCurrentQuestionIndex(prevSection.questions.length - 1);
+    }
+  };
+
+  const isLastQuestion = () => {
+    return currentSectionIndex === survey.sections.length - 1 && 
+           currentQuestionIndex === currentSection.questions.length - 1;
+  };
+
+  const isFirstQuestion = () => {
+    return currentSectionIndex === 0 && currentQuestionIndex === 0;
   };
 
   const markAccessCodeAsUsed = async () => {
@@ -113,10 +138,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   };
 
   const handleSubmit = async () => {
-    if (!isCurrentSectionComplete()) {
+    if (!isCurrentQuestionComplete()) {
       toast({
-        title: "Incomplete Section",
-        description: "Please answer all required questions before submitting.",
+        title: "Incomplete Question",
+        description: "Please answer this question before submitting.",
         variant: "destructive",
       });
       return;
@@ -200,50 +225,48 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         <div className="flex justify-between items-center mb-2">
           <h1 className="text-2xl font-bold">{survey.title}</h1>
           <span className="text-sm text-gray-500">
-            Section {currentSectionIndex + 1} of {totalSections}
+            Question {currentQuestionNumber} of {totalQuestions}
           </span>
         </div>
         <Progress value={progress} className="w-full" />
       </div>
 
-      {/* Current Section */}
+      {/* Current Question */}
       <Card>
         <CardHeader>
           <CardTitle>{currentSection.title}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {currentSection.questions.map((question) => (
-            <QuestionRenderer
-              key={question.id}
-              question={question}
-              value={responses[question.id]}
-              onChange={(value) => handleResponseChange(question.id, value)}
-            />
-          ))}
+          <QuestionRenderer
+            key={currentQuestion.id}
+            question={currentQuestion}
+            value={responses[currentQuestion.id]}
+            onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+          />
 
           {/* Navigation */}
           <div className="flex justify-between pt-6">
             <Button
               variant="outline"
               onClick={handleBack}
-              disabled={currentSectionIndex === 0}
+              disabled={isFirstQuestion()}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
 
-            {currentSectionIndex < totalSections - 1 ? (
+            {!isLastQuestion() ? (
               <Button
                 onClick={handleNext}
-                disabled={!isCurrentSectionComplete()}
+                disabled={!isCurrentQuestionComplete()}
               >
-                Next
+                Continue
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
               <Button
                 onClick={handleSubmit}
-                disabled={!isCurrentSectionComplete() || isSubmitting}
+                disabled={!isCurrentQuestionComplete() || isSubmitting}
               >
                 {isSubmitting ? (
                   <>

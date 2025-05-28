@@ -1,5 +1,6 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SurveyForm } from '@/components/survey/SurveyForm';
 import { AccessCodeVerification } from '@/components/survey/AccessCodeVerification';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,10 +9,20 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 
 const Assessment = () => {
+  const [searchParams] = useSearchParams();
   const [isCompleted, setIsCompleted] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [accessCodeData, setAccessCodeData] = useState<any>(null);
+  const [prefilledCode, setPrefilledCode] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if there's a pre-filled access code from the URL
+    const codeFromUrl = searchParams.get('code');
+    if (codeFromUrl) {
+      setPrefilledCode(codeFromUrl);
+    }
+  }, [searchParams]);
 
   const handleAccessCodeVerified = (data: any) => {
     console.log('Access code verified:', data);
@@ -48,7 +59,7 @@ const Assessment = () => {
   }
 
   if (!isVerified) {
-    return <AccessCodeVerification onVerified={handleAccessCodeVerified} />;
+    return <AccessCodeVerification onVerified={handleAccessCodeVerified} prefilledCode={prefilledCode} />;
   }
 
   return (

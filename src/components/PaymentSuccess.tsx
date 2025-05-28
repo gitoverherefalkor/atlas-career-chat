@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -73,6 +72,11 @@ const PaymentSuccess = () => {
     
     processPayment();
   }, [searchParams, navigate, toast]);
+
+  const handleStartAssessment = () => {
+    // Navigate to assessment with the access code pre-filled
+    navigate(`/assessment?code=${accessCode}`);
+  };
   
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -115,7 +119,7 @@ const PaymentSuccess = () => {
             
             <div className="space-y-3">
               <Button 
-                onClick={() => navigate('/assessment')} 
+                onClick={handleStartAssessment} 
                 className="w-full flex items-center justify-center gap-2"
               >
                 Start Assessment Now
