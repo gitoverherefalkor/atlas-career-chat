@@ -79,10 +79,25 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     try {
       console.log('Marking access code as used:', accessCodeData.id);
       
+      // First get the current usage count
+      const { data: currentCode, error: fetchError } = await supabase
+        .from('access_codes')
+        .select('usage_count')
+        .eq('id', accessCodeData.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current usage count:', fetchError);
+        return;
+      }
+
+      // Increment the usage count
+      const newUsageCount = (currentCode.usage_count || 0) + 1;
+      
       const { error } = await supabase
         .from('access_codes')
         .update({ 
-          usage_count: supabase.sql`usage_count + 1`,
+          usage_count: newUsageCount,
           used_at: new Date().toISOString()
         })
         .eq('id', accessCodeData.id);
