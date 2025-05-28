@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,14 +9,25 @@ import { useNavigate } from 'react-router-dom';
 
 interface AccessCodeVerificationProps {
   onVerified: (accessCodeData: any) => void;
+  prefilledCode?: string;
 }
 
-export const AccessCodeVerification: React.FC<AccessCodeVerificationProps> = ({ onVerified }) => {
+export const AccessCodeVerification: React.FC<AccessCodeVerificationProps> = ({ 
+  onVerified, 
+  prefilledCode 
+}) => {
   const [code, setCode] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
   const [needsPurchase, setNeedsPurchase] = useState(false);
   const navigate = useNavigate();
+
+  // Set the prefilled code when component mounts
+  useEffect(() => {
+    if (prefilledCode) {
+      setCode(prefilledCode);
+    }
+  }, [prefilledCode]);
 
   const handleVerify = async () => {
     if (!code.trim()) {
