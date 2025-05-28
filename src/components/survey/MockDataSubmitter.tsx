@@ -275,30 +275,45 @@ export const MockDataSubmitter: React.FC = () => {
   const submitTestResponse = async () => {
     setIsTestSubmitting(true);
     try {
-      console.log('Submitting test response to trigger Relevance AI integration...');
+      console.log('Starting test response submission...');
       
       // Submit just the first mock response for testing
       const testResponse = mockResponses[0];
-      const { error } = await supabase
+      console.log('Test response data:', testResponse);
+      
+      const { data, error } = await supabase
         .from('answers')
         .insert({
           survey_id: "00000000-0000-0000-0000-000000000001",
           payload: testResponse
-        });
+        })
+        .select();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
 
+      console.log('Insert successful:', data);
+      
       toast({
         title: "Test Response Sent!",
-        description: "Alex Chen's profile has been sent to Relevance AI. Check your agent dashboard!"
+        description: "Alex Chen's profile has been sent to Relevance AI. Check your agent dashboard and edge function logs!"
       });
       
-      console.log('Test response submitted successfully. Check the edge function logs and your Relevance AI agent.');
+      console.log('Test response submitted successfully. The database trigger should now call the edge function.');
     } catch (error) {
-      console.error('Error submitting test response:', error);
+      console.error('Detailed error submitting test response:', error);
+      
+      // More specific error handling
+      let errorMessage = "Failed to submit test response.";
+      if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Test Submission Error",
-        description: "Failed to submit test response. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
