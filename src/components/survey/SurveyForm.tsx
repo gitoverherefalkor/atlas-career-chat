@@ -61,6 +61,24 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const isCurrentQuestionComplete = () => {
     if (!currentQuestion.required) return true;
     const response = responses[currentQuestion.id];
+    
+    // Special handling for different question types
+    if (currentQuestion.type === 'multiple_choice' && currentQuestion.allow_multiple) {
+      const maxSelections = currentQuestion.config?.max_selections;
+      if (maxSelections) {
+        // For questions with max selections, require exact number
+        return Array.isArray(response) && response.length === maxSelections;
+      }
+      // For questions without max selections, require at least one
+      return Array.isArray(response) && response.length > 0;
+    }
+    
+    if (currentQuestion.type === 'ranking') {
+      // For ranking questions, ensure all items are ranked
+      const choices = currentQuestion.config?.choices || [];
+      return Array.isArray(response) && response.length === choices.length;
+    }
+    
     return response !== undefined && response !== null && response !== '';
   };
 

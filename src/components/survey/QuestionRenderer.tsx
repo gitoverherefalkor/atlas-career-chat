@@ -1,306 +1,360 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Question } from '@/hooks/useSurvey';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Button } from '@/components/ui/button';
-import { ChevronUp, ChevronDown } from 'lucide-react';
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface QuestionRendererProps {
   question: Question;
   value: any;
   onChange: (value: any) => void;
-  error?: string;
 }
 
 export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   question,
   value,
   onChange,
-  error
 }) => {
-  const { type, label, required, allow_multiple, allow_other, config } = question;
+  const [otherValue, setOtherValue] = useState('');
+  const [showOther, setShowOther] = useState(false);
 
-  const renderShortText = () => (
-    <div className="space-y-2">
-      <Label htmlFor={question.id} className="text-lg font-medium">
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
-      <Input
-        id={question.id}
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Enter your answer..."
-      />
-    </div>
-  );
-
-  const renderLongText = () => (
-    <div className="space-y-2">
-      <Label htmlFor={question.id} className="text-lg font-medium">
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
-      <Textarea
-        id={question.id}
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Enter your answer..."
-        rows={4}
-      />
-    </div>
-  );
-
-  const renderNumber = () => (
-    <div className="space-y-2">
-      <Label htmlFor={question.id} className="text-lg font-medium">
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
-      <Input
-        id={question.id}
-        type="number"
-        value={value || ''}
-        onChange={(e) => onChange(e.target.value ? Number(e.target.value) : '')}
-        placeholder="Enter a number..."
-      />
-    </div>
-  );
-
-  const renderMultipleChoice = () => {
-    const choices = config.choices || [];
+  const handleMultipleChoiceChange = (optionValue: string, checked: boolean) => {
+    const currentValues = Array.isArray(value) ? value : [];
+    const maxSelections = question.config?.max_selections;
     
-    if (allow_multiple) {
+    if (checked) {
+      // Check if we're at the selection limit
+      if (maxSelections && currentValues.length >= maxSelections) {
+        return; // Don't allow more selections
+      }
+      onChange([...currentValues, optionValue]);
+    } else {
+      onChange(currentValues.filter((v: string) => v !== optionValue));
+    }
+  };
+
+  const handleOtherChange = (otherText: string) => {
+    setOtherValue(otherText);
+    const currentValues = Array.isArray(value) ? value : [];
+    
+    if (otherText.trim()) {
+      // Add or update the "Other" response
+      const filteredValues = currentValues.filter((v: string) => !v.startsWith('Other: '));
+      onChange([...filteredValues, `Other: ${otherText.trim()}`]);
+    } else {
+      // Remove "Other" response if text is empty
+      onChange(currentValues.filter((v: string) => !v.startsWith('Other: ')));
+    }
+  };
+
+  const moveRankingItem = (fromIndex: number, toIndex: number) => {
+    if (!Array.isArray(value) || toIndex < 0 || toIndex >= value.length) return;
+    
+    const newOrder = [...value];
+    const [moved] = newOrder.splice(fromIndex, 1);
+    newOrder.splice(toIndex, 0, moved);
+    onChange(newOrder);
+  };
+
+  const renderDescription = () => {
+    if (!question.config?.description) return null;
+    
+    return (
+      <p className="text-sm text-gray-600 mt-2 mb-4 leading-relaxed">
+        {question.config.description}
+      </p>
+    );
+  };
+
+  const getSelectionLimitText = () => {
+    const maxSelections = question.config?.max_selections;
+    const currentSelections = Array.isArray(value) ? value.length : 0;
+    
+    if (!maxSelections) return null;
+    
+    return (
+      <p className="text-sm text-gray-500 mt-2">
+        Selected: {currentSelections} / {maxSelections}
+      </p>
+    );
+  };
+
+  const isSelectionLimitReached = () => {
+    const maxSelections = question.config?.max_selections;
+    const currentSelections = Array.isArray(value) ? value.length : 0;
+    return maxSelections && currentSelections >= maxSelections;
+  };
+
+  switch (question.type) {
+    case 'short_text':
       return (
-        <div className="space-y-4">
-          <Label className="text-xl font-medium">
-            {label} {required && <span className="text-red-500">*</span>}
-          </Label>
-          <div className="space-y-4">
-            {choices.map((choice, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <Checkbox
-                  id={`${question.id}-${index}`}
-                  checked={Array.isArray(value) && value.includes(choice)}
-                  onCheckedChange={(checked) => {
-                    const currentValue = Array.isArray(value) ? value : [];
-                    if (checked) {
-                      onChange([...currentValue, choice]);
-                    } else {
-                      onChange(currentValue.filter(v => v !== choice));
-                    }
-                  }}
-                />
-                <Label htmlFor={`${question.id}-${index}`} className="text-base font-normal leading-relaxed">
+        <div>
+          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          {renderDescription()}
+          <Input
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Enter your response..."
+            className="w-full"
+          />
+        </div>
+      );
+
+    case 'long_text':
+      return (
+        <div>
+          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          {renderDescription()}
+          <Textarea
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="Enter your response..."
+            className="w-full min-h-[120px]"
+            maxLength={question.config?.max_length}
+          />
+          {question.config?.max_length && (
+            <p className="text-sm text-gray-500 mt-2">
+              {(value || '').length} / {question.config.max_length} characters
+            </p>
+          )}
+        </div>
+      );
+
+    case 'number':
+      return (
+        <div>
+          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          {renderDescription()}
+          <Input
+            type="number"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value ? parseInt(e.target.value) : '')}
+            placeholder="Enter a number..."
+            className="w-full"
+          />
+        </div>
+      );
+
+    case 'dropdown':
+      return (
+        <div>
+          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          {renderDescription()}
+          <Select value={value || ''} onValueChange={onChange}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select an option..." />
+            </SelectTrigger>
+            <SelectContent>
+              {question.config?.choices?.map((choice) => (
+                <SelectItem key={choice} value={choice}>
                   {choice}
-                </Label>
-              </div>
-            ))}
-            {allow_other && (
-              <div className="flex items-start space-x-3">
-                <Checkbox
-                  id={`${question.id}-other`}
-                  checked={Array.isArray(value) && value.some(v => !choices.includes(v))}
-                  onCheckedChange={(checked) => {
-                    const currentValue = Array.isArray(value) ? value : [];
-                    if (!checked) {
-                      onChange(currentValue.filter(v => choices.includes(v)));
-                    }
-                  }}
-                />
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      );
+
+    case 'multiple_choice':
+      if (!question.allow_multiple) {
+        // Single selection
+        return (
+          <div>
+            <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+            {renderDescription()}
+            <RadioGroup value={value || ''} onValueChange={onChange} className="space-y-4">
+              {question.config?.choices?.map((choice) => (
+                <div key={choice} className="flex items-center space-x-3">
+                  <RadioGroupItem value={choice} id={choice} />
+                  <Label htmlFor={choice} className="text-base leading-relaxed cursor-pointer">
+                    {choice}
+                  </Label>
+                </div>
+              ))}
+              {question.allow_other && (
+                <div className="flex items-center space-x-3">
+                  <RadioGroupItem value="other" id="other" />
+                  <Label htmlFor="other" className="text-base leading-relaxed cursor-pointer">
+                    Other
+                  </Label>
+                </div>
+              )}
+            </RadioGroup>
+            {question.allow_other && value === 'other' && (
+              <div className="mt-4">
                 <Input
-                  placeholder="Other (please specify)"
-                  value={Array.isArray(value) ? value.find(v => !choices.includes(v)) || '' : ''}
+                  value={otherValue}
                   onChange={(e) => {
-                    const currentValue = Array.isArray(value) ? value : [];
-                    const otherValues = currentValue.filter(v => choices.includes(v));
-                    if (e.target.value) {
-                      onChange([...otherValues, e.target.value]);
-                    } else {
-                      onChange(otherValues);
-                    }
+                    setOtherValue(e.target.value);
+                    onChange(`Other: ${e.target.value}`);
                   }}
-                  className="flex-1 mt-0"
+                  placeholder="Please specify..."
+                  className="w-full"
                 />
               </div>
             )}
           </div>
-        </div>
-      );
-    } else {
+        );
+      } else {
+        // Multiple selection
+        const currentValues = Array.isArray(value) ? value : [];
+        return (
+          <div>
+            <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+            {renderDescription()}
+            <div className="space-y-4">
+              {question.config?.choices?.map((choice) => {
+                const isChecked = currentValues.includes(choice);
+                const isDisabled = !isChecked && isSelectionLimitReached();
+                
+                return (
+                  <div key={choice} className="flex items-center space-x-3">
+                    <Checkbox
+                      id={choice}
+                      checked={isChecked}
+                      disabled={isDisabled}
+                      onCheckedChange={(checked) => handleMultipleChoiceChange(choice, checked as boolean)}
+                    />
+                    <Label 
+                      htmlFor={choice} 
+                      className={`text-base leading-relaxed cursor-pointer ${isDisabled ? 'text-gray-400' : ''}`}
+                    >
+                      {choice}
+                    </Label>
+                  </div>
+                );
+              })}
+              {question.allow_other && (
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      id="other-checkbox"
+                      checked={showOther || currentValues.some((v: string) => v.startsWith('Other: '))}
+                      disabled={!showOther && !currentValues.some((v: string) => v.startsWith('Other: ')) && isSelectionLimitReached()}
+                      onCheckedChange={(checked) => {
+                        setShowOther(checked as boolean);
+                        if (!checked) {
+                          handleOtherChange('');
+                          setOtherValue('');
+                        }
+                      }}
+                    />
+                    <Label htmlFor="other-checkbox" className="text-base leading-relaxed cursor-pointer">
+                      Other
+                    </Label>
+                  </div>
+                  {(showOther || currentValues.some((v: string) => v.startsWith('Other: '))) && (
+                    <Input
+                      value={otherValue}
+                      onChange={(e) => handleOtherChange(e.target.value)}
+                      placeholder="Please specify..."
+                      className="w-full ml-6"
+                    />
+                  )}
+                </div>
+              )}
+            </div>
+            {getSelectionLimitText()}
+          </div>
+        );
+      }
+
+    case 'rating':
+      const min = question.config?.min || 1;
+      const max = question.config?.max || 10;
+      const currentValue = value ? [value] : [min];
+      
       return (
-        <div className="space-y-4">
-          <Label className="text-xl font-medium">
-            {label} {required && <span className="text-red-500">*</span>}
-          </Label>
-          <RadioGroup value={value || ''} onValueChange={onChange}>
-            {choices.map((choice, index) => (
-              <div key={index} className="flex items-center space-x-3">
-                <RadioGroupItem value={choice} id={`${question.id}-${index}`} />
-                <Label htmlFor={`${question.id}-${index}`} className="text-base font-normal leading-relaxed">
-                  {choice}
-                </Label>
-              </div>
-            ))}
-            {allow_other && (
-              <div className="flex items-start space-x-3">
-                <RadioGroupItem value="__other__" id={`${question.id}-other`} />
-                <Input
-                  placeholder="Other (please specify)"
-                  value={value && !choices.includes(value) ? value : ''}
-                  onChange={(e) => onChange(e.target.value)}
-                  onFocus={() => onChange('__other__')}
-                  className="flex-1 mt-0"
-                />
-              </div>
-            )}
-          </RadioGroup>
-        </div>
-      );
-    }
-  };
-
-  const renderDropdown = () => (
-    <div className="space-y-2">
-      <Label className="text-lg font-medium">
-        {label} {required && <span className="text-red-500">*</span>}
-      </Label>
-      <Select value={value || ''} onValueChange={onChange}>
-        <SelectTrigger>
-          <SelectValue placeholder="Select an option..." />
-        </SelectTrigger>
-        <SelectContent>
-          {(config.choices || []).map((choice, index) => (
-            <SelectItem key={index} value={choice}>
-              {choice}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-  );
-
-  const renderRating = () => {
-    const min = config.min || 1;
-    const max = config.max || 10;
-    const currentValue = value || min;
-    
-    // Calculate the color based on the current value
-    const percentage = ((currentValue - min) / (max - min)) * 100;
-    const red = Math.round(255 * (1 - percentage / 100));
-    const green = Math.round(255 * (percentage / 100));
-    const currentColor = `rgb(${red}, ${green}, 0)`;
-
-    return (
-      <div className="space-y-4">
-        <Label className="text-xl font-medium">
-          {label} {required && <span className="text-red-500">*</span>}
-        </Label>
-        <div className="space-y-4">
-          <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600">{min}</span>
-            <div className="flex-1 relative">
+        <div>
+          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          {renderDescription()}
+          <div className="space-y-4">
+            <div className="px-4">
               <Slider
-                value={[currentValue]}
-                onValueChange={(values) => onChange(values[0])}
+                value={currentValue}
+                onValueChange={(newValue) => onChange(newValue[0])}
                 min={min}
                 max={max}
                 step={1}
-                className="relative z-10"
+                className="w-full"
               />
             </div>
-            <span className="text-sm text-gray-600">{max}</span>
-          </div>
-          <div className="text-center">
-            <span 
-              className="text-lg font-semibold px-3 py-1 rounded-full"
-              style={{ 
-                backgroundColor: currentColor,
-                color: percentage > 50 ? 'black' : 'white'
-              }}
-            >
-              {currentValue}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderRanking = () => {
-    const choices = config.choices || [];
-    const currentRanking = Array.isArray(value) ? value : choices.slice();
-
-    const moveItem = (fromIndex: number, toIndex: number) => {
-      const newRanking = [...currentRanking];
-      const [movedItem] = newRanking.splice(fromIndex, 1);
-      newRanking.splice(toIndex, 0, movedItem);
-      onChange(newRanking);
-    };
-
-    return (
-      <div className="space-y-3">
-        <Label className="text-lg font-medium">
-          {label} {required && <span className="text-red-500">*</span>}
-        </Label>
-        <p className="text-sm text-gray-600">Drag items to rank them in order of importance (most important first):</p>
-        <div className="space-y-2">
-          {currentRanking.map((choice, index) => (
-            <div key={choice} className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg">
-              <span className="font-semibold text-gray-600 w-6">{index + 1}.</span>
-              <span className="flex-1">{choice}</span>
-              <div className="flex space-x-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => moveItem(index, Math.max(0, index - 1))}
-                  disabled={index === 0}
-                >
-                  <ChevronUp className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => moveItem(index, Math.min(currentRanking.length - 1, index + 1))}
-                  disabled={index === currentRanking.length - 1}
-                >
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </div>
+            <div className="flex justify-between text-sm text-gray-600 px-4">
+              <span>{min}</span>
+              <span className="font-medium text-lg text-atlas-navy">
+                {currentValue[0]}
+              </span>
+              <span>{max}</span>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
-    );
-  };
+      );
 
-  const renderQuestion = () => {
-    switch (type) {
-      case 'short_text':
-        return renderShortText();
-      case 'long_text':
-        return renderLongText();
-      case 'number':
-        return renderNumber();
-      case 'multiple_choice':
-        return renderMultipleChoice();
-      case 'dropdown':
-        return renderDropdown();
-      case 'rating':
-        return renderRating();
-      case 'ranking':
-        return renderRanking();
-      default:
-        return <div>Unsupported question type: {type}</div>;
-    }
-  };
+    case 'ranking':
+      const rankingChoices = question.config?.choices || [];
+      const rankedItems = Array.isArray(value) && value.length > 0 ? value : [...rankingChoices];
+      
+      return (
+        <div>
+          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          {renderDescription()}
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600 mb-4">
+              Drag or use arrows to reorder items (most important at top)
+            </p>
+            {rankedItems.map((item: string, index: number) => (
+              <div
+                key={item}
+                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm font-medium text-gray-500 w-6">
+                    {index + 1}.
+                  </span>
+                  <span className="text-base">{item}</span>
+                </div>
+                <div className="flex space-x-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => moveRankingItem(index, index - 1)}
+                    disabled={index === 0}
+                    className="p-1 h-8 w-8"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => moveRankingItem(index, index + 1)}
+                    disabled={index === rankedItems.length - 1}
+                    className="p-1 h-8 w-8"
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
 
-  return (
-    <div className="space-y-2">
-      {renderQuestion()}
-      {error && <p className="text-sm text-red-500">{error}</p>}
-    </div>
-  );
+    default:
+      return (
+        <div>
+          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          {renderDescription()}
+          <p className="text-red-500">Unsupported question type: {question.type}</p>
+        </div>
+      );
+  }
 };
