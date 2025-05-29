@@ -14,6 +14,9 @@ export interface Question {
     choices?: string[];
     min?: number;
     max?: number;
+    max_selections?: number;
+    description?: string;
+    max_length?: number;
   };
 }
 
@@ -75,7 +78,14 @@ export const useSurvey = (surveyId: string) => {
             allow_other: q.allow_other || false,
             order_num: q.order_num || 0,
             config: typeof q.config === 'object' && q.config !== null 
-              ? q.config as { choices?: string[]; min?: number; max?: number; }
+              ? q.config as { 
+                  choices?: string[]; 
+                  min?: number; 
+                  max?: number; 
+                  max_selections?: number;
+                  description?: string;
+                  max_length?: number;
+                }
               : {}
           }))
       }));
