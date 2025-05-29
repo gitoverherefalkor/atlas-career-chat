@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
 import { QuestionRenderer } from './QuestionRenderer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -199,33 +198,17 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      {/* Header with access code info */}
-      {accessCodeData && (
-        <Card className="mb-6 bg-green-50 border-green-200">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-green-800">
-                  Access Code Verified: {accessCodeData.code}
-                </p>
-                <p className="text-xs text-green-600">
-                  Survey: {accessCodeData.survey_type}
-                </p>
-              </div>
-              <div className="text-xs text-green-600">
-                Remaining uses: {accessCodeData.remaining_uses}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Progress */}
+      {/* Header with smaller, grey title */}
       <div className="mb-6">
+        <h1 className="text-lg font-normal text-gray-600 mb-4">{survey.title}</h1>
+        
+        {/* Progress with section info */}
         <div className="flex justify-between items-center mb-2">
-          <h1 className="text-2xl font-bold">{survey.title}</h1>
+          <span className="text-sm text-gray-600">
+            Section {currentSectionIndex + 1}. {currentSection.title}
+          </span>
           <span className="text-sm text-gray-500">
-            Question {currentQuestionNumber} of {totalQuestions}
+            Q. {currentQuestionNumber} of {totalQuestions}
           </span>
         </div>
         <Progress value={progress} className="w-full" />
@@ -233,10 +216,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
       {/* Current Question */}
       <Card>
-        <CardHeader>
-          <CardTitle>{currentSection.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 pt-6">
           <QuestionRenderer
             key={currentQuestion.id}
             question={currentQuestion}
@@ -247,9 +227,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           {/* Navigation */}
           <div className="flex justify-between pt-6">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={handleBack}
               disabled={isFirstQuestion()}
+              className={isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
@@ -259,6 +240,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
               <Button
                 onClick={handleNext}
                 disabled={!isCurrentQuestionComplete()}
+                className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
               >
                 Continue
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -267,6 +249,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
               <Button
                 onClick={handleSubmit}
                 disabled={!isCurrentQuestionComplete() || isSubmitting}
+                className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
               >
                 {isSubmitting ? (
                   <>
