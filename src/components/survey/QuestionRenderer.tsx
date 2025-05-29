@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Question } from '@/hooks/useSurvey';
 import { Input } from '@/components/ui/input';
@@ -75,13 +74,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     
     if (allow_multiple) {
       return (
-        <div className="space-y-3">
-          <Label className="text-lg font-medium">
+        <div className="space-y-4">
+          <Label className="text-xl font-medium">
             {label} {required && <span className="text-red-500">*</span>}
           </Label>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {choices.map((choice, index) => (
-              <div key={index} className="flex items-center space-x-2">
+              <div key={index} className="flex items-center space-x-3">
                 <Checkbox
                   id={`${question.id}-${index}`}
                   checked={Array.isArray(value) && value.includes(choice)}
@@ -94,13 +93,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     }
                   }}
                 />
-                <Label htmlFor={`${question.id}-${index}`} className="text-sm font-normal">
+                <Label htmlFor={`${question.id}-${index}`} className="text-base font-normal leading-relaxed">
                   {choice}
                 </Label>
               </div>
             ))}
             {allow_other && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start space-x-3">
                 <Checkbox
                   id={`${question.id}-other`}
                   checked={Array.isArray(value) && value.some(v => !choices.includes(v))}
@@ -123,7 +122,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       onChange(otherValues);
                     }
                   }}
-                  className="flex-1"
+                  className="flex-1 mt-0"
                 />
               </div>
             )}
@@ -132,28 +131,28 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       );
     } else {
       return (
-        <div className="space-y-3">
-          <Label className="text-lg font-medium">
+        <div className="space-y-4">
+          <Label className="text-xl font-medium">
             {label} {required && <span className="text-red-500">*</span>}
           </Label>
           <RadioGroup value={value || ''} onValueChange={onChange}>
             {choices.map((choice, index) => (
-              <div key={index} className="flex items-center space-x-2">
+              <div key={index} className="flex items-center space-x-3">
                 <RadioGroupItem value={choice} id={`${question.id}-${index}`} />
-                <Label htmlFor={`${question.id}-${index}`} className="text-sm font-normal">
+                <Label htmlFor={`${question.id}-${index}`} className="text-base font-normal leading-relaxed">
                   {choice}
                 </Label>
               </div>
             ))}
             {allow_other && (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start space-x-3">
                 <RadioGroupItem value="__other__" id={`${question.id}-other`} />
                 <Input
                   placeholder="Other (please specify)"
                   value={value && !choices.includes(value) ? value : ''}
                   onChange={(e) => onChange(e.target.value)}
                   onFocus={() => onChange('__other__')}
-                  className="flex-1"
+                  className="flex-1 mt-0"
                 />
               </div>
             )}
@@ -196,19 +195,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
     return (
       <div className="space-y-4">
-        <Label className="text-lg font-medium">
+        <Label className="text-xl font-medium">
           {label} {required && <span className="text-red-500">*</span>}
         </Label>
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <span className="text-sm text-gray-600">{min}</span>
             <div className="flex-1 relative">
-              <div 
-                className="absolute inset-0 h-2 rounded-full"
-                style={{
-                  background: `linear-gradient(to right, rgb(255, 0, 0), rgb(255, 255, 0), rgb(0, 255, 0))`
-                }}
-              />
               <Slider
                 value={[currentValue]}
                 onValueChange={(values) => onChange(values[0])}

@@ -200,19 +200,21 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   return (
     <div className="max-w-4xl mx-auto p-6">
       {/* Header with smaller, grey title */}
-      <div className="mb-6">
-        <h1 className="text-lg font-normal text-gray-600 mb-4">{survey.title}</h1>
+      <div className="mb-12">
+        <h1 className="text-lg font-normal text-gray-600 mb-8">{survey.title}</h1>
         
         {/* Progress with section info */}
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm text-gray-600">
-            Section {currentSectionIndex + 1}. {currentSection.title}
-          </span>
-          <span className="text-sm font-bold text-atlas-navy">
-            Q. {currentQuestionInSection} of {totalQuestionsInSection}
-          </span>
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-bold text-atlas-navy">
+              Section {currentSectionIndex + 1}. {currentSection.title}
+            </span>
+            <span className="text-sm font-bold text-atlas-navy">
+              Q. {currentQuestionInSection} of {totalQuestionsInSection}
+            </span>
+          </div>
+          <Progress value={progress} className="w-full" />
         </div>
-        <Progress value={progress} className="w-full" />
       </div>
 
       {/* Current Question */}
@@ -244,6 +246,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
                 onClick={handleNext}
                 disabled={!isCurrentQuestionComplete()}
                 className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
+                style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
               >
                 Continue
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -253,6 +256,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
                 onClick={handleSubmit}
                 disabled={!isCurrentQuestionComplete() || isSubmitting}
                 className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
+                style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
               >
                 {isSubmitting ? (
                   <>
