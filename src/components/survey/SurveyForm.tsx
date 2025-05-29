@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
 import { QuestionRenderer } from './QuestionRenderer';
@@ -45,10 +46,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const currentSection = survey.sections[currentSectionIndex];
   const currentQuestion = currentSection.questions[currentQuestionIndex];
   
-  // Calculate total questions across all sections for progress
-  const totalQuestions = survey.sections.reduce((total, section) => total + section.questions.length, 0);
-  const currentQuestionNumber = survey.sections.slice(0, currentSectionIndex).reduce((total, section) => total + section.questions.length, 0) + currentQuestionIndex + 1;
-  const progress = (currentQuestionNumber / totalQuestions) * 100;
+  // Calculate progress within current section only
+  const currentQuestionInSection = currentQuestionIndex + 1;
+  const totalQuestionsInSection = currentSection.questions.length;
+  const progress = (currentQuestionInSection / totalQuestionsInSection) * 100;
 
   const handleResponseChange = (questionId: string, value: any) => {
     setResponses(prev => ({
@@ -207,8 +208,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           <span className="text-sm text-gray-600">
             Section {currentSectionIndex + 1}. {currentSection.title}
           </span>
-          <span className="text-sm text-gray-500">
-            Q. {currentQuestionNumber} of {totalQuestions}
+          <span className="text-sm font-bold text-atlas-navy">
+            Q. {currentQuestionInSection} of {totalQuestionsInSection}
           </span>
         </div>
         <Progress value={progress} className="w-full" />
@@ -217,12 +218,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       {/* Current Question */}
       <Card>
         <CardContent className="space-y-6 pt-6">
-          <QuestionRenderer
-            key={currentQuestion.id}
-            question={currentQuestion}
-            value={responses[currentQuestion.id]}
-            onChange={(value) => handleResponseChange(currentQuestion.id, value)}
-          />
+          <div className="text-lg font-medium text-gray-900">
+            <QuestionRenderer
+              key={currentQuestion.id}
+              question={currentQuestion}
+              value={responses[currentQuestion.id]}
+              onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+            />
+          </div>
 
           {/* Navigation */}
           <div className="flex justify-between pt-6">

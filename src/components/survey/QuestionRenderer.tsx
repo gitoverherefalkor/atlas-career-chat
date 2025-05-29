@@ -28,7 +28,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   const renderShortText = () => (
     <div className="space-y-2">
-      <Label htmlFor={question.id}>
+      <Label htmlFor={question.id} className="text-lg font-medium">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       <Input
@@ -42,7 +42,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   const renderLongText = () => (
     <div className="space-y-2">
-      <Label htmlFor={question.id}>
+      <Label htmlFor={question.id} className="text-lg font-medium">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       <Textarea
@@ -57,7 +57,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   const renderNumber = () => (
     <div className="space-y-2">
-      <Label htmlFor={question.id}>
+      <Label htmlFor={question.id} className="text-lg font-medium">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       <Input
@@ -76,7 +76,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     if (allow_multiple) {
       return (
         <div className="space-y-3">
-          <Label>
+          <Label className="text-lg font-medium">
             {label} {required && <span className="text-red-500">*</span>}
           </Label>
           <div className="space-y-2">
@@ -133,7 +133,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     } else {
       return (
         <div className="space-y-3">
-          <Label>
+          <Label className="text-lg font-medium">
             {label} {required && <span className="text-red-500">*</span>}
           </Label>
           <RadioGroup value={value || ''} onValueChange={onChange}>
@@ -165,7 +165,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   const renderDropdown = () => (
     <div className="space-y-2">
-      <Label>
+      <Label className="text-lg font-medium">
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       <Select value={value || ''} onValueChange={onChange}>
@@ -196,7 +196,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
     return (
       <div className="space-y-4">
-        <Label>
+        <Label className="text-lg font-medium">
           {label} {required && <span className="text-red-500">*</span>}
         </Label>
         <div className="space-y-4">
@@ -249,7 +249,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
     return (
       <div className="space-y-3">
-        <Label>
+        <Label className="text-lg font-medium">
           {label} {required && <span className="text-red-500">*</span>}
         </Label>
         <p className="text-sm text-gray-600">Drag items to rank them in order of importance (most important first):</p>
