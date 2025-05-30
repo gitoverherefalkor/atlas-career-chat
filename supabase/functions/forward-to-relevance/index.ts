@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -31,8 +32,45 @@ serve(async (req) => {
       });
     }
 
-    // Convert the survey data to a JSON string as expected by Relevance AI
-    const content = JSON.stringify(surveyData);
+    // Initialize Supabase client
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+
+    // Step 1: Create a report record first
+    console.log('Creating report record...');
+    const { data: reportData, error: reportError } = await supabase
+      .from('reports')
+      .insert({
+        user_id: requestBody.user_id || null, // Pass user_id if available
+        title: 'Career Assessment Report',
+        status: 'processing',
+        payload: surveyData,
+        access_code_id: requestBody.access_code_id || null,
+        survey_id: requestBody.survey_id || null
+      })
+      .select()
+      .single();
+
+    if (reportError) {
+      console.error('Error creating report:', reportError);
+      return new Response(JSON.stringify({ error: 'Failed to create report record' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Report created with ID:', reportData.id);
+
+    // Step 2: Prepare the survey data with the report_id for Relevance AI
+    const enhancedSurveyData = {
+      ...surveyData,
+      report_id: reportData.id, // Add the report_id to the payload
+    };
+
+    // Convert the enhanced survey data to a JSON string as expected by Relevance AI
+    const content = JSON.stringify(enhancedSurveyData);
 
     // Build the Relevance AI request body
     const body = {
@@ -41,7 +79,7 @@ serve(async (req) => {
     };
 
     console.log('Sending to Relevance AI with agent_id:', Deno.env.get("RELEVANCE_AGENT_ID"));
-    console.log('Request body for Relevance AI:', JSON.stringify(body, null, 2));
+    console.log('Request body for Relevance AI includes report_id:', reportData.id);
 
     // POST to Relevance AI
     const resp = await fetch(
@@ -59,6 +97,13 @@ serve(async (req) => {
     if (!resp.ok) {
       const err = await resp.text();
       console.error("Relevance AI error:", resp.status, err);
+      
+      // Update report status to failed
+      await supabase
+        .from('reports')
+        .update({ status: 'failed' })
+        .eq('id', reportData.id);
+      
       return new Response(`Upstream error: ${resp.status} ${err}`, { 
         status: 502,
         headers: corsHeaders 
@@ -68,7 +113,17 @@ serve(async (req) => {
     const result = await resp.json();
     console.log('Relevance AI response:', result);
 
-    return new Response(JSON.stringify({ success: true, result }), {
+    // Update report status to completed
+    await supabase
+      .from('reports')
+      .update({ status: 'completed' })
+      .eq('id', reportData.id);
+
+    return new Response(JSON.stringify({ 
+      success: true, 
+      result,
+      report_id: reportData.id 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
