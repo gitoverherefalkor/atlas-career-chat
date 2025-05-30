@@ -1,7 +1,7 @@
-
 import React, { useState } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
 import { QuestionRenderer } from './QuestionRenderer';
+import { SectionIntroduction } from './SectionIntroduction';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -15,6 +15,16 @@ interface SurveyFormProps {
   accessCodeData?: any;
 }
 
+const sectionDescriptions: Record<number, string> = {
+  1: "Let's start with some basic information about you and your current situation.",
+  2: "Now we'll explore how you think, make decisions, and approach work challenges.",
+  3: "What drives you? Let's understand your core values and what motivates you professionally.",
+  4: "Time to dive into your interests, skills, and professional aspirations.",
+  5: "How do you work best with others? Let's explore your team and leadership preferences.",
+  6: "Understanding emotions and relationships is crucial for career success.",
+  7: "Finally, let's talk about your future goals and development aspirations."
+};
+
 export const SurveyForm: React.FC<SurveyFormProps> = ({ 
   surveyId, 
   onComplete, 
@@ -25,6 +35,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSectionIntro, setShowSectionIntro] = useState(true);
   const { toast } = useToast();
 
   if (isLoading) {
@@ -82,6 +93,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     return response !== undefined && response !== null && response !== '';
   };
 
+  const handleSectionIntroContinue = () => {
+    setShowSectionIntro(false);
+  };
+
   const handleNext = () => {
     // Move to next question in current section
     if (currentQuestionIndex < currentSection.questions.length - 1) {
@@ -91,6 +106,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     else if (currentSectionIndex < survey.sections.length - 1) {
       setCurrentSectionIndex(currentSectionIndex + 1);
       setCurrentQuestionIndex(0);
+      setShowSectionIntro(true); // Show intro for next section
     }
   };
 
@@ -104,6 +120,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       const prevSection = survey.sections[currentSectionIndex - 1];
       setCurrentSectionIndex(currentSectionIndex - 1);
       setCurrentQuestionIndex(prevSection.questions.length - 1);
+      setShowSectionIntro(false); // Go directly to questions, not intro
     }
   };
 
@@ -113,7 +130,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   };
 
   const isFirstQuestion = () => {
-    return currentSectionIndex === 0 && currentQuestionIndex === 0;
+    return currentSectionIndex === 0 && currentQuestionIndex === 0 && !showSectionIntro;
   };
 
   const markAccessCodeAsUsed = async () => {
@@ -214,6 +231,20 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       setIsSubmitting(false);
     }
   };
+
+  // Show section introduction if we're at the start of a section (except first section first time)
+  if (showSectionIntro && !(currentSectionIndex === 0 && currentQuestionIndex === 0)) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <SectionIntroduction
+          sectionNumber={currentSectionIndex + 1}
+          sectionTitle={currentSection.title}
+          description={sectionDescriptions[currentSectionIndex + 1] || "Let's continue with the next set of questions."}
+          onContinue={handleSectionIntroContinue}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-6">
