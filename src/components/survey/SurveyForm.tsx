@@ -191,15 +191,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       console.log('Access code data:', accessCodeData);
       console.log('User:', user);
 
-      // Submit to database with access code reference and user ID
+      // Submit to database with access code reference
+      const answerData: any = {
+        survey_id: surveyId,
+        payload: responses,
+        access_code_id: accessCodeData?.id
+      };
+
       const { data: submissionData, error: submissionError } = await supabase
         .from('answers')
-        .insert({
-          survey_id: surveyId,
-          payload: responses,
-          access_code_id: accessCodeData?.id,
-          user_id: user?.id
-        })
+        .insert(answerData)
         .select();
 
       if (submissionError) {

@@ -41,70 +41,18 @@ const Assessment = () => {
 
   const handleAccessCodeVerified = async (data: any) => {
     console.log('Access code verified:', data);
-    
-    try {
-      // Link the access code to the current user
-      const { error } = await supabase
-        .from('access_codes')
-        .update({ user_id: user?.id })
-        .eq('id', data.id);
-
-      if (error) {
-        console.error('Error linking access code to user:', error);
-        toast({
-          title: "Error",
-          description: "Failed to link access code to your account.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setAccessCodeData(data);
-      setIsVerified(true);
-    } catch (error) {
-      console.error('Error linking access code:', error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred.",
-        variant: "destructive",
-      });
-    }
+    setAccessCodeData(data);
+    setIsVerified(true);
   };
 
   const handleSurveyComplete = async (responses: Record<string, any>) => {
     console.log('Survey completed with responses:', responses);
     console.log('Using access code:', accessCodeData);
     
-    try {
-      // Create a report entry for this assessment
-      const { data: reportData, error: reportError } = await supabase
-        .from('reports')
-        .insert({
-          user_id: user?.id,
-          access_code_id: accessCodeData?.id,
-          title: 'Atlas Career Assessment Report',
-          status: 'processing'
-        })
-        .select()
-        .single();
-
-      if (reportError) {
-        console.error('Error creating report:', reportError);
-        toast({
-          title: "Warning",
-          description: "Assessment submitted but report creation failed. Please contact support.",
-          variant: "destructive",
-        });
-      } else {
-        console.log('Report created:', reportData);
-        toast({
-          title: "Assessment Complete!",
-          description: "Your report is being generated and will be available in your dashboard.",
-        });
-      }
-    } catch (error) {
-      console.error('Error creating report:', error);
-    }
+    toast({
+      title: "Assessment Complete!",
+      description: "Your assessment has been submitted successfully.",
+    });
     
     setIsCompleted(true);
   };
@@ -136,7 +84,7 @@ const Assessment = () => {
             </div>
             <h1 className="text-2xl font-bold mb-2">Assessment Complete!</h1>
             <p className="text-gray-600 mb-6">
-              Thank you for completing the Atlas Career Assessment. Your personalized report is being generated and will be available in your dashboard shortly.
+              Thank you for completing the Atlas Career Assessment. Your personalized report will be available soon.
             </p>
             <div className="space-y-3">
               <Button onClick={() => navigate('/dashboard')} className="w-full">
