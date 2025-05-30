@@ -1,19 +1,22 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, User, LogOut, FileText, Plus, Settings } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Loader2, User, LogOut, FileText, Plus, Settings, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
+import ReportSections from '@/components/ReportSections';
 
 const Dashboard = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { reports, isLoading: reportsLoading } = useReports();
+  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -161,7 +164,12 @@ const Dashboard = () => {
                         {report.status}
                       </span>
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setSelectedReportId(report.id)}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
                       View Report
                     </Button>
                   </div>
@@ -171,6 +179,18 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Report Modal */}
+      <Dialog open={!!selectedReportId} onOpenChange={() => setSelectedReportId(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Assessment Report</DialogTitle>
+          </DialogHeader>
+          {selectedReportId && (
+            <ReportSections reportId={selectedReportId} />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
