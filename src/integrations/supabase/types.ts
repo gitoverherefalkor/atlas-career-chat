@@ -22,6 +22,7 @@ export type Database = {
           survey_type: string | null
           usage_count: number | null
           used_at: string | null
+          user_id: string | null
         }
         Insert: {
           code: string
@@ -35,6 +36,7 @@ export type Database = {
           survey_type?: string | null
           usage_count?: number | null
           used_at?: string | null
+          user_id?: string | null
         }
         Update: {
           code?: string
@@ -48,6 +50,7 @@ export type Database = {
           survey_type?: string | null
           usage_count?: number | null
           used_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -89,6 +92,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      profiles: {
+        Row: {
+          age_range: string | null
+          country: string | null
+          created_at: string
+          email: string
+          first_name: string | null
+          id: string
+          last_name: string | null
+          pronouns: string | null
+          updated_at: string
+        }
+        Insert: {
+          age_range?: string | null
+          country?: string | null
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          pronouns?: string | null
+          updated_at?: string
+        }
+        Update: {
+          age_range?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          pronouns?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
       purchases: {
         Row: {
@@ -174,6 +213,57 @@ export type Database = {
             columns: ["section_id"]
             isOneToOne: false
             referencedRelation: "sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          access_code_id: string | null
+          created_at: string
+          id: string
+          payload: Json
+          status: string
+          survey_id: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_code_id?: string | null
+          created_at?: string
+          id?: string
+          payload: Json
+          status?: string
+          survey_id?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_code_id?: string | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          status?: string
+          survey_id?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_access_code_id_fkey"
+            columns: ["access_code_id"]
+            isOneToOne: false
+            referencedRelation: "access_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
             referencedColumns: ["id"]
           },
         ]

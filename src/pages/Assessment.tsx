@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useReports } from '@/hooks/useReports';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,6 +18,7 @@ const Assessment = () => {
   const [accessCodeData, setAccessCodeData] = useState<any>(null);
   const [prefilledCode, setPrefilledCode] = useState<string | null>(null);
   const { user, isLoading: authLoading } = useAuth();
+  const { createReport } = useReports();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -48,6 +50,39 @@ const Assessment = () => {
   const handleSurveyComplete = async (responses: Record<string, any>) => {
     console.log('Survey completed with responses:', responses);
     console.log('Using access code:', accessCodeData);
+    
+    // Save the assessment report
+    try {
+      createReport({
+        title: `Atlas Career Assessment - ${new Date().toLocaleDateString()}`,
+        payload: {
+          responses,
+          accessCode: accessCodeData?.accessCode?.code,
+          completedAt: new Date().toISOString(),
+        },
+        access_code_id: accessCodeData?.accessCode?.id,
+        survey_id: "00000000-0000-0000-0000-000000000001",
+      });
+
+      // Update access code usage count
+      if (accessCodeData?.accessCode?.id) {
+        await supabase
+          .from('access_codes')
+          .update({ 
+            usage_count: (accessCodeData.accessCode.usage_count || 0) + 1,
+            used_at: new Date().toISOString(),
+            user_id: user?.id
+          })
+          .eq('id', accessCodeData.accessCode.id);
+      }
+    } catch (error) {
+      console.error('Error saving report:', error);
+      toast({
+        title: "Warning",
+        description: "Assessment completed but failed to save report. Your responses were submitted successfully.",
+        variant: "destructive",
+      });
+    }
     
     toast({
       title: "Assessment Complete!",
@@ -84,7 +119,7 @@ const Assessment = () => {
             </div>
             <h1 className="text-2xl font-bold mb-2">Assessment Complete!</h1>
             <p className="text-gray-600 mb-6">
-              Thank you for completing the Atlas Career Assessment. Your personalized report will be available soon.
+              Thank you for completing the Atlas Career Assessment. Your personalized report has been saved to your dashboard.
             </p>
             <div className="space-y-3">
               <Button onClick={() => navigate('/dashboard')} className="w-full">

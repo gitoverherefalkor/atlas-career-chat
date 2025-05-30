@@ -1,47 +1,21 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, User, LogOut, FileText, Plus } from 'lucide-react';
+import { Loader2, User, LogOut, FileText, Plus, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
+import { useReports } from '@/hooks/useReports';
 
 const Dashboard = () => {
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading: authLoading } = useAuth();
+  const { profile, isLoading: profileLoading } = useProfile();
+  const { reports, isLoading: reportsLoading } = useReports();
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (!session) {
-          navigate('/auth');
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (!session) {
-        navigate('/auth');
-      } else {
-        setIsLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
 
   const handleSignOut = async () => {
     try {
@@ -64,13 +38,22 @@ const Dashboard = () => {
     }
   };
 
-  if (isLoading) {
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
+
+  if (!user) {
+    navigate('/auth');
+    return null;
+  }
+
+  const displayName = profile?.first_name && profile?.last_name 
+    ? `${profile.first_name} ${profile.last_name}`
+    : profile?.email || user.email;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -85,9 +68,13 @@ const Dashboard = () => {
               <div className="flex items-center space-x-2">
                 <User className="h-4 w-4 text-gray-500" />
                 <span className="text-sm text-gray-700">
-                  {user?.email}
+                  {displayName}
                 </span>
               </div>
+              <Button variant="outline" onClick={() => navigate('/profile')}>
+                <Settings className="h-4 w-4 mr-2" />
+                Profile
+              </Button>
               <Button variant="outline" onClick={handleSignOut}>
                 <LogOut className="h-4 w-4 mr-2" />
                 Sign Out
@@ -101,7 +88,7 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back!
+            Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
           </h2>
           <p className="text-gray-600">
             Manage your career assessments and view your personalized reports.
@@ -132,29 +119,55 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Your Reports</h3>
-                  <p className="text-sm text-gray-600">View completed assessments</p>
+                  <p className="text-sm text-gray-600">{reports.length} completed assessments</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Reports List Placeholder */}
+        {/* Reports List */}
         <Card>
           <CardHeader>
             <CardTitle>Your Assessment Reports</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
-              <p className="text-gray-600 mb-4">
-                Take your first assessment to get personalized career insights.
-              </p>
-              <Button onClick={() => navigate('/assessment')}>
-                Start Your First Assessment
-              </Button>
-            </div>
+            {reportsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                <span>Loading reports...</span>
+              </div>
+            ) : reports.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
+                <p className="text-gray-600 mb-4">
+                  Take your first assessment to get personalized career insights.
+                </p>
+                <Button onClick={() => navigate('/assessment')}>
+                  Start Your First Assessment
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {reports.map((report) => (
+                  <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{report.title}</h4>
+                      <p className="text-sm text-gray-600">
+                        Completed on {new Date(report.created_at).toLocaleDateString()}
+                      </p>
+                      <span className="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
+                        {report.status}
+                      </span>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      View Report
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
