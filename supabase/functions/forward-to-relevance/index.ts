@@ -63,23 +63,21 @@ serve(async (req) => {
 
     console.log('Report created with ID:', reportData.id);
 
-    // Step 2: Prepare the survey data with the report_id for Relevance AI
-    const enhancedSurveyData = {
-      ...surveyData,
-      report_id: reportData.id, // Add the report_id to the payload
-    };
-
-    // Convert the enhanced survey data to a JSON string as expected by Relevance AI
-    const content = JSON.stringify(enhancedSurveyData);
-
-    // Build the Relevance AI request body
+    // Step 2: Build the Relevance AI request body with report_id as input variable
     const body = {
-      message: { role: "user", content },
+      message: { 
+        role: "user", 
+        content: JSON.stringify(surveyData) 
+      },
       agent_id: Deno.env.get("RELEVANCE_AGENT_ID"),
+      inputs: {
+        report_id: reportData.id,
+        survey_data: surveyData
+      }
     };
 
     console.log('Sending to Relevance AI with agent_id:', Deno.env.get("RELEVANCE_AGENT_ID"));
-    console.log('Request body for Relevance AI includes report_id:', reportData.id);
+    console.log('Request includes report_id as input:', reportData.id);
 
     // POST to Relevance AI
     const resp = await fetch(
