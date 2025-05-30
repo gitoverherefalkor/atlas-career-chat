@@ -16,6 +16,35 @@ serve(async (req) => {
   try {
     console.log('Test Relevance with Report ID function called');
     
+    // Check if we have the required environment variables
+    const relevanceApiKey = Deno.env.get("RELEVANCE_API_KEY");
+    const agentId = Deno.env.get("RELEVANCE_AGENT_ID");
+    
+    console.log('Environment check:');
+    console.log('RELEVANCE_API_KEY exists:', !!relevanceApiKey);
+    console.log('RELEVANCE_AGENT_ID exists:', !!agentId);
+    console.log('RELEVANCE_AGENT_ID value:', agentId);
+    
+    if (!relevanceApiKey) {
+      return new Response(JSON.stringify({ 
+        error: 'RELEVANCE_API_KEY environment variable not set',
+        instructions: 'Please set the RELEVANCE_API_KEY in Supabase Edge Functions secrets'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
+    if (!agentId) {
+      return new Response(JSON.stringify({ 
+        error: 'RELEVANCE_AGENT_ID environment variable not set',
+        instructions: 'Please set the RELEVANCE_AGENT_ID in Supabase Edge Functions secrets'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    
     // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -66,7 +95,7 @@ serve(async (req) => {
         role: "user", 
         content: "TEST MESSAGE: Process this mock survey data and create report sections" 
       },
-      agent_id: Deno.env.get("RELEVANCE_AGENT_ID"),
+      agent_id: agentId,
       inputs: {
         report_id: reportData.id,  // This is the REAL UUID from our reports table
         survey_data: mockSurveyData
@@ -74,8 +103,9 @@ serve(async (req) => {
     };
 
     console.log('=== SENDING TEST PAYLOAD TO RELEVANCE AI ===');
-    console.log('Agent ID:', Deno.env.get("RELEVANCE_AGENT_ID"));
+    console.log('Agent ID:', agentId);
     console.log('Report ID being sent:', reportData.id);
+    console.log('API Key (first 10 chars):', relevanceApiKey.substring(0, 10) + '...');
     console.log('Complete request body:', JSON.stringify(body, null, 2));
 
     // Step 4: POST to Relevance AI
@@ -85,11 +115,14 @@ serve(async (req) => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: Deno.env.get("RELEVANCE_API_KEY")!,
+          "Authorization": `Bearer ${relevanceApiKey}`,
         },
         body: JSON.stringify(body),
       },
     );
+
+    console.log('Relevance AI response status:', resp.status);
+    console.log('Relevance AI response headers:', Object.fromEntries(resp.headers.entries()));
 
     if (!resp.ok) {
       const err = await resp.text();
