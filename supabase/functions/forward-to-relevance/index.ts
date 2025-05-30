@@ -77,7 +77,8 @@ serve(async (req) => {
     };
 
     console.log('Sending to Relevance AI with agent_id:', Deno.env.get("RELEVANCE_AGENT_ID"));
-    console.log('Request includes report_id as input:', reportData.id);
+    console.log('Complete request body being sent to Relevance:', JSON.stringify(body, null, 2));
+    console.log('Report ID being sent as input:', reportData.id);
 
     // POST to Relevance AI
     const resp = await fetch(
