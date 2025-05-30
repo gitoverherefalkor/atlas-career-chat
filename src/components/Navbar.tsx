@@ -1,10 +1,14 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Menu, X } from "lucide-react";
+import { Menu, X, User } from "lucide-react";
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -35,11 +39,26 @@ const Navbar = () => {
             <a href="#about" className="text-gray-700 hover:text-primary font-medium">
               About Us
             </a>
-            <Button asChild className="btn-primary">
-              <a href="#pricing">
-                Get Started
-              </a>
-            </Button>
+            
+            {user ? (
+              <Button asChild className="btn-primary">
+                <button onClick={() => navigate('/dashboard')}>
+                  <User className="h-4 w-4 mr-2" />
+                  Dashboard
+                </button>
+              </Button>
+            ) : (
+              <div className="flex space-x-2">
+                <Button variant="outline" onClick={() => navigate('/auth')}>
+                  Sign In
+                </Button>
+                <Button asChild className="btn-primary">
+                  <a href="#pricing">
+                    Get Started
+                  </a>
+                </Button>
+              </div>
+            )}
           </div>
 
           <div className="md:hidden">
@@ -73,11 +92,24 @@ const Navbar = () => {
             <a href="#about" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
               About Us
             </a>
-            <Button asChild className="btn-primary w-full mt-4">
-              <a href="#pricing" onClick={toggleMenu}>
-                Get Started
-              </a>
-            </Button>
+            
+            {user ? (
+              <Button className="btn-primary w-full mt-4" onClick={() => { navigate('/dashboard'); toggleMenu(); }}>
+                <User className="h-4 w-4 mr-2" />
+                Dashboard
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <Button variant="outline" className="w-full" onClick={() => { navigate('/auth'); toggleMenu(); }}>
+                  Sign In
+                </Button>
+                <Button asChild className="btn-primary w-full">
+                  <a href="#pricing" onClick={toggleMenu}>
+                    Get Started
+                  </a>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}

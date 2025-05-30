@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SurveyFormProps {
   surveyId: string;
@@ -36,6 +37,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSectionIntro, setShowSectionIntro] = useState(true);
+  const { user } = useAuth();
   const { toast } = useToast();
 
   if (isLoading) {
@@ -187,14 +189,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     try {
       console.log('Submitting survey responses:', responses);
       console.log('Access code data:', accessCodeData);
+      console.log('User:', user);
 
-      // Submit to database with access code reference
+      // Submit to database with access code reference and user ID
       const { data: submissionData, error: submissionError } = await supabase
         .from('answers')
         .insert({
           survey_id: surveyId,
           payload: responses,
-          access_code_id: accessCodeData?.id
+          access_code_id: accessCodeData?.id,
+          user_id: user?.id
         })
         .select();
 
