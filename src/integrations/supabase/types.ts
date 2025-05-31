@@ -212,7 +212,7 @@ export type Database = {
             foreignKeyName: "questions_section_id_fkey"
             columns: ["section_id"]
             isOneToOne: false
-            referencedRelation: "sections"
+            referencedRelation: "survey_sections"
             referencedColumns: ["id"]
           },
         ]
@@ -303,7 +303,7 @@ export type Database = {
           },
         ]
       }
-      sections: {
+      survey_sections: {
         Row: {
           created_at: string | null
           id: string

@@ -18,3 +18,9 @@ verify_jwt = false
 
 [functions.verify-access-code]
 verify_jwt = false
+
+[functions.test-relevance-with-report-id]
+verify_jwt = false
+
+[functions.simple-relevance-test]
+verify_jwt = false
