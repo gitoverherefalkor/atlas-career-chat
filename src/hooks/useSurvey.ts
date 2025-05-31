@@ -47,7 +47,7 @@ export const useSurvey = (surveyId: string) => {
       if (surveyError) throw surveyError;
 
       const { data: sections, error: sectionsError } = await supabase
-        .from('sections')
+        .from('survey_sections')
         .select('*')
         .eq('survey_id', surveyId)
         .order('order_num');
