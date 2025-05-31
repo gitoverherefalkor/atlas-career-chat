@@ -43,12 +43,45 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Step 3: Create a simple test report
+    // Step 3: First, let's find a real user or create a test user
+    console.log('Checking for existing users...');
+    const { data: existingUsers, error: usersError } = await supabase.auth.admin.listUsers();
+    
+    let testUserId;
+    if (existingUsers && existingUsers.users && existingUsers.users.length > 0) {
+      // Use the first existing user
+      testUserId = existingUsers.users[0].id;
+      console.log('Using existing user ID:', testUserId);
+    } else {
+      // Create a temporary test user
+      console.log('No existing users found, creating test user...');
+      const { data: newUser, error: createUserError } = await supabase.auth.admin.createUser({
+        email: 'test-user@example.com',
+        password: 'temp-password-123',
+        email_confirm: true
+      });
+      
+      if (createUserError) {
+        console.error('Error creating test user:', createUserError);
+        return new Response(JSON.stringify({ 
+          error: 'Failed to create test user',
+          details: createUserError
+        }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      testUserId = newUser.user.id;
+      console.log('Created test user with ID:', testUserId);
+    }
+
+    // Step 4: Create a simple test report with real user ID
     console.log('Creating test report...');
     const { data: reportData, error: reportError } = await supabase
       .from('reports')
       .insert({
-        user_id: '00000000-0000-0000-0000-000000000000', // Test user ID
+        user_id: testUserId,
         title: 'SIMPLE TEST - Career Assessment Report',
         status: 'processing',
         payload: {
@@ -73,7 +106,7 @@ serve(async (req) => {
 
     console.log('✅ Test report created with ID:', reportData.id);
 
-    // Step 4: Create minimal survey data
+    // Step 5: Create minimal survey data
     const mockSurveyData = {
       test: true,
       personal_name: "Test User",
@@ -81,7 +114,7 @@ serve(async (req) => {
       goals_short_term: "Learn new technologies"
     };
 
-    // Step 5: Test Relevance AI directly
+    // Step 6: Test Relevance AI directly
     const relevancePayload = {
       message: { 
         role: "user", 
@@ -136,13 +169,13 @@ serve(async (req) => {
     const relevanceResult = await relevanceResponse.json();
     console.log('✅ Relevance AI response:', relevanceResult);
 
-    // Step 6: Update report status to completed
+    // Step 7: Update report status to completed
     await supabase
       .from('reports')
       .update({ status: 'completed' })
       .eq('id', reportData.id);
 
-    // Step 7: Check if any report sections were created
+    // Step 8: Check if any report sections were created
     const { data: sections, error: sectionsError } = await supabase
       .from('report_sections')
       .select('*')
@@ -154,6 +187,7 @@ serve(async (req) => {
       success: true,
       message: "Simple test completed successfully!",
       results: {
+        test_user_id: testUserId,
         report_id: reportData.id,
         relevance_response: relevanceResult,
         sections_created: sections?.length || 0,
