@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -36,6 +35,10 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Log API key format for debugging (first 10 chars only)
+    console.log('API Key format check (first 10 chars):', relevanceApiKey.substring(0, 10));
+    console.log('Agent ID:', agentId);
     
     // Step 2: Initialize Supabase client
     const supabase = createClient(
@@ -114,7 +117,7 @@ serve(async (req) => {
       goals_short_term: "Learn new technologies"
     };
 
-    // Step 6: Test Relevance AI directly
+    // Step 6: Test Relevance AI directly with corrected authorization
     const relevancePayload = {
       message: { 
         role: "user", 
@@ -131,14 +134,19 @@ serve(async (req) => {
     console.log('Report ID:', reportData.id);
     console.log('Payload:', JSON.stringify(relevancePayload, null, 2));
 
+    // Try different authorization header formats
+    const authHeaders = {
+      "Content-Type": "application/json",
+      "Authorization": `${relevanceApiKey}`, // Remove "Bearer " prefix
+    };
+
+    console.log('Authorization header being used:', `${relevanceApiKey.substring(0, 10)}...`);
+
     const relevanceResponse = await fetch(
       "https://api-d7b62b.stack.tryrelevance.com/latest/agents/trigger",
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${relevanceApiKey}`,
-        },
+        headers: authHeaders,
         body: JSON.stringify(relevancePayload),
       },
     );
@@ -149,7 +157,87 @@ serve(async (req) => {
       const errorText = await relevanceResponse.text();
       console.error("❌ Relevance AI error:", relevanceResponse.status, errorText);
       
-      // Update report status to failed
+      // Try alternative authorization format if first attempt fails
+      if (relevanceResponse.status === 403) {
+        console.log('Trying alternative authorization format...');
+        
+        const altAuthHeaders = {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${relevanceApiKey}`, // Add "Bearer " prefix
+        };
+
+        const altResponse = await fetch(
+          "https://api-d7b62b.stack.tryrelevance.com/latest/agents/trigger",
+          {
+            method: "POST",
+            headers: altAuthHeaders,
+            body: JSON.stringify(relevancePayload),
+          },
+        );
+
+        console.log('Alternative auth response status:', altResponse.status);
+        
+        if (!altResponse.ok) {
+          const altErrorText = await altResponse.text();
+          console.error("❌ Alternative auth also failed:", altResponse.status, altErrorText);
+          
+          // Update report status to failed
+          await supabase
+            .from('reports')
+            .update({ status: 'failed' })
+            .eq('id', reportData.id);
+          
+          return new Response(JSON.stringify({ 
+            error: 'Relevance AI authentication failed with both formats',
+            status_1: relevanceResponse.status,
+            details_1: errorText,
+            status_2: altResponse.status,
+            details_2: altErrorText,
+            report_id: reportData.id,
+            debug: {
+              api_key_preview: relevanceApiKey.substring(0, 10) + '...',
+              agent_id: agentId
+            }
+          }), { 
+            status: 502,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        const altResult = await altResponse.json();
+        console.log('✅ Alternative auth successful! Relevance AI response:', altResult);
+
+        // Update report status to completed
+        await supabase
+          .from('reports')
+          .update({ status: 'completed' })
+          .eq('id', reportData.id);
+
+        // Step 8: Check if any report sections were created
+        const { data: sections, error: sectionsError } = await supabase
+          .from('report_sections')
+          .select('*')
+          .eq('report_id', reportData.id);
+
+        console.log('Report sections check:', sections?.length || 0, 'sections found');
+
+        return new Response(JSON.stringify({ 
+          success: true,
+          message: "Simple test completed successfully with alternative auth!",
+          results: {
+            test_user_id: testUserId,
+            report_id: reportData.id,
+            relevance_response: altResult,
+            sections_created: sections?.length || 0,
+            sections: sections || [],
+            auth_method: 'Bearer prefix'
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      
+      // Update report status to failed for non-403 errors
       await supabase
         .from('reports')
         .update({ status: 'failed' })
