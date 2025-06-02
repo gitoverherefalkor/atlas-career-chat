@@ -21,11 +21,20 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('Webhook payload:', JSON.stringify(requestBody, null, 2));
     
-    const { user_id: relevanceUserId, report_id: reportId, sections } = requestBody;
+    // Extract values from the payload
+    const { sections } = requestBody;
+    let { relevance_user_id: relevanceUserId, report_id: reportId } = requestBody;
+    
+    // Handle case where report_id comes as {answer: "uuid"}
+    if (reportId && typeof reportId === 'object' && reportId.answer) {
+      reportId = reportId.answer;
+    }
+
+    console.log('Extracted values:', { relevanceUserId, reportId, sectionsCount: sections?.length });
 
     if (!relevanceUserId || !reportId) {
       console.error('Missing required fields:', { relevanceUserId, reportId });
-      return new Response(JSON.stringify({ error: 'Missing user_id or report_id' }), {
+      return new Response(JSON.stringify({ error: 'Missing relevance_user_id or report_id' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -36,6 +45,22 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
+
+    // Store the sections in the report_sections table if provided
+    if (sections && Array.isArray(sections)) {
+      console.log('Storing report sections...');
+      for (const section of sections) {
+        if (section.section_type && section.content) {
+          await supabase
+            .from('report_sections')
+            .insert({
+              report_id: reportId,
+              section_type: section.section_type,
+              content: section.content
+            });
+        }
+      }
+    }
 
     // Update report status to final report ready
     console.log('Updating report with final sections for ID:', reportId);

@@ -21,11 +21,20 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('Webhook payload:', JSON.stringify(requestBody, null, 2));
     
-    const { user_id: relevanceUserId, report_id: reportId } = requestBody;
+    // Extract values - handle both direct string and object formats
+    const relevanceUserId = requestBody.relevance_user_id || requestBody.user_id;
+    let reportId = requestBody.report_id;
+    
+    // Handle case where report_id comes as {answer: "uuid"}
+    if (reportId && typeof reportId === 'object' && reportId.answer) {
+      reportId = reportId.answer;
+    }
+
+    console.log('Extracted values:', { relevanceUserId, reportId });
 
     if (!relevanceUserId || !reportId) {
       console.error('Missing required fields:', { relevanceUserId, reportId });
-      return new Response(JSON.stringify({ error: 'Missing user_id or report_id' }), {
+      return new Response(JSON.stringify({ error: 'Missing relevance_user_id or report_id' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
