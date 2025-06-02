@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, ShoppingCart, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Loader2, ShoppingCart, CheckCircle2, ArrowRight, Smartphone, Monitor } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AssessmentWelcomeProps {
   onVerified: (accessCodeData: any) => void;
@@ -22,6 +23,7 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
   const [error, setError] = useState('');
   const [needsPurchase, setNeedsPurchase] = useState(false);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   // Set the prefilled code when component mounts
   useEffect(() => {
@@ -92,6 +94,16 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
+        {/* Mobile Warning */}
+        {isMobile && (
+          <Alert className="mb-6 border-amber-200 bg-amber-50">
+            <Smartphone className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <strong>Best Experience on Desktop:</strong> For the optimal assessment experience and to fully engage with our career AI coach afterward, we recommend using a computer or tablet rather than a mobile device.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Welcome Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-atlas-navy mb-4">

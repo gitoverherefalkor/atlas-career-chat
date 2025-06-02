@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
 import { QuestionRenderer } from './QuestionRenderer';
@@ -56,12 +57,26 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     );
   }
 
+  // Helper function to check if a question should be skipped
+  const shouldSkipQuestion = (question: any) => {
+    // Skip license key questions since we already verified the access code
+    const licenseKeyIndicators = ['license', 'access code', 'verification code', 'license key'];
+    const questionText = question.label?.toLowerCase() || '';
+    return licenseKeyIndicators.some(indicator => questionText.includes(indicator));
+  };
+
+  // Get filtered questions for current section (excluding license key questions)
+  const getFilteredQuestions = (section: any) => {
+    return section.questions.filter((q: any) => !shouldSkipQuestion(q));
+  };
+
   const currentSection = survey.sections[currentSectionIndex];
-  const currentQuestion = currentSection.questions[currentQuestionIndex];
+  const filteredQuestions = getFilteredQuestions(currentSection);
+  const currentQuestion = filteredQuestions[currentQuestionIndex];
   
   // Calculate progress within current section only
   const currentQuestionInSection = currentQuestionIndex + 1;
-  const totalQuestionsInSection = currentSection.questions.length;
+  const totalQuestionsInSection = filteredQuestions.length;
   const progress = (currentQuestionInSection / totalQuestionsInSection) * 100;
 
   const handleResponseChange = (questionId: string, value: any) => {
@@ -72,7 +87,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   };
 
   const isCurrentQuestionComplete = () => {
-    if (!currentQuestion.required) return true;
+    if (!currentQuestion || !currentQuestion.required) return true;
     const response = responses[currentQuestion.id];
     
     // Special handling for different question types
@@ -101,7 +116,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   const handleNext = () => {
     // Move to next question in current section
-    if (currentQuestionIndex < currentSection.questions.length - 1) {
+    if (currentQuestionIndex < filteredQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
     } 
     // Move to first question of next section
@@ -120,15 +135,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     // Move to last question of previous section
     else if (currentSectionIndex > 0) {
       const prevSection = survey.sections[currentSectionIndex - 1];
+      const prevFilteredQuestions = getFilteredQuestions(prevSection);
       setCurrentSectionIndex(currentSectionIndex - 1);
-      setCurrentQuestionIndex(prevSection.questions.length - 1);
+      setCurrentQuestionIndex(prevFilteredQuestions.length - 1);
       setShowSectionIntro(false); // Go directly to questions, not intro
     }
   };
 
   const isLastQuestion = () => {
     return currentSectionIndex === survey.sections.length - 1 && 
-           currentQuestionIndex === currentSection.questions.length - 1;
+           currentQuestionIndex === filteredQuestions.length - 1;
   };
 
   const isFirstQuestion = () => {
@@ -247,6 +263,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           description={sectionDescriptions[currentSectionIndex + 1] || "Let's continue with the next set of questions."}
           onContinue={handleSectionIntroContinue}
         />
+      </div>
+    );
+  }
+
+  // If no questions available after filtering, show error
+  if (!currentQuestion) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">No questions available in this section.</p>
       </div>
     );
   }
