@@ -68,7 +68,7 @@ serve(async (req) => {
       .from('reports')
       .update({ status: 'final_report_ready' })
       .eq('id', reportId)
-      .select('*, profiles(email, first_name)')
+      .select()
       .single();
 
     if (reportError) {
@@ -89,14 +89,28 @@ serve(async (req) => {
 
     console.log('Report updated successfully for final sections:', reportData.id);
 
+    // Get user profile for email if user_id exists
+    let userEmail = reportData.user_id; // fallback to user_id
+    let firstName = 'there';
+
+    if (reportData.user_id) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('email, first_name')
+        .eq('id', reportData.user_id)
+        .single();
+      
+      if (profileData) {
+        userEmail = profileData.email;
+        firstName = profileData.first_name || 'there';
+      }
+    }
+
     // Send final report ready email notification
     try {
       const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
       
       const dashboardUrl = `${Deno.env.get('SUPABASE_URL')?.replace('.supabase.co', '')}.lovable.app/dashboard`;
-      
-      const userEmail = reportData.profiles?.email || reportData.user_id;
-      const firstName = reportData.profiles?.first_name || 'there';
 
       const { data: emailData, error: emailError } = await resend.emails.send({
         from: "Atlas Assessment <no-reply@atlas-assessments.com>",
