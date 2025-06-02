@@ -258,6 +258,7 @@ export type Database = {
           created_at: string
           id: string
           payload: Json
+          relevance_user_id: string | null
           status: string
           survey_id: string | null
           title: string
@@ -269,6 +270,7 @@ export type Database = {
           created_at?: string
           id?: string
           payload: Json
+          relevance_user_id?: string | null
           status?: string
           survey_id?: string | null
           title: string
@@ -280,6 +282,7 @@ export type Database = {
           created_at?: string
           id?: string
           payload?: Json
+          relevance_user_id?: string | null
           status?: string
           survey_id?: string | null
           title?: string
