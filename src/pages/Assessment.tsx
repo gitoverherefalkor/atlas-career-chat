@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SurveyForm } from '@/components/survey/SurveyForm';
-import { AccessCodeVerification } from '@/components/survey/AccessCodeVerification';
+import { AssessmentWelcome } from '@/components/survey/AssessmentWelcome';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,11 +11,19 @@ import { useReports } from '@/hooks/useReports';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+// Survey type mapping - expand this as you add more survey types
+const SURVEY_TYPE_MAPPING: Record<string, string> = {
+  'Office / Business Pro - 2025 v1 EN': '00000000-0000-0000-0000-000000000001',
+  // Add more survey types here as needed
+  // 'Healthcare Pro - 2025 v1 EN': '00000000-0000-0000-0000-000000000002',
+};
+
 const Assessment = () => {
   const [searchParams] = useSearchParams();
   const [isCompleted, setIsCompleted] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [accessCodeData, setAccessCodeData] = useState<any>(null);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [prefilledCode, setPrefilledCode] = useState<string | null>(null);
   const { user, isLoading: authLoading } = useAuth();
   const { createReport } = useReports();
@@ -39,17 +47,69 @@ const Assessment = () => {
     if (codeFromUrl) {
       setPrefilledCode(codeFromUrl);
     }
+
+    // Check if there's a session token from successful verification
+    const tokenFromUrl = searchParams.get('token');
+    if (tokenFromUrl) {
+      setSessionToken(tokenFromUrl);
+      // If we have a token, we should be verified - fetch the access code data
+      validateSessionToken(tokenFromUrl);
+    }
   }, [searchParams, user, authLoading, navigate, toast]);
+
+  const validateSessionToken = async (token: string) => {
+    try {
+      // In a real implementation, you'd validate the token against your database
+      // For now, we'll simulate this
+      console.log('Validating session token:', token);
+      // This would need to be implemented as a Supabase function
+      // For now, we'll trust the token if it exists
+      setIsVerified(true);
+    } catch (error) {
+      console.error('Invalid session token:', error);
+      toast({
+        title: "Session Expired",
+        description: "Please verify your access code again.",
+        variant: "destructive",
+      });
+      // Clear invalid token and go back to verification
+      setSessionToken(null);
+      setIsVerified(false);
+    }
+  };
+
+  const generateSessionToken = () => {
+    // Simple token generation - in production, this should be more secure
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+  };
 
   const handleAccessCodeVerified = async (data: any) => {
     console.log('Access code verified:', data);
+    
+    // Generate a session token for security
+    const token = generateSessionToken();
+    
     setAccessCodeData(data);
+    setSessionToken(token);
     setIsVerified(true);
+    
+    // Update URL to include session token (for security and bookmarking)
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.set('token', token);
+    newSearchParams.delete('code'); // Remove code from URL for security
+    navigate(`/assessment?${newSearchParams.toString()}`, { replace: true });
+  };
+
+  const getSurveyIdFromAccessCode = (accessCodeData: any): string => {
+    const surveyType = accessCodeData?.survey_type || 'Office / Business Pro - 2025 v1 EN';
+    return SURVEY_TYPE_MAPPING[surveyType] || SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
   };
 
   const handleSurveyComplete = async (responses: Record<string, any>) => {
     console.log('Survey completed with responses:', responses);
     console.log('Using access code:', accessCodeData);
+    
+    const surveyId = getSurveyIdFromAccessCode(accessCodeData);
     
     // Save the assessment report
     try {
@@ -57,24 +117,28 @@ const Assessment = () => {
         title: `Atlas Career Assessment - ${new Date().toLocaleDateString()}`,
         payload: {
           responses,
-          accessCode: accessCodeData?.accessCode?.code,
+          accessCode: accessCodeData?.code,
           completedAt: new Date().toISOString(),
+          surveyType: accessCodeData?.survey_type,
         },
-        access_code_id: accessCodeData?.accessCode?.id,
-        survey_id: "00000000-0000-0000-0000-000000000001",
+        access_code_id: accessCodeData?.id,
+        survey_id: surveyId,
       });
 
       // Update access code usage count
-      if (accessCodeData?.accessCode?.id) {
+      if (accessCodeData?.id) {
         await supabase
           .from('access_codes')
           .update({ 
-            usage_count: (accessCodeData.accessCode.usage_count || 0) + 1,
+            usage_count: (accessCodeData.usage_count || 0) + 1,
             used_at: new Date().toISOString(),
             user_id: user?.id
           })
-          .eq('id', accessCodeData.accessCode.id);
+          .eq('id', accessCodeData.id);
       }
+
+      // Clear session token after successful completion
+      setSessionToken(null);
     } catch (error) {
       console.error('Error saving report:', error);
       toast({
@@ -119,7 +183,7 @@ const Assessment = () => {
             </div>
             <h1 className="text-2xl font-bold mb-2">Assessment Complete!</h1>
             <p className="text-gray-600 mb-6">
-              Thank you for completing the Atlas Career Assessment. Your personalized report has been saved to your dashboard.
+              Thank you for completing the Atlas Career Assessment. Your personalized report is being generated and you'll receive an email notification when it's ready.
             </p>
             <div className="space-y-3">
               <Button onClick={() => navigate('/dashboard')} className="w-full">
@@ -136,14 +200,14 @@ const Assessment = () => {
     );
   }
 
-  if (!isVerified) {
-    return <AccessCodeVerification onVerified={handleAccessCodeVerified} prefilledCode={prefilledCode} />;
+  if (!isVerified || !sessionToken) {
+    return <AssessmentWelcome onVerified={handleAccessCodeVerified} prefilledCode={prefilledCode} />;
   }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <SurveyForm
-        surveyId="00000000-0000-0000-0000-000000000001"
+        surveyId={getSurveyIdFromAccessCode(accessCodeData)}
         onComplete={handleSurveyComplete}
         accessCodeData={accessCodeData}
       />

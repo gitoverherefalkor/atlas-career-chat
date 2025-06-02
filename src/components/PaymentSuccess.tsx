@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -113,14 +114,15 @@ const PaymentSuccess = () => {
             
             <p className="text-gray-600 mb-8">
               {searchParams.get('demo') === 'true' 
-                ? 'Thank you for trying our demo purchase flow.'
+                ? 'Thank you for trying our demo purchase flow. You can now start the assessment!'
                 : 'Thank you for your purchase. We\'ve sent your access code to your email. You can now start your assessment!'}
             </p>
             
             <div className="space-y-3">
               <Button 
                 onClick={handleStartAssessment} 
-                className="w-full flex items-center justify-center gap-2"
+                className="w-full flex items-center justify-center gap-2 bg-atlas-teal hover:bg-atlas-teal/90"
+                size="lg"
               >
                 Start Assessment Now
                 <ArrowRight className="h-4 w-4" />
