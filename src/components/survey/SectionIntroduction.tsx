@@ -17,6 +17,15 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
   description,
   onContinue
 }) => {
+  // Function to format text with emphasis and line breaks
+  const formatTextWithEmphasis = (text: string) => {
+    // Replace **text** with <strong>text</strong> and \n with <br>
+    const formattedText = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\\n/g, '<br>');
+    return { __html: formattedText };
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Card>
@@ -27,9 +36,10 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
           <h3 className="text-xl font-semibold text-gray-800 mb-6">
             {sectionTitle}
           </h3>
-          <p className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto">
-            {description}
-          </p>
+          <div 
+            className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(description)}
+          />
           <Button
             onClick={onContinue}
             className="bg-atlas-teal hover:bg-atlas-teal/90 px-8 py-3 text-lg"

@@ -178,6 +178,8 @@ export type Database = {
           created_at: string | null
           id: string
           label: string
+          max_selections: number | null
+          min_selections: number | null
           order_num: number | null
           required: boolean | null
           section_id: string | null
@@ -190,6 +192,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           label: string
+          max_selections?: number | null
+          min_selections?: number | null
           order_num?: number | null
           required?: boolean | null
           section_id?: string | null
@@ -202,6 +206,8 @@ export type Database = {
           created_at?: string | null
           id?: string
           label?: string
+          max_selections?: number | null
+          min_selections?: number | null
           order_num?: number | null
           required?: boolean | null
           section_id?: string | null
@@ -309,6 +315,7 @@ export type Database = {
       survey_sections: {
         Row: {
           created_at: string | null
+          description: string | null
           id: string
           order_num: number | null
           survey_id: string | null
@@ -316,6 +323,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
           id?: string
           order_num?: number | null
           survey_id?: string | null
@@ -323,6 +331,7 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          description?: string | null
           id?: string
           order_num?: number | null
           survey_id?: string | null

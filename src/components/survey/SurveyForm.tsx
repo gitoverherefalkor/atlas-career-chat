@@ -17,16 +17,6 @@ interface SurveyFormProps {
   accessCodeData?: any;
 }
 
-const sectionDescriptions: Record<number, string> = {
-  1: "Let's start with some basic information about you and your current situation.",
-  2: "Now we'll explore how you think, make decisions, and approach work challenges.",
-  3: "What drives you? Let's understand your core values and what motivates you professionally.",
-  4: "Time to dive into your interests, skills, and professional aspirations.",
-  5: "How do you work best with others? Let's explore your team and leadership preferences.",
-  6: "Understanding emotions and relationships is crucial for career success.",
-  7: "Finally, let's talk about your future goals and development aspirations."
-};
-
 export const SurveyForm: React.FC<SurveyFormProps> = ({ 
   surveyId, 
   onComplete, 
@@ -92,13 +82,22 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     
     // Special handling for different question types
     if (currentQuestion.type === 'multiple_choice' && currentQuestion.allow_multiple) {
-      const maxSelections = currentQuestion.config?.max_selections;
-      if (maxSelections) {
-        // For questions with max selections, require exact number
-        return Array.isArray(response) && response.length === maxSelections;
+      const minSelections = currentQuestion.min_selections;
+      const maxSelections = currentQuestion.max_selections;
+      
+      if (Array.isArray(response)) {
+        // Check minimum selections requirement
+        if (minSelections && response.length < minSelections) return false;
+        // For required questions, need at least one selection if no minimum is set
+        if (!minSelections && response.length === 0) return false;
+        // Check maximum selections (should be handled in UI but double-check)
+        if (maxSelections && response.length > maxSelections) return false;
+        return true;
       }
-      // For questions without max selections, require at least one
-      return Array.isArray(response) && response.length > 0;
+      
+      // If no response but minimum required
+      if (minSelections && minSelections > 0) return false;
+      return response !== undefined && response !== null && response !== '';
     }
     
     if (currentQuestion.type === 'ranking') {
@@ -255,12 +254,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   // Show section introduction for all sections (including first)
   if (showSectionIntro) {
+    const sectionDescription = currentSection.description || "Let's continue with the next set of questions.";
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <SectionIntroduction
           sectionNumber={currentSectionIndex + 1}
           sectionTitle={currentSection.title}
-          description={sectionDescriptions[currentSectionIndex + 1] || "Let's continue with the next set of questions."}
+          description={sectionDescription}
           onContinue={handleSectionIntroContinue}
         />
       </div>
@@ -299,7 +299,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       {/* Current Question */}
       <Card>
         <CardContent className="space-y-6 pt-6">
-          <div className="text-lg font-medium text-gray-900">
+          <div className="text-lg font-light text-gray-900">
             <QuestionRenderer
               key={currentQuestion.id}
               question={currentQuestion}

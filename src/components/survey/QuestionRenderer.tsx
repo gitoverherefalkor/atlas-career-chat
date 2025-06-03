@@ -8,8 +8,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Button } from '@/components/ui/button';
-import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface QuestionRendererProps {
   question: Question;
@@ -27,7 +25,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
   const handleMultipleChoiceChange = (optionValue: string, checked: boolean) => {
     const currentValues = Array.isArray(value) ? value : [];
-    const maxSelections = question.config?.max_selections;
+    const maxSelections = question.max_selections;
     
     if (checked) {
       // Check if we're at the selection limit
@@ -54,15 +52,6 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     }
   };
 
-  const moveRankingItem = (fromIndex: number, toIndex: number) => {
-    if (!Array.isArray(value) || toIndex < 0 || toIndex >= value.length) return;
-    
-    const newOrder = [...value];
-    const [moved] = newOrder.splice(fromIndex, 1);
-    newOrder.splice(toIndex, 0, moved);
-    onChange(newOrder);
-  };
-
   const handleRankingDropdownChange = (item: string, newRank: number) => {
     const currentOrder = Array.isArray(value) ? [...value] : [];
     const currentIndex = currentOrder.indexOf(item);
@@ -76,10 +65,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     }
   };
 
-  // Function to format text with emphasis
+  // Function to format text with emphasis and line breaks
   const formatTextWithEmphasis = (text: string) => {
-    // Replace **text** with <strong>text</strong>
-    const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Replace **text** with <strong>text</strong> and \n with <br>
+    const formattedText = text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\\n/g, '<br>');
     return { __html: formattedText };
   };
 
@@ -95,20 +86,31 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   };
 
   const getSelectionLimitText = () => {
-    const maxSelections = question.config?.max_selections;
+    const minSelections = question.min_selections;
+    const maxSelections = question.max_selections;
     const currentSelections = Array.isArray(value) ? value.length : 0;
     
-    if (!maxSelections) return null;
+    if (!minSelections && !maxSelections) return null;
+    
+    let text = `Selected: ${currentSelections}`;
+    
+    if (minSelections && maxSelections) {
+      text += ` (${minSelections}-${maxSelections} required)`;
+    } else if (minSelections) {
+      text += ` (minimum ${minSelections})`;
+    } else if (maxSelections) {
+      text += ` (up to ${maxSelections})`;
+    }
     
     return (
       <p className="text-sm text-gray-500 mt-2">
-        Selected: {currentSelections} / {maxSelections}
+        {text}
       </p>
     );
   };
 
   const isSelectionLimitReached = () => {
-    const maxSelections = question.config?.max_selections;
+    const maxSelections = question.max_selections;
     const currentSelections = Array.isArray(value) ? value.length : 0;
     return maxSelections && currentSelections >= maxSelections;
   };
@@ -118,7 +120,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-medium mb-2"
+            className="text-lg font-light mb-2"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -135,7 +137,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-medium mb-2"
+            className="text-lg font-light mb-2"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -158,7 +160,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-medium mb-2"
+            className="text-lg font-light mb-2"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -176,7 +178,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-medium mb-2"
+            className="text-lg font-light mb-2"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -201,17 +203,17 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return (
           <div>
             <div 
-              className="text-lg font-medium mb-2"
+              className="text-lg font-light mb-2"
               dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
             />
             {renderDescription()}
-            <RadioGroup value={value || ''} onValueChange={onChange} className="space-y-2">
+            <RadioGroup value={value || ''} onValueChange={onChange} className="space-y-1.5">
               {question.config?.choices?.map((choice) => (
                 <div key={choice} className="flex items-center space-x-3">
                   <RadioGroupItem value={choice} id={choice} />
                   <Label 
                     htmlFor={choice} 
-                    className="text-base leading-snug cursor-pointer"
+                    className="text-base font-light leading-snug cursor-pointer"
                     dangerouslySetInnerHTML={formatTextWithEmphasis(choice)}
                   />
                 </div>
@@ -219,7 +221,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               {question.allow_other && (
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value="other" id="other" />
-                  <Label htmlFor="other" className="text-base leading-snug cursor-pointer">
+                  <Label htmlFor="other" className="text-base font-light leading-snug cursor-pointer">
                     Other
                   </Label>
                 </div>
@@ -246,11 +248,11 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return (
           <div>
             <div 
-              className="text-lg font-medium mb-2"
+              className="text-lg font-light mb-2"
               dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
             />
             {renderDescription()}
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {question.config?.choices?.map((choice) => {
                 const isChecked = currentValues.includes(choice);
                 const isDisabled = !isChecked && isSelectionLimitReached();
@@ -265,7 +267,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     />
                     <Label 
                       htmlFor={choice} 
-                      className={`text-base leading-snug cursor-pointer ${isDisabled ? 'text-gray-400' : ''}`}
+                      className={`text-base font-light leading-snug cursor-pointer ${isDisabled ? 'text-gray-400' : ''}`}
                       dangerouslySetInnerHTML={formatTextWithEmphasis(choice)}
                     />
                   </div>
@@ -286,7 +288,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         }
                       }}
                     />
-                    <Label htmlFor="other-checkbox" className="text-base leading-snug cursor-pointer">
+                    <Label htmlFor="other-checkbox" className="text-base font-light leading-snug cursor-pointer">
                       Other
                     </Label>
                   </div>
@@ -314,7 +316,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-medium mb-2"
+            className="text-lg font-light mb-2"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -347,7 +349,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-medium mb-2"
+            className="text-lg font-light mb-2"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -362,7 +364,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               >
                 <div className="flex items-center space-x-3 flex-1">
                   <span 
-                    className="text-base"
+                    className="text-base font-light"
                     dangerouslySetInnerHTML={formatTextWithEmphasis(item)}
                   />
                 </div>
@@ -394,7 +396,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-medium mb-2"
+            className="text-lg font-light mb-2"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}

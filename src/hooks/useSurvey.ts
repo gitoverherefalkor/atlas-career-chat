@@ -10,11 +10,12 @@ export interface Question {
   allow_multiple: boolean;
   allow_other: boolean;
   order_num: number;
+  min_selections?: number;
+  max_selections?: number;
   config: {
     choices?: string[];
     min?: number;
     max?: number;
-    max_selections?: number;
     description?: string;
     max_length?: number;
   };
@@ -23,6 +24,7 @@ export interface Question {
 export interface Section {
   id: string;
   title: string;
+  description?: string;
   order_num: number;
   questions: Question[];
 }
@@ -66,6 +68,7 @@ export const useSurvey = (surveyId: string) => {
       const sectionsWithQuestions: Section[] = sections.map(section => ({
         id: section.id,
         title: section.title || '',
+        description: section.description || undefined,
         order_num: section.order_num || 0,
         questions: questions
           .filter(q => q.section_id === section.id)
@@ -77,12 +80,13 @@ export const useSurvey = (surveyId: string) => {
             allow_multiple: q.allow_multiple || false,
             allow_other: q.allow_other || false,
             order_num: q.order_num || 0,
+            min_selections: q.min_selections || undefined,
+            max_selections: q.max_selections || undefined,
             config: typeof q.config === 'object' && q.config !== null 
               ? q.config as { 
                   choices?: string[]; 
                   min?: number; 
                   max?: number; 
-                  max_selections?: number;
                   description?: string;
                   max_length?: number;
                 }
