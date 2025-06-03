@@ -87,11 +87,49 @@ export const useReports = () => {
     },
   });
 
+  const deleteReportMutation = useMutation({
+    mutationFn: async (reportId: string) => {
+      // First delete all report sections
+      const { error: sectionsError } = await supabase
+        .from('report_sections')
+        .delete()
+        .eq('report_id', reportId);
+
+      if (sectionsError) throw sectionsError;
+
+      // Then delete the report
+      const { error: reportError } = await supabase
+        .from('reports')
+        .delete()
+        .eq('id', reportId)
+        .eq('user_id', user?.id);
+
+      if (reportError) throw reportError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reports', user?.id] });
+      toast({
+        title: "Report deleted",
+        description: "The report has been permanently deleted.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error deleting report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete report. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
     reports,
     isLoading,
     error,
     createReport: createReportMutation.mutate,
     isCreating: createReportMutation.isPending,
+    deleteReport: deleteReportMutation.mutate,
+    isDeleting: deleteReportMutation.isPending,
   };
 };

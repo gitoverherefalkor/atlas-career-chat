@@ -63,13 +63,34 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     onChange(newOrder);
   };
 
+  const handleRankingDropdownChange = (item: string, newRank: number) => {
+    const currentOrder = Array.isArray(value) ? [...value] : [];
+    const currentIndex = currentOrder.indexOf(item);
+    
+    if (currentIndex !== -1) {
+      // Remove item from current position
+      currentOrder.splice(currentIndex, 1);
+      // Insert at new position (convert 1-based to 0-based)
+      currentOrder.splice(newRank - 1, 0, item);
+      onChange(currentOrder);
+    }
+  };
+
+  // Function to format text with emphasis
+  const formatTextWithEmphasis = (text: string) => {
+    // Replace **text** with <strong>text</strong>
+    const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    return { __html: formattedText };
+  };
+
   const renderDescription = () => {
     if (!question.config?.description) return null;
     
     return (
-      <p className="text-sm text-gray-600 mt-2 mb-4 leading-relaxed">
-        {question.config.description}
-      </p>
+      <div 
+        className="text-sm text-gray-600 mt-2 mb-4 leading-relaxed"
+        dangerouslySetInnerHTML={formatTextWithEmphasis(question.config.description)}
+      />
     );
   };
 
@@ -96,7 +117,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     case 'short_text':
       return (
         <div>
-          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          <div 
+            className="text-lg font-medium mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
           {renderDescription()}
           <Input
             value={value || ''}
@@ -110,7 +134,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     case 'long_text':
       return (
         <div>
-          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          <div 
+            className="text-lg font-medium mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
           {renderDescription()}
           <Textarea
             value={value || ''}
@@ -130,7 +157,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     case 'number':
       return (
         <div>
-          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          <div 
+            className="text-lg font-medium mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
           {renderDescription()}
           <Input
             type="number"
@@ -145,7 +175,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     case 'dropdown':
       return (
         <div>
-          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          <div 
+            className="text-lg font-medium mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
           {renderDescription()}
           <Select value={value || ''} onValueChange={onChange}>
             <SelectTrigger className="w-full">
@@ -154,7 +187,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             <SelectContent>
               {question.config?.choices?.map((choice) => (
                 <SelectItem key={choice} value={choice}>
-                  {choice}
+                  <span dangerouslySetInnerHTML={formatTextWithEmphasis(choice)} />
                 </SelectItem>
               ))}
             </SelectContent>
@@ -167,21 +200,26 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         // Single selection
         return (
           <div>
-            <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+            <div 
+              className="text-lg font-medium mb-2"
+              dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+            />
             {renderDescription()}
-            <RadioGroup value={value || ''} onValueChange={onChange} className="space-y-4">
+            <RadioGroup value={value || ''} onValueChange={onChange} className="space-y-2">
               {question.config?.choices?.map((choice) => (
                 <div key={choice} className="flex items-center space-x-3">
                   <RadioGroupItem value={choice} id={choice} />
-                  <Label htmlFor={choice} className="text-base leading-relaxed cursor-pointer">
-                    {choice}
-                  </Label>
+                  <Label 
+                    htmlFor={choice} 
+                    className="text-base leading-snug cursor-pointer"
+                    dangerouslySetInnerHTML={formatTextWithEmphasis(choice)}
+                  />
                 </div>
               ))}
               {question.allow_other && (
                 <div className="flex items-center space-x-3">
                   <RadioGroupItem value="other" id="other" />
-                  <Label htmlFor="other" className="text-base leading-relaxed cursor-pointer">
+                  <Label htmlFor="other" className="text-base leading-snug cursor-pointer">
                     Other
                   </Label>
                 </div>
@@ -207,9 +245,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         const currentValues = Array.isArray(value) ? value : [];
         return (
           <div>
-            <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+            <div 
+              className="text-lg font-medium mb-2"
+              dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+            />
             {renderDescription()}
-            <div className="space-y-4">
+            <div className="space-y-2">
               {question.config?.choices?.map((choice) => {
                 const isChecked = currentValues.includes(choice);
                 const isDisabled = !isChecked && isSelectionLimitReached();
@@ -224,10 +265,9 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     />
                     <Label 
                       htmlFor={choice} 
-                      className={`text-base leading-relaxed cursor-pointer ${isDisabled ? 'text-gray-400' : ''}`}
-                    >
-                      {choice}
-                    </Label>
+                      className={`text-base leading-snug cursor-pointer ${isDisabled ? 'text-gray-400' : ''}`}
+                      dangerouslySetInnerHTML={formatTextWithEmphasis(choice)}
+                    />
                   </div>
                 );
               })}
@@ -246,7 +286,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         }
                       }}
                     />
-                    <Label htmlFor="other-checkbox" className="text-base leading-relaxed cursor-pointer">
+                    <Label htmlFor="other-checkbox" className="text-base leading-snug cursor-pointer">
                       Other
                     </Label>
                   </div>
@@ -273,7 +313,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       
       return (
         <div>
-          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          <div 
+            className="text-lg font-medium mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
           {renderDescription()}
           <div className="space-y-4">
             <div className="px-4">
@@ -303,44 +346,43 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       
       return (
         <div>
-          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          <div 
+            className="text-lg font-medium mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
           {renderDescription()}
           <div className="space-y-2">
             <p className="text-sm text-gray-600 mb-4">
-              Drag or use arrows to reorder items (most important at top)
+              Use the dropdown to select the rank for each item (most important = 1)
             </p>
             {rankedItems.map((item: string, index: number) => (
               <div
                 key={item}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border"
               >
-                <div className="flex items-center space-x-3">
-                  <span className="text-sm font-medium text-gray-500 w-6">
-                    {index + 1}.
-                  </span>
-                  <span className="text-base">{item}</span>
+                <div className="flex items-center space-x-3 flex-1">
+                  <span 
+                    className="text-base"
+                    dangerouslySetInnerHTML={formatTextWithEmphasis(item)}
+                  />
                 </div>
-                <div className="flex space-x-1">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => moveRankingItem(index, index - 1)}
-                    disabled={index === 0}
-                    className="p-1 h-8 w-8"
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-500">Rank:</span>
+                  <Select
+                    value={(index + 1).toString()}
+                    onValueChange={(newRank) => handleRankingDropdownChange(item, parseInt(newRank))}
                   >
-                    <ArrowUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => moveRankingItem(index, index + 1)}
-                    disabled={index === rankedItems.length - 1}
-                    className="p-1 h-8 w-8"
-                  >
-                    <ArrowDown className="h-4 w-4" />
-                  </Button>
+                    <SelectTrigger className="w-16">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {rankingChoices.map((_, idx) => (
+                        <SelectItem key={idx + 1} value={(idx + 1).toString()}>
+                          {idx + 1}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             ))}
@@ -351,7 +393,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     default:
       return (
         <div>
-          <h3 className="text-lg font-medium mb-2">{question.label}</h3>
+          <div 
+            className="text-lg font-medium mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
           {renderDescription()}
           <p className="text-red-500">Unsupported question type: {question.type}</p>
         </div>

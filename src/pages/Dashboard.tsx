@@ -17,6 +17,7 @@ const Dashboard = () => {
   const { profile, isLoading: profileLoading } = useProfile();
   const { reports, isLoading: reportsLoading } = useReports();
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
+  const [deletedReportDate, setDeletedReportDate] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -39,6 +40,11 @@ const Dashboard = () => {
     } catch (error) {
       console.error('Sign out error:', error);
     }
+  };
+
+  const handleReportDeleted = (deletedDate: string) => {
+    setDeletedReportDate(deletedDate);
+    setSelectedReportId(null);
   };
 
   if (authLoading || profileLoading) {
@@ -140,6 +146,14 @@ const Dashboard = () => {
                 <Loader2 className="h-6 w-6 animate-spin mr-2" />
                 <span>Loading reports...</span>
               </div>
+            ) : deletedReportDate ? (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">Report Deleted</h3>
+                <p className="text-gray-600">
+                  Report deleted on {deletedReportDate}
+                </p>
+              </div>
             ) : reports.length === 0 ? (
               <div className="text-center py-8">
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -187,7 +201,10 @@ const Dashboard = () => {
             <DialogTitle>Assessment Report</DialogTitle>
           </DialogHeader>
           {selectedReportId && (
-            <ReportSections reportId={selectedReportId} />
+            <ReportSections 
+              reportId={selectedReportId} 
+              onReportDeleted={handleReportDeleted}
+            />
           )}
         </DialogContent>
       </Dialog>

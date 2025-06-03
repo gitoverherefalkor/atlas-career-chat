@@ -253,8 +253,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     }
   };
 
-  // Show section introduction if we're at the start of a section (except first section first time)
-  if (showSectionIntro && !(currentSectionIndex === 0 && currentQuestionIndex === 0)) {
+  // Show section introduction for all sections (including first)
+  if (showSectionIntro) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <SectionIntroduction
