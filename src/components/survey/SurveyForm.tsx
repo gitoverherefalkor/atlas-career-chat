@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
+import { useSurveySession } from '@/hooks/useSurveySession';
 import { QuestionRenderer } from './QuestionRenderer';
 import { SectionIntroduction } from './SectionIntroduction';
+import { SurveyNavigation } from './SurveyNavigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent } = '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,13 +25,45 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   accessCodeData 
 }) => {
   const { data: survey, isLoading, error } = useSurvey(surveyId);
+  const { getStoredSession, saveSession, clearSession } = useSurveySession(surveyId);
+  
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSectionIntro, setShowSectionIntro] = useState(true);
+  const [completedSections, setCompletedSections] = useState<number[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Load session on mount
+  useEffect(() => {
+    if (survey) {
+      const storedSession = getStoredSession();
+      if (storedSession) {
+        setResponses(storedSession.responses);
+        setCurrentSectionIndex(storedSession.currentSectionIndex);
+        setCurrentQuestionIndex(storedSession.currentQuestionIndex);
+        setShowSectionIntro(storedSession.showSectionIntro);
+        setCompletedSections(storedSession.completedSections);
+        console.log('Restored session:', storedSession);
+      }
+    }
+  }, [survey]);
+
+  // Save session whenever state changes
+  useEffect(() => {
+    if (survey) {
+      const session = {
+        responses,
+        currentSectionIndex,
+        currentQuestionIndex,
+        showSectionIntro,
+        completedSections
+      };
+      saveSession(session);
+    }
+  }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, survey]);
 
   if (isLoading) {
     return (
@@ -49,7 +83,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   // Helper function to check if a question should be skipped
   const shouldSkipQuestion = (question: any) => {
-    // Skip license key questions since we already verified the access code
     const licenseKeyIndicators = ['license', 'access code', 'verification code', 'license key'];
     const questionText = question.label?.toLowerCase() || '';
     return licenseKeyIndicators.some(indicator => questionText.includes(indicator));
@@ -114,6 +147,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   };
 
   const handleNext = () => {
+    // If this was the last question in the section, mark section as completed
+    if (currentQuestionIndex === filteredQuestions.length - 1) {
+      setCompletedSections(prev => {
+        if (!prev.includes(currentSectionIndex)) {
+          return [...prev, currentSectionIndex];
+        }
+        return prev;
+      });
+    }
+
     // Move to next question in current section
     if (currentQuestionIndex < filteredQuestions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -139,6 +182,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       setCurrentQuestionIndex(prevFilteredQuestions.length - 1);
       setShowSectionIntro(false); // Go directly to questions, not intro
     }
+  };
+
+  const handleSectionNavigation = (sectionIndex: number) => {
+    setCurrentSectionIndex(sectionIndex);
+    setCurrentQuestionIndex(0);
+    setShowSectionIntro(true);
   };
 
   const isLastQuestion = () => {
@@ -233,6 +282,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       // Mark access code as used after successful submission
       await markAccessCodeAsUsed();
 
+      // Clear the session after successful submission
+      clearSession();
+
       toast({
         title: "Survey Submitted",
         description: "Your responses have been submitted successfully!",
@@ -257,12 +309,22 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     const sectionDescription = currentSection.description || "Let's continue with the next set of questions.";
     return (
       <div className="min-h-screen bg-gray-50 py-8">
-        <SectionIntroduction
-          sectionNumber={currentSectionIndex + 1}
-          sectionTitle={currentSection.title}
-          description={sectionDescription}
-          onContinue={handleSectionIntroContinue}
-        />
+        <div className="flex gap-6 max-w-7xl mx-auto px-6">
+          <SurveyNavigation
+            sections={survey.sections}
+            currentSectionIndex={currentSectionIndex}
+            completedSections={completedSections}
+            onSectionClick={handleSectionNavigation}
+          />
+          <div className="flex-1">
+            <SectionIntroduction
+              sectionNumber={currentSectionIndex + 1}
+              sectionTitle={currentSection.title}
+              description={sectionDescription}
+              onContinue={handleSectionIntroContinue}
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -277,82 +339,93 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Header with smaller, grey title */}
-      <div className="mb-12">
-        <h1 className="text-lg font-normal text-gray-600 mb-8">{survey.title}</h1>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="flex gap-6 max-w-7xl mx-auto px-6">
+        <SurveyNavigation
+          sections={survey.sections}
+          currentSectionIndex={currentSectionIndex}
+          completedSections={completedSections}
+          onSectionClick={handleSectionNavigation}
+        />
         
-        {/* Progress with section info */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-bold text-atlas-navy">
-              Section {currentSectionIndex + 1}. {currentSection.title}
-            </span>
-            <span className="text-sm font-bold text-atlas-navy">
-              Q. {currentQuestionInSection} of {totalQuestionsInSection}
-            </span>
+        <div className="flex-1 max-w-4xl">
+          {/* Header with smaller, grey title */}
+          <div className="mb-12">
+            <h1 className="text-lg font-light text-gray-600 mb-8">{survey.title}</h1>
+            
+            {/* Progress with section info */}
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-bold text-atlas-navy">
+                  Section {currentSectionIndex + 1}. {currentSection.title}
+                </span>
+                <span className="text-sm font-bold text-atlas-navy">
+                  Q. {currentQuestionInSection} of {totalQuestionsInSection}
+                </span>
+              </div>
+              <Progress value={progress} className="w-full" />
+            </div>
           </div>
-          <Progress value={progress} className="w-full" />
+
+          {/* Current Question */}
+          <Card>
+            <CardContent className="space-y-6 pt-6">
+              <div className="text-lg font-light text-gray-900">
+                <QuestionRenderer
+                  key={currentQuestion.id}
+                  question={currentQuestion}
+                  value={responses[currentQuestion.id]}
+                  onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+                />
+              </div>
+
+              {/* Navigation */}
+              <div className="flex justify-between pt-6">
+                <Button
+                  variant="ghost"
+                  onClick={handleBack}
+                  disabled={isFirstQuestion()}
+                  className={isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back
+                </Button>
+
+                {!isLastQuestion() ? (
+                  <Button
+                    onClick={handleNext}
+                    disabled={!isCurrentQuestionComplete()}
+                    className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
+                    style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
+                  >
+                    Continue
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={!isCurrentQuestionComplete() || isSubmitting}
+                    className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
+                    style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      <>
+                        Submit Assessment
+                        <Send className="h-4 w-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
-
-      {/* Current Question */}
-      <Card>
-        <CardContent className="space-y-6 pt-6">
-          <div className="text-lg font-light text-gray-900">
-            <QuestionRenderer
-              key={currentQuestion.id}
-              question={currentQuestion}
-              value={responses[currentQuestion.id]}
-              onChange={(value) => handleResponseChange(currentQuestion.id, value)}
-            />
-          </div>
-
-          {/* Navigation */}
-          <div className="flex justify-between pt-6">
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              disabled={isFirstQuestion()}
-              className={isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-
-            {!isLastQuestion() ? (
-              <Button
-                onClick={handleNext}
-                disabled={!isCurrentQuestionComplete()}
-                className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
-                style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
-              >
-                Continue
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={!isCurrentQuestionComplete() || isSubmitting}
-                className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
-                style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    Submit Assessment
-                    <Send className="h-4 w-4 ml-2" />
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 };
