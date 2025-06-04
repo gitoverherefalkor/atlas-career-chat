@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -6,16 +5,9 @@ import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft, MessageSquare } from 'lucide-react';
+import type { Tables } from '@/integrations/supabase/types';
 
-interface ReportData {
-  id: string;
-  chat_access_token: string;
-  relevance_user_id: string;
-  title: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
+type ReportData = Tables<'reports'>;
 
 const Chat = () => {
   const [searchParams] = useSearchParams();
@@ -44,11 +36,11 @@ const Chat = () => {
     }
 
     try {
-      // Validate the chat access token
+      // For now, let's validate using the report ID as token and relevance_user_id
       const { data: report, error } = await supabase
         .from('reports')
         .select('*')
-        .eq('chat_access_token', token)
+        .eq('id', token)
         .eq('relevance_user_id', userId)
         .single();
 
@@ -62,7 +54,7 @@ const Chat = () => {
         return;
       }
 
-      setReportData(report as ReportData);
+      setReportData(report);
       setIsValid(true);
     } catch (error) {
       console.error('Error validating chat access:', error);
