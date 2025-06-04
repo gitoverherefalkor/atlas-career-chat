@@ -7,11 +7,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft, MessageSquare } from 'lucide-react';
 
+interface ReportData {
+  id: string;
+  chat_access_token: string;
+  relevance_user_id: string;
+  title: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 const Chat = () => {
   const [searchParams] = useSearchParams();
   const [isValidating, setIsValidating] = useState(true);
   const [isValid, setIsValid] = useState(false);
-  const [reportData, setReportData] = useState<any>(null);
+  const [reportData, setReportData] = useState<ReportData | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -52,7 +62,7 @@ const Chat = () => {
         return;
       }
 
-      setReportData(report);
+      setReportData(report as ReportData);
       setIsValid(true);
     } catch (error) {
       console.error('Error validating chat access:', error);
