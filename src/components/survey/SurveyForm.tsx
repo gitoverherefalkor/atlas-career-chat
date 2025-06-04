@@ -6,7 +6,7 @@ import { QuestionRenderer } from './QuestionRenderer';
 import { SectionIntroduction } from './SectionIntroduction';
 import { SurveyNavigation } from './SurveyNavigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } = '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
