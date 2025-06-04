@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { SurveyForm } from '@/components/survey/SurveyForm';
 import { AssessmentWelcome } from '@/components/survey/AssessmentWelcome';
-import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { CheckCircle, ArrowLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useReports } from '@/hooks/useReports';
@@ -156,6 +156,16 @@ const Assessment = () => {
     setIsCompleted(true);
   };
 
+  const handleExitAssessment = () => {
+    const confirmExit = window.confirm(
+      "Are you sure you want to exit the assessment? Your progress will be saved and you can continue later."
+    );
+    
+    if (confirmExit) {
+      navigate('/dashboard');
+    }
+  };
+
   // Show loading while checking auth
   if (authLoading) {
     return (
@@ -205,12 +215,27 @@ const Assessment = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <SurveyForm
-        surveyId={getSurveyIdFromAccessCode(accessCodeData)}
-        onComplete={handleSurveyComplete}
-        accessCodeData={accessCodeData}
-      />
+    <div className="min-h-screen bg-gray-50">
+      {/* Exit Button - Fixed in top right */}
+      <div className="fixed top-4 right-4 z-50">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleExitAssessment}
+          className="bg-white/90 backdrop-blur-sm border-gray-200 hover:bg-gray-50"
+        >
+          <X className="h-4 w-4 mr-2" />
+          Exit Assessment
+        </Button>
+      </div>
+
+      <div className="py-8">
+        <SurveyForm
+          surveyId={getSurveyIdFromAccessCode(accessCodeData)}
+          onComplete={handleSurveyComplete}
+          accessCodeData={accessCodeData}
+        />
+      </div>
     </div>
   );
 };

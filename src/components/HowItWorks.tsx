@@ -4,7 +4,7 @@ import { ClipboardList, Brain, MessageSquare } from 'lucide-react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
 const HowItWorks = () => {
-  const { ref: stepsRef, isVisible: stepsVisible } = useScrollAnimation();
+  const { ref: stepsRef, isVisible: stepsVisible } = useScrollAnimation(0.8);
   
   const steps = [{
     icon: <ClipboardList className="h-10 w-10 text-white" />,
@@ -37,13 +37,13 @@ const HowItWorks = () => {
             {steps.map((step, index) => (
               <div 
                 key={index} 
-                className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-700 p-1 px-[10px] py-[6px] transform ${
+                className={`bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-1000 p-1 px-[10px] py-[6px] transform ${
                   stepsVisible 
                     ? 'translate-x-0 opacity-100' 
-                    : '-translate-x-10 opacity-0'
+                    : '-translate-x-16 opacity-0'
                 }`}
                 style={{ 
-                  transitionDelay: stepsVisible ? `${index * 200}ms` : '0ms' 
+                  transitionDelay: stepsVisible ? `${index * 400}ms` : '0ms' 
                 }}
               >
                 <div className="border border-gray-100 rounded-lg p-6 px-[12px]">
