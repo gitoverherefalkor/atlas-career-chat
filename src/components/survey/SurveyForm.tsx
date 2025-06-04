@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
 import { useSurveySession } from '@/hooks/useSurveySession';
@@ -12,6 +11,7 @@ import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface SurveyFormProps {
   surveyId: string;
@@ -35,6 +35,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Load session on mount
   useEffect(() => {
