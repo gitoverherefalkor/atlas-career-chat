@@ -117,9 +117,12 @@ const HowItWorks = () => {
               <p className="text-lg mb-6 opacity-90">
                 Take the first step toward understanding your ideal career path with Atlas Assessment. Get personalized insights that will guide your professional decisions.
               </p>
-              <button className="inline-flex items-center justify-center rounded-md text-lg bg-white text-atlas-indigo hover:bg-gray-100 font-semibold py-3 px-8 transition-colors">
+              <a 
+                href="#pricing" 
+                className="inline-flex items-center justify-center rounded-md text-lg bg-white text-atlas-indigo hover:bg-gray-100 font-semibold py-3 px-8 transition-colors"
+              >
                 Get Started Now
-              </button>
+              </a>
             </div>
           </div>
         </div>

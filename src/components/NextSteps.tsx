@@ -1,67 +1,97 @@
+
 import React from 'react';
-import { ShoppingCart, Mail, ClipboardCheck, Cog, Sparkles, FileText } from 'lucide-react';
+import { CheckCircle, ArrowRight, Clock, MessageSquare, FileText } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 const NextSteps = () => {
-  const steps = [
-    {
-      icon: ShoppingCart,
-      title: "Purchase Your License Key",
-      description: "Click the purchase button and securely buy your license key"
-    },
-    {
-      icon: Mail,
-      title: "Access Your Questionnaire",
-      description: "Find your unique access key and a link to the Atlas Assessment questionnaire in your email"
-    },
-    {
-      icon: ClipboardCheck,
-      title: "Complete the Assessment",
-      description: "Complete the questionnaire at your own pace, answering honestly for the most accurate results."
-    },
-    {
-      icon: Cog,
-      title: "Results Processing",
-      description: "Once submitted, your results are processed (usually within minutes). You'll receive another email with a unique link to your personal, interactive AI chat report."
-    },
-    {
-      icon: Sparkles,
-      title: "Explore Your Insights",
-      description: "Engage with your AI career coach! Explore your profile, ask questions, and discover your tailored career recommendations. - Top fits, runner-ups, out of the box and dream job assessment."
-    },
-    {
-      icon: FileText,
-      title: "Receive Your Consolidated Report",
-      description: "Find the final Atlas Assessment Report, now with the nuances and specific insights discussed during your AI coaching session, in your email – a valuable, personalized reference for your ongoing career exploration and planning."
-    }
-  ];
-
   return (
-    <section className="section bg-white">
+    <section className="py-20 bg-white">
       <div className="container-atlas">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Your Journey Starts Here</h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto"></div>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">What Happens After Your Assessment?</h2>
+          <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-navy mx-auto"></div>
         </div>
 
-        <div className="max-w-3xl mx-auto">
-          <div className="relative">
-            <div className="absolute left-8 top-0 bottom-0 w-1 bg-gray-200 hidden md:block"></div>
-            
-            <div className="space-y-12">
-              {steps.map((step, index) => {
-                const Icon = step.icon;
-                return (
-                  <div key={index} className="flex flex-col md:flex-row gap-6">
-                    <div className="flex flex-shrink-0 items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-atlas-blue to-atlas-navy text-white md:z-10">
-                      <Icon color="white" className="w-8 h-8" />
-                    </div>
-                    <div className="flex-1 pt-2">
-                      <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                      <p className="text-gray-600">{step.description}</p>
-                    </div>
-                  </div>
-                );
-              })}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="w-16 h-16 bg-atlas-blue bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Clock className="h-8 w-8 text-atlas-blue" />
+              </div>
+              <h3 className="font-semibold mb-3">Immediate Processing</h3>
+              <p className="text-gray-600 text-sm">
+                Your responses are immediately analyzed by our AI system, generating your personalized career profile.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="w-16 h-16 bg-atlas-indigo bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <MessageSquare className="h-8 w-8 text-atlas-indigo" />
+              </div>
+              <h3 className="font-semibold mb-3">AI Coaching Chat</h3>
+              <p className="text-gray-600 text-sm">
+                Engage in an interactive AI coaching session to explore your results, ask questions, and dive deeper into specific career paths.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="w-16 h-16 bg-atlas-purple bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-8 w-8 text-atlas-purple" />
+              </div>
+              <h3 className="font-semibold mb-3">Comprehensive Report</h3>
+              <p className="text-gray-600 text-sm">
+                Find your final Atlas Assessment Report, now with the nuances and specific insights discussed during your AI coaching session, in your dashboard – a valuable, personalized reference for your ongoing career exploration and planning.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="w-16 h-16 bg-atlas-teal bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <ArrowRight className="h-8 w-8 text-atlas-teal" />
+              </div>
+              <h3 className="font-semibold mb-3">Take Action</h3>
+              <p className="text-gray-600 text-sm">
+                Use your personalized insights to make informed decisions about your career path, education, or professional development.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-16 bg-gray-50 rounded-xl p-8">
+          <div className="max-w-3xl mx-auto text-center">
+            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold mb-4">Your Investment in Clarity</h3>
+            <p className="text-lg text-gray-700 mb-6">
+              Atlas Assessment provides you with professional-grade career insights at a fraction of the cost of traditional career coaching. 
+              Get the clarity you need to make confident career decisions.
+            </p>
+            <div className="grid md:grid-cols-3 gap-6 text-left">
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold">Personalized Analysis</p>
+                  <p className="text-sm text-gray-600">Tailored to your unique profile</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold">Interactive Coaching</p>
+                  <p className="text-sm text-gray-600">AI-powered career guidance</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <CheckCircle className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
+                <div>
+                  <p className="font-semibold">Actionable Insights</p>
+                  <p className="text-sm text-gray-600">Clear next steps for your career</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
