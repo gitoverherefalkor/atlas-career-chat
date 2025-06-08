@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,7 @@ const Dashboard = () => {
   const { reports, isLoading: reportsLoading } = useReports();
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [deletedReportDate, setDeletedReportDate] = useState<string | null>(null);
+  const reportsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -45,6 +45,13 @@ const Dashboard = () => {
   const handleReportDeleted = (deletedDate: string) => {
     setDeletedReportDate(deletedDate);
     setSelectedReportId(null);
+  };
+
+  const scrollToReports = () => {
+    reportsRef.current?.scrollIntoView({ 
+      behavior: 'smooth', 
+      block: 'start' 
+    });
   };
 
   if (authLoading || profileLoading) {
@@ -120,7 +127,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={scrollToReports}>
             <CardContent className="p-6">
               <div className="flex items-center space-x-4">
                 <div className="bg-green-100 p-3 rounded-full">
@@ -136,7 +143,7 @@ const Dashboard = () => {
         </div>
 
         {/* Reports List */}
-        <Card>
+        <Card ref={reportsRef}>
           <CardHeader>
             <CardTitle>Your Assessment Reports</CardTitle>
           </CardHeader>

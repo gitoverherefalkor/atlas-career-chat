@@ -1,12 +1,15 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { Loader2 } from 'lucide-react';
 
 export const MockDataSubmitter = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const sjoerdTestData = {
@@ -129,14 +132,19 @@ export const MockDataSubmitter = () => {
         console.log('Survey created successfully');
       }
 
-      // Insert Sjoerd's responses
+      // Insert Sjoerd's responses with user_id if authenticated
       console.log('Inserting Sjoerd test response...');
+      const answerData = {
+        survey_id: surveyId,
+        payload: sjoerdTestData,
+        ...(user?.id && { user_id: user.id })
+      };
+
+      console.log('Answer data being inserted:', answerData);
+
       const { data, error } = await supabase
         .from('answers')
-        .insert({
-          survey_id: surveyId,
-          payload: sjoerdTestData
-        })
+        .insert(answerData)
         .select();
 
       if (error) {
