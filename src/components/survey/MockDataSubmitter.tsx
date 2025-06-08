@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -132,12 +131,11 @@ export const MockDataSubmitter = () => {
         console.log('Survey created successfully');
       }
 
-      // Insert Sjoerd's responses with user_id if authenticated
+      // Insert Sjoerd's responses - only include columns that exist in the answers table
       console.log('Inserting Sjoerd test response...');
       const answerData = {
         survey_id: surveyId,
-        payload: sjoerdTestData,
-        ...(user?.id && { user_id: user.id })
+        payload: sjoerdTestData
       };
 
       console.log('Answer data being inserted:', answerData);
