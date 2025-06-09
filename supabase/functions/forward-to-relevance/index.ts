@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,12 +38,35 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
+    // Find the user with email sjn.geurts@gmail.com or create a default user for testing
+    let userId = requestBody.user_id;
+    
+    if (!userId) {
+      console.log('No user_id provided, looking for test user sjn.geurts@gmail.com');
+      
+      // First try to find the user by email in profiles
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', 'sjn.geurts@gmail.com')
+        .maybeSingle();
+      
+      if (profileData) {
+        userId = profileData.id;
+        console.log('Found user ID from profiles:', userId);
+      } else {
+        console.log('User not found in profiles, using fallback user ID');
+        // Use a fallback user ID for testing - you can replace this with any valid UUID
+        userId = '00000000-0000-0000-0000-000000000000';
+      }
+    }
+
     // Step 1: Create a report record first
-    console.log('Creating report record...');
+    console.log('Creating report record for user:', userId);
     const { data: reportData, error: reportError } = await supabase
       .from('reports')
       .insert({
-        user_id: requestBody.user_id || null,
+        user_id: userId,
         title: 'Career Assessment Report',
         status: 'processing',
         payload: surveyData,
@@ -56,7 +78,7 @@ serve(async (req) => {
 
     if (reportError) {
       console.error('Error creating report:', reportError);
-      return new Response(JSON.stringify({ error: 'Failed to create report record' }), {
+      return new Response(JSON.stringify({ error: 'Failed to create report record', details: reportError }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
