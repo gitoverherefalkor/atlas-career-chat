@@ -53,7 +53,7 @@ serve(async (req) => {
       }
     }
 
-    // Create a test report
+    // Create a test report with COMPLETED status and sample sections
     const { data: reportData, error: reportError } = await supabase
       .from('reports')
       .insert({
@@ -74,11 +74,39 @@ serve(async (req) => {
       throw reportError;
     }
 
+    // Create sample report sections
+    const sampleSections = [
+      {
+        report_id: reportData.id,
+        section_type: 'personality_overview',
+        content: 'This is a test personality overview section. You are a visionary leader with strong organizational skills.'
+      },
+      {
+        report_id: reportData.id,
+        section_type: 'career_recommendations',
+        content: 'Based on your profile, we recommend exploring roles in AI consulting, entrepreneurship, and clean technology.'
+      },
+      {
+        report_id: reportData.id,
+        section_type: 'development_areas',
+        content: 'Focus on developing delegation skills and work-life balance strategies to enhance your effectiveness.'
+      }
+    ];
+
+    const { error: sectionsError } = await supabase
+      .from('report_sections')
+      .insert(sampleSections);
+
+    if (sectionsError) {
+      console.error('Error creating test sections:', sectionsError);
+      // Don't throw here, report is still valid without sections
+    }
+
     console.log('Test report created:', reportData.id);
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: 'Test report created successfully',
+      message: 'Test report created successfully with sample sections',
       report_id: reportData.id,
       user_id: userId
     }), {

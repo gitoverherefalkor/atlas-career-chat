@@ -20,9 +20,9 @@ serve(async (req) => {
     const requestBody = await req.json();
     console.log('Full request body:', JSON.stringify(requestBody, null, 2));
     
-    // Extract the payload from the request body
+    // Extract the payload from the request body - preserve exact order
     const surveyData = requestBody.payload || requestBody;
-    console.log('Survey data to send:', JSON.stringify(surveyData, null, 2));
+    console.log('Survey data to send (preserving order):', JSON.stringify(surveyData, null, 2));
 
     if (!surveyData) {
       console.error('No survey data found in request');
@@ -87,10 +87,11 @@ serve(async (req) => {
     console.log('Report created with ID:', reportData.id);
 
     // Step 2: Build the Relevance AI request body with report_id as input variable
+    // IMPORTANT: Use the exact surveyData object to preserve order
     const body = {
       message: { 
         role: "user", 
-        content: JSON.stringify(surveyData) 
+        content: JSON.stringify(surveyData)
       },
       agent_id: Deno.env.get("RELEVANCE_AGENT_ID"),
       inputs: {
@@ -100,8 +101,8 @@ serve(async (req) => {
     };
 
     console.log('Sending to Relevance AI with agent_id:', Deno.env.get("RELEVANCE_AGENT_ID"));
-    console.log('Complete request body being sent to Relevance:', JSON.stringify(body, null, 2));
     console.log('Report ID being sent as input:', reportData.id);
+    console.log('Survey data being sent (should preserve order):', JSON.stringify(surveyData, null, 2));
 
     // POST to Relevance AI
     const resp = await fetch(
