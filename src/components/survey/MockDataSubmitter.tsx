@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +12,7 @@ export const MockDataSubmitter = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Sjoerd's data in the EXACT order you provided
   const sjoerdTestData = {
     "personal_name": "Sjoerd Geurts",
     "personal_pronoun": "He / Him",
@@ -61,7 +63,7 @@ export const MockDataSubmitter = () => {
       "Data-heavy or analytical roles (e.g., working extensively with spreadsheets, statistics, or research-heavy tasks)",
       "Finance-related work (e.g., financial analysis, accounting, budgeting, or investment-related roles)"
     ],
-    "interest_areas": ["Business and Entrepreneurship", "Science and Technology", "Environmental and Sustainability"],
+    "interest_areas": ["Business an Entrepreneurship", "Science and Technology", "Environmental and Sustainability"],
     "archetypes": ["The Visionary (creative, thinks outside the box, envisions new possibilities)", "The Organizer (plans tasks, sets priorities, keeps structure)"],
     "company_culture": "Innovative and forward-thinking.",
     "specialized_knowledge": "AI agentic workflows, genAI for business, project management, fundraising, process optimalisation, presentations",
