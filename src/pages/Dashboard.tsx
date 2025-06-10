@@ -1,14 +1,16 @@
+
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, User, LogOut, FileText, Plus, Settings, Eye } from 'lucide-react';
+import { Loader2, User, LogOut, FileText, Plus, Settings, Eye, Play } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
+import { useSurveySession } from '@/hooks/useSurveySession';
 import ReportSections from '@/components/ReportSections';
 
 const Dashboard = () => {
@@ -20,6 +22,10 @@ const Dashboard = () => {
   const reportsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Check for saved assessment progress
+  const { getStoredSession } = useSurveySession('00000000-0000-0000-0000-000000000001');
+  const savedSession = getStoredSession();
 
   const handleSignOut = async () => {
     try {
@@ -52,6 +58,20 @@ const Dashboard = () => {
       behavior: 'smooth', 
       block: 'start' 
     });
+  };
+
+  const getSectionProgress = (session: any) => {
+    if (!session) return '';
+    const currentSection = session.currentSectionIndex + 1;
+    const currentQuestion = session.currentQuestionIndex + 1;
+    return `Section ${currentSection}, Question ${currentQuestion}`;
+  };
+
+  const getAssessmentTitle = (payload: any) => {
+    if (payload?.personal_name) {
+      return `Career Assessment - ${payload.personal_name}`;
+    }
+    return payload?.title || 'Career Assessment';
   };
 
   if (authLoading || profileLoading) {
@@ -112,34 +132,36 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="bg-atlas-blue bg-opacity-10 p-3 rounded-full">
-                  <Plus className="h-6 w-6 text-atlas-blue" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {savedSession ? (
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <Play className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Continue Assessment</h3>
+                    <p className="text-sm text-gray-600">Resume where you left off: {getSectionProgress(savedSession)}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Take Assessment</h3>
-                  <p className="text-sm text-gray-600">Start a new career assessment</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-atlas-blue bg-opacity-10 p-3 rounded-full">
+                    <Plus className="h-6 w-6 text-atlas-blue" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Take Assessment</h3>
+                    <p className="text-sm text-gray-600">Start a new career assessment</p>
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={scrollToReports}>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="bg-green-100 p-3 rounded-full">
-                  <FileText className="h-6 w-6 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Your Reports</h3>
-                  <p className="text-sm text-gray-600">{reports.length} completed assessments</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Reports List */}
@@ -177,7 +199,7 @@ const Dashboard = () => {
                 {reports.map((report) => (
                   <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                     <div>
-                      <h4 className="font-medium text-gray-900">{report.title}</h4>
+                      <h4 className="font-medium text-gray-900">{getAssessmentTitle(report.payload)}</h4>
                       <p className="text-sm text-gray-600">
                         Completed on {new Date(report.created_at).toLocaleDateString()}
                       </p>
