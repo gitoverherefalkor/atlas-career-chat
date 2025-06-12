@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, User, Briefcase, ArrowRight } from 'lucide-react';
+import { X, User, Briefcase, ArrowRight, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface ReportDisplayProps {
   userEmail?: string;
@@ -11,6 +10,7 @@ interface ReportDisplayProps {
 
 const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpanded }) => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [expandedCareerSection, setExpandedCareerSection] = useState<string | null>(null);
 
   // Only show for Sjoerd's profile
   if (userEmail !== 'sjn.geurts@gmail.com') {
@@ -188,31 +188,125 @@ In the short-term, utilise your analytical and strategic skills to drive impactf
 **Future Outlook of the industry, this role and the impact of AI**
 AI enhances the Business Strategist role by providing advanced data analytics and market forecasting tools. However, strategic intuition and the ability to interpret complex human factors remain essential, ensuring that human strategists continue to play a critical role in shaping business directions despite technological advancements.`,
 
-    'runner-up': `## RUNNER-UP CAREERS
+    'senior-strategy-consultant': `## SENIOR STRATEGY CONSULTANT
+*Consulting Environment*
 
-Sjoerd's skills and experience lend themselves to a variety of leadership and strategic roles across different organizational settings. Here are some promising options, grouped by similar functions:
+Ideal for someone with experience in strategic roles and a passion for problem-solving. This role involves providing expert advice and guidance to organizations, managing client interactions, and delivering effective solutions.
 
-**A. Strategic Advisory & Consulting**
+**Key Responsibilities**
+• Provide expert strategic advice to diverse organizations
+• Manage complex client relationships
+• Lead project teams and deliver high-impact solutions
+• Develop strategic frameworks and methodologies
 
-These roles leverage the candidate's analytical skills, problem-solving abilities, and communication skills to provide expert advice and guidance to organizations in established settings:
+**Pros & Cons**
 
-• **Senior Strategy Consultant:** Ideal for someone with experience in strategic roles and a passion for problem-solving. What this role does: Provide expert advice and guidance to organizations, manage client interactions, and deliver effective solutions. AI Impact: Supporting.
+**Pros**
+• Variety: Work with different industries and challenges
+• High impact: Drive transformation across multiple organizations
+• Skill development: Continuous learning and growth opportunities
 
-• **Chief of Staff:** A perfect role for those with strong organizational skills and the ability to proactively manage key initiatives. What this role does: Serve as a strategic advisor to senior leadership, manage complex projects, and facilitate communication across the organization. AI Impact: Supporting.
+**Cons**
+• Travel requirements: Significant client site visits
+• Pressure: High expectations for deliverables and results
 
-**B. Innovation & Growth Leadership**
+**AI Impact:** Supporting`,
 
-These roles focus on driving innovation, identifying new opportunities, and fostering a culture of innovation, particularly within rapidly growing organizations:
+    'chief-of-staff': `## CHIEF OF STAFF
+*Executive Support Role*
 
-• **Head of Innovation:** A role for creative and strategic thinkers eager to drive innovation in a fast-paced environment. What this role does: Drive innovation initiatives, identify new opportunities, and foster a culture of innovation within a growing organization. AI Impact: Developing.
+A perfect role for those with strong organizational skills and the ability to proactively manage key initiatives. This position serves as a strategic advisor to senior leadership, managing complex projects and facilitating communication across the organization.
 
-• **Director of Corporate Development:** This role involves managing mergers, acquisitions, and strategic investments to drive growth and enhance shareholder value. What this role does: Oversee financial investments, analyze market trends, identify and evaluate potential M&A targets or strategic partners, lead due diligence processes, negotiate transaction terms, and develop strategic plans to maximize returns and achieve inorganic growth objectives. AI Impact: Supporting.
+**Key Responsibilities**
+• Serve as strategic advisor to C-suite executives
+• Manage cross-functional strategic initiatives
+• Facilitate executive decision-making processes
+• Drive organizational effectiveness improvements
 
-**C. Organizational Development & Effectiveness**
+**Pros & Cons**
 
-These roles are well-suited for Adapters and Communicators who thrive in implementing programs that improve organizational performance, and who possess long-term, big-picture thinking for strategic planning:
+**Pros**
+• High visibility: Direct access to senior leadership
+• Broad impact: Influence across multiple business functions
+• Strategic role: Shape organizational direction and priorities
 
-• **Director of Organizational Effectiveness:** This role focuses on enhancing organizational performance through targeted strategies. What this role does: Drive strategic initiatives to improve productivity and efficiency in established organizational environments. AI Impact: Supporting.`,
+**Cons**
+• Demanding schedule: Must be available for urgent executive needs
+• High pressure: Responsibility for critical organizational initiatives
+
+**AI Impact:** Supporting`,
+
+    'head-of-innovation': `## HEAD OF INNOVATION
+*Innovation Leadership*
+
+A role for creative and strategic thinkers eager to drive innovation in a fast-paced environment. This position involves driving innovation initiatives, identifying new opportunities, and fostering a culture of innovation within a growing organization.
+
+**Key Responsibilities**
+• Lead innovation strategy and implementation
+• Identify emerging technologies and market opportunities
+• Build and manage innovation teams and processes
+• Create partnerships with startups and research institutions
+
+**Pros & Cons**
+
+**Pros**
+• Creative freedom: Shape the future direction of innovation
+• Impact: Drive transformational change across the organization
+• Networking: Build relationships with cutting-edge companies and technologies
+
+**Cons**
+• Uncertainty: Innovation outcomes can be unpredictable
+• Resource constraints: May face budget and resource limitations
+
+**AI Impact:** Developing`,
+
+    'director-corporate-development': `## DIRECTOR OF CORPORATE DEVELOPMENT
+*Strategic Growth Role*
+
+This role involves managing mergers, acquisitions, and strategic investments to drive growth and enhance shareholder value. You'll oversee financial investments, analyze market trends, and lead strategic partnerships.
+
+**Key Responsibilities**
+• Identify and evaluate M&A targets and strategic partners
+• Lead due diligence processes and negotiate transaction terms
+• Develop strategic plans to maximize returns and achieve growth objectives
+• Manage strategic partnerships and joint ventures
+
+**Pros & Cons**
+
+**Pros**
+• High impact: Direct influence on company growth strategy
+• Deal-making: Engage in complex, high-stakes transactions
+• Financial rewards: Often includes performance-based compensation
+
+**Cons**
+• Intense pressure: High-stakes decisions with significant financial implications
+• Long hours: Deal-making often requires extended work periods
+
+**AI Impact:** Supporting`,
+
+    'director-organizational-effectiveness': `## DIRECTOR OF ORGANIZATIONAL EFFECTIVENESS
+*Organizational Development*
+
+This role focuses on enhancing organizational performance through targeted strategies. You'll drive strategic initiatives to improve productivity and efficiency in established organizational environments.
+
+**Key Responsibilities**
+• Design and implement organizational effectiveness programs
+• Lead change management initiatives across the organization
+• Develop performance measurement and improvement frameworks
+• Coach senior leaders on organizational transformation
+
+**Pros & Cons**
+
+**Pros**
+• Broad impact: Influence entire organizational culture and performance
+• Strategic role: Shape how the organization operates and evolves
+• People focus: Work directly with teams to improve their effectiveness
+
+**Cons**
+• Change resistance: May encounter resistance to organizational changes
+• Complex dynamics: Navigate complex organizational politics and relationships
+
+**AI Impact:** Supporting`,
 
     'landscape-architect': `## LANDSCAPE ARCHITECT WITH AI SPECIALISATION
 
@@ -357,46 +451,42 @@ This approach builds on your strengths while addressing your desire for better w
       imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop',
       sections: [
         {
-          id: 'cso',
-          title: 'Chief Strategy Officer (CSO)',
-          description: 'Strategic leadership role in medium to large established organizations.',
-          imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop'
+          id: 'top-careers',
+          title: 'Top Career Suggestions',
+          description: 'Strategic leadership roles best suited to your profile.',
+          imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop',
+          isCollapsible: true,
+          careers: [
+            { id: 'cso', title: 'Chief Strategy Officer (CSO)' },
+            { id: 'vp-strategic', title: 'VP, Strategic Initiatives' },
+            { id: 'business-strategist', title: 'Business Strategist' }
+          ]
         },
         {
-          id: 'vp-strategic',
-          title: 'VP, Strategic Initiatives',
-          description: 'Leading cross-functional strategic projects in large corporate environments.',
-          imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=300&fit=crop'
-        },
-        {
-          id: 'business-strategist',
-          title: 'Business Strategist',
-          description: 'Analyzing market trends and developing strategic recommendations.',
-          imageUrl: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=600&h=300&fit=crop'
-        },
-        {
-          id: 'runner-up',
+          id: 'runner-up-careers',
           title: 'Runner-up Careers',
           description: 'Additional career options organized by function and industry.',
-          imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=300&fit=crop'
+          imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=300&fit=crop',
+          isCollapsible: true,
+          careers: [
+            { id: 'senior-strategy-consultant', title: 'Senior Strategy Consultant' },
+            { id: 'chief-of-staff', title: 'Chief of Staff' },
+            { id: 'head-of-innovation', title: 'Head of Innovation' },
+            { id: 'director-corporate-development', title: 'Director of Corporate Development' },
+            { id: 'director-organizational-effectiveness', title: 'Director of Organizational Effectiveness' }
+          ]
         },
         {
-          id: 'landscape-architect',
-          title: 'Landscape Architect with AI',
-          description: 'Combining gardening passion with AI expertise for smart landscapes.',
-          imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
-        },
-        {
-          id: 'comedy-writer',
-          title: 'Tech-Enabled Comedy Writer',
-          description: 'Reimagining stand-up comedy through AI and technology.',
-          imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
-        },
-        {
-          id: 'experience-designer',
-          title: 'Immersive Experience Designer',
-          description: 'Creating interactive experiences blending physical and digital elements.',
-          imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
+          id: 'outside-box-careers',
+          title: 'Outside-the-Box Careers',
+          description: 'Creative career combinations based on your unique interests.',
+          imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop',
+          isCollapsible: true,
+          careers: [
+            { id: 'landscape-architect', title: 'Landscape Architect with AI' },
+            { id: 'comedy-writer', title: 'Tech-Enabled Comedy Writer' },
+            { id: 'experience-designer', title: 'Immersive Experience Designer' }
+          ]
         },
         {
           id: 'dream-jobs',
@@ -460,7 +550,18 @@ This approach builds on your strengths while addressing your desire for better w
   const handleSectionExpand = (sectionId: string) => {
     const newExpandedState = expandedSection === sectionId ? null : sectionId;
     setExpandedSection(newExpandedState);
+    setExpandedCareerSection(null); // Reset career section when main section changes
     onSectionExpanded?.(newExpandedState !== null);
+  };
+
+  const handleCareerSectionToggle = (sectionId: string) => {
+    setExpandedCareerSection(expandedCareerSection === sectionId ? null : sectionId);
+  };
+
+  const handleCareerExpand = (careerId: string) => {
+    setExpandedSection(careerId);
+    setExpandedCareerSection(null);
+    onSectionExpanded?.(true);
   };
 
   return (
@@ -552,6 +653,75 @@ This approach builds on your strengths while addressing your desire for better w
                 );
               })
             )}
+            
+            {/* Individual Career Expanded View */}
+            {Object.keys(careerSuggestionsContent).includes(expandedSection) && (
+              <div>
+                <div className="relative h-64 bg-gradient-to-r from-atlas-blue to-atlas-navy">
+                  <img
+                    src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop"
+                    alt="Career"
+                    className="w-full h-full object-cover opacity-80"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
+                    <div className="p-6 text-white w-full">
+                      <h3 className="text-2xl font-bold mb-2">
+                        {expandedSection === 'cso' && 'Chief Strategy Officer (CSO)'}
+                        {expandedSection === 'vp-strategic' && 'VP, Strategic Initiatives'}
+                        {expandedSection === 'business-strategist' && 'Business Strategist'}
+                        {expandedSection === 'senior-strategy-consultant' && 'Senior Strategy Consultant'}
+                        {expandedSection === 'chief-of-staff' && 'Chief of Staff'}
+                        {expandedSection === 'head-of-innovation' && 'Head of Innovation'}
+                        {expandedSection === 'director-corporate-development' && 'Director of Corporate Development'}
+                        {expandedSection === 'director-organizational-effectiveness' && 'Director of Organizational Effectiveness'}
+                        {expandedSection === 'landscape-architect' && 'Landscape Architect with AI'}
+                        {expandedSection === 'comedy-writer' && 'Tech-Enabled Comedy Writer'}
+                        {expandedSection === 'experience-designer' && 'Immersive Experience Designer'}
+                      </h3>
+                      <p className="text-lg opacity-90">Detailed career analysis and recommendations</p>
+                    </div>
+                  </div>
+                  {/* Close Button */}
+                  <button
+                    onClick={() => setExpandedSection(null)}
+                    className="absolute bottom-4 right-4 w-10 h-10 bg-black bg-opacity-50 rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
+                  >
+                    <X className="h-5 w-5 text-white" />
+                  </button>
+                </div>
+                
+                <div className="p-6">
+                  <div className="prose prose-lg max-w-none">
+                    <div 
+                      className="whitespace-pre-wrap text-gray-700 leading-relaxed"
+                      style={{ 
+                        fontSize: '16px',
+                        lineHeight: '1.7'
+                      }}
+                    >
+                      {getSectionContent('career-suggestions', expandedSection)?.split('\n').map((paragraph, index) => {
+                        if (paragraph.startsWith('## ')) {
+                          return <h3 key={index} className="text-xl font-bold mt-8 mb-4 text-atlas-navy">{paragraph.replace('## ', '')}</h3>;
+                        }
+                        if (paragraph.startsWith('### ')) {
+                          return <h4 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-blue">{paragraph.replace('### ', '')}</h4>;
+                        }
+                        if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+                          return <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{paragraph.replace(/\*\*/g, '')}</p>;
+                        }
+                        if (paragraph.startsWith('•')) {
+                          return <p key={index} className="ml-6 mb-2">{paragraph}</p>;
+                        }
+                        if (paragraph.trim() === '') {
+                          return <br key={index} />;
+                        }
+                        return <p key={index} className="mb-3">{paragraph}</p>;
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
@@ -585,19 +755,65 @@ This approach builds on your strengths while addressing your desire for better w
                 <CardContent className="p-0">
                   <div className="space-y-0">
                     {chapter.sections.map((section) => (
-                      <div key={section.id} className="border-b last:border-b-0 p-4 hover:bg-gray-50">
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900 mb-1">{section.title}</h4>
-                            <p className="text-sm text-gray-600">{section.description}</p>
+                      <div key={section.id} className="border-b last:border-b-0">
+                        {section.isCollapsible ? (
+                          // Collapsible career section
+                          <div>
+                            <div 
+                              className="p-4 hover:bg-gray-50 cursor-pointer"
+                              onClick={() => handleCareerSectionToggle(section.id)}
+                            >
+                              <div className="flex justify-between items-center">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-2">
+                                    {expandedCareerSection === section.id ? (
+                                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4 text-gray-500" />
+                                    )}
+                                    <h4 className="font-semibold text-gray-900">{section.title}</h4>
+                                  </div>
+                                  <p className="text-sm text-gray-600 ml-6">{section.description}</p>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {/* Expanded career list */}
+                            {expandedCareerSection === section.id && section.careers && (
+                              <div className="bg-gray-50 border-t">
+                                {section.careers.map((career) => (
+                                  <div key={career.id} className="px-8 py-3 border-b last:border-b-0 hover:bg-gray-100">
+                                    <div className="flex justify-between items-center">
+                                      <span className="text-sm text-gray-700">{career.title}</span>
+                                      <button
+                                        onClick={() => handleCareerExpand(career.id)}
+                                        className="text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline"
+                                      >
+                                        View content
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                          <button
-                            onClick={() => handleSectionExpand(section.id)}
-                            className="ml-4 text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline"
-                          >
-                            View content
-                          </button>
-                        </div>
+                        ) : (
+                          // Regular section
+                          <div className="p-4 hover:bg-gray-50">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-gray-900 mb-1">{section.title}</h4>
+                                <p className="text-sm text-gray-600">{section.description}</p>
+                              </div>
+                              <button
+                                onClick={() => handleSectionExpand(section.id)}
+                                className="ml-4 text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline"
+                              >
+                                View content
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
