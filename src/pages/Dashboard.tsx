@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +19,7 @@ const Dashboard = () => {
   const { reports, isLoading: reportsLoading } = useReports();
   const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
   const [deletedReportDate, setDeletedReportDate] = useState<string | null>(null);
+  const [isReportSectionExpanded, setIsReportSectionExpanded] = useState(false);
   const reportsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -123,110 +123,120 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
-          </h2>
-          <p className="text-gray-600">
-            Manage your career assessments and view your personalized reports.
-          </p>
-        </div>
+        {/* Only show welcome section and quick actions when report section is not expanded */}
+        {!isReportSectionExpanded && (
+          <>
+            <div className="mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
+              </h2>
+              <p className="text-gray-600">
+                Manage your career assessments and view your personalized reports.
+              </p>
+            </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 gap-6 mb-8">
-          {savedSession ? (
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-green-100 p-3 rounded-full">
-                    <Play className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Continue Assessment</h3>
-                    <p className="text-sm text-gray-600">Resume where you left off: {getSectionProgress(savedSession)}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : (
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-4">
-                  <div className="bg-atlas-blue bg-opacity-10 p-3 rounded-full">
-                    <Plus className="h-6 w-6 text-atlas-blue" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900">Take Assessment</h3>
-                    <p className="text-sm text-gray-600">Start a new career assessment</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 gap-6 mb-8">
+              {savedSession ? (
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-green-100 p-3 rounded-full">
+                        <Play className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Continue Assessment</h3>
+                        <p className="text-sm text-gray-600">Resume where you left off: {getSectionProgress(savedSession)}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-atlas-blue bg-opacity-10 p-3 rounded-full">
+                        <Plus className="h-6 w-6 text-atlas-blue" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Take Assessment</h3>
+                        <p className="text-sm text-gray-600">Start a new career assessment</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </>
+        )}
 
         {/* Report Display for Sjoerd */}
         <div className="mb-8">
-          <ReportDisplay userEmail={profile?.email} />
+          <ReportDisplay 
+            userEmail={profile?.email} 
+            onSectionExpanded={setIsReportSectionExpanded}
+          />
         </div>
 
-        {/* Reports List */}
-        <Card ref={reportsRef}>
-          <CardHeader>
-            <CardTitle>Your Assessment Reports</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {reportsLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                <span>Loading reports...</span>
-              </div>
-            ) : deletedReportDate ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Report Deleted</h3>
-                <p className="text-gray-600">
-                  Report deleted on {deletedReportDate}
-                </p>
-              </div>
-            ) : reports.length === 0 ? (
-              <div className="text-center py-8">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
-                <p className="text-gray-600 mb-4">
-                  Take your first assessment to get personalized career insights.
-                </p>
-                <Button onClick={() => navigate('/assessment')}>
-                  Start Your First Assessment
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {reports.map((report) => (
-                  <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div>
-                      <h4 className="font-medium text-gray-900">{getAssessmentTitle(report.payload)}</h4>
-                      <p className="text-sm text-gray-600">
-                        Completed on {new Date(report.created_at).toLocaleDateString()}
-                      </p>
-                      <span className="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
-                        {report.status}
-                      </span>
+        {/* Reports List - only show when report section is not expanded */}
+        {!isReportSectionExpanded && (
+          <Card ref={reportsRef}>
+            <CardHeader>
+              <CardTitle>Your Assessment Reports</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {reportsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                  <span>Loading reports...</span>
+                </div>
+              ) : deletedReportDate ? (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Report Deleted</h3>
+                  <p className="text-gray-600">
+                    Report deleted on {deletedReportDate}
+                  </p>
+                </div>
+              ) : reports.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
+                  <p className="text-gray-600 mb-4">
+                    Take your first assessment to get personalized career insights.
+                  </p>
+                  <Button onClick={() => navigate('/assessment')}>
+                    Start Your First Assessment
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {reports.map((report) => (
+                    <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                      <div>
+                        <h4 className="font-medium text-gray-900">{getAssessmentTitle(report.payload)}</h4>
+                        <p className="text-sm text-gray-600">
+                          Completed on {new Date(report.created_at).toLocaleDateString()}
+                        </p>
+                        <span className="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
+                          {report.status}
+                        </span>
+                      </div>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setSelectedReportId(report.id)}
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Report
+                      </Button>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setSelectedReportId(report.id)}
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Report
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {/* Report Modal */}

@@ -1,15 +1,15 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ChevronDown, ChevronUp, User, Briefcase, Eye } from 'lucide-react';
+import { ChevronDown, ChevronUp, User, Briefcase, Eye, ArrowRight } from 'lucide-react';
 
 interface ReportDisplayProps {
   userEmail?: string;
+  onSectionExpanded?: (expanded: boolean) => void;
 }
 
-const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail }) => {
+const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpanded }) => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   // Only show for Sjoerd's profile
@@ -324,6 +324,7 @@ This approach builds on your strengths while addressing your desire for better w
       id: 'about-you',
       title: 'About You',
       icon: User,
+      imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=300&fit=crop',
       sections: [
         {
           id: 'executive-summary',
@@ -361,6 +362,7 @@ This approach builds on your strengths while addressing your desire for better w
       id: 'career-suggestions',
       title: 'Career Suggestions for You',
       icon: Briefcase,
+      imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop',
       sections: [
         {
           id: 'top-suggestions',
@@ -424,8 +426,38 @@ This approach builds on your strengths while addressing your desire for better w
     }
   };
 
+  const getNextSection = (currentChapterId: string, currentSectionId: string) => {
+    const currentChapter = chapters.find(c => c.id === currentChapterId);
+    if (!currentChapter) return null;
+
+    const currentSectionIndex = currentChapter.sections.findIndex(s => s.id === currentSectionId);
+    
+    // If there's a next section in the same chapter
+    if (currentSectionIndex < currentChapter.sections.length - 1) {
+      return {
+        chapterId: currentChapterId,
+        section: currentChapter.sections[currentSectionIndex + 1]
+      };
+    }
+    
+    // If we're at the end of the first chapter, go to the first section of the next chapter
+    if (currentChapterId === 'about-you') {
+      const nextChapter = chapters.find(c => c.id === 'career-suggestions');
+      if (nextChapter) {
+        return {
+          chapterId: 'career-suggestions',
+          section: nextChapter.sections[0]
+        };
+      }
+    }
+    
+    return null;
+  };
+
   const handleSectionExpand = (sectionId: string) => {
-    setExpandedSection(expandedSection === sectionId ? null : sectionId);
+    const newExpandedState = expandedSection === sectionId ? null : sectionId;
+    setExpandedSection(newExpandedState);
+    onSectionExpanded?.(newExpandedState !== null);
   };
 
   return (
@@ -444,6 +476,8 @@ This approach builds on your strengths while addressing your desire for better w
             {chapters.map(chapter => 
               chapter.sections.map(section => {
                 if (section.id !== expandedSection) return null;
+                
+                const nextSection = getNextSection(chapter.id, section.id);
                 
                 return (
                   <div key={section.id}>
@@ -502,6 +536,19 @@ This approach builds on your strengths while addressing your desire for better w
                           })}
                         </div>
                       </div>
+                      
+                      {/* Next Section Navigation */}
+                      {nextSection && (
+                        <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+                          <button
+                            onClick={() => handleSectionExpand(nextSection.section.id)}
+                            className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
+                          >
+                            Next: {nextSection.section.title}
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -519,36 +566,43 @@ This approach builds on your strengths while addressing your desire for better w
 
             return (
               <Card key={chapter.id} className="overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-atlas-blue to-atlas-navy text-white">
-                  <div className="flex items-center space-x-3">
-                    <IconComponent className="h-8 w-8" />
-                    <CardTitle className="text-xl">{chapter.title}</CardTitle>
+                <CardHeader className="bg-gradient-to-r from-atlas-blue to-atlas-navy text-white p-0">
+                  <div className="relative h-48">
+                    <img
+                      src={chapter.imageUrl}
+                      alt={chapter.title}
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
+                      <div className="p-6 text-white">
+                        <div className="flex items-center space-x-3">
+                          <IconComponent className="h-8 w-8" />
+                          <CardTitle className="text-xl">{chapter.title}</CardTitle>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardHeader>
                 
                 <CardContent className="p-0">
-                  <Accordion type="single" collapsible className="w-full">
+                  <div className="space-y-0">
                     {chapter.sections.map((section) => (
-                      <AccordionItem key={section.id} value={section.id} className="border-b last:border-b-0">
-                        <AccordionTrigger className="px-4 py-3 hover:bg-gray-50">
-                          <div className="text-left">
-                            <h4 className="font-semibold text-gray-900">{section.title}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{section.description}</p>
+                      <div key={section.id} className="border-b last:border-b-0 p-4 hover:bg-gray-50">
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-gray-900 mb-1">{section.title}</h4>
+                            <p className="text-sm text-gray-600">{section.description}</p>
                           </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-4 pb-4">
-                          <Button 
+                          <button
                             onClick={() => handleSectionExpand(section.id)}
-                            className="w-full justify-center"
-                            variant="outline"
+                            className="ml-4 text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline"
                           >
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Full Content
-                          </Button>
-                        </AccordionContent>
-                      </AccordionItem>
+                            View content
+                          </button>
+                        </div>
+                      </div>
                     ))}
-                  </Accordion>
+                  </div>
                 </CardContent>
               </Card>
             );
