@@ -2,22 +2,15 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, User, Briefcase } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { ChevronDown, ChevronUp, User, Briefcase, Eye } from 'lucide-react';
 
 interface ReportDisplayProps {
   userEmail?: string;
 }
 
 const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail }) => {
-  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({});
-
-  const toggleSection = (sectionId: string) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
-  };
+  const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
   // Only show for Sjoerd's profile
   if (userEmail !== 'sjn.geurts@gmail.com') {
@@ -326,24 +319,114 @@ As per your request for a deeper dive, to make this combination role even more c
 This approach builds on your strengths while addressing your desire for better work-life balance and confidence development.
 `;
 
-  const sections = [
+  const chapters = [
     {
       id: 'about-you',
       title: 'About You',
       icon: User,
-      description: 'Personal insights, strengths, and growth opportunities based on your assessment',
-      content: aboutYouContent,
-      imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=200&fit=crop'
+      sections: [
+        {
+          id: 'executive-summary',
+          title: 'Executive Summary',
+          description: 'Overview of your strengths, challenges, and career positioning.',
+          imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'personality-team',
+          title: 'Personality and Team Dynamics',
+          description: 'How you interact with teams and leadership considerations.',
+          imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'strengths',
+          title: 'Your Strengths',
+          description: 'Key capabilities and how to leverage them effectively.',
+          imageUrl: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'growth',
+          title: 'Opportunities for Growth',
+          description: 'Areas for development and strategic improvement recommendations.',
+          imageUrl: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'values',
+          title: 'Your (Career) Values',
+          description: 'Core professional values and how they shape your career choices.',
+          imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=300&fit=crop'
+        }
+      ]
     },
     {
       id: 'career-suggestions',
       title: 'Career Suggestions for You',
       icon: Briefcase,
-      description: 'Personalized career recommendations and strategic pathways',
-      content: careerSuggestionsContent,
-      imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=200&fit=crop'
+      sections: [
+        {
+          id: 'top-suggestions',
+          title: 'Top Career Suggestions',
+          description: 'Three primary career recommendations tailored to your profile.',
+          imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'runner-up',
+          title: 'Runner-up Careers',
+          description: 'Additional career options organized by function and industry.',
+          imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'outside-box',
+          title: 'Outside-the-Box Careers',
+          description: 'Creative career combinations leveraging your unique interests.',
+          imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'dream-jobs',
+          title: 'Dream Job Analysis',
+          description: 'Feasibility analysis of your ideal career aspirations.',
+          imageUrl: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&h=300&fit=crop'
+        }
+      ]
     }
   ];
+
+  const getSectionContent = (chapterId: string, sectionId: string) => {
+    const content = chapterId === 'about-you' ? aboutYouContent : careerSuggestionsContent;
+    
+    if (chapterId === 'about-you') {
+      switch (sectionId) {
+        case 'executive-summary':
+          return content.split('## PERSONALITY AND TEAM DYNAMICS')[0];
+        case 'personality-team':
+          return content.split('## PERSONALITY AND TEAM DYNAMICS')[1]?.split('## YOUR STRENGTHS')[0];
+        case 'strengths':
+          return content.split('## YOUR STRENGTHS')[1]?.split('## OPPORTUNITIES FOR GROWTH')[0];
+        case 'growth':
+          return content.split('## OPPORTUNITIES FOR GROWTH')[1]?.split('## YOUR (CAREER) VALUES')[0];
+        case 'values':
+          return content.split('## YOUR (CAREER) VALUES')[1];
+        default:
+          return content;
+      }
+    } else {
+      switch (sectionId) {
+        case 'top-suggestions':
+          return content.split('## RUNNER-UP CAREERS')[0];
+        case 'runner-up':
+          return content.split('## RUNNER-UP CAREERS')[1]?.split('## OUTSIDE-THE-BOX CAREERS')[0];
+        case 'outside-box':
+          return content.split('## OUTSIDE-THE-BOX CAREERS')[1]?.split('## DREAM JOB ANALYSIS')[0];
+        case 'dream-jobs':
+          return content.split('## DREAM JOB ANALYSIS')[1];
+        default:
+          return content;
+      }
+    }
+  };
+
+  const handleSectionExpand = (sectionId: string) => {
+    setExpandedSection(expandedSection === sectionId ? null : sectionId);
+  };
 
   return (
     <div className="space-y-6">
@@ -354,79 +437,124 @@ This approach builds on your strengths while addressing your desire for better w
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {sections.map((section) => {
-          const IconComponent = section.icon;
-          const isOpen = openSections[section.id];
-
-          return (
-            <Card key={section.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="relative h-48 bg-gradient-to-r from-atlas-blue to-atlas-navy">
-                <img
-                  src={section.imageUrl}
-                  alt={section.title}
-                  className="w-full h-full object-cover opacity-80"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
-                  <div className="p-4 text-white">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <IconComponent className="h-6 w-6" />
-                      <h3 className="text-xl font-semibold">{section.title}</h3>
-                    </div>
-                    <p className="text-sm opacity-90">{section.description}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <CardContent className="p-4">
-                <Collapsible open={isOpen} onOpenChange={() => toggleSection(section.id)}>
-                  <CollapsibleTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="w-full justify-between"
-                      onClick={() => toggleSection(section.id)}
-                    >
-                      {isOpen ? 'Hide Content' : 'Read Full Section'}
-                      {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                    </Button>
-                  </CollapsibleTrigger>
-                  
-                  <CollapsibleContent className="mt-4">
-                    <div className="prose prose-sm max-w-none">
-                      <div 
-                        className="whitespace-pre-wrap text-gray-700 leading-relaxed"
-                        style={{ 
-                          fontSize: '14px',
-                          lineHeight: '1.6'
-                        }}
-                      >
-                        {section.content.split('\n').map((paragraph, index) => {
-                          if (paragraph.startsWith('## ')) {
-                            return <h3 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-navy">{paragraph.replace('## ', '')}</h3>;
-                          }
-                          if (paragraph.startsWith('### ')) {
-                            return <h4 key={index} className="text-base font-semibold mt-4 mb-2 text-atlas-blue">{paragraph.replace('### ', '')}</h4>;
-                          }
-                          if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
-                            return <p key={index} className="font-semibold mt-3 mb-2">{paragraph.replace(/\*\*/g, '')}</p>;
-                          }
-                          if (paragraph.startsWith('•')) {
-                            return <p key={index} className="ml-4 mb-1">{paragraph}</p>;
-                          }
-                          if (paragraph.trim() === '') {
-                            return <br key={index} />;
-                          }
-                          return <p key={index} className="mb-2">{paragraph}</p>;
-                        })}
+      {/* Expanded Section View */}
+      {expandedSection && (
+        <Card className="mb-6">
+          <CardContent className="p-0">
+            {chapters.map(chapter => 
+              chapter.sections.map(section => {
+                if (section.id !== expandedSection) return null;
+                
+                return (
+                  <div key={section.id}>
+                    <div className="relative h-64 bg-gradient-to-r from-atlas-blue to-atlas-navy">
+                      <img
+                        src={section.imageUrl}
+                        alt={section.title}
+                        className="w-full h-full object-cover opacity-80"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
+                        <div className="p-6 text-white">
+                          <div className="flex items-center justify-between w-full">
+                            <div>
+                              <h3 className="text-2xl font-bold mb-2">{section.title}</h3>
+                              <p className="text-lg opacity-90">{section.description}</p>
+                            </div>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setExpandedSection(null)}
+                              className="bg-white text-gray-900 hover:bg-gray-100"
+                            >
+                              <ChevronUp className="h-4 w-4 mr-2" />
+                              Collapse
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                    
+                    <div className="p-6">
+                      <div className="prose prose-lg max-w-none">
+                        <div 
+                          className="whitespace-pre-wrap text-gray-700 leading-relaxed"
+                          style={{ 
+                            fontSize: '16px',
+                            lineHeight: '1.7'
+                          }}
+                        >
+                          {getSectionContent(chapter.id, section.id)?.split('\n').map((paragraph, index) => {
+                            if (paragraph.startsWith('## ')) {
+                              return <h3 key={index} className="text-xl font-bold mt-8 mb-4 text-atlas-navy">{paragraph.replace('## ', '')}</h3>;
+                            }
+                            if (paragraph.startsWith('### ')) {
+                              return <h4 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-blue">{paragraph.replace('### ', '')}</h4>;
+                            }
+                            if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+                              return <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{paragraph.replace(/\*\*/g, '')}</p>;
+                            }
+                            if (paragraph.startsWith('•')) {
+                              return <p key={index} className="ml-6 mb-2">{paragraph}</p>;
+                            }
+                            if (paragraph.trim() === '') {
+                              return <br key={index} />;
+                            }
+                            return <p key={index} className="mb-3">{paragraph}</p>;
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Chapter Columns */}
+      {!expandedSection && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {chapters.map((chapter) => {
+            const IconComponent = chapter.icon;
+
+            return (
+              <Card key={chapter.id} className="overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-atlas-blue to-atlas-navy text-white">
+                  <div className="flex items-center space-x-3">
+                    <IconComponent className="h-8 w-8" />
+                    <CardTitle className="text-xl">{chapter.title}</CardTitle>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-0">
+                  <Accordion type="single" collapsible className="w-full">
+                    {chapter.sections.map((section) => (
+                      <AccordionItem key={section.id} value={section.id} className="border-b last:border-b-0">
+                        <AccordionTrigger className="px-4 py-3 hover:bg-gray-50">
+                          <div className="text-left">
+                            <h4 className="font-semibold text-gray-900">{section.title}</h4>
+                            <p className="text-sm text-gray-600 mt-1">{section.description}</p>
+                          </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-4 pb-4">
+                          <Button 
+                            onClick={() => handleSectionExpand(section.id)}
+                            className="w-full justify-center"
+                            variant="outline"
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Full Content
+                          </Button>
+                        </AccordionContent>
+                      </AccordionItem>
+                    ))}
+                  </Accordion>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
