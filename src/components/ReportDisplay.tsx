@@ -1,8 +1,8 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ChevronDown, ChevronUp, User, Briefcase, Eye, ArrowRight } from 'lucide-react';
+import { X, User, Briefcase, ArrowRight } from 'lucide-react';
 
 interface ReportDisplayProps {
   userEmail?: string;
@@ -73,10 +73,8 @@ Your preference for innovative, forward-thinking company cultures combined with 
 Consider implementing "value-protected time blocks" in your schedule—dedicated periods specifically aligned with your core values. For example, you might reserve time for creative exploration (satisfaction), self-directed projects (autonomy), and long-term planning (stability). By explicitly connecting time allocation to values, you create a practical mechanism for living your priorities daily, which addresses both your work-life balance concerns and your desire for meaningful professional engagement.
 `;
 
-  const careerSuggestionsContent = `
-## TOP CAREER SUGGESTION (1)
-
-### CHIEF STRATEGY OFFICER (CSO)
+  const careerSuggestionsContent = {
+    'cso': `## CHIEF STRATEGY OFFICER (CSO)
 *Medium/Large (501-1,000), Established Organization*
 
 You possess a strategic mindset and leadership prowess, making the Chief Strategy Officer (CSO) role an ideal fit. This position allows you to shape the company's vision and drive long-term growth, leveraging your expertise in strategic planning and financial analysis.
@@ -112,11 +110,9 @@ In your region, typical median annual salaries range from €230,000 to €460,0
 In the short-term, leverage your strategic and leadership skills to drive impactful initiatives. Looking to the long-term, this role aligns with your goal of reaching a senior leadership position, although the demanding hours might pose work-life balance challenges.
 
 **Future Outlook of the industry, this role and the impact of AI**
-AI is enhancing strategic analysis by providing deeper insights and predictive analytics, enabling CSOs to make more informed decisions. However, the role's reliance on human judgement, leadership, and the ability to navigate complex organisational dynamics ensures its continued importance despite technological advancements.
+AI is enhancing strategic analysis by providing deeper insights and predictive analytics, enabling CSOs to make more informed decisions. However, the role's reliance on human judgement, leadership, and the ability to navigate complex organisational dynamics ensures its continued importance despite technological advancements.`,
 
-## TOP CAREER SUGGESTION (2)
-
-### VP, STRATEGIC INITIATIVES
+    'vp-strategic': `## VP, STRATEGIC INITIATIVES
 *Large (1,001-5,000), Corporate Environment*
 
 As the VP of Strategic Initiatives, you will lead cross-functional projects that drive organisational growth and efficiency. Your ability to manage complex projects and inspire teams makes this role an excellent match for your career aspirations and strengths.
@@ -152,11 +148,9 @@ In your region, typical median annual salaries range from €165,600 to €276,0
 In the short-term, this role allows you to effectively manage strategic projects, providing immediate accomplishments and recognition. In the long-term, it supports your ambition to reach higher executive positions, though balancing multiple high-profile projects may challenge your work-life balance.
 
 **Future Outlook of the industry, this role and the impact of AI**
-AI tools streamline project management and data analysis, enhancing efficiency and decision-making. While routine tasks may be automated, the strategic and leadership aspects of the VP role remain reliant on human expertise, ensuring the role's relevance and importance in steering corporate initiatives.
+AI tools streamline project management and data analysis, enhancing efficiency and decision-making. While routine tasks may be automated, the strategic and leadership aspects of the VP role remain reliant on human expertise, ensuring the role's relevance and importance in steering corporate initiatives.`,
 
-## TOP CAREER SUGGESTION (3)
-
-### BUSINESS STRATEGIST
+    'business-strategist': `## BUSINESS STRATEGIST
 *Large (1,001-5,000), Corporate Environment*
 
 As a Business Strategist, you will analyse market trends and internal capabilities to develop strategies that enhance organisational performance and achieve long-term goals. Your analytical skills and strategic mindset make this role a suitable fit for your career path.
@@ -192,9 +186,9 @@ In your region, typical median annual salaries range from €138,000 to €230,0
 In the short-term, utilise your analytical and strategic skills to drive impactful projects, gaining recognition and professional growth. In the long-term, this role supports your goal to ascend to senior leadership positions, though the high level of responsibility may require careful management to maintain work-life balance.
 
 **Future Outlook of the industry, this role and the impact of AI**
-AI enhances the Business Strategist role by providing advanced data analytics and market forecasting tools. However, strategic intuition and the ability to interpret complex human factors remain essential, ensuring that human strategists continue to play a critical role in shaping business directions despite technological advancements.
+AI enhances the Business Strategist role by providing advanced data analytics and market forecasting tools. However, strategic intuition and the ability to interpret complex human factors remain essential, ensuring that human strategists continue to play a critical role in shaping business directions despite technological advancements.`,
 
-## RUNNER-UP CAREERS
+    'runner-up': `## RUNNER-UP CAREERS
 
 Sjoerd's skills and experience lend themselves to a variety of leadership and strategic roles across different organizational settings. Here are some promising options, grouped by similar functions:
 
@@ -218,31 +212,29 @@ These roles focus on driving innovation, identifying new opportunities, and fost
 
 These roles are well-suited for Adapters and Communicators who thrive in implementing programs that improve organizational performance, and who possess long-term, big-picture thinking for strategic planning:
 
-• **Director of Organizational Effectiveness:** This role focuses on enhancing organizational performance through targeted strategies. What this role does: Drive strategic initiatives to improve productivity and efficiency in established organizational environments. AI Impact: Supporting.
+• **Director of Organizational Effectiveness:** This role focuses on enhancing organizational performance through targeted strategies. What this role does: Drive strategic initiatives to improve productivity and efficiency in established organizational environments. AI Impact: Supporting.`,
 
-## OUTSIDE-THE-BOX CAREERS
-
-### 1. LANDSCAPE ARCHITECT WITH AI SPECIALISATION
+    'landscape-architect': `## LANDSCAPE ARCHITECT WITH AI SPECIALISATION
 
 Combining your passion for gardening and DIY with your AI expertise could create a unique niche in designing smart, sustainable landscapes that adapt to environmental conditions. Your visionary thinking and adaptability would allow you to create innovative outdoor spaces that blend technology with nature, potentially revolutionising how we interact with green spaces. This role would satisfy your entrepreneurial spirit while allowing you to build tangible things, similar to your interest in building with your children.
 
 Based on your feedback, it's clear this idea sparked considerable excitement, resonating strongly with your interests and entrepreneurial drive. Your immediate thoughts turned towards practicalities like market testing and business setup, suggesting a genuine interest in exploring this unique blend of AI and landscaping further as a viable venture.
 
-AI Impact: Supporting; roles involve both human and automated tasks.
+AI Impact: Supporting; roles involve both human and automated tasks.`,
 
-### 2. TECH-ENABLED COMEDY WRITER/PERFORMER
+    'comedy-writer': `## TECH-ENABLED COMEDY WRITER/PERFORMER
 
 Your dream of being a stand-up comedian could be reimagined through the lens of your AI expertise, creating tech-infused comedy shows that explain complex concepts through humour. Your direct communication style and comfort with social interactions would serve you well in crafting and delivering performances that bridge the gap between technology and entertainment. This career path offers the autonomy you value while allowing you to exercise creativity in an innovative, forward-thinking way.
 
-AI Impact: Minimal; roles require human-centric skills.
+AI Impact: Minimal; roles require human-centric skills.`,
 
-### 3. IMMERSIVE EXPERIENCE DESIGNER
+    'experience-designer': `## IMMERSIVE EXPERIENCE DESIGNER
 
 Drawing on your background in video game publishing and AI, you could design interactive experiences for museums, corporate training, or public installations that blend physical and digital elements. Your ability to think outside the box and adapt quickly would be invaluable in creating engaging experiences that push technological boundaries while remaining accessible to users. This role would satisfy your interest in innovative technology while allowing you to exercise your creative vision in tangible, impactful ways.
 
-AI Impact: Supporting; roles involve both human and automated tasks.
+AI Impact: Supporting; roles involve both human and automated tasks.`,
 
-## DREAM JOB ANALYSIS
+    'dream-jobs': `## DREAM JOB ANALYSIS
 
 ### Writer
 
@@ -316,8 +308,8 @@ A potential role that combines elements of your dream jobs would be a **Chief St
 
 As per your request for a deeper dive, to make this combination role even more compelling, consider targeting companies with strong Environmental, Social, and Governance (ESG) commitments. Your strategic thinking can contribute to sustainable business practices, and your mental health advocacy can shape socially responsible policies. In addition, networking within the tech industry, highlighting your strategy experience and board interests, could unveil fractional CSO opportunities that permit board engagements and mentoring, potentially increasing work-life balance.
 
-This approach builds on your strengths while addressing your desire for better work-life balance and confidence development.
-`;
+This approach builds on your strengths while addressing your desire for better work-life balance and confidence development.`
+  };
 
   const chapters = [
     {
@@ -365,10 +357,22 @@ This approach builds on your strengths while addressing your desire for better w
       imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop',
       sections: [
         {
-          id: 'top-suggestions',
-          title: 'Top Career Suggestions',
-          description: 'Three primary career recommendations tailored to your profile.',
+          id: 'cso',
+          title: 'Chief Strategy Officer (CSO)',
+          description: 'Strategic leadership role in medium to large established organizations.',
           imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'vp-strategic',
+          title: 'VP, Strategic Initiatives',
+          description: 'Leading cross-functional strategic projects in large corporate environments.',
+          imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'business-strategist',
+          title: 'Business Strategist',
+          description: 'Analyzing market trends and developing strategic recommendations.',
+          imageUrl: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=600&h=300&fit=crop'
         },
         {
           id: 'runner-up',
@@ -377,9 +381,21 @@ This approach builds on your strengths while addressing your desire for better w
           imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=300&fit=crop'
         },
         {
-          id: 'outside-box',
-          title: 'Outside-the-Box Careers',
-          description: 'Creative career combinations leveraging your unique interests.',
+          id: 'landscape-architect',
+          title: 'Landscape Architect with AI',
+          description: 'Combining gardening passion with AI expertise for smart landscapes.',
+          imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'comedy-writer',
+          title: 'Tech-Enabled Comedy Writer',
+          description: 'Reimagining stand-up comedy through AI and technology.',
+          imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
+        },
+        {
+          id: 'experience-designer',
+          title: 'Immersive Experience Designer',
+          description: 'Creating interactive experiences blending physical and digital elements.',
           imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
         },
         {
@@ -393,36 +409,23 @@ This approach builds on your strengths while addressing your desire for better w
   ];
 
   const getSectionContent = (chapterId: string, sectionId: string) => {
-    const content = chapterId === 'about-you' ? aboutYouContent : careerSuggestionsContent;
-    
     if (chapterId === 'about-you') {
       switch (sectionId) {
         case 'executive-summary':
-          return content.split('## PERSONALITY AND TEAM DYNAMICS')[0];
+          return aboutYouContent.split('## PERSONALITY AND TEAM DYNAMICS')[0];
         case 'personality-team':
-          return content.split('## PERSONALITY AND TEAM DYNAMICS')[1]?.split('## YOUR STRENGTHS')[0];
+          return aboutYouContent.split('## PERSONALITY AND TEAM DYNAMICS')[1]?.split('## YOUR STRENGTHS')[0];
         case 'strengths':
-          return content.split('## YOUR STRENGTHS')[1]?.split('## OPPORTUNITIES FOR GROWTH')[0];
+          return aboutYouContent.split('## YOUR STRENGTHS')[1]?.split('## OPPORTUNITIES FOR GROWTH')[0];
         case 'growth':
-          return content.split('## OPPORTUNITIES FOR GROWTH')[1]?.split('## YOUR (CAREER) VALUES')[0];
+          return aboutYouContent.split('## OPPORTUNITIES FOR GROWTH')[1]?.split('## YOUR (CAREER) VALUES')[0];
         case 'values':
-          return content.split('## YOUR (CAREER) VALUES')[1];
+          return aboutYouContent.split('## YOUR (CAREER) VALUES')[1];
         default:
-          return content;
+          return aboutYouContent;
       }
     } else {
-      switch (sectionId) {
-        case 'top-suggestions':
-          return content.split('## RUNNER-UP CAREERS')[0];
-        case 'runner-up':
-          return content.split('## RUNNER-UP CAREERS')[1]?.split('## OUTSIDE-THE-BOX CAREERS')[0];
-        case 'outside-box':
-          return content.split('## OUTSIDE-THE-BOX CAREERS')[1]?.split('## DREAM JOB ANALYSIS')[0];
-        case 'dream-jobs':
-          return content.split('## DREAM JOB ANALYSIS')[1];
-        default:
-          return content;
-      }
+      return careerSuggestionsContent[sectionId as keyof typeof careerSuggestionsContent] || '';
     }
   };
 
@@ -488,23 +491,18 @@ This approach builds on your strengths while addressing your desire for better w
                         className="w-full h-full object-cover opacity-80"
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
-                        <div className="p-6 text-white">
-                          <div className="flex items-center justify-between w-full">
-                            <div>
-                              <h3 className="text-2xl font-bold mb-2">{section.title}</h3>
-                              <p className="text-lg opacity-90">{section.description}</p>
-                            </div>
-                            <Button 
-                              variant="outline" 
-                              onClick={() => setExpandedSection(null)}
-                              className="bg-white text-gray-900 hover:bg-gray-100"
-                            >
-                              <ChevronUp className="h-4 w-4 mr-2" />
-                              Collapse
-                            </Button>
-                          </div>
+                        <div className="p-6 text-white w-full">
+                          <h3 className="text-2xl font-bold mb-2">{section.title}</h3>
+                          <p className="text-lg opacity-90">{section.description}</p>
                         </div>
                       </div>
+                      {/* Close Button */}
+                      <button
+                        onClick={() => setExpandedSection(null)}
+                        className="absolute bottom-4 right-4 w-10 h-10 bg-black bg-opacity-50 rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
+                      >
+                        <X className="h-5 w-5 text-white" />
+                      </button>
                     </div>
                     
                     <div className="p-6">
