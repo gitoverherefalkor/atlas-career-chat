@@ -12,6 +12,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
 import { useSurveySession } from '@/hooks/useSurveySession';
 import ReportSections from '@/components/ReportSections';
+import ReportDisplay from '@/components/ReportDisplay';
 
 const Dashboard = () => {
   const { user, isLoading: authLoading } = useAuth();
@@ -132,7 +133,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 gap-6 mb-8">
           {savedSession ? (
             <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
               <CardContent className="p-6">
@@ -162,6 +163,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
+        </div>
+
+        {/* Report Display for Sjoerd */}
+        <div className="mb-8">
+          <ReportDisplay userEmail={profile?.email} />
         </div>
 
         {/* Reports List */}
