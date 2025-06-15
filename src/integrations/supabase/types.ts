@@ -250,6 +250,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "fk_report_sections_report_id"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "reports"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "report_sections_report_id_fkey"
             columns: ["report_id"]
             isOneToOne: false
@@ -296,6 +303,20 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_reports_access_code_id"
+            columns: ["access_code_id"]
+            isOneToOne: false
+            referencedRelation: "access_codes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_reports_survey_id"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reports_access_code_id_fkey"
             columns: ["access_code_id"]

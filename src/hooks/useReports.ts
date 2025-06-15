@@ -89,25 +89,19 @@ export const useReports = () => {
 
   const deleteReportMutation = useMutation({
     mutationFn: async (reportId: string) => {
-      // First delete all report sections
-      const { error: sectionsError } = await supabase
-        .from('report_sections')
-        .delete()
-        .eq('report_id', reportId);
-
-      if (sectionsError) throw sectionsError;
-
-      // Then delete the report
-      const { error: reportError } = await supabase
+      // With the CASCADE foreign key constraint, deleting the report
+      // will automatically delete all associated report_sections
+      const { error } = await supabase
         .from('reports')
         .delete()
         .eq('id', reportId)
-        .eq('user_id', user?.id);
+        .eq('user_id', user?.id); // Double-check user ownership
 
-      if (reportError) throw reportError;
+      if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reports', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['report-sections'] });
       toast({
         title: "Report deleted",
         description: "The report has been permanently deleted.",
