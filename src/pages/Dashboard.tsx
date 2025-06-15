@@ -1,26 +1,22 @@
+
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Loader2, User, LogOut, FileText, Plus, Settings, Eye, Play } from 'lucide-react';
+import { Loader2, User, LogOut, Plus, Settings, Play } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
 import { useSurveySession } from '@/hooks/useSurveySession';
-import ReportSections from '@/components/ReportSections';
 import ReportDisplay from '@/components/ReportDisplay';
 
 const Dashboard = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { reports, isLoading: reportsLoading } = useReports();
-  const [selectedReportId, setSelectedReportId] = useState<string | null>(null);
-  const [deletedReportDate, setDeletedReportDate] = useState<string | null>(null);
   const [isReportSectionExpanded, setIsReportSectionExpanded] = useState(false);
-  const reportsRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -49,18 +45,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleReportDeleted = (deletedDate: string) => {
-    setDeletedReportDate(deletedDate);
-    setSelectedReportId(null);
-  };
-
-  const scrollToReports = () => {
-    reportsRef.current?.scrollIntoView({ 
-      behavior: 'smooth', 
-      block: 'start' 
-    });
-  };
-
   const getSectionProgress = (session: any) => {
     if (!session) return '';
     const currentSection = session.currentSectionIndex + 1;
@@ -68,11 +52,9 @@ const Dashboard = () => {
     return `Section ${currentSection}, Question ${currentQuestion}`;
   };
 
-  const getAssessmentTitle = (payload: any) => {
-    if (payload?.personal_name) {
-      return `Career Assessment - ${payload.personal_name}`;
-    }
-    return payload?.title || 'Career Assessment';
+  const getLatestReport = () => {
+    if (!reports || reports.length === 0) return null;
+    return reports[0]; // Reports are ordered by created_at desc
   };
 
   if (authLoading || profileLoading) {
@@ -91,6 +73,8 @@ const Dashboard = () => {
   const displayName = profile?.first_name && profile?.last_name 
     ? `${profile.first_name} ${profile.last_name}`
     : profile?.email || user.email;
+
+  const latestReport = getLatestReport();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -135,6 +119,18 @@ const Dashboard = () => {
               </p>
             </div>
 
+            {/* Assessment Status */}
+            {latestReport && (
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Atlas Personality & Career Assessment 2025 [Office / Business Professional]
+                </h3>
+                <p className="text-gray-600">
+                  Completed on {new Date(latestReport.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            )}
+
             {/* Quick Actions */}
             <div className="grid grid-cols-1 gap-6 mb-8">
               {savedSession ? (
@@ -170,89 +166,22 @@ const Dashboard = () => {
           </>
         )}
 
-        {/* Report Display for Sjoerd */}
-        <div className="mb-8">
-          <ReportDisplay 
-            userEmail={profile?.email} 
-            onSectionExpanded={setIsReportSectionExpanded}
-          />
-        </div>
-
-        {/* Reports List - only show when report section is not expanded */}
-        {!isReportSectionExpanded && (
-          <Card ref={reportsRef}>
-            <CardHeader>
-              <CardTitle>Your Assessment Reports</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {reportsLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                  <span>Loading reports...</span>
-                </div>
-              ) : deletedReportDate ? (
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Report Deleted</h3>
-                  <p className="text-gray-600">
-                    Report deleted on {deletedReportDate}
-                  </p>
-                </div>
-              ) : reports.length === 0 ? (
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">No reports yet</h3>
-                  <p className="text-gray-600 mb-4">
-                    Take your first assessment to get personalized career insights.
-                  </p>
-                  <Button onClick={() => navigate('/assessment')}>
-                    Start Your First Assessment
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {reports.map((report) => (
-                    <div key={report.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{getAssessmentTitle(report.payload)}</h4>
-                        <p className="text-sm text-gray-600">
-                          Completed on {new Date(report.created_at).toLocaleDateString()}
-                        </p>
-                        <span className="inline-block px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
-                          {report.status}
-                        </span>
-                      </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => setSelectedReportId(report.id)}
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Report
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        {/* Your Personalized Career Report */}
+        {latestReport && (
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              Your Personalized Career Report
+            </h3>
+            <p className="text-gray-600 mb-6">
+              These insights are adjusted based on feedback provided in the chat where relevant.
+            </p>
+            <ReportDisplay 
+              userEmail={profile?.email} 
+              onSectionExpanded={setIsReportSectionExpanded}
+            />
+          </div>
         )}
       </div>
-
-      {/* Report Modal */}
-      <Dialog open={!!selectedReportId} onOpenChange={() => setSelectedReportId(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Assessment Report</DialogTitle>
-          </DialogHeader>
-          {selectedReportId && (
-            <ReportSections 
-              reportId={selectedReportId} 
-              onReportDeleted={handleReportDeleted}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
