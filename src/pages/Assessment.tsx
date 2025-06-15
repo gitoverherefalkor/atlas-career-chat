@@ -8,6 +8,7 @@ import { CheckCircle, ArrowLeft, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useReports } from '@/hooks/useReports';
+import { useSurveySession } from '@/hooks/useSurveySession';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -29,6 +30,10 @@ const Assessment = () => {
   const { createReport } = useReports();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Get survey session to check if user has an existing session
+  const surveyId = getSurveyIdFromAccessCode(accessCodeData);
+  const { getStoredSession } = useSurveySession(surveyId);
 
   useEffect(() => {
     // Redirect to auth if not logged in
@@ -52,17 +57,49 @@ const Assessment = () => {
     const tokenFromUrl = searchParams.get('token');
     if (tokenFromUrl) {
       setSessionToken(tokenFromUrl);
-      // If we have a token, we should be verified - fetch the access code data
       validateSessionToken(tokenFromUrl);
+    } else {
+      // If no token but user has an existing survey session, try to restore verification
+      checkExistingSession();
     }
   }, [searchParams, user, authLoading, navigate, toast]);
 
+  const checkExistingSession = () => {
+    // Check if user has an existing survey session stored
+    // For now, we'll use a simple approach - check localStorage for any survey session
+    const storageKeys = Object.keys(localStorage);
+    const surveySessionKey = storageKeys.find(key => key.startsWith('survey_session_'));
+    
+    if (surveySessionKey) {
+      // User has an existing session, we should allow them to continue without re-verification
+      // This assumes they were previously verified
+      console.log('Found existing survey session, allowing continuation');
+      
+      // Create a mock access code data based on default survey type
+      const mockAccessCodeData = {
+        id: 'existing-session',
+        code: 'EXISTING-SESSION',
+        survey_type: 'Office / Business Pro - 2025 v1 EN',
+        usage_count: 0
+      };
+      
+      setAccessCodeData(mockAccessCodeData);
+      setIsVerified(true);
+      setSessionToken('existing-session-token');
+    }
+  };
+
   const validateSessionToken = async (token: string) => {
     try {
-      // In a real implementation, you'd validate the token against your database
-      // For now, we'll simulate this
       console.log('Validating session token:', token);
-      // This would need to be implemented as a Supabase function
+      
+      if (token === 'existing-session-token') {
+        // Special case for existing sessions
+        setIsVerified(true);
+        return;
+      }
+      
+      // In a real implementation, you'd validate the token against your database
       // For now, we'll trust the token if it exists
       setIsVerified(true);
     } catch (error) {
@@ -100,10 +137,10 @@ const Assessment = () => {
     navigate(`/assessment?${newSearchParams.toString()}`, { replace: true });
   };
 
-  const getSurveyIdFromAccessCode = (accessCodeData: any): string => {
+  function getSurveyIdFromAccessCode(accessCodeData: any): string {
     const surveyType = accessCodeData?.survey_type || 'Office / Business Pro - 2025 v1 EN';
     return SURVEY_TYPE_MAPPING[surveyType] || SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
-  };
+  }
 
   const handleSurveyComplete = async (responses: Record<string, any>) => {
     console.log('Survey completed with responses:', responses);
@@ -125,8 +162,8 @@ const Assessment = () => {
         survey_id: surveyId,
       });
 
-      // Update access code usage count
-      if (accessCodeData?.id) {
+      // Update access code usage count (only for real access codes, not mock ones)
+      if (accessCodeData?.id && accessCodeData.id !== 'existing-session') {
         await supabase
           .from('access_codes')
           .update({ 
