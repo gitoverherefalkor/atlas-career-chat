@@ -498,6 +498,48 @@ This approach builds on your strengths while addressing your desire for better w
     }
   ];
 
+  const getAllCareerIds = () => {
+    const careerIds: string[] = [];
+    chapters.forEach(chapter => {
+      chapter.sections.forEach(section => {
+        if (section.careers) {
+          section.careers.forEach(career => {
+            careerIds.push(career.id);
+          });
+        }
+      });
+    });
+    return careerIds;
+  };
+
+  const getNextCareer = (currentCareerId: string) => {
+    const allCareerIds = getAllCareerIds();
+    const currentIndex = allCareerIds.indexOf(currentCareerId);
+    
+    if (currentIndex < allCareerIds.length - 1) {
+      const nextCareerId = allCareerIds[currentIndex + 1];
+      
+      // Find the career title
+      for (const chapter of chapters) {
+        for (const section of chapter.sections) {
+          if (section.careers) {
+            const career = section.careers.find(c => c.id === nextCareerId);
+            if (career) {
+              return { id: nextCareerId, title: career.title };
+            }
+          }
+        }
+      }
+    }
+    
+    // If no next career, go to dream jobs
+    if (currentIndex === allCareerIds.length - 1) {
+      return { id: 'dream-jobs', title: 'Dream Job Analysis' };
+    }
+    
+    return null;
+  };
+
   const getSectionContent = (chapterId: string, sectionId: string) => {
     if (chapterId === 'about-you') {
       switch (sectionId) {
@@ -719,6 +761,22 @@ This approach builds on your strengths while addressing your desire for better w
                       })}
                     </div>
                   </div>
+                  
+                  {/* Next Career Navigation */}
+                  {(() => {
+                    const nextCareer = getNextCareer(expandedSection);
+                    return nextCareer && (
+                      <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+                        <button
+                          onClick={() => handleSectionExpand(nextCareer.id)}
+                          className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
+                        >
+                          Next: {nextCareer.title}
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </button>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
