@@ -62,24 +62,8 @@ const Hero = () => {
               </p>
             </div>
 
-            {/* CTA buttons */}
-            <div className="grid grid-cols-4 gap-4 mb-8 py-[20px]">
-              <Button asChild className="btn-primary text-lg flex items-center justify-center gap-2 h-12 col-span-3 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                <a href="#pricing" className="py-0">
-                  Get Your Atlas Assessment Now
-                  <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-                </a>
-              </Button>
-              <a href="#how-it-works" className="btn-outline text-sm flex items-center justify-center h-12 col-span-1 transform transition-all duration-300 hover:scale-105 hover:shadow-md">
-                Learn More
-              </a>
-            </div>
-            <p className="text-slate-50 text-center mb-8 text-lg">
-              Currently in Beta. Get full access at an introductory price.
-            </p>
-
-            {/* Your Path to Clarity section */}
-            <div className="space-y-4 my-0 px-0 py-0">
+            {/* Your Path to Clarity section - moved to top (was orange bordered) */}
+            <div className="space-y-4 my-0 px-0 py-0 mb-8 border-2 border-atlas-orange rounded-lg p-6">
               {[
                 { icon: ClipboardCheck, title: "Complete Assessment", desc: "Take our comprehensive personality and career assessment" },
                 { icon: MessageCircle, title: "AI-Powered Insights", desc: "Receive personalized career recommendations through AI chat" },
@@ -97,6 +81,24 @@ const Hero = () => {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+
+            {/* CTA buttons and beta text - moved to bottom (was blue background) */}
+            <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-atlas-navy rounded-lg p-6 border-2 border-atlas-blue">
+              <div className="grid grid-cols-4 gap-4 mb-4">
+                <Button asChild className="btn-primary text-lg flex items-center justify-center gap-2 h-12 col-span-3 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                  <a href="#pricing" className="py-0">
+                    Get Your Atlas Assessment Now
+                    <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  </a>
+                </Button>
+                <a href="#how-it-works" className="btn-outline text-sm flex items-center justify-center h-12 col-span-1 transform transition-all duration-300 hover:scale-105 hover:shadow-md">
+                  Learn More
+                </a>
+              </div>
+              <p className="text-white text-center text-lg">
+                Currently in Beta. Get full access at an introductory price.
+              </p>
             </div>
           </div>
         </div>
