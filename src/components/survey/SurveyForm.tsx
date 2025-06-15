@@ -7,7 +7,7 @@ import { SurveyNavigation } from './SurveyNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, Send, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send, Loader2, CheckCircle, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,6 +31,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'submitted' | 'failed'>('idle');
   const [showSectionIntro, setShowSectionIntro] = useState(true);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
   const { user } = useAuth();
@@ -47,6 +48,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         setCurrentQuestionIndex(storedSession.currentQuestionIndex);
         setShowSectionIntro(storedSession.showSectionIntro);
         setCompletedSections(storedSession.completedSections);
+        
+        // Check if this session was previously submitted
+        const submissionData = storedSession as any;
+        if (submissionData.submissionStatus) {
+          setSubmissionStatus(submissionData.submissionStatus);
+        }
+        
         console.log('Restored session:', storedSession);
       }
     }
@@ -60,11 +68,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         currentSectionIndex,
         currentQuestionIndex,
         showSectionIntro,
-        completedSections
+        completedSections,
+        submissionStatus
       };
       saveSession(session);
     }
-  }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, survey]);
+  }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, submissionStatus, survey]);
 
   if (isLoading) {
     return (
@@ -250,6 +259,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     }
 
     setIsSubmitting(true);
+    setSubmissionStatus('submitting');
 
     try {
       console.log('Submitting survey responses:', responses);
@@ -270,9 +280,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
       if (submissionError) {
         console.error('Error submitting survey:', submissionError);
+        setSubmissionStatus('failed');
         toast({
           title: "Submission Failed",
-          description: "Failed to submit your responses. Please try again.",
+          description: "Failed to submit your responses. Please try again - your answers are saved.",
           variant: "destructive",
         });
         return;
@@ -283,26 +294,37 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       // Mark access code as used after successful submission
       await markAccessCodeAsUsed();
 
-      // Clear the session after successful submission
-      clearSession();
+      setSubmissionStatus('submitted');
 
       toast({
-        title: "Survey Submitted",
-        description: "Your responses have been submitted successfully!",
+        title: "Survey Submitted Successfully",
+        description: "Your responses are saved. Your report is being generated and you'll receive an email when ready.",
       });
 
-      // Call completion handler
+      // Call completion handler (but don't clear session yet)
       onComplete(responses);
     } catch (error) {
       console.error('Error submitting survey:', error);
+      setSubmissionStatus('failed');
       toast({
         title: "Submission Failed",
-        description: "An unexpected error occurred. Please try again.",
+        description: "An unexpected error occurred. Please try again - your answers are saved.",
         variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleRetrySubmission = () => {
+    setSubmissionStatus('idle');
+    handleSubmit();
+  };
+
+  // Function to manually clear session (only when user confirms everything worked)
+  const handleClearSession = () => {
+    clearSession();
+    navigate('/dashboard');
   };
 
   // Show section introduction for all sections (including first)
@@ -368,6 +390,59 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             </div>
           </div>
 
+          {/* Submission Status Banner */}
+          {submissionStatus === 'submitted' && (
+            <Card className="mb-6 border-green-200 bg-green-50">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  <div className="flex-1">
+                    <p className="text-green-800 font-medium">Assessment Submitted Successfully!</p>
+                    <p className="text-green-700 text-sm">Your responses are saved and your report is being generated. You'll receive an email when it's ready.</p>
+                  </div>
+                  <Button 
+                    onClick={handleClearSession} 
+                    variant="outline" 
+                    size="sm"
+                    className="border-green-300 text-green-700 hover:bg-green-100"
+                  >
+                    Continue to Dashboard
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {submissionStatus === 'failed' && (
+            <Card className="mb-6 border-red-200 bg-red-50">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <RefreshCw className="h-5 w-5 text-red-600" />
+                  <div className="flex-1">
+                    <p className="text-red-800 font-medium">Submission Failed</p>
+                    <p className="text-red-700 text-sm">Don't worry - your answers are saved! You can try submitting again.</p>
+                  </div>
+                  <Button 
+                    onClick={handleRetrySubmission} 
+                    variant="outline" 
+                    size="sm"
+                    className="border-red-300 text-red-700 hover:bg-red-100"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Retrying...
+                      </>
+                    ) : (
+                      'Retry Submission'
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Current Question */}
           <Card>
             <CardContent className="space-y-6 pt-6">
@@ -385,7 +460,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
                 <Button
                   variant="ghost"
                   onClick={handleBack}
-                  disabled={isFirstQuestion()}
+                  disabled={isFirstQuestion() || submissionStatus === 'submitted'}
                   className={isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
@@ -395,7 +470,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
                 {!isLastQuestion() ? (
                   <Button
                     onClick={handleNext}
-                    disabled={!isCurrentQuestionComplete()}
+                    disabled={!isCurrentQuestionComplete() || submissionStatus === 'submitted'}
                     className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
                     style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
                   >
@@ -404,16 +479,23 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
                   </Button>
                 ) : (
                   <Button
-                    onClick={handleSubmit}
-                    disabled={!isCurrentQuestionComplete() || isSubmitting}
-                    className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
-                    style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
+                    onClick={submissionStatus === 'failed' ? handleRetrySubmission : handleSubmit}
+                    disabled={(!isCurrentQuestionComplete() && submissionStatus !== 'failed') || isSubmitting || submissionStatus === 'submitted'}
+                    className={(!isCurrentQuestionComplete() && submissionStatus !== 'failed') ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
+                    style={(!isCurrentQuestionComplete() && submissionStatus !== 'failed') ? { backgroundColor: '#99cccc' } : {}}
                   >
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Submitting...
+                        {submissionStatus === 'failed' ? 'Retrying...' : 'Submitting...'}
                       </>
+                    ) : submissionStatus === 'submitted' ? (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Submitted Successfully
+                      </>
+                    ) : submissionStatus === 'failed' ? (
+                      'Retry Submission'
                     ) : (
                       <>
                         Submit Assessment
