@@ -63,7 +63,7 @@ const Hero = () => {
             </div>
 
             {/* Your Path to Clarity section - clean version without border */}
-            <div className="space-y-4 mb-8">
+            <div className="space-y-4 mb-16">
               {[
                 { icon: ClipboardCheck, title: "Complete Assessment", desc: "Take our comprehensive personality and career assessment" },
                 { icon: MessageCircle, title: "AI-Powered Insights", desc: "Receive personalized career recommendations through AI chat" },
