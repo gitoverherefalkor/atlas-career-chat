@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { TrendingDown, Users, Clock, Search, BookOpen, AlertTriangle, TrendingUp } from "lucide-react";
+import { TrendingDown, Clock, Search, BookOpen, AlertTriangle, TrendingUp } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 
 const JobDissatisfactionStats = () => {
@@ -13,12 +13,6 @@ const JobDissatisfactionStats = () => {
       percentage: "85%",
       description: "of global workers report disengagement at work",
       color: "text-red-500"
-    },
-    {
-      icon: Users,
-      percentage: "31%",
-      description: "employee engagement in the U.S. in 2024, its lowest level in a decade",
-      color: "text-orange-500"
     },
     {
       icon: Clock,
@@ -68,7 +62,7 @@ const JobDissatisfactionStats = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {stats.map((stat, index) => (
             <div
               key={index}
