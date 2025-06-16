@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, User, Briefcase, ArrowRight, ChevronDown, ChevronRight } from 'lucide-react';
+import { useReports } from '@/hooks/useReports';
 
 interface ReportDisplayProps {
   userEmail?: string;
@@ -11,11 +12,19 @@ interface ReportDisplayProps {
 const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpanded }) => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [expandedCareerSection, setExpandedCareerSection] = useState<string | null>(null);
+  const { reports } = useReports();
 
   // Only show for Sjoerd's profile
   if (userEmail !== 'sjn.geurts@gmail.com') {
     return null;
   }
+
+  const getLatestReport = () => {
+    if (!reports || reports.length === 0) return null;
+    return reports[0]; // Reports are ordered by created_at desc
+  };
+
+  const latestReport = getLatestReport();
 
   const aboutYouContent = `
 ## EXECUTIVE SUMMARY
@@ -608,11 +617,23 @@ This approach builds on your strengths while addressing your desire for better w
 
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
+      <div className="text-left mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Personalized Career Report</h2>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 mb-4">
           <em>These insights are adjusted based on feedback provided in the chat where relevant.</em>
         </p>
+        
+        {/* Assessment Title and Completion Date */}
+        {latestReport && (
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-atlas-teal mb-1">
+              Atlas Personality & Career Assessment 2025 [Office / Business Professional]
+            </h4>
+            <p className="text-gray-600">
+              Completed on {new Date(latestReport.created_at).toLocaleDateString()}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Expanded Section View */}
