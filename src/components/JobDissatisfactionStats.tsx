@@ -3,9 +3,11 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { TrendingDown, Clock, Search, BookOpen, AlertTriangle, TrendingUp } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
+import { useNavigate } from "react-router-dom";
 
 const JobDissatisfactionStats = () => {
   const { ref: statsRef, isVisible: statsVisible } = useScrollAnimation();
+  const navigate = useNavigate();
 
   const stats = [
     {
@@ -92,6 +94,7 @@ const JobDissatisfactionStats = () => {
           <Button 
             variant="outline" 
             size="lg"
+            onClick={() => navigate('/report')}
             className="bg-white hover:bg-gray-50 text-atlas-navy border-atlas-navy hover:border-atlas-blue transition-all duration-300"
           >
             Read the Report
