@@ -119,18 +119,6 @@ const Dashboard = () => {
               </p>
             </div>
 
-            {/* Assessment Status */}
-            {latestReport && (
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Atlas Personality & Career Assessment 2025 [Office / Business Professional]
-                </h3>
-                <p className="text-gray-600">
-                  Completed on {new Date(latestReport.created_at).toLocaleDateString()}
-                </p>
-              </div>
-            )}
-
             {/* Quick Actions */}
             <div className="grid grid-cols-1 gap-6 mb-8">
               {savedSession ? (
@@ -172,9 +160,20 @@ const Dashboard = () => {
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               Your Personalized Career Report
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 mb-4">
               These insights are adjusted based on feedback provided in the chat where relevant.
             </p>
+            
+            {/* Assessment Title and Completion Date */}
+            <div className="mb-6">
+              <h4 className="text-lg font-semibold text-atlas-teal mb-1">
+                Atlas Personality & Career Assessment 2025 [Office / Business Professional]
+              </h4>
+              <p className="text-gray-600">
+                Completed on {new Date(latestReport.created_at).toLocaleDateString()}
+              </p>
+            </div>
+
             <ReportDisplay 
               userEmail={profile?.email} 
               onSectionExpanded={setIsReportSectionExpanded}
