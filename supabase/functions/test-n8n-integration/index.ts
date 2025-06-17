@@ -106,15 +106,32 @@ serve(async (req) => {
       });
     }
 
-    const result = await resp.json();
-    console.log('N8N webhook test response:', result);
+    // Handle both JSON and text responses from N8N
+    let result;
+    const responseText = await resp.text();
+    console.log('N8N webhook raw response:', responseText);
+    
+    try {
+      // Try to parse as JSON first
+      result = JSON.parse(responseText);
+      console.log('N8N webhook parsed JSON response:', result);
+    } catch (parseError) {
+      // If it's not JSON, treat it as a text response
+      console.log('N8N webhook returned text response (not JSON):', responseText);
+      result = { 
+        message: responseText,
+        raw_response: responseText,
+        type: 'text_response'
+      };
+    }
 
     return new Response(JSON.stringify({ 
       success: true, 
       message: 'Test data sent to N8N workflow successfully',
       webhook_url: n8nWebhookUrl,
       test_data: testData,
-      n8n_response: result
+      n8n_response: result,
+      response_type: typeof result === 'string' ? 'text' : 'json'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
