@@ -56,19 +56,10 @@ serve(async (req) => {
 
     console.log('Test survey data prepared (in order):', JSON.stringify(orderedSurveyData, null, 2));
 
-    // Get N8N webhook URL from environment  
-    const n8nWebhookUrl = Deno.env.get("N8N_WEBHOOK_URL");
+    // Use the production N8N webhook URL you provided
+    const n8nWebhookUrl = "https://falkoratlas.app.n8n.cloud/webhook/dfe2a07c-8b6c-4c42-a6bc-e9bb14381778";
     
-    if (!n8nWebhookUrl) {
-      console.error('N8N_WEBHOOK_URL environment variable not set');
-      return new Response(JSON.stringify({ 
-        error: 'N8N webhook URL not configured',
-        message: 'Please set the N8N_WEBHOOK_URL environment variable'
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    console.log('Using production N8N webhook URL:', n8nWebhookUrl);
 
     // Test data to send to N8N
     const testData = {
@@ -94,12 +85,18 @@ serve(async (req) => {
       body: JSON.stringify(testData),
     });
 
+    // Log detailed response information
+    console.log('N8N webhook status code:', resp.status);
+    console.log('N8N webhook status text:', resp.statusText);
+    console.log('N8N webhook headers:', Object.fromEntries(resp.headers.entries()));
+
     if (!resp.ok) {
       const err = await resp.text();
       console.error("N8N webhook test error:", resp.status, err);
       return new Response(JSON.stringify({ 
-        error: `N8N webhook test failed: ${resp.status}`,
-        details: err
+        error: `N8N webhook test failed: ${resp.status} ${resp.statusText}`,
+        details: err,
+        webhook_url: n8nWebhookUrl
       }), { 
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -131,7 +128,9 @@ serve(async (req) => {
       webhook_url: n8nWebhookUrl,
       test_data: testData,
       n8n_response: result,
-      response_type: typeof result === 'string' ? 'text' : 'json'
+      response_type: typeof result === 'string' ? 'text' : 'json',
+      status_code: resp.status,
+      status_text: resp.statusText
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
