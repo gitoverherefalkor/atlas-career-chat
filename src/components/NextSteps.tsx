@@ -15,10 +15,8 @@ const NextSteps = () => {
               <div className="w-16 h-16 bg-atlas-blue bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Clock className="h-8 w-8 text-atlas-blue" />
               </div>
-              <h3 className="font-semibold mb-3">Immediate Processing</h3>
-              <p className="text-gray-600 text-sm">
-                Your responses are immediately analyzed by our AI system, generating your personalized career profile.
-              </p>
+              <h3 className="font-semibold mb-3">AI Analysis</h3>
+              <p className="text-gray-600 text-sm">Your responses are immediately processed and analysed by our AI system, generating your personalized career profile.</p>
             </CardContent>
           </Card>
 
@@ -27,7 +25,8 @@ const NextSteps = () => {
               <div className="w-16 h-16 bg-atlas-indigo bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MessageSquare className="h-8 w-8 text-atlas-indigo" />
               </div>
-              <h3 className="font-semibold mb-3">AI Coaching Chat</h3>
+              <h3 className="font-semibold mb-3">AI Coaching
+Chat</h3>
               <p className="text-gray-600 text-sm">
                 Engage in an interactive AI coaching session to explore your results, ask questions, and dive deeper into specific career paths.
               </p>
@@ -39,7 +38,7 @@ const NextSteps = () => {
               <div className="w-16 h-16 bg-atlas-purple bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
                 <FileText className="h-8 w-8 text-atlas-purple" />
               </div>
-              <h3 className="font-semibold mb-3">Comprehensive Report</h3>
+              <h3 className="font-semibold mb-3">Full Report</h3>
               <p className="text-gray-600 text-sm">Find your final report, now with the nuances and specific insights discussed during your AI coaching session, in your dashboard.</p>
             </CardContent>
           </Card>
