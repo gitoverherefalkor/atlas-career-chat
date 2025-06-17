@@ -13,6 +13,9 @@ verify_jwt = false
 [functions.forward-to-relevance]
 verify_jwt = false
 
+[functions.forward-to-n8n]
+verify_jwt = false
+
 [functions.test-survey-integration]
 verify_jwt = false
 
@@ -23,4 +26,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.simple-relevance-test]
+verify_jwt = false
+
+[functions.test-n8n-integration]
 verify_jwt = false
