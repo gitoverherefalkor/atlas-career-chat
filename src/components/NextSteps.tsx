@@ -1,11 +1,8 @@
-
 import React from 'react';
 import { CheckCircle, ArrowRight, Clock, MessageSquare, FileText } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-
 const NextSteps = () => {
-  return (
-    <section className="py-20 bg-white">
+  return <section className="py-20 bg-white">
       <div className="container-atlas">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">What Happens After Your Assessment?</h2>
@@ -43,9 +40,7 @@ const NextSteps = () => {
                 <FileText className="h-8 w-8 text-atlas-purple" />
               </div>
               <h3 className="font-semibold mb-3">Comprehensive Report</h3>
-              <p className="text-gray-600 text-sm">
-                Find your final Atlas Assessment Report, now with the nuances and specific insights discussed during your AI coaching session, in your dashboard – a valuable, personalized reference for your ongoing career exploration and planning.
-              </p>
+              <p className="text-gray-600 text-sm">Find your final report, now with the nuances and specific insights discussed during your AI coaching session, in your dashboard.</p>
             </CardContent>
           </Card>
 
@@ -96,8 +91,6 @@ const NextSteps = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default NextSteps;
