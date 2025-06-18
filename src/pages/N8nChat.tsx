@@ -151,6 +151,7 @@ const N8nChat = () => {
       height: 100%;
       font-family: 'Inter', sans-serif;
       background: #0f172a !important;
+      position: relative;
     }
 
     /* Hide the default N8N header completely */
@@ -171,32 +172,35 @@ const N8nChat = () => {
       border-radius: 0 !important;
       height: 100% !important;
       padding-top: 2rem !important;
+      position: relative !important;
     }
 
-    /* Style the chat messages area */
+    /* Style the chat messages area with proper bottom spacing */
     #n8n-chat-container .chat-messages,
     #n8n-chat-container [class*="messages"] {
       background: #0f172a !important;
       padding: 1.5rem !important;
-      padding-bottom: 8rem !important;
+      padding-bottom: 140px !important; /* Increased bottom padding for input area */
       min-height: calc(100vh - 200px) !important;
+      overflow-y: auto !important;
     }
 
-    /* Fix input area positioning and padding */
+    /* Fix input area positioning with proper bottom margin */
     #n8n-chat-container .chat-input-container,
     #n8n-chat-container [class*="input"] {
       position: fixed !important;
-      bottom: 2rem !important;
-      left: 2rem !important;
-      right: 2rem !important;
+      bottom: 24px !important; /* Added more space from bottom */
+      left: 24px !important;
+      right: 24px !important;
       width: auto !important;
-      max-width: calc(100vw - 4rem) !important;
+      max-width: calc(100vw - 48px) !important;
       padding: 1.5rem !important;
       background: #1e293b !important;
       border: 1px solid #475569 !important;
       border-radius: 1rem !important;
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
       backdrop-filter: blur(16px) !important;
+      z-index: 1000 !important;
     }
 
     /* Style individual messages */
@@ -261,7 +265,7 @@ const N8nChat = () => {
       {/* Inject custom CSS */}
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
       
-      {/* Single Header */}
+      {/* Header */}
       <div className="bg-slate-800 border-b border-slate-700 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -271,7 +275,11 @@ const N8nChat = () => {
                 AI-Powered Career Guidance
               </span>
             </div>
-            <Button variant="outline" onClick={() => navigate('/')} className="font-sans border-slate-600 text-slate-300 hover:bg-slate-700">
+            <Button 
+              variant="outline" 
+              onClick={() => navigate('/')} 
+              className="font-sans bg-slate-700 border-slate-600 text-white hover:bg-slate-600 hover:text-white"
+            >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Home
             </Button>
