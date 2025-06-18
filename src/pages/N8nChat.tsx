@@ -180,27 +180,93 @@ const N8nChat = () => {
     #n8n-chat-container [class*="messages"] {
       background: #0f172a !important;
       padding: 1.5rem !important;
-      padding-bottom: 140px !important; /* Increased bottom padding for input area */
+      padding-bottom: 120px !important;
       min-height: calc(100vh - 200px) !important;
       overflow-y: auto !important;
     }
 
-    /* Fix input area positioning with proper bottom margin */
-    #n8n-chat-container .chat-input-container,
-    #n8n-chat-container [class*="input"] {
+    /* Completely reset and restyle the input container */
+    #n8n-chat-container .chat-input,
+    #n8n-chat-container .input-container,
+    #n8n-chat-container [class*="input-container"],
+    #n8n-chat-container [class*="chat-input"],
+    #n8n-chat-container form {
       position: fixed !important;
-      bottom: 24px !important; /* Added more space from bottom */
-      left: 24px !important;
-      right: 24px !important;
+      bottom: 20px !important;
+      left: 20px !important;
+      right: 20px !important;
       width: auto !important;
-      max-width: calc(100vw - 48px) !important;
-      padding: 1.5rem !important;
+      max-width: calc(100vw - 40px) !important;
+      height: auto !important;
+      padding: 16px !important;
+      margin: 0 !important;
       background: #1e293b !important;
       border: 1px solid #475569 !important;
-      border-radius: 1rem !important;
+      border-radius: 12px !important;
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
       backdrop-filter: blur(16px) !important;
       z-index: 1000 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 12px !important;
+    }
+
+    /* Style the actual textarea */
+    #n8n-chat-container textarea,
+    #n8n-chat-container input[type="text"] {
+      flex: 1 !important;
+      background: transparent !important;
+      color: #f1f5f9 !important;
+      border: none !important;
+      outline: none !important;
+      resize: none !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 14px !important;
+      padding: 8px 0 !important;
+      margin: 0 !important;
+      min-height: 24px !important;
+      max-height: 100px !important;
+    }
+
+    #n8n-chat-container textarea::placeholder,
+    #n8n-chat-container input[type="text"]::placeholder {
+      color: #94a3b8 !important;
+    }
+
+    /* Style the send button */
+    #n8n-chat-container button {
+      background: #3b82f6 !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 8px 16px !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+      cursor: pointer !important;
+      transition: all 0.2s ease !important;
+      min-width: 60px !important;
+      height: 36px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    #n8n-chat-container button:hover {
+      background: #2563eb !important;
+      transform: translateY(-1px) !important;
+    }
+
+    #n8n-chat-container button:disabled {
+      background: #475569 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+    }
+
+    /* Remove any duplicate or overlapping elements */
+    #n8n-chat-container .chat-input:not(:last-child),
+    #n8n-chat-container .input-container:not(:last-child),
+    #n8n-chat-container [class*="input-container"]:not(:last-child) {
+      display: none !important;
     }
 
     /* Style individual messages */
@@ -208,36 +274,6 @@ const N8nChat = () => {
     #n8n-chat-container [class*="message"] {
       margin-bottom: 1rem !important;
       color: #f1f5f9 !important;
-    }
-
-    /* Style text inputs */
-    #n8n-chat-container input,
-    #n8n-chat-container textarea {
-      background: #0f172a !important;
-      color: #f1f5f9 !important;
-      border: 1px solid #475569 !important;
-      border-radius: 0.75rem !important;
-    }
-
-    #n8n-chat-container input:focus,
-    #n8n-chat-container textarea:focus {
-      border-color: #3b82f6 !important;
-      outline: none !important;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
-    }
-
-    /* Style buttons */
-    #n8n-chat-container button {
-      background: #3b82f6 !important;
-      color: #ffffff !important;
-      border: none !important;
-      border-radius: 0.75rem !important;
-      transition: all 0.2s ease !important;
-    }
-
-    #n8n-chat-container button:hover {
-      background: #2563eb !important;
-      transform: translateY(-1px) !important;
     }
 
     /* Style scrollbar for dark mode */
