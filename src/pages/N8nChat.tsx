@@ -5,6 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+// Type declaration for the N8N chat module
+declare global {
+  interface Window {
+    createChat?: (config: any) => void;
+  }
+}
+
 const N8nChat = () => {
   const navigate = useNavigate();
 
@@ -18,7 +25,9 @@ const N8nChat = () => {
     // Load and initialize N8N Chat
     const loadN8nChat = async () => {
       try {
-        const { createChat } = await import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js');
+        // Dynamically import the N8N chat module
+        const module = await import('https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js' as any);
+        const { createChat } = module;
         
         createChat({
           webhookUrl: 'https://falkoratlas.app.n8n.cloud/webhook/53c136fe-3e77-4709-a143-fe82746dd8b6/chat',
@@ -57,8 +66,72 @@ const N8nChat = () => {
     };
   }, []);
 
+  // CSS styles as a string
+  const customStyles = `
+    :root {
+      --chat--color-primary: #4b7bb9;
+      --chat--color-primary-shade-50: #3a6ba3;
+      --chat--color-primary-shade-100: #2a5b93;
+      --chat--color-secondary: #20b69e;
+      --chat--color-secondary-shade-50: #1ca08a;
+      --chat--color-white: #ffffff;
+      --chat--color-light: #f2f4f8;
+      --chat--color-light-shade-50: #e6e9f1;
+      --chat--color-light-shade-100: #c2c5cc;
+      --chat--color-medium: #d2d4d9;
+      --chat--color-dark: #1a365d;
+      --chat--color-disabled: #777980;
+      --chat--color-typing: #404040;
+
+      --chat--spacing: 1rem;
+      --chat--border-radius: 0.5rem;
+      --chat--transition-duration: 0.15s;
+
+      --chat--window--width: 100%;
+      --chat--window--height: 100%;
+
+      --chat--header-height: auto;
+      --chat--header--padding: var(--chat--spacing);
+      --chat--header--background: var(--chat--color-dark);
+      --chat--header--color: var(--chat--color-light);
+      --chat--header--border-top: none;
+      --chat--header--border-bottom: none;
+      --chat--heading--font-size: 1.5em;
+      --chat--subtitle--font-size: 0.9em;
+      --chat--subtitle--line-height: 1.6;
+
+      --chat--textarea--height: 50px;
+
+      --chat--message--font-size: 1rem;
+      --chat--message--padding: var(--chat--spacing);
+      --chat--message--border-radius: var(--chat--border-radius);
+      --chat--message-line-height: 1.6;
+      --chat--message--bot--background: var(--chat--color-white);
+      --chat--message--bot--color: var(--chat--color-dark);
+      --chat--message--bot--border: 1px solid var(--chat--color-light-shade-50);
+      --chat--message--user--background: var(--chat--color-primary);
+      --chat--message--user--color: var(--chat--color-white);
+      --chat--message--user--border: none;
+      --chat--message--pre--background: rgba(0, 0, 0, 0.05);
+
+      --chat--toggle--background: var(--chat--color-primary);
+      --chat--toggle--hover--background: var(--chat--color-primary-shade-50);
+      --chat--toggle--active--background: var(--chat--color-primary-shade-100);
+      --chat--toggle--color: var(--chat--color-white);
+      --chat--toggle--size: 64px;
+    }
+
+    #n8n-chat-container {
+      width: 100%;
+      height: 100%;
+    }
+  `;
+
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Inject custom CSS */}
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
+      
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,67 +172,6 @@ const N8nChat = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Custom CSS for N8N Chat styling */}
-      <style jsx>{`
-        :root {
-          --chat--color-primary: #4b7bb9;
-          --chat--color-primary-shade-50: #3a6ba3;
-          --chat--color-primary-shade-100: #2a5b93;
-          --chat--color-secondary: #20b69e;
-          --chat--color-secondary-shade-50: #1ca08a;
-          --chat--color-white: #ffffff;
-          --chat--color-light: #f2f4f8;
-          --chat--color-light-shade-50: #e6e9f1;
-          --chat--color-light-shade-100: #c2c5cc;
-          --chat--color-medium: #d2d4d9;
-          --chat--color-dark: #1a365d;
-          --chat--color-disabled: #777980;
-          --chat--color-typing: #404040;
-
-          --chat--spacing: 1rem;
-          --chat--border-radius: 0.5rem;
-          --chat--transition-duration: 0.15s;
-
-          --chat--window--width: 100%;
-          --chat--window--height: 100%;
-
-          --chat--header-height: auto;
-          --chat--header--padding: var(--chat--spacing);
-          --chat--header--background: var(--chat--color-dark);
-          --chat--header--color: var(--chat--color-light);
-          --chat--header--border-top: none;
-          --chat--header--border-bottom: none;
-          --chat--heading--font-size: 1.5em;
-          --chat--subtitle--font-size: 0.9em;
-          --chat--subtitle--line-height: 1.6;
-
-          --chat--textarea--height: 50px;
-
-          --chat--message--font-size: 1rem;
-          --chat--message--padding: var(--chat--spacing);
-          --chat--message--border-radius: var(--chat--border-radius);
-          --chat--message-line-height: 1.6;
-          --chat--message--bot--background: var(--chat--color-white);
-          --chat--message--bot--color: var(--chat--color-dark);
-          --chat--message--bot--border: 1px solid var(--chat--color-light-shade-50);
-          --chat--message--user--background: var(--chat--color-primary);
-          --chat--message--user--color: var(--chat--color-white);
-          --chat--message--user--border: none;
-          --chat--message--pre--background: rgba(0, 0, 0, 0.05);
-
-          --chat--toggle--background: var(--chat--color-primary);
-          --chat--toggle--hover--background: var(--chat--color-primary-shade-50);
-          --chat--toggle--active--background: var(--chat--color-primary-shade-100);
-          --chat--toggle--color: var(--chat--color-white);
-          --chat--toggle--size: 64px;
-        }
-
-        #n8n-chat-container {
-          width: 100%;
-          height: 100%;
-        }
-      `}</style>
     </div>
   );
 };
