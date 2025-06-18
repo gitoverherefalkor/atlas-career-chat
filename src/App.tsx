@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Chat from "./pages/Chat";
 import Report from "./pages/Report";
+import N8nChat from "./pages/N8nChat";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/test-data" element={<TestData />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/report" element={<Report />} />
+            <Route path="/n8n-chat" element={<N8nChat />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
