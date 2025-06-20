@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      aa_dead_letter_log: {
+        Row: {
+          created_at: string
+          error_message: string
+          failed_node: string
+          id: string
+          timestamp: string
+          workflow_name: string
+        }
+        Insert: {
+          created_at?: string
+          error_message: string
+          failed_node: string
+          id?: string
+          timestamp: string
+          workflow_name: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string
+          failed_node?: string
+          id?: string
+          timestamp?: string
+          workflow_name?: string
+        }
+        Relationships: []
+      }
       access_codes: {
         Row: {
           code: string
