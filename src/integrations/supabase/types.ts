@@ -252,27 +252,42 @@ export type Database = {
       }
       report_sections: {
         Row: {
+          chapter_id: string | null
           content: string
           created_at: string
           id: string
+          order_number: number | null
           report_id: string
+          section_id: string | null
           section_type: string
+          subsection_id: string | null
+          title: string | null
           updated_at: string
         }
         Insert: {
+          chapter_id?: string | null
           content: string
           created_at?: string
           id?: string
+          order_number?: number | null
           report_id: string
+          section_id?: string | null
           section_type: string
+          subsection_id?: string | null
+          title?: string | null
           updated_at?: string
         }
         Update: {
+          chapter_id?: string | null
           content?: string
           created_at?: string
           id?: string
+          order_number?: number | null
           report_id?: string
+          section_id?: string | null
           section_type?: string
+          subsection_id?: string | null
+          title?: string | null
           updated_at?: string
         }
         Relationships: [

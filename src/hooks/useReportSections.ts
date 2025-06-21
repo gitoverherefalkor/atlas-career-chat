@@ -7,8 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 interface ReportSection {
   id: string;
   report_id: string;
+  chapter_id: string | null;
+  section_id: string | null;
+  subsection_id: string | null;
   section_type: string;
+  title: string | null;
   content: string;
+  order_number: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -31,7 +36,7 @@ export const useReportSections = (reportId?: string) => {
         .from('report_sections')
         .select('*')
         .eq('report_id', reportId)
-        .order('created_at', { ascending: true });
+        .order('order_number', { ascending: true });
 
       if (error) {
         console.error('Error fetching report sections:', error);
@@ -46,8 +51,13 @@ export const useReportSections = (reportId?: string) => {
   const createSectionMutation = useMutation({
     mutationFn: async (section: {
       report_id: string;
+      chapter_id?: string;
+      section_id?: string;
+      subsection_id?: string;
       section_type: string;
+      title?: string;
       content: string;
+      order_number?: number;
     }) => {
       const { data, error } = await supabase
         .from('report_sections')

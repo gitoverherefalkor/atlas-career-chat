@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useReports } from '@/hooks/useReports';
+import { useReportSections } from '@/hooks/useReportSections';
 import ReportHeader from './report/ReportHeader';
 import ChapterCard from './report/ChapterCard';
 import ExpandedSectionView from './report/ExpandedSectionView';
@@ -27,6 +28,21 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
   };
 
   const latestReport = getLatestReport();
+  const { sections: dbSections } = useReportSections(latestReport?.id);
+
+  // Create a map of database sections by chapter_id and section_id
+  const dbSectionMap = React.useMemo(() => {
+    const map: Record<string, Record<string, string>> = {};
+    dbSections.forEach(section => {
+      if (section.chapter_id && section.section_id) {
+        if (!map[section.chapter_id]) {
+          map[section.chapter_id] = {};
+        }
+        map[section.chapter_id][section.section_id] = section.content;
+      }
+    });
+    return map;
+  }, [dbSections]);
 
   const getAllCareerIds = () => {
     const careerIds: string[] = [];
@@ -71,6 +87,13 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
   };
 
   const getSectionContent = (chapterId: string, sectionId: string) => {
+    // First try to get content from database
+    const dbContent = dbSectionMap[chapterId]?.[sectionId];
+    if (dbContent) {
+      return dbContent;
+    }
+
+    // Fall back to hardcoded content if no database content exists
     if (chapterId === 'about-you') {
       switch (sectionId) {
         case 'executive-summary':
@@ -86,9 +109,22 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
         default:
           return aboutYouContent;
       }
-    } else {
-      return careerSuggestionsContent[sectionId as keyof typeof careerSuggestionsContent] || '';
+    } else if (chapterId === 'career-suggestions') {
+      // Map database section IDs to hardcoded content keys
+      const sectionMap: Record<string, string> = {
+        'first-career': 'cso',
+        'second-career': 'vp-strategic',
+        'third-career': 'business-strategist',
+        'runner-up': 'senior-strategy-consultant',
+        'outside-box': 'landscape-architect',
+        'dream-jobs': 'dream-jobs'
+      };
+      
+      const contentKey = sectionMap[sectionId] || sectionId;
+      return careerSuggestionsContent[contentKey as keyof typeof careerSuggestionsContent] || '';
     }
+    
+    return '';
   };
 
   const getNextSection = (currentChapterId: string, currentSectionId: string) => {
