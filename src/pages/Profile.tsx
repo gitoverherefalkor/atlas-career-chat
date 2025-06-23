@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, User, Save } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { LinkedInConnect } from '@/components/profile/LinkedInConnect';
+import { ResumeUpload } from '@/components/profile/ResumeUpload';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -67,7 +69,15 @@ const Profile = () => {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        
+        {/* Professional Data Integration */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <LinkedInConnect />
+          <ResumeUpload />
+        </div>
+
+        {/* Personal Information */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">

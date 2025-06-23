@@ -12,6 +12,7 @@ interface Profile {
   country: string | null;
   pronouns: string | null;
   age_range: string | null;
+  resume_data: any | null;
   created_at: string;
   updated_at: string;
 }
