@@ -9,7 +9,11 @@ import { useAssessmentLogic } from '@/components/assessment/useAssessmentLogic';
 import { useSearchParams } from 'react-router-dom';
 
 const Assessment = () => {
+  console.log('Assessment component rendered');
+  
   const [searchParams] = useSearchParams();
+  console.log('Search params:', Object.fromEntries(searchParams.entries()));
+  
   const {
     isCompleted,
     isVerified,
@@ -27,7 +31,18 @@ const Assessment = () => {
     setSessionToken
   } = useAssessmentLogic();
 
+  console.log('Assessment state:', {
+    isCompleted,
+    isVerified,
+    sessionToken,
+    accessCodeData,
+    prefilledCode,
+    authLoading,
+    user: user ? { id: user.id, email: user.email } : null
+  });
+
   const handleSessionValidated = ({ accessCodeData: validatedAccessCodeData, sessionToken: validatedSessionToken }: { accessCodeData: any; sessionToken: string }) => {
+    console.log('Session validated:', { validatedAccessCodeData, validatedSessionToken });
     setAccessCodeData(validatedAccessCodeData);
     setSessionToken(validatedSessionToken);
     setIsVerified(true);
@@ -35,6 +50,7 @@ const Assessment = () => {
 
   // Show loading while checking auth
   if (authLoading) {
+    console.log('Showing auth loading');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -47,14 +63,17 @@ const Assessment = () => {
 
   // Don't render anything if user is not authenticated
   if (!user) {
+    console.log('No user, returning null');
     return null;
   }
 
   if (isCompleted) {
+    console.log('Assessment completed, showing completion');
     return <AssessmentCompletion />;
   }
 
   if (!isVerified || !sessionToken) {
+    console.log('Not verified or no session token, showing session manager');
     return (
       <SessionManager 
         searchParams={searchParams} 
@@ -65,6 +84,7 @@ const Assessment = () => {
     );
   }
 
+  console.log('Showing survey form');
   return (
     <AssessmentLayout onExit={handleExitAssessment}>
       <SurveyForm

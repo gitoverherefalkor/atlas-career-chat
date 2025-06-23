@@ -12,6 +12,8 @@ const SURVEY_TYPE_MAPPING: Record<string, string> = {
 };
 
 export const useAssessmentLogic = () => {
+  console.log('useAssessmentLogic hook initialized');
+  
   const [searchParams] = useSearchParams();
   const [isCompleted, setIsCompleted] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
@@ -24,9 +26,22 @@ export const useAssessmentLogic = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  console.log('useAssessmentLogic state:', {
+    isCompleted,
+    isVerified,
+    accessCodeData,
+    sessionToken,
+    prefilledCode,
+    authLoading,
+    user: user ? { id: user.id, email: user.email } : null
+  });
+
   useEffect(() => {
+    console.log('useAssessmentLogic useEffect triggered', { authLoading, user });
+    
     // Redirect to auth if not logged in
     if (!authLoading && !user) {
+      console.log('No user, redirecting to auth');
       toast({
         title: "Authentication Required",
         description: "Please sign in to take the assessment.",
@@ -39,12 +54,15 @@ export const useAssessmentLogic = () => {
     // Check if there's a pre-filled access code from the URL
     const codeFromUrl = searchParams.get('code');
     if (codeFromUrl) {
+      console.log('Found code from URL:', codeFromUrl);
       setPrefilledCode(codeFromUrl);
     }
   }, [searchParams, user, authLoading, navigate, toast]);
 
   const generateSessionToken = () => {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    const token = Date.now().toString(36) + Math.random().toString(36).substr(2);
+    console.log('Generated session token:', token);
+    return token;
   };
 
   const handleAccessCodeVerified = async (data: any) => {
@@ -65,7 +83,9 @@ export const useAssessmentLogic = () => {
 
   function getSurveyIdFromAccessCode(accessCodeData: any): string {
     const surveyType = accessCodeData?.survey_type || 'Office / Business Pro - 2025 v1 EN';
-    return SURVEY_TYPE_MAPPING[surveyType] || SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
+    const surveyId = SURVEY_TYPE_MAPPING[surveyType] || SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
+    console.log('Survey ID for access code:', { surveyType, surveyId });
+    return surveyId;
   }
 
   const handleSurveyComplete = async (responses: Record<string, any>) => {
