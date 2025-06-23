@@ -164,7 +164,7 @@ const PrivacyPolicy = () => {
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <p className="text-gray-700"><strong>Email:</strong> privacy@atlas-assessments.com</p>
-                  <p className="text-gray-700"><strong>Address:</strong> Falkor Atlas, [Address to be updated]</p>
+                  <p className="text-gray-700"><strong>Address:</strong> Falkor Atlas, Utrecht, The Netherlands</p>
                   <p className="text-gray-700"><strong>Data Protection Officer:</strong> dpo@atlas-assessments.com</p>
                 </div>
               </section>
