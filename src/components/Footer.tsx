@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -62,7 +63,9 @@ const Footer = () => {
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="text-sm text-gray-500 mb-4 md:mb-0">
-              <span>Privacy Policy</span>
+              <Link to="/privacy-policy" className="hover:text-white transition-colors">
+                Privacy Policy
+              </Link>
               <span className="mx-2">|</span>
               <span>Terms of Service</span>
             </div>

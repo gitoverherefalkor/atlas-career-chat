@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import Chat from "./pages/Chat";
 import Report from "./pages/Report";
 import N8nChat from "./pages/N8nChat";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/chat" element={<Chat />} />
             <Route path="/report" element={<Report />} />
             <Route path="/n8n-chat" element={<N8nChat />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
