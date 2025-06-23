@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
 import { useSurveySession } from '@/hooks/useSurveySession';
@@ -37,36 +38,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Add keyboard event handler for Enter key
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
-      // Don't trigger on Enter in textarea or other multi-line inputs
-      const target = event.target as HTMLElement;
-      if (target.tagName === 'TEXTAREA') {
-        return;
-      }
-
-      // Only proceed if current question is complete
-      if (isCurrentQuestionComplete()) {
-        event.preventDefault();
-        
-        if (isLastQuestion()) {
-          handleSubmit();
-        } else {
-          handleNext();
-        }
-      }
-    }
-  }, [isCurrentQuestionComplete, isLastQuestion, handleSubmit, handleNext]);
-
-  // Add keyboard event listener
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
 
   // Load session on mount
   useEffect(() => {
@@ -356,6 +327,36 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     clearSession();
     navigate('/dashboard');
   };
+
+  // Add keyboard event handler for Enter key - moved after function declarations
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+      // Don't trigger on Enter in textarea or other multi-line inputs
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      // Only proceed if current question is complete
+      if (isCurrentQuestionComplete()) {
+        event.preventDefault();
+        
+        if (isLastQuestion()) {
+          handleSubmit();
+        } else {
+          handleNext();
+        }
+      }
+    }
+  }, [isCurrentQuestionComplete, isLastQuestion, handleSubmit, handleNext]);
+
+  // Add keyboard event listener
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   // Show section introduction for all sections (including first)
   if (showSectionIntro) {
