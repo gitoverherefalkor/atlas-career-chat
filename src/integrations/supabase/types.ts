@@ -130,6 +130,7 @@ export type Database = {
           id: string
           last_name: string | null
           pronouns: string | null
+          resume_data: Json | null
           updated_at: string
         }
         Insert: {
@@ -141,6 +142,7 @@ export type Database = {
           id: string
           last_name?: string | null
           pronouns?: string | null
+          resume_data?: Json | null
           updated_at?: string
         }
         Update: {
@@ -152,6 +154,7 @@ export type Database = {
           id?: string
           last_name?: string | null
           pronouns?: string | null
+          resume_data?: Json | null
           updated_at?: string
         }
         Relationships: []
