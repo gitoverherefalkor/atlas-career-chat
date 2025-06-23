@@ -25,22 +25,31 @@ export const SessionManager: React.FC<SessionManagerProps> = ({
   const [isVerified, setIsVerified] = useState(false);
   const [accessCodeData, setAccessCodeData] = useState<any>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
-
-  // Get survey session to check if user has an existing session
-  const surveyId = getSurveyIdFromAccessCode(accessCodeData);
-  const { getStoredSession } = useSurveySession(surveyId);
 
   console.log('SessionManager state:', {
     isVerified,
     accessCodeData,
     sessionToken,
+    isProcessing,
     user: user ? { id: user.id, email: user.email } : null
   });
 
+  // Get survey session to check if user has an existing session
+  const surveyId = getSurveyIdFromAccessCode(accessCodeData);
+  const { getStoredSession } = useSurveySession(surveyId);
+
   useEffect(() => {
     console.log('SessionManager useEffect triggered');
+    
+    if (isProcessing) {
+      console.log('Already processing, skipping...');
+      return;
+    }
+    
+    setIsProcessing(true);
     
     // Check if there's a session token from successful verification
     const tokenFromUrl = searchParams.get('token');
@@ -58,29 +67,35 @@ export const SessionManager: React.FC<SessionManagerProps> = ({
   const checkExistingSession = () => {
     console.log('Checking existing session');
     
-    // Check if user has an existing survey session stored
-    const storageKeys = Object.keys(localStorage);
-    const surveySessionKey = storageKeys.find(key => key.startsWith('survey_session_'));
-    
-    console.log('Found storage keys:', storageKeys);
-    console.log('Found survey session key:', surveySessionKey);
-    
-    if (surveySessionKey) {
-      console.log('Found existing survey session, allowing continuation');
+    try {
+      // Check if user has an existing survey session stored
+      const storageKeys = Object.keys(localStorage);
+      const surveySessionKey = storageKeys.find(key => key.startsWith('survey_session_'));
       
-      // Create a mock access code data based on default survey type
-      const mockAccessCodeData = {
-        id: 'existing-session',
-        code: 'EXISTING-SESSION',
-        survey_type: 'Office / Business Pro - 2025 v1 EN',
-        usage_count: 0
-      };
+      console.log('Found storage keys:', storageKeys);
+      console.log('Found survey session key:', surveySessionKey);
       
-      setAccessCodeData(mockAccessCodeData);
-      setIsVerified(true);
-      setSessionToken('existing-session-token');
-    } else {
-      console.log('No existing survey session found');
+      if (surveySessionKey) {
+        console.log('Found existing survey session, allowing continuation');
+        
+        // Create a mock access code data based on default survey type
+        const mockAccessCodeData = {
+          id: 'existing-session',
+          code: 'EXISTING-SESSION',
+          survey_type: 'Office / Business Pro - 2025 v1 EN',
+          usage_count: 0
+        };
+        
+        setAccessCodeData(mockAccessCodeData);
+        setIsVerified(true);
+        setSessionToken('existing-session-token');
+      } else {
+        console.log('No existing survey session found');
+      }
+    } catch (error) {
+      console.error('Error checking existing session:', error);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -92,6 +107,7 @@ export const SessionManager: React.FC<SessionManagerProps> = ({
         console.log('Special case for existing sessions');
         // Special case for existing sessions
         setIsVerified(true);
+        setIsProcessing(false);
         return;
       }
       
@@ -107,6 +123,8 @@ export const SessionManager: React.FC<SessionManagerProps> = ({
       });
       setSessionToken(null);
       setIsVerified(false);
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -121,11 +139,11 @@ export const SessionManager: React.FC<SessionManagerProps> = ({
   useEffect(() => {
     console.log('SessionManager validation effect:', { isVerified, sessionToken, accessCodeData });
     
-    if (isVerified && sessionToken && accessCodeData) {
+    if (isVerified && sessionToken && accessCodeData && !isProcessing) {
       console.log('Calling onSessionValidated');
       onSessionValidated({ accessCodeData, sessionToken });
     }
-  }, [isVerified, sessionToken, accessCodeData]);
+  }, [isVerified, sessionToken, accessCodeData, isProcessing, onSessionValidated]);
 
   console.log('SessionManager rendering children');
   return <>{children}</>;

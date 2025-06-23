@@ -39,8 +39,14 @@ export const useAssessmentLogic = () => {
   useEffect(() => {
     console.log('useAssessmentLogic useEffect triggered', { authLoading, user });
     
+    // Don't redirect if still loading
+    if (authLoading) {
+      console.log('Still loading auth, waiting...');
+      return;
+    }
+
     // Redirect to auth if not logged in
-    if (!authLoading && !user) {
+    if (!user) {
       console.log('No user, redirecting to auth');
       toast({
         title: "Authentication Required",
@@ -53,11 +59,11 @@ export const useAssessmentLogic = () => {
 
     // Check if there's a pre-filled access code from the URL
     const codeFromUrl = searchParams.get('code');
-    if (codeFromUrl) {
+    if (codeFromUrl && codeFromUrl !== prefilledCode) {
       console.log('Found code from URL:', codeFromUrl);
       setPrefilledCode(codeFromUrl);
     }
-  }, [searchParams, user, authLoading, navigate, toast]);
+  }, [searchParams, user, authLoading, navigate, toast, prefilledCode]);
 
   const generateSessionToken = () => {
     const token = Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -67,6 +73,11 @@ export const useAssessmentLogic = () => {
 
   const handleAccessCodeVerified = async (data: any) => {
     console.log('Access code verified:', data);
+    
+    if (!data) {
+      console.error('No data received from access code verification');
+      return;
+    }
     
     const token = generateSessionToken();
     
@@ -82,6 +93,11 @@ export const useAssessmentLogic = () => {
   };
 
   function getSurveyIdFromAccessCode(accessCodeData: any): string {
+    if (!accessCodeData) {
+      console.error('No access code data provided to getSurveyIdFromAccessCode');
+      return SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
+    }
+    
     const surveyType = accessCodeData?.survey_type || 'Office / Business Pro - 2025 v1 EN';
     const surveyId = SURVEY_TYPE_MAPPING[surveyType] || SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
     console.log('Survey ID for access code:', { surveyType, surveyId });
@@ -91,10 +107,20 @@ export const useAssessmentLogic = () => {
   const handleSurveyComplete = async (responses: Record<string, any>) => {
     console.log('Survey completed with responses:', responses);
     
+    if (!accessCodeData || !user) {
+      console.error('Missing required data for survey completion:', { accessCodeData, user });
+      toast({
+        title: "Error",
+        description: "Missing required data to complete survey.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const surveyId = getSurveyIdFromAccessCode(accessCodeData);
     
     try {
-      createReport({
+      await createReport({
         title: `Atlas Career Assessment - ${new Date().toLocaleDateString()}`,
         payload: {
           responses,
@@ -119,6 +145,13 @@ export const useAssessmentLogic = () => {
       }
 
       setSessionToken(null);
+      
+      toast({
+        title: "Assessment Complete!",
+        description: "Your assessment has been submitted successfully.",
+      });
+      
+      setIsCompleted(true);
     } catch (error) {
       console.error('Error saving report:', error);
       toast({
@@ -126,14 +159,8 @@ export const useAssessmentLogic = () => {
         description: "Assessment completed but failed to save report. Your responses were submitted successfully.",
         variant: "destructive",
       });
+      setIsCompleted(true); // Still mark as completed even if report save failed
     }
-    
-    toast({
-      title: "Assessment Complete!",
-      description: "Your assessment has been submitted successfully.",
-    });
-    
-    setIsCompleted(true);
   };
 
   const handleExitAssessment = () => {

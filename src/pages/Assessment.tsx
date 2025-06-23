@@ -41,12 +41,12 @@ const Assessment = () => {
     user: user ? { id: user.id, email: user.email } : null
   });
 
-  const handleSessionValidated = ({ accessCodeData: validatedAccessCodeData, sessionToken: validatedSessionToken }: { accessCodeData: any; sessionToken: string }) => {
+  const handleSessionValidated = React.useCallback(({ accessCodeData: validatedAccessCodeData, sessionToken: validatedSessionToken }: { accessCodeData: any; sessionToken: string }) => {
     console.log('Session validated:', { validatedAccessCodeData, validatedSessionToken });
     setAccessCodeData(validatedAccessCodeData);
     setSessionToken(validatedSessionToken);
     setIsVerified(true);
-  };
+  }, [setAccessCodeData, setSessionToken, setIsVerified]);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -64,7 +64,13 @@ const Assessment = () => {
   // Don't render anything if user is not authenticated
   if (!user) {
     console.log('No user, returning null');
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Authentication required. Please sign in.</p>
+        </div>
+      </div>
+    );
   }
 
   if (isCompleted) {
@@ -85,10 +91,24 @@ const Assessment = () => {
   }
 
   console.log('Showing survey form');
+  const surveyId = getSurveyIdFromAccessCode(accessCodeData);
+  console.log('Survey ID:', surveyId);
+  
+  if (!surveyId) {
+    console.error('No survey ID found');
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Error: No survey found. Please try again.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AssessmentLayout onExit={handleExitAssessment}>
       <SurveyForm
-        surveyId={getSurveyIdFromAccessCode(accessCodeData)}
+        surveyId={surveyId}
         onComplete={handleSurveyComplete}
         accessCodeData={accessCodeData}
       />
