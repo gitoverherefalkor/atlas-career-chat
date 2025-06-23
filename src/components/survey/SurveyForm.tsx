@@ -25,8 +25,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   onComplete, 
   accessCodeData 
 }) => {
+  // ALL HOOKS MUST BE AT THE TOP - NO CONDITIONAL CALLS
   const { data: survey, isLoading, error } = useSurvey(surveyId);
   const { getStoredSession, saveSession, clearSession } = useSurveySession(surveyId);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -35,129 +39,25 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'submitted' | 'failed'>('idle');
   const [showSectionIntro, setShowSectionIntro] = useState(true);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
-  // Load session on mount
-  useEffect(() => {
-    if (survey) {
-      const storedSession = getStoredSession();
-      if (storedSession) {
-        setResponses(storedSession.responses);
-        setCurrentSectionIndex(storedSession.currentSectionIndex);
-        setCurrentQuestionIndex(storedSession.currentQuestionIndex);
-        setShowSectionIntro(storedSession.showSectionIntro);
-        setCompletedSections(storedSession.completedSections);
-        
-        // Check if this session was previously submitted
-        const submissionData = storedSession as any;
-        if (submissionData.submissionStatus) {
-          setSubmissionStatus(submissionData.submissionStatus);
-        }
-        
-        console.log('Restored session:', storedSession);
-      }
-    }
-  }, [survey]);
-
-  // Save session whenever state changes
-  useEffect(() => {
-    if (survey) {
-      const session = {
-        responses,
-        currentSectionIndex,
-        currentQuestionIndex,
-        showSectionIntro,
-        completedSections,
-        submissionStatus
-      };
-      saveSession(session);
-    }
-  }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, submissionStatus, survey]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
-
-  if (error || !survey) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-red-600">Failed to load survey. Please try again.</p>
-      </div>
-    );
-  }
 
   // Helper function to check if a question should be skipped
-  const shouldSkipQuestion = (question: any) => {
+  const shouldSkipQuestion = useCallback((question: any) => {
     const licenseKeyIndicators = ['license', 'access code', 'verification code', 'license key'];
     const questionText = question.label?.toLowerCase() || '';
     return licenseKeyIndicators.some(indicator => questionText.includes(indicator));
-  };
+  }, []);
 
   // Get filtered questions for current section (excluding license key questions)
-  const getFilteredQuestions = (section: any) => {
+  const getFilteredQuestions = useCallback((section: any) => {
     return section.questions.filter((q: any) => !shouldSkipQuestion(q));
-  };
+  }, [shouldSkipQuestion]);
 
-  const currentSection = survey.sections[currentSectionIndex];
-  const filteredQuestions = getFilteredQuestions(currentSection);
-  const currentQuestion = filteredQuestions[currentQuestionIndex];
-  
-  // Calculate progress within current section only
-  const currentQuestionInSection = currentQuestionIndex + 1;
-  const totalQuestionsInSection = filteredQuestions.length;
-  const progress = (currentQuestionInSection / totalQuestionsInSection) * 100;
-
-  const handleResponseChange = (questionId: string, value: any) => {
-    setResponses(prev => ({
-      ...prev,
-      [questionId]: value
-    }));
-  };
-
-  const isCurrentQuestionComplete = () => {
-    if (!currentQuestion || !currentQuestion.required) return true;
-    const response = responses[currentQuestion.id];
+  // Navigation functions
+  const handleNext = useCallback(() => {
+    if (!survey) return;
     
-    // Special handling for different question types
-    if (currentQuestion.type === 'multiple_choice' && currentQuestion.allow_multiple) {
-      const minSelections = currentQuestion.min_selections;
-      const maxSelections = currentQuestion.max_selections;
-      
-      if (Array.isArray(response)) {
-        // Check minimum selections requirement
-        if (minSelections && response.length < minSelections) return false;
-        // For required questions, need at least one selection if no minimum is set
-        if (!minSelections && response.length === 0) return false;
-        // Check maximum selections (should be handled in UI but double-check)
-        if (maxSelections && response.length > maxSelections) return false;
-        return true;
-      }
-      
-      // If no response but minimum required
-      if (minSelections && minSelections > 0) return false;
-      return response !== undefined && response !== null && response !== '';
-    }
+    const filteredQuestions = getFilteredQuestions(survey.sections[currentSectionIndex]);
     
-    if (currentQuestion.type === 'ranking') {
-      // For ranking questions, ensure all items are ranked
-      const choices = currentQuestion.config?.choices || [];
-      return Array.isArray(response) && response.length === choices.length;
-    }
-    
-    return response !== undefined && response !== null && response !== '';
-  };
-
-  const handleSectionIntroContinue = () => {
-    setShowSectionIntro(false);
-  };
-
-  const handleNext = () => {
     // If this was the last question in the section, mark section as completed
     if (currentQuestionIndex === filteredQuestions.length - 1) {
       setCompletedSections(prev => {
@@ -178,9 +78,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       setCurrentQuestionIndex(0);
       setShowSectionIntro(true); // Show intro for next section
     }
-  };
+  }, [survey, currentSectionIndex, currentQuestionIndex, getFilteredQuestions]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
+    if (!survey) return;
+    
     // Move to previous question in current section
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(currentQuestionIndex - 1);
@@ -193,72 +95,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       setCurrentQuestionIndex(prevFilteredQuestions.length - 1);
       setShowSectionIntro(false); // Go directly to questions, not intro
     }
-  };
+  }, [survey, currentSectionIndex, currentQuestionIndex, getFilteredQuestions]);
 
-  const handleSectionNavigation = (sectionIndex: number) => {
-    setCurrentSectionIndex(sectionIndex);
-    setCurrentQuestionIndex(0);
-    setShowSectionIntro(true);
-  };
-
-  const isLastQuestion = () => {
-    return currentSectionIndex === survey.sections.length - 1 && 
-           currentQuestionIndex === filteredQuestions.length - 1;
-  };
-
-  const isFirstQuestion = () => {
-    return currentSectionIndex === 0 && currentQuestionIndex === 0 && !showSectionIntro;
-  };
-
-  const markAccessCodeAsUsed = async () => {
-    if (!accessCodeData?.id) return;
-
-    try {
-      console.log('Marking access code as used:', accessCodeData.id);
-      
-      // First get the current usage count
-      const { data: currentCode, error: fetchError } = await supabase
-        .from('access_codes')
-        .select('usage_count')
-        .eq('id', accessCodeData.id)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching current usage count:', fetchError);
-        return;
-      }
-
-      // Increment the usage count
-      const newUsageCount = (currentCode.usage_count || 0) + 1;
-      
-      const { error } = await supabase
-        .from('access_codes')
-        .update({ 
-          usage_count: newUsageCount,
-          used_at: new Date().toISOString()
-        })
-        .eq('id', accessCodeData.id);
-
-      if (error) {
-        console.error('Error marking access code as used:', error);
-      } else {
-        console.log('Access code marked as used successfully');
-      }
-    } catch (error) {
-      console.error('Error marking access code as used:', error);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!isCurrentQuestionComplete()) {
-      toast({
-        title: "Incomplete Question",
-        description: "Please answer this question before submitting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleSubmit = useCallback(async () => {
+    if (!survey || !accessCodeData || !user) return;
+    
     setIsSubmitting(true);
     setSubmissionStatus('submitting');
 
@@ -315,6 +156,210 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     } finally {
       setIsSubmitting(false);
     }
+  }, [survey, accessCodeData, user, responses, surveyId, onComplete, toast]);
+
+  const markAccessCodeAsUsed = useCallback(async () => {
+    if (!accessCodeData?.id) return;
+
+    try {
+      console.log('Marking access code as used:', accessCodeData.id);
+      
+      // First get the current usage count
+      const { data: currentCode, error: fetchError } = await supabase
+        .from('access_codes')
+        .select('usage_count')
+        .eq('id', accessCodeData.id)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching current usage count:', fetchError);
+        return;
+      }
+
+      // Increment the usage count
+      const newUsageCount = (currentCode.usage_count || 0) + 1;
+      
+      const { error } = await supabase
+        .from('access_codes')
+        .update({ 
+          usage_count: newUsageCount,
+          used_at: new Date().toISOString()
+        })
+        .eq('id', accessCodeData.id);
+
+      if (error) {
+        console.error('Error marking access code as used:', error);
+      } else {
+        console.log('Access code marked as used successfully');
+      }
+    } catch (error) {
+      console.error('Error marking access code as used:', error);
+    }
+  }, [accessCodeData]);
+
+  // Keyboard event handler for Enter key
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (!survey) return;
+    
+    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
+      // Don't trigger on Enter in textarea or other multi-line inputs
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      const filteredQuestions = getFilteredQuestions(survey.sections[currentSectionIndex]);
+      const currentQuestion = filteredQuestions[currentQuestionIndex];
+      const isCurrentQuestionComplete = checkIfCurrentQuestionComplete(currentQuestion);
+      const isLastQuestion = currentSectionIndex === survey.sections.length - 1 && 
+                           currentQuestionIndex === filteredQuestions.length - 1;
+
+      // Only proceed if current question is complete
+      if (isCurrentQuestionComplete) {
+        event.preventDefault();
+        
+        if (isLastQuestion) {
+          handleSubmit();
+        } else {
+          handleNext();
+        }
+      }
+    }
+  }, [survey, currentSectionIndex, currentQuestionIndex, responses, handleSubmit, handleNext, getFilteredQuestions]);
+
+  // Helper function to check if current question is complete
+  const checkIfCurrentQuestionComplete = useCallback((question: any) => {
+    if (!question || !question.required) return true;
+    const response = responses[question.id];
+    
+    // Special handling for different question types
+    if (question.type === 'multiple_choice' && question.allow_multiple) {
+      const minSelections = question.min_selections;
+      const maxSelections = question.max_selections;
+      
+      if (Array.isArray(response)) {
+        // Check minimum selections requirement
+        if (minSelections && response.length < minSelections) return false;
+        // For required questions, need at least one selection if no minimum is set
+        if (!minSelections && response.length === 0) return false;
+        // Check maximum selections (should be handled in UI but double-check)
+        if (maxSelections && response.length > maxSelections) return false;
+        return true;
+      }
+      
+      // If no response but minimum required
+      if (minSelections && minSelections > 0) return false;
+      return response !== undefined && response !== null && response !== '';
+    }
+    
+    if (question.type === 'ranking') {
+      // For ranking questions, ensure all items are ranked
+      const choices = question.config?.choices || [];
+      return Array.isArray(response) && response.length === choices.length;
+    }
+    
+    return response !== undefined && response !== null && response !== '';
+  }, [responses]);
+
+  // Load session on mount
+  useEffect(() => {
+    if (survey) {
+      const storedSession = getStoredSession();
+      if (storedSession) {
+        setResponses(storedSession.responses);
+        setCurrentSectionIndex(storedSession.currentSectionIndex);
+        setCurrentQuestionIndex(storedSession.currentQuestionIndex);
+        setShowSectionIntro(storedSession.showSectionIntro);
+        setCompletedSections(storedSession.completedSections);
+        
+        // Check if this session was previously submitted
+        const submissionData = storedSession as any;
+        if (submissionData.submissionStatus) {
+          setSubmissionStatus(submissionData.submissionStatus);
+        }
+        
+        console.log('Restored session:', storedSession);
+      }
+    }
+  }, [survey, getStoredSession]);
+
+  // Save session whenever state changes
+  useEffect(() => {
+    if (survey) {
+      const session = {
+        responses,
+        currentSectionIndex,
+        currentQuestionIndex,
+        showSectionIntro,
+        completedSections,
+        submissionStatus
+      };
+      saveSession(session);
+    }
+  }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, submissionStatus, survey, saveSession]);
+
+  // Add keyboard event listener
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
+
+  // NOW WE CAN HAVE CONDITIONAL RENDERING AND EARLY RETURNS
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !survey) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-red-600">Failed to load survey. Please try again.</p>
+      </div>
+    );
+  }
+
+  const currentSection = survey.sections[currentSectionIndex];
+  const filteredQuestions = getFilteredQuestions(currentSection);
+  const currentQuestion = filteredQuestions[currentQuestionIndex];
+  
+  // Calculate progress within current section only
+  const currentQuestionInSection = currentQuestionIndex + 1;
+  const totalQuestionsInSection = filteredQuestions.length;
+  const progress = (currentQuestionInSection / totalQuestionsInSection) * 100;
+
+  const handleResponseChange = (questionId: string, value: any) => {
+    setResponses(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  };
+
+  const isCurrentQuestionComplete = () => {
+    return checkIfCurrentQuestionComplete(currentQuestion);
+  };
+
+  const handleSectionIntroContinue = () => {
+    setShowSectionIntro(false);
+  };
+
+  const handleSectionNavigation = (sectionIndex: number) => {
+    setCurrentSectionIndex(sectionIndex);
+    setCurrentQuestionIndex(0);
+    setShowSectionIntro(true);
+  };
+
+  const isLastQuestion = () => {
+    return currentSectionIndex === survey.sections.length - 1 && 
+           currentQuestionIndex === filteredQuestions.length - 1;
+  };
+
+  const isFirstQuestion = () => {
+    return currentSectionIndex === 0 && currentQuestionIndex === 0 && !showSectionIntro;
   };
 
   const handleRetrySubmission = () => {
@@ -327,36 +372,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     clearSession();
     navigate('/dashboard');
   };
-
-  // Add keyboard event handler for Enter key - moved after function declarations
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
-      // Don't trigger on Enter in textarea or other multi-line inputs
-      const target = event.target as HTMLElement;
-      if (target.tagName === 'TEXTAREA') {
-        return;
-      }
-
-      // Only proceed if current question is complete
-      if (isCurrentQuestionComplete()) {
-        event.preventDefault();
-        
-        if (isLastQuestion()) {
-          handleSubmit();
-        } else {
-          handleNext();
-        }
-      }
-    }
-  }, [isCurrentQuestionComplete, isLastQuestion, handleSubmit, handleNext]);
-
-  // Add keyboard event listener
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
 
   // Show section introduction for all sections (including first)
   if (showSectionIntro) {
