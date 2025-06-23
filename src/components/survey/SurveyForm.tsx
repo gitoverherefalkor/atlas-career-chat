@@ -39,6 +39,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const [submissionStatus, setSubmissionStatus] = useState<'idle' | 'submitting' | 'submitted' | 'failed'>('idle');
   const [showSectionIntro, setShowSectionIntro] = useState(true);
   const [completedSections, setCompletedSections] = useState<number[]>([]);
+  const [isSessionLoaded, setIsSessionLoaded] = useState(false);
 
   // Helper function to check if a question should be skipped
   const shouldSkipQuestion = useCallback((question: any) => {
@@ -51,6 +52,45 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const getFilteredQuestions = useCallback((section: any) => {
     return section.questions.filter((q: any) => !shouldSkipQuestion(q));
   }, [shouldSkipQuestion]);
+
+  // Load session on mount - ONLY ONCE
+  useEffect(() => {
+    if (survey && !isSessionLoaded) {
+      console.log('Loading session for the first time...');
+      const storedSession = getStoredSession();
+      if (storedSession) {
+        console.log('Restoring session:', storedSession);
+        setResponses(storedSession.responses);
+        setCurrentSectionIndex(storedSession.currentSectionIndex);
+        setCurrentQuestionIndex(storedSession.currentQuestionIndex);
+        setShowSectionIntro(storedSession.showSectionIntro);
+        setCompletedSections(storedSession.completedSections);
+        
+        // Check if this session was previously submitted
+        const submissionData = storedSession as any;
+        if (submissionData.submissionStatus) {
+          setSubmissionStatus(submissionData.submissionStatus);
+        }
+      }
+      setIsSessionLoaded(true);
+    }
+  }, [survey, isSessionLoaded, getStoredSession]);
+
+  // Save session whenever state changes - but only after session is loaded
+  useEffect(() => {
+    if (survey && isSessionLoaded) {
+      const session = {
+        responses,
+        currentSectionIndex,
+        currentQuestionIndex,
+        showSectionIntro,
+        completedSections,
+        submissionStatus
+      };
+      console.log('Saving session:', session);
+      saveSession(session);
+    }
+  }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, submissionStatus, survey, saveSession, isSessionLoaded]);
 
   // Navigation functions
   const handleNext = useCallback(() => {
@@ -261,43 +301,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     return response !== undefined && response !== null && response !== '';
   }, [responses]);
 
-  // Load session on mount
-  useEffect(() => {
-    if (survey) {
-      const storedSession = getStoredSession();
-      if (storedSession) {
-        setResponses(storedSession.responses);
-        setCurrentSectionIndex(storedSession.currentSectionIndex);
-        setCurrentQuestionIndex(storedSession.currentQuestionIndex);
-        setShowSectionIntro(storedSession.showSectionIntro);
-        setCompletedSections(storedSession.completedSections);
-        
-        // Check if this session was previously submitted
-        const submissionData = storedSession as any;
-        if (submissionData.submissionStatus) {
-          setSubmissionStatus(submissionData.submissionStatus);
-        }
-        
-        console.log('Restored session:', storedSession);
-      }
-    }
-  }, [survey, getStoredSession]);
-
-  // Save session whenever state changes
-  useEffect(() => {
-    if (survey) {
-      const session = {
-        responses,
-        currentSectionIndex,
-        currentQuestionIndex,
-        showSectionIntro,
-        completedSections,
-        submissionStatus
-      };
-      saveSession(session);
-    }
-  }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, submissionStatus, survey, saveSession]);
-
   // Add keyboard event listener
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -319,6 +322,16 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     return (
       <div className="text-center py-8">
         <p className="text-red-600">Failed to load survey. Please try again.</p>
+      </div>
+    );
+  }
+
+  // Don't render anything until session is loaded
+  if (!isSessionLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <span className="ml-2">Loading your progress...</span>
       </div>
     );
   }
