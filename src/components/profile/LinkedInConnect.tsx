@@ -1,35 +1,57 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Linkedin, CheckCircle, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export const LinkedInConnect = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    // Check if user has LinkedIn connection on component mount
+    if (user?.app_metadata?.providers?.includes('linkedin_oidc')) {
+      console.log('User already connected to LinkedIn');
+      setIsConnected(true);
+    }
+  }, [user]);
 
   const handleLinkedInConnect = async () => {
+    console.log('Starting LinkedIn OAuth flow...');
     setIsConnecting(true);
+    
     try {
+      const redirectUrl = `${window.location.origin}/profile`;
+      console.log('Redirect URL:', redirectUrl);
+      console.log('Current origin:', window.location.origin);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          redirectTo: `${window.location.origin}/profile`,
-          scopes: 'r_liteprofile r_emailaddress'
+          redirectTo: redirectUrl,
+          scopes: 'openid profile email'
         }
       });
 
+      console.log('Supabase OAuth response:', { data, error });
+
       if (error) {
+        console.error('OAuth error:', error);
         toast({
           title: "LinkedIn Connection Failed",
           description: error.message,
           variant: "destructive",
         });
+      } else {
+        console.log('OAuth initiated successfully');
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: "Error",
         description: "Failed to connect to LinkedIn. Please try again.",
