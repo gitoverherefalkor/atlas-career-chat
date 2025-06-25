@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Linkedin, CheckCircle, Loader2, X } from 'lucide-react';
+import { Linkedin, CheckCircle, Loader2, X, ExternalLink } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,7 +31,7 @@ export const LinkedInConnect = () => {
         setIsConnecting(false);
         toast({
           title: "LinkedIn Connected!",
-          description: "Your LinkedIn profile has been successfully connected.",
+          description: "Your LinkedIn profile has been successfully connected with full access.",
         });
       }
     });
@@ -48,12 +48,15 @@ export const LinkedInConnect = () => {
       const redirectUrl = `${window.location.origin}/profile`;
       console.log('Redirect URL:', redirectUrl);
 
+      // Expanded scopes for full profile access needed for career assessment
+      const expandedScopes = 'openid profile email w_member_social r_basicprofile r_emailaddress rw_company_admin r_fullprofile';
+
       // Use linkIdentity for already authenticated users
       const { data, error } = await supabase.auth.linkIdentity({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
-          scopes: 'openid profile email'
+          scopes: expandedScopes
         }
       });
 
@@ -69,7 +72,7 @@ export const LinkedInConnect = () => {
             provider: 'linkedin_oidc',
             options: {
               redirectTo: redirectUrl,
-              scopes: 'openid profile email',
+              scopes: expandedScopes,
               queryParams: {
                 access_type: 'online',
                 prompt: 'consent'
@@ -89,7 +92,7 @@ export const LinkedInConnect = () => {
             console.log('OAuth initiated successfully with signInWithOAuth');
             toast({
               title: "Redirecting to LinkedIn",
-              description: "Please complete the authentication process.",
+              description: "Please complete the authentication process to grant full profile access.",
             });
           }
         } else {
@@ -104,7 +107,7 @@ export const LinkedInConnect = () => {
         console.log('OAuth initiated successfully with linkIdentity');
         toast({
           title: "Redirecting to LinkedIn",
-          description: "Please complete the authentication process.",
+          description: "Please complete the authentication process to grant full profile access.",
         });
         // Don't set isConnecting to false here - let the auth state change handle it
       }
@@ -124,6 +127,9 @@ export const LinkedInConnect = () => {
     setIsDisconnecting(true);
     
     try {
+      // Open LinkedIn permissions page in new tab
+      window.open('https://www.linkedin.com/mypreferences/d/data-sharing-for-permitted-services', '_blank');
+      
       // Unfortunately, Supabase doesn't have a direct way to unlink an identity
       // We need to refresh the user session to update the providers list
       const { error } = await supabase.auth.refreshSession();
@@ -131,23 +137,22 @@ export const LinkedInConnect = () => {
       if (error) {
         console.error('Error refreshing session:', error);
         toast({
-          title: "Disconnect Failed",
-          description: "Unable to disconnect LinkedIn. Please try again.",
-          variant: "destructive",
+          title: "Disconnect Process Started",
+          description: "Please revoke access on LinkedIn's permissions page that just opened.",
         });
       } else {
         // For now, we'll show a message that they need to revoke access manually
         setIsConnected(false);
         toast({
-          title: "LinkedIn Disconnected",
-          description: "To fully revoke access, please visit your LinkedIn app permissions and remove Atlas.",
+          title: "LinkedIn Disconnect Started",
+          description: "Please revoke access on the LinkedIn permissions page that just opened to complete the disconnection.",
         });
       }
     } catch (error) {
       console.error('Unexpected error during disconnect:', error);
       toast({
         title: "Error",
-        description: "Failed to disconnect LinkedIn. Please try again.",
+        description: "Failed to open LinkedIn permissions page. Please visit linkedin.com/mypreferences manually.",
         variant: "destructive",
       });
     } finally {
@@ -166,14 +171,14 @@ export const LinkedInConnect = () => {
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Connect your LinkedIn profile to link your professional account with Atlas.
+            Connect your LinkedIn profile to import your complete professional information for comprehensive career assessment.
           </p>
           
           {isConnected ? (
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-green-600">
                 <CheckCircle className="h-4 w-4" />
-                <span className="text-sm">LinkedIn profile connected</span>
+                <span className="text-sm">LinkedIn profile connected with full access</span>
               </div>
               <Button 
                 onClick={handleLinkedInDisconnect}
@@ -184,34 +189,43 @@ export const LinkedInConnect = () => {
                 {isDisconnecting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Disconnecting...
+                    Opening LinkedIn...
                   </>
                 ) : (
                   <>
-                    <X className="h-4 w-4 mr-2" />
+                    <ExternalLink className="h-4 w-4 mr-2" />
                     Disconnect LinkedIn
                   </>
                 )}
               </Button>
             </div>
           ) : (
-            <Button 
-              onClick={handleLinkedInConnect}
-              disabled={isConnecting}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isConnecting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  <Linkedin className="h-4 w-4 mr-2" />
-                  Connect LinkedIn
-                </>
-              )}
-            </Button>
+            <div className="space-y-3">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <p className="text-xs text-blue-800">
+                  <strong>Full Profile Access Required:</strong> To provide comprehensive career insights, 
+                  we request access to your complete LinkedIn profile including work experience, 
+                  education, skills, and endorsements.
+                </p>
+              </div>
+              <Button 
+                onClick={handleLinkedInConnect}
+                disabled={isConnecting}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {isConnecting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Linkedin className="h-4 w-4 mr-2" />
+                    Connect LinkedIn (Full Access)
+                  </>
+                )}
+              </Button>
+            </div>
           )}
         </div>
       </CardContent>
