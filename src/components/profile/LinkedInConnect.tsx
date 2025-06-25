@@ -24,6 +24,8 @@ export const LinkedInConnect = () => {
   useEffect(() => {
     // Listen for auth state changes to detect when user returns from LinkedIn
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change:', event, session?.user?.app_metadata?.providers);
+      
       if (event === 'SIGNED_IN' && session?.user?.app_metadata?.providers?.includes('linkedin_oidc')) {
         console.log('LinkedIn connection detected');
         // Check if we actually have a token
@@ -59,21 +61,22 @@ export const LinkedInConnect = () => {
       console.log('LinkedIn provider status:', hasLinkedInProvider);
       console.log('Provider token available:', hasProviderToken);
       
-      // User is only connected if they have BOTH provider AND token
+      // User is connected only if they have BOTH provider AND token
       const connectionStatus = hasLinkedInProvider && hasProviderToken;
       
       console.log('Final connection status:', connectionStatus);
       
+      const wasConnected = isConnected;
       setIsConnected(connectionStatus);
       setProfileTestResult(null);
       
-      // Show toast on status change
-      if (connectionStatus && !isConnected) {
+      // Show toast only if status actually changed
+      if (connectionStatus && !wasConnected) {
         toast({
           title: "LinkedIn Connected",
           description: "LinkedIn connection verified.",
         });
-      } else if (!connectionStatus && isConnected) {
+      } else if (!connectionStatus && wasConnected) {
         toast({
           title: "LinkedIn Disconnected",
           description: "LinkedIn connection has been removed.",
@@ -154,16 +157,17 @@ export const LinkedInConnect = () => {
 
     } catch (error) {
       console.error('LinkedIn profile test error:', error);
-      setProfileTestResult(`❌ Error: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setProfileTestResult(`❌ Error: ${errorMessage}`);
       
       toast({
         title: "LinkedIn Profile Access Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
       
       // If token issues, mark as disconnected
-      if (error.message.includes('token') || error.message.includes('401') || error.message.includes('403')) {
+      if (errorMessage.includes('token') || errorMessage.includes('401') || errorMessage.includes('403')) {
         setIsConnected(false);
       }
     } finally {
@@ -176,14 +180,17 @@ export const LinkedInConnect = () => {
     setIsConnecting(true);
     
     try {
-      const redirectUrl = `${window.location.origin}/profile`;
+      // Use the current window location for redirect, but ensure it's the full URL
+      const redirectUrl = window.location.origin + '/profile';
       console.log('Redirect URL:', redirectUrl);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
+          // Use minimal scopes that LinkedIn definitely supports
           scopes: 'openid profile email',
+          // Force the OAuth to open in the same window instead of popup
           queryParams: {
             access_type: 'online',
             prompt: 'consent'
@@ -201,10 +208,8 @@ export const LinkedInConnect = () => {
         setIsConnecting(false);
       } else {
         console.log('OAuth initiated successfully');
-        toast({
-          title: "Redirecting to LinkedIn",
-          description: "Please complete the authentication process.",
-        });
+        // Don't show a toast here since the user will be redirected
+        // The loading state will be cleared when they return
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -291,7 +296,7 @@ export const LinkedInConnect = () => {
                   {isRefreshing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Checking...
+                      Refreshing...
                     </>
                   ) : (
                     <>
@@ -365,7 +370,7 @@ export const LinkedInConnect = () => {
                   {isRefreshing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Checking...
+                      Refreshing...
                     </>
                   ) : (
                     <>
