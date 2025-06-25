@@ -160,7 +160,7 @@ export const LinkedInConnect = () => {
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
-          scopes: 'openid profile email r_liteprofile',
+          scopes: 'openid profile email',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent'
