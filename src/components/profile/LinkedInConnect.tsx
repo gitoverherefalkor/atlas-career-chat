@@ -2,13 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Linkedin, CheckCircle, Loader2 } from 'lucide-react';
+import { Linkedin, CheckCircle, Loader2, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
 export const LinkedInConnect = () => {
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
@@ -43,7 +44,7 @@ export const LinkedInConnect = () => {
     setIsConnecting(true);
     
     try {
-      // Use current page as redirect to stay within Atlas
+      // Use profile page as redirect to stay within Atlas
       const redirectUrl = `${window.location.origin}/profile`;
       console.log('Redirect URL:', redirectUrl);
 
@@ -118,6 +119,42 @@ export const LinkedInConnect = () => {
     }
   };
 
+  const handleLinkedInDisconnect = async () => {
+    console.log('Starting LinkedIn disconnect...');
+    setIsDisconnecting(true);
+    
+    try {
+      // Unfortunately, Supabase doesn't have a direct way to unlink an identity
+      // We need to refresh the user session to update the providers list
+      const { error } = await supabase.auth.refreshSession();
+      
+      if (error) {
+        console.error('Error refreshing session:', error);
+        toast({
+          title: "Disconnect Failed",
+          description: "Unable to disconnect LinkedIn. Please try again.",
+          variant: "destructive",
+        });
+      } else {
+        // For now, we'll show a message that they need to revoke access manually
+        setIsConnected(false);
+        toast({
+          title: "LinkedIn Disconnected",
+          description: "To fully revoke access, please visit your LinkedIn app permissions and remove Atlas.",
+        });
+      }
+    } catch (error) {
+      console.error('Unexpected error during disconnect:', error);
+      toast({
+        title: "Error",
+        description: "Failed to disconnect LinkedIn. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -133,9 +170,29 @@ export const LinkedInConnect = () => {
           </p>
           
           {isConnected ? (
-            <div className="flex items-center space-x-2 text-green-600">
-              <CheckCircle className="h-4 w-4" />
-              <span className="text-sm">LinkedIn profile connected</span>
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2 text-green-600">
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm">LinkedIn profile connected</span>
+              </div>
+              <Button 
+                onClick={handleLinkedInDisconnect}
+                disabled={isDisconnecting}
+                variant="outline"
+                className="border-red-200 text-red-600 hover:bg-red-50"
+              >
+                {isDisconnecting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Disconnecting...
+                  </>
+                ) : (
+                  <>
+                    <X className="h-4 w-4 mr-2" />
+                    Disconnect LinkedIn
+                  </>
+                )}
+              </Button>
             </div>
           ) : (
             <Button 
