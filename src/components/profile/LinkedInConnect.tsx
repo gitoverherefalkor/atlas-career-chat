@@ -21,16 +21,33 @@ export const LinkedInConnect = () => {
     }
   }, [user]);
 
+  useEffect(() => {
+    // Listen for auth state changes to detect when user returns from LinkedIn
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user?.app_metadata?.providers?.includes('linkedin_oidc')) {
+        console.log('LinkedIn connection detected');
+        setIsConnected(true);
+        setIsConnecting(false);
+        toast({
+          title: "LinkedIn Connected!",
+          description: "Your LinkedIn profile has been successfully connected.",
+        });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [toast]);
+
   const handleLinkedInConnect = async () => {
     console.log('Starting LinkedIn OAuth flow...');
     setIsConnecting(true);
     
     try {
+      // Use current page as redirect to stay within Atlas
       const redirectUrl = `${window.location.origin}/profile`;
       console.log('Redirect URL:', redirectUrl);
-      console.log('Current origin:', window.location.origin);
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.linkIdentity({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
@@ -47,12 +64,14 @@ export const LinkedInConnect = () => {
           description: error.message,
           variant: "destructive",
         });
+        setIsConnecting(false);
       } else {
         console.log('OAuth initiated successfully');
         toast({
           title: "Redirecting to LinkedIn",
-          description: "Please complete the authentication process.",
+          description: "Please complete the authentication process. You'll be redirected back to Atlas.",
         });
+        // Don't set isConnecting to false here - let the auth state change handle it
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -61,7 +80,6 @@ export const LinkedInConnect = () => {
         description: "Failed to connect to LinkedIn. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsConnecting(false);
     }
   };
