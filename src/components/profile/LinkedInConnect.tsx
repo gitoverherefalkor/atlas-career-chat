@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Linkedin, CheckCircle, Loader2, X, ExternalLink } from 'lucide-react';
+import { Linkedin, CheckCircle, Loader2, X, ExternalLink, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,6 +11,8 @@ export const LinkedInConnect = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [profileTestResult, setProfileTestResult] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -38,6 +40,116 @@ export const LinkedInConnect = () => {
 
     return () => subscription.unsubscribe();
   }, [toast]);
+
+  const checkConnectionStatus = async () => {
+    console.log('Checking LinkedIn connection status...');
+    try {
+      // Refresh the session to get the latest auth state
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
+        return;
+      }
+
+      const hasLinkedInProvider = session?.user?.app_metadata?.providers?.includes('linkedin_oidc');
+      console.log('LinkedIn provider status:', hasLinkedInProvider);
+      
+      if (hasLinkedInProvider !== isConnected) {
+        setIsConnected(hasLinkedInProvider || false);
+        
+        if (!hasLinkedInProvider && isConnected) {
+          toast({
+            title: "LinkedIn Disconnected",
+            description: "LinkedIn connection has been removed from your account.",
+          });
+          setProfileTestResult(null);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking connection status:', error);
+    }
+  };
+
+  const testLinkedInProfile = async () => {
+    if (!isConnected) {
+      toast({
+        title: "Not Connected",
+        description: "Please connect to LinkedIn first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsTestingConnection(true);
+    setProfileTestResult(null);
+
+    try {
+      // Get the current session with LinkedIn tokens
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        throw new Error('No active session found');
+      }
+
+      // Extract LinkedIn access token from the session
+      const linkedinToken = session.provider_token;
+      
+      if (!linkedinToken) {
+        throw new Error('No LinkedIn access token found');
+      }
+
+      console.log('Testing LinkedIn API access...');
+      
+      // Test LinkedIn API call to get basic profile
+      const response = await fetch('https://api.linkedin.com/v2/people/~', {
+        headers: {
+          'Authorization': `Bearer ${linkedinToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`LinkedIn API error: ${response.status} ${response.statusText}`);
+      }
+
+      const profileData = await response.json();
+      console.log('LinkedIn profile data:', profileData);
+      
+      // Extract basic info for display
+      const firstName = profileData.localizedFirstName || 'N/A';
+      const lastName = profileData.localizedLastName || 'N/A';
+      const headline = profileData.localizedHeadline || 'N/A';
+      
+      setProfileTestResult(`Name: ${firstName} ${lastName}\nHeadline: ${headline}`);
+      
+      toast({
+        title: "LinkedIn Profile Access Successful",
+        description: "Successfully retrieved your LinkedIn profile information.",
+      });
+
+    } catch (error) {
+      console.error('LinkedIn profile test error:', error);
+      setProfileTestResult(`Error: ${error.message}`);
+      
+      toast({
+        title: "LinkedIn Profile Access Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+      
+      // If we can't access LinkedIn, the connection might be stale
+      if (error.message.includes('401') || error.message.includes('403')) {
+        setIsConnected(false);
+        toast({
+          title: "Connection Status Updated",
+          description: "LinkedIn connection appears to be disconnected. Please reconnect.",
+        });
+      }
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
 
   const handleLinkedInConnect = async () => {
     console.log('Starting LinkedIn OAuth flow...');
@@ -130,24 +242,11 @@ export const LinkedInConnect = () => {
       // Open LinkedIn permissions page in new tab
       window.open('https://www.linkedin.com/mypreferences/d/data-sharing-for-permitted-services', '_blank');
       
-      // Unfortunately, Supabase doesn't have a direct way to unlink an identity
-      // We need to refresh the user session to update the providers list
-      const { error } = await supabase.auth.refreshSession();
+      toast({
+        title: "LinkedIn Permissions Page Opened",
+        description: "Please revoke access on the LinkedIn page that just opened, then click 'Refresh Status' below.",
+      });
       
-      if (error) {
-        console.error('Error refreshing session:', error);
-        toast({
-          title: "Disconnect Process Started",
-          description: "Please revoke access on LinkedIn's permissions page that just opened.",
-        });
-      } else {
-        // For now, we'll show a message that they need to revoke access manually
-        setIsConnected(false);
-        toast({
-          title: "LinkedIn Disconnect Started",
-          description: "Please revoke access on the LinkedIn permissions page that just opened to complete the disconnection.",
-        });
-      }
     } catch (error) {
       console.error('Unexpected error during disconnect:', error);
       toast({
@@ -180,24 +279,62 @@ export const LinkedInConnect = () => {
                 <CheckCircle className="h-4 w-4" />
                 <span className="text-sm">LinkedIn profile connected with full access</span>
               </div>
-              <Button 
-                onClick={handleLinkedInDisconnect}
-                disabled={isDisconnecting}
-                variant="outline"
-                className="border-red-200 text-red-600 hover:bg-red-50"
-              >
-                {isDisconnecting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Opening LinkedIn...
-                  </>
-                ) : (
-                  <>
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Disconnect LinkedIn
-                  </>
-                )}
-              </Button>
+              
+              <div className="flex gap-2 flex-wrap">
+                <Button 
+                  onClick={testLinkedInProfile}
+                  disabled={isTestingConnection}
+                  variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                >
+                  {isTestingConnection ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Testing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Test Profile Access
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={checkConnectionStatus}
+                  variant="outline"
+                  size="sm"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Status
+                </Button>
+                
+                <Button 
+                  onClick={handleLinkedInDisconnect}
+                  disabled={isDisconnecting}
+                  variant="outline"
+                  className="border-red-200 text-red-600 hover:bg-red-50"
+                >
+                  {isDisconnecting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Opening LinkedIn...
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Disconnect LinkedIn
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              {profileTestResult && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <h4 className="text-sm font-medium mb-2">Profile Test Result:</h4>
+                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">{profileTestResult}</pre>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
