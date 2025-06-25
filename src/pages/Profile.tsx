@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, User, Save } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
-import { LinkedInConnect } from '@/components/profile/LinkedInConnect';
+import { LinkedInGuide } from '@/components/profile/LinkedInGuide';
 import { ResumeUpload } from '@/components/profile/ResumeUpload';
 
 const Profile = () => {
@@ -73,7 +73,7 @@ const Profile = () => {
         
         {/* Professional Data Integration */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <LinkedInConnect />
+          <LinkedInGuide />
           <ResumeUpload />
         </div>
 
