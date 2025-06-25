@@ -34,7 +34,7 @@ export const LinkedInConnect = () => {
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
-          scopes: 'openid profile email'
+          scopes: 'profile email openid'
         }
       });
 
