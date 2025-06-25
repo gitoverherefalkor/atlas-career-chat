@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,18 +7,43 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
+interface LinkedInProfile {
+  id: string;
+  localizedFirstName?: string;
+  localizedLastName?: string;
+  localizedHeadline?: string;
+}
+
+interface ConnectionStatus {
+  isConnected: boolean;
+  profile?: LinkedInProfile;
+  loading: boolean;
+  error?: string;
+}
+
 export const LinkedInConnect = () => {
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isDisconnecting, setIsDisconnecting] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [status, setStatus] = useState<ConnectionStatus>({
+    isConnected: false,
+    loading: true
+  });
   const [isTestingConnection, setIsTestingConnection] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [profileTestResult, setProfileTestResult] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
+  // Check connection status on component mount and when URL changes
   useEffect(() => {
     checkConnectionStatus();
+    
+    // Listen for URL changes (after OAuth redirect)
+    const handleUrlChange = () => {
+      // Small delay to ensure session is updated after OAuth
+      setTimeout(() => {
+        checkConnectionStatus();
+      }, 1000);
+    };
+
+    window.addEventListener('popstate', handleUrlChange);
+    return () => window.removeEventListener('popstate', handleUrlChange);
   }, [user]);
 
   useEffect(() => {
@@ -27,15 +53,10 @@ export const LinkedInConnect = () => {
       
       if (event === 'SIGNED_IN' && session?.user?.app_metadata?.providers?.includes('linkedin_oidc')) {
         console.log('LinkedIn connection detected');
-        // Check if we actually have a token
-        if (session?.provider_token) {
-          setIsConnected(true);
-          setIsConnecting(false);
-          toast({
-            title: "LinkedIn Connected!",
-            description: "Your LinkedIn profile has been successfully connected.",
-          });
-        }
+        // Small delay to ensure all data is updated
+        setTimeout(() => {
+          checkConnectionStatus();
+        }, 1000);
       }
     });
 
@@ -43,149 +64,105 @@ export const LinkedInConnect = () => {
   }, [toast]);
 
   const checkConnectionStatus = async () => {
-    console.log('Checking LinkedIn connection status...');
-    setIsRefreshing(true);
-    
     try {
-      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log('Checking LinkedIn connection status...');
+      setStatus(prev => ({ ...prev, loading: true, error: undefined }));
+
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (error) {
-        console.error('Error getting session:', error);
+      if (!session) {
+        setStatus({
+          isConnected: false,
+          loading: false,
+          error: 'Please log in first'
+        });
         return;
       }
 
-      const hasLinkedInProvider = session?.user?.app_metadata?.providers?.includes('linkedin_oidc');
-      const hasProviderToken = !!session?.provider_token;
+      // Check if user has LinkedIn identity
+      const { data: { user } } = await supabase.auth.getUser();
       
-      console.log('LinkedIn provider status:', hasLinkedInProvider);
-      console.log('Provider token available:', hasProviderToken);
-      
-      // User is connected only if they have BOTH provider AND token
-      const connectionStatus = hasLinkedInProvider && hasProviderToken;
-      
-      console.log('Final connection status:', connectionStatus);
-      
-      const wasConnected = isConnected;
-      setIsConnected(connectionStatus);
-      setProfileTestResult(null);
-      
-      // Show toast only if status actually changed
-      if (connectionStatus && !wasConnected) {
-        toast({
-          title: "LinkedIn Connected",
-          description: "LinkedIn connection verified.",
+      const hasLinkedInIdentity = user?.identities?.some(
+        identity => identity.provider === 'linkedin_oidc' || identity.provider === 'linkedin'
+      );
+
+      console.log('LinkedIn identity found:', hasLinkedInIdentity);
+
+      if (!hasLinkedInIdentity) {
+        setStatus({
+          isConnected: false,
+          loading: false
         });
-      } else if (!connectionStatus && wasConnected) {
-        toast({
-          title: "LinkedIn Disconnected",
-          description: "LinkedIn connection has been removed.",
+        return;
+      }
+
+      // Test if we can actually access the profile (verify token is valid)
+      try {
+        console.log('Testing LinkedIn API access via edge function...');
+        
+        const { data, error } = await supabase.functions.invoke('linkedin-profile', {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (error) {
+          throw new Error(error.message || 'Failed to fetch LinkedIn profile');
+        }
+
+        if (data.success) {
+          setStatus({
+            isConnected: true,
+            profile: data.profile,
+            loading: false
+          });
+          
+          toast({
+            title: "LinkedIn Connected",
+            description: "LinkedIn profile successfully verified.",
+          });
+        } else {
+          // Token exists but is invalid/expired
+          setStatus({
+            isConnected: false,
+            loading: false,
+            error: data.error || 'LinkedIn connection expired. Please reconnect.'
+          });
+        }
+      } catch (apiError) {
+        console.error('Profile test failed:', apiError);
+        setStatus({
+          isConnected: false,
+          loading: false,
+          error: 'Unable to verify LinkedIn connection'
         });
       }
-      
+
     } catch (error) {
-      console.error('Error checking connection status:', error);
-      toast({
-        title: "Connection Check Failed",
-        description: "Failed to check LinkedIn connection status.",
-        variant: "destructive",
+      console.error('Connection check failed:', error);
+      setStatus({
+        isConnected: false,
+        loading: false,
+        error: 'Failed to check connection status'
       });
-    } finally {
-      setIsRefreshing(false);
     }
   };
 
-  const testLinkedInProfile = async () => {
-    if (!isConnected) {
-      toast({
-        title: "Not Connected",
-        description: "Please connect to LinkedIn first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsTestingConnection(true);
-    setProfileTestResult(null);
-
+  const handleConnect = async () => {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        throw new Error('No active session found');
-      }
+      console.log('Starting LinkedIn OAuth flow...');
+      setStatus(prev => ({ ...prev, loading: true, error: undefined }));
 
-      console.log('Testing LinkedIn API access via edge function...');
-      
-      // Call our edge function instead of making direct API call
-      const { data, error } = await supabase.functions.invoke('linkedin-profile', {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      });
-
-      if (error) {
-        throw new Error(error.message || 'Failed to fetch LinkedIn profile');
-      }
-
-      if (!data.success) {
-        throw new Error(data.error || 'Unknown error occurred');
-      }
-
-      const profileData = data.data;
-      console.log('LinkedIn profile data:', profileData);
-      
-      // Format results
-      const firstName = profileData.localizedFirstName || 'N/A';
-      const lastName = profileData.localizedLastName || 'N/A';
-      const headline = profileData.localizedHeadline || 'N/A';
-      
-      let resultText = `✅ Successfully retrieved LinkedIn profile:\n\nName: ${firstName} ${lastName}\nHeadline: ${headline}`;
-      
-      setProfileTestResult(resultText);
-      
-      toast({
-        title: "LinkedIn Profile Access Successful",
-        description: "Successfully retrieved your LinkedIn profile information.",
-      });
-
-    } catch (error) {
-      console.error('LinkedIn profile test error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      setProfileTestResult(`❌ Error: ${errorMessage}`);
-      
-      toast({
-        title: "LinkedIn Profile Access Failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      
-      // If token issues, mark as disconnected
-      if (errorMessage.includes('token') || errorMessage.includes('401') || errorMessage.includes('403')) {
-        setIsConnected(false);
-      }
-    } finally {
-      setIsTestingConnection(false);
-    }
-  };
-
-  const handleLinkedInConnect = async () => {
-    console.log('Starting LinkedIn OAuth flow...');
-    setIsConnecting(true);
-    
-    try {
-      // Use the current window location for redirect, but ensure it's the full URL
-      const redirectUrl = window.location.origin + '/profile';
+      const redirectUrl = `${window.location.origin}${window.location.pathname}`;
       console.log('Redirect URL:', redirectUrl);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
-          // Use minimal scopes that LinkedIn definitely supports
-          scopes: 'openid profile email',
-          // Force the OAuth to open in the same window instead of popup
+          scopes: 'openid profile email r_liteprofile',
           queryParams: {
-            access_type: 'online',
+            access_type: 'offline',
             prompt: 'consent'
           }
         }
@@ -193,33 +170,43 @@ export const LinkedInConnect = () => {
 
       if (error) {
         console.error('OAuth error:', error);
-        toast({
-          title: "LinkedIn Connection Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        setIsConnecting(false);
-      } else {
-        console.log('OAuth initiated successfully');
-        // Don't show a toast here since the user will be redirected
-        // The loading state will be cleared when they return
+        throw error;
       }
+
+      console.log('OAuth initiated successfully');
+      // The redirect will happen automatically
+      
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Connection failed:', error);
+      setStatus(prev => ({
+        ...prev,
+        loading: false,
+        error: `Connection failed: ${error.message}`
+      }));
+      
       toast({
-        title: "Error",
-        description: "Failed to connect to LinkedIn. Please try again.",
+        title: "LinkedIn Connection Failed",
+        description: error.message,
         variant: "destructive",
       });
-      setIsConnecting(false);
     }
   };
 
-  const handleLinkedInDisconnect = async () => {
-    console.log('Starting LinkedIn disconnect...');
-    setIsDisconnecting(true);
-    
+  const handleDisconnect = async () => {
     try {
+      console.log('Starting LinkedIn disconnect...');
+      setStatus(prev => ({ ...prev, loading: true, error: undefined }));
+
+      const confirmDisconnect = window.confirm(
+        'This will redirect you to LinkedIn to revoke access. Continue?'
+      );
+
+      if (!confirmDisconnect) {
+        setStatus(prev => ({ ...prev, loading: false }));
+        return;
+      }
+
+      // Open LinkedIn permissions page for manual revocation
       window.open('https://www.linkedin.com/mypreferences/d/data-sharing-for-permitted-services', '_blank');
       
       toast({
@@ -235,8 +222,76 @@ export const LinkedInConnect = () => {
         variant: "destructive",
       });
     } finally {
-      setIsDisconnecting(false);
+      setStatus(prev => ({ ...prev, loading: false }));
     }
+  };
+
+  const handleTestProfile = async () => {
+    try {
+      setIsTestingConnection(true);
+      setStatus(prev => ({ ...prev, error: undefined }));
+
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('No active session');
+      }
+
+      console.log('Testing LinkedIn API access via edge function...');
+      
+      const { data, error } = await supabase.functions.invoke('linkedin-profile', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Failed to fetch LinkedIn profile');
+      }
+
+      if (!data.success) {
+        throw new Error(data.error || 'Unknown error occurred');
+      }
+
+      const profileData = data.profile;
+      console.log('LinkedIn profile data:', profileData);
+      
+      setStatus(prev => ({
+        ...prev,
+        profile: profileData
+      }));
+
+      toast({
+        title: "LinkedIn Profile Access Successful",
+        description: `Successfully retrieved profile for ${profileData.localizedFirstName} ${profileData.localizedLastName}`,
+      });
+
+    } catch (error) {
+      console.error('Profile test failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      
+      setStatus(prev => ({
+        ...prev,
+        error: `Profile test failed: ${errorMessage}`
+      }));
+      
+      toast({
+        title: "LinkedIn Profile Access Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      // If token issues, mark as disconnected
+      if (errorMessage.includes('token') || errorMessage.includes('401') || errorMessage.includes('403')) {
+        setStatus(prev => ({ ...prev, isConnected: false }));
+      }
+    } finally {
+      setIsTestingConnection(false);
+    }
+  };
+
+  const handleRefreshStatus = () => {
+    checkConnectionStatus();
   };
 
   return (
@@ -253,19 +308,63 @@ export const LinkedInConnect = () => {
             Connect your LinkedIn profile to import your professional information for career assessment.
           </p>
           
-          {isConnected ? (
-            <div className="space-y-3">
-              <div className="flex items-center space-x-2 text-green-600">
-                <CheckCircle className="h-4 w-4" />
-                <span className="text-sm">LinkedIn profile connected</span>
-              </div>
-              
-              <div className="flex gap-2 flex-wrap">
+          {status.error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800">{status.error}</p>
+            </div>
+          )}
+
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Status:</span>
+            <span className={`text-sm ${status.isConnected ? 'text-green-600' : 'text-orange-600'}`}>
+              {status.isConnected ? (
+                <>
+                  <CheckCircle className="h-4 w-4 inline mr-1" />
+                  Connected
+                </>
+              ) : (
+                <>❌ Not Connected</>
+              )}
+            </span>
+          </div>
+
+          {status.profile && (
+            <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm">
+                <strong>Profile:</strong> {status.profile.localizedFirstName} {status.profile.localizedLastName}
+                {status.profile.localizedHeadline && (
+                  <><br /><strong>Headline:</strong> {status.profile.localizedHeadline}</>
+                )}
+              </p>
+            </div>
+          )}
+
+          <div className="flex gap-2 flex-wrap">
+            {!status.isConnected ? (
+              <Button 
+                onClick={handleConnect}
+                disabled={status.loading}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {status.loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Connecting...
+                  </>
+                ) : (
+                  <>
+                    <Linkedin className="h-4 w-4 mr-2" />
+                    Connect LinkedIn
+                  </>
+                )}
+              </Button>
+            ) : (
+              <>
                 <Button 
-                  onClick={testLinkedInProfile}
+                  onClick={handleTestProfile}
                   disabled={isTestingConnection}
                   variant="outline"
-                  className="border-blue-200 text-blue-600 hover:bg-blue-50"
+                  className="border-green-200 text-green-600 hover:bg-green-50"
                 >
                   {isTestingConnection ? (
                     <>
@@ -281,31 +380,12 @@ export const LinkedInConnect = () => {
                 </Button>
                 
                 <Button 
-                  onClick={checkConnectionStatus}
-                  disabled={isRefreshing}
-                  variant="outline"
-                  size="sm"
-                >
-                  {isRefreshing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Refreshing...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh Status
-                    </>
-                  )}
-                </Button>
-                
-                <Button 
-                  onClick={handleLinkedInDisconnect}
-                  disabled={isDisconnecting}
+                  onClick={handleDisconnect}
+                  disabled={status.loading}
                   variant="outline"
                   className="border-red-200 text-red-600 hover:bg-red-50"
                 >
-                  {isDisconnecting ? (
+                  {status.loading ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Opening LinkedIn...
@@ -317,64 +397,28 @@ export const LinkedInConnect = () => {
                     </>
                   )}
                 </Button>
-              </div>
-              
-              {profileTestResult && (
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                  <h4 className="text-sm font-medium mb-2">Profile Test Result:</h4>
-                  <pre className="text-xs text-gray-700 whitespace-pre-wrap">{profileTestResult}</pre>
-                </div>
+              </>
+            )}
+
+            <Button 
+              onClick={handleRefreshStatus}
+              disabled={status.loading}
+              variant="outline"
+              size="sm"
+            >
+              {status.loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Refreshing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Status
+                </>
               )}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              <div className="bg-blue-50 p-3 rounded-lg">
-                <p className="text-xs text-blue-800">
-                  <strong>Profile Access:</strong> Connect your LinkedIn to import your professional 
-                  information for comprehensive career assessment.
-                </p>
-              </div>
-              
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleLinkedInConnect}
-                  disabled={isConnecting}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {isConnecting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Connecting...
-                    </>
-                  ) : (
-                    <>
-                      <Linkedin className="h-4 w-4 mr-2" />
-                      Connect LinkedIn
-                    </>
-                  )}
-                </Button>
-                
-                <Button 
-                  onClick={checkConnectionStatus}
-                  disabled={isRefreshing}
-                  variant="outline"
-                  size="sm"
-                >
-                  {isRefreshing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Refreshing...
-                    </>
-                  ) : (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh Status
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
