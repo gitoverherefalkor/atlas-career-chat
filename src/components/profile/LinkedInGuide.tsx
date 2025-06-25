@@ -37,8 +37,8 @@ export const LinkedInGuide = () => {
                   2
                 </div>
                 <div className="text-sm">
-                  <p className="font-medium">Find the "More" button</p>
-                  <p className="text-gray-600">Look for the "More" button in your profile section</p>
+                  <p className="font-medium">Find the "Resources" button</p>
+                  <p className="text-gray-600">Look for the "Resources" button in your profile section</p>
                 </div>
               </div>
               

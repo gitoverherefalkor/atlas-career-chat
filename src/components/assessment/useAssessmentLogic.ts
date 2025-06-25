@@ -17,6 +17,7 @@ export const useAssessmentLogic = () => {
   const [searchParams] = useSearchParams();
   const [isCompleted, setIsCompleted] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [showPreSurveyUpload, setShowPreSurveyUpload] = useState(false);
   const [accessCodeData, setAccessCodeData] = useState<any>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [prefilledCode, setPrefilledCode] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export const useAssessmentLogic = () => {
   console.log('useAssessmentLogic state:', {
     isCompleted,
     isVerified,
+    showPreSurveyUpload,
     accessCodeData,
     sessionToken,
     prefilledCode,
@@ -84,12 +86,17 @@ export const useAssessmentLogic = () => {
     setAccessCodeData(data);
     setSessionToken(token);
     setIsVerified(true);
+    setShowPreSurveyUpload(true); // Show upload step after verification
     
     // Update URL to include session token
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set('token', token);
     newSearchParams.delete('code');
     navigate(`/assessment?${newSearchParams.toString()}`, { replace: true });
+  };
+
+  const handlePreSurveyUploadComplete = () => {
+    setShowPreSurveyUpload(false);
   };
 
   function getSurveyIdFromAccessCode(accessCodeData: any): string {
@@ -176,6 +183,7 @@ export const useAssessmentLogic = () => {
   return {
     isCompleted,
     isVerified,
+    showPreSurveyUpload,
     sessionToken,
     accessCodeData,
     prefilledCode,
@@ -183,6 +191,7 @@ export const useAssessmentLogic = () => {
     user,
     getSurveyIdFromAccessCode,
     handleAccessCodeVerified,
+    handlePreSurveyUploadComplete,
     handleSurveyComplete,
     handleExitAssessment,
     setIsVerified,

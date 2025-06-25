@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, User, Save } from 'lucide-react';
+import { ArrowLeft, User, Save, FileText, CheckCircle } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { LinkedInGuide } from '@/components/profile/LinkedInGuide';
@@ -71,11 +70,46 @@ const Profile = () => {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Professional Data Integration */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <LinkedInGuide />
-          <ResumeUpload />
-        </div>
+        {/* Resume Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              Resume/CV Status
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {profile?.resume_uploaded_at ? (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="h-6 w-6 text-green-600" />
+                  <div>
+                    <p className="font-medium">Resume uploaded successfully</p>
+                    <p className="text-sm text-gray-500">
+                      Uploaded on {new Date(profile.resume_uploaded_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <ResumeUpload />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="h-6 w-6 rounded-full border-2 border-gray-300 flex items-center justify-center">
+                    <div className="h-2 w-2 bg-gray-300 rounded-full"></div>
+                  </div>
+                  <div>
+                    <p className="font-medium">No resume uploaded</p>
+                    <p className="text-sm text-gray-500">
+                      Upload your resume to improve future assessment experiences
+                    </p>
+                  </div>
+                </div>
+                <ResumeUpload />
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Personal Information */}
         <Card>

@@ -5,6 +5,7 @@ import { AssessmentWelcome } from '@/components/survey/AssessmentWelcome';
 import { AssessmentLayout } from '@/components/assessment/AssessmentLayout';
 import { AssessmentCompletion } from '@/components/assessment/AssessmentCompletion';
 import { SessionManager } from '@/components/assessment/SessionManager';
+import { PreSurveyUpload } from '@/components/assessment/PreSurveyUpload';
 import { useAssessmentLogic } from '@/components/assessment/useAssessmentLogic';
 import { useSearchParams } from 'react-router-dom';
 
@@ -17,6 +18,7 @@ const Assessment = () => {
   const {
     isCompleted,
     isVerified,
+    showPreSurveyUpload,
     sessionToken,
     accessCodeData,
     prefilledCode,
@@ -24,6 +26,7 @@ const Assessment = () => {
     user,
     getSurveyIdFromAccessCode,
     handleAccessCodeVerified,
+    handlePreSurveyUploadComplete,
     handleSurveyComplete,
     handleExitAssessment,
     setIsVerified,
@@ -34,6 +37,7 @@ const Assessment = () => {
   console.log('Assessment state:', {
     isCompleted,
     isVerified,
+    showPreSurveyUpload,
     sessionToken,
     accessCodeData,
     prefilledCode,
@@ -88,6 +92,12 @@ const Assessment = () => {
         <AssessmentWelcome onVerified={handleAccessCodeVerified} prefilledCode={prefilledCode} />
       </SessionManager>
     );
+  }
+
+  // Show pre-survey upload step after verification
+  if (showPreSurveyUpload) {
+    console.log('Showing pre-survey upload');
+    return <PreSurveyUpload onContinue={handlePreSurveyUploadComplete} />;
   }
 
   console.log('Showing survey form');
