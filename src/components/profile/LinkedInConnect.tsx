@@ -47,7 +47,7 @@ export const LinkedInConnect = () => {
       const redirectUrl = `${window.location.origin}/profile`;
       console.log('Redirect URL:', redirectUrl);
 
-      const { data, error } = await supabase.auth.linkIdentity({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
