@@ -34,7 +34,7 @@ export const LinkedInConnect = () => {
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
-          scopes: 'profile email openid'
+          scopes: 'openid'
         }
       });
 
@@ -49,6 +49,10 @@ export const LinkedInConnect = () => {
         });
       } else {
         console.log('OAuth initiated successfully');
+        toast({
+          title: "Redirecting to LinkedIn",
+          description: "Please complete the authentication process.",
+        });
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -73,7 +77,7 @@ export const LinkedInConnect = () => {
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Connect your LinkedIn profile to automatically pre-fill survey data with your professional information.
+            Connect your LinkedIn profile to link your professional account with Atlas.
           </p>
           
           {isConnected ? (
