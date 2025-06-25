@@ -28,57 +28,39 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '')
     
-    // Get user session to access provider token
+    // Get user data to verify authentication
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser(token)
     
     if (userError || !user) {
+      console.error('User authentication error:', userError)
       throw new Error('Invalid user session')
     }
 
-    // Get the session to access provider token
-    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession()
+    console.log('User authenticated, checking for LinkedIn token...')
+
+    // Try to get the session with provider token using the service role key
+    const { data: sessionData, error: sessionError } = await supabaseClient.auth.admin.getUserById(user.id)
     
-    if (sessionError || !session) {
-      // Try to get session from user metadata or app metadata
-      const linkedinToken = user.app_metadata?.provider_token || user.user_metadata?.provider_token
-      
-      if (!linkedinToken) {
-        throw new Error('No LinkedIn access token found. Please reconnect to LinkedIn.')
-      }
-
-      // Make the LinkedIn API call
-      const linkedinResponse = await fetch('https://api.linkedin.com/v2/people/~', {
-        headers: {
-          'Authorization': `Bearer ${linkedinToken}`,
-          'Content-Type': 'application/json',
-        },
-      })
-
-      if (!linkedinResponse.ok) {
-        if (linkedinResponse.status === 401) {
-          throw new Error('LinkedIn access token is invalid or expired. Please reconnect.')
-        }
-        throw new Error(`LinkedIn API error: ${linkedinResponse.status} ${linkedinResponse.statusText}`)
-      }
-
-      const profileData = await linkedinResponse.json()
-      
-      return new Response(JSON.stringify({
-        success: true,
-        data: profileData
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    if (sessionError) {
+      console.error('Error getting user session:', sessionError)
+      throw new Error('Failed to retrieve user session')
     }
 
-    const linkedinToken = session.provider_token
-    
-    if (!linkedinToken) {
+    console.log('User identities:', JSON.stringify(sessionData.user?.identities, null, 2))
+
+    // Look for LinkedIn identity and extract token
+    const linkedinIdentity = sessionData.user?.identities?.find(
+      identity => identity.provider === 'linkedin_oidc'
+    )
+
+    if (!linkedinIdentity || !linkedinIdentity.identity_data?.provider_token) {
+      console.error('No LinkedIn token found in identities')
       throw new Error('No LinkedIn access token found. Please reconnect to LinkedIn.')
     }
 
-    console.log('Making LinkedIn API call with token')
-    
+    const linkedinToken = linkedinIdentity.identity_data.provider_token
+    console.log('Found LinkedIn token, making API call...')
+
     // Make the LinkedIn API call
     const linkedinResponse = await fetch('https://api.linkedin.com/v2/people/~', {
       headers: {
@@ -88,6 +70,10 @@ serve(async (req) => {
     })
 
     if (!linkedinResponse.ok) {
+      console.error('LinkedIn API error:', linkedinResponse.status, linkedinResponse.statusText)
+      const errorText = await linkedinResponse.text()
+      console.error('LinkedIn API error body:', errorText)
+      
       if (linkedinResponse.status === 401) {
         throw new Error('LinkedIn access token is invalid or expired. Please reconnect.')
       }
@@ -95,6 +81,7 @@ serve(async (req) => {
     }
 
     const profileData = await linkedinResponse.json()
+    console.log('Successfully retrieved LinkedIn profile data')
     
     return new Response(JSON.stringify({
       success: true,
