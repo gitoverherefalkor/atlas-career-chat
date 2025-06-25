@@ -47,11 +47,12 @@ export const LinkedInConnect = () => {
       const redirectUrl = `${window.location.origin}/profile`;
       console.log('Redirect URL:', redirectUrl);
 
-      const { data, error } = await supabase.auth.signInWithOAuth({
+      // Use linkIdentity for already authenticated users
+      const { data, error } = await supabase.auth.linkIdentity({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
-          scopes: 'openid'
+          scopes: 'openid profile email'
         }
       });
 
@@ -59,17 +60,50 @@ export const LinkedInConnect = () => {
 
       if (error) {
         console.error('OAuth error:', error);
-        toast({
-          title: "LinkedIn Connection Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        setIsConnecting(false);
+        // If linkIdentity fails (manual linking disabled), fall back to signInWithOAuth
+        if (error.message?.includes('Manual linking is disabled')) {
+          console.log('Manual linking disabled, using signInWithOAuth...');
+          
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithOAuth({
+            provider: 'linkedin_oidc',
+            options: {
+              redirectTo: redirectUrl,
+              scopes: 'openid profile email',
+              queryParams: {
+                access_type: 'online',
+                prompt: 'consent'
+              }
+            }
+          });
+
+          if (signInError) {
+            console.error('SignInWithOAuth error:', signInError);
+            toast({
+              title: "LinkedIn Connection Failed",
+              description: signInError.message,
+              variant: "destructive",
+            });
+            setIsConnecting(false);
+          } else {
+            console.log('OAuth initiated successfully with signInWithOAuth');
+            toast({
+              title: "Redirecting to LinkedIn",
+              description: "Please complete the authentication process.",
+            });
+          }
+        } else {
+          toast({
+            title: "LinkedIn Connection Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+          setIsConnecting(false);
+        }
       } else {
-        console.log('OAuth initiated successfully');
+        console.log('OAuth initiated successfully with linkIdentity');
         toast({
           title: "Redirecting to LinkedIn",
-          description: "Please complete the authentication process. You'll be redirected back to Atlas.",
+          description: "Please complete the authentication process.",
         });
         // Don't set isConnecting to false here - let the auth state change handle it
       }
