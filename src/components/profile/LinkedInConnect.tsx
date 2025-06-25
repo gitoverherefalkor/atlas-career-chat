@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Linkedin, CheckCircle, Loader2, X, ExternalLink, RefreshCw } from 'lucide-react';
+import { Linkedin, CheckCircle, Loader2, ExternalLink, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -30,7 +30,7 @@ export const LinkedInConnect = () => {
         setIsConnecting(false);
         toast({
           title: "LinkedIn Connected!",
-          description: "Your LinkedIn profile has been successfully connected with full access.",
+          description: "Your LinkedIn profile has been successfully connected.",
         });
       }
     });
@@ -43,7 +43,6 @@ export const LinkedInConnect = () => {
     setIsRefreshing(true);
     
     try {
-      // Refresh the session to get the latest auth state
       const { data: { session }, error } = await supabase.auth.getSession();
       
       if (error) {
@@ -52,23 +51,24 @@ export const LinkedInConnect = () => {
       }
 
       const hasLinkedInProvider = session?.user?.app_metadata?.providers?.includes('linkedin_oidc');
+      const hasProviderToken = !!session?.provider_token;
+      
       console.log('LinkedIn provider status:', hasLinkedInProvider);
-      console.log('Provider token available:', !!session?.provider_token);
+      console.log('Provider token available:', hasProviderToken);
       
-      const wasConnected = isConnected;
-      setIsConnected(hasLinkedInProvider || false);
+      // Only consider connected if both provider is linked AND we have a token
+      const connectionStatus = hasLinkedInProvider && hasProviderToken;
       
-      if (!hasLinkedInProvider && wasConnected) {
-        toast({
-          title: "LinkedIn Disconnected",
-          description: "LinkedIn connection has been removed from your account.",
-        });
+      if (connectionStatus !== isConnected) {
+        setIsConnected(connectionStatus);
         setProfileTestResult(null);
-      } else if (hasLinkedInProvider && !wasConnected) {
-        toast({
-          title: "LinkedIn Connected",
-          description: "LinkedIn connection detected.",
-        });
+        
+        if (!connectionStatus && isConnected) {
+          toast({
+            title: "LinkedIn Disconnected",
+            description: "LinkedIn connection has been removed from your account.",
+          });
+        }
       }
     } catch (error) {
       console.error('Error checking connection status:', error);
@@ -96,46 +96,76 @@ export const LinkedInConnect = () => {
     setProfileTestResult(null);
 
     try {
-      // Get the current session with LinkedIn tokens
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
         throw new Error('No active session found');
       }
 
-      // Extract LinkedIn access token from the session
       const linkedinToken = session.provider_token;
       
       if (!linkedinToken) {
-        throw new Error('No LinkedIn access token found in session. Please reconnect to LinkedIn.');
+        throw new Error('No LinkedIn access token found. Please reconnect to LinkedIn.');
       }
 
-      console.log('Testing LinkedIn API access with token...');
+      console.log('Testing LinkedIn API access...');
       
-      // Test LinkedIn API call to get basic profile
-      const response = await fetch('https://api.linkedin.com/v2/people/~', {
+      // Test basic profile access
+      const profileResponse = await fetch('https://api.linkedin.com/v2/people/~', {
         headers: {
           'Authorization': `Bearer ${linkedinToken}`,
           'Content-Type': 'application/json',
         },
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
+      if (!profileResponse.ok) {
+        if (profileResponse.status === 401) {
           throw new Error('LinkedIn access token is invalid or expired. Please reconnect.');
         }
-        throw new Error(`LinkedIn API error: ${response.status} ${response.statusText}`);
+        throw new Error(`LinkedIn API error: ${profileResponse.status} ${profileResponse.statusText}`);
       }
 
-      const profileData = await response.json();
+      const profileData = await profileResponse.json();
       console.log('LinkedIn profile data:', profileData);
       
-      // Extract basic info for display
+      // Test work experience access (this is what we need for the career assessment)
+      const positionsResponse = await fetch('https://api.linkedin.com/v2/people/~/positions', {
+        headers: {
+          'Authorization': `Bearer ${linkedinToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      let positionsData = null;
+      if (positionsResponse.ok) {
+        positionsData = await positionsResponse.json();
+        console.log('LinkedIn positions data:', positionsData);
+      }
+
+      // Format results
       const firstName = profileData.localizedFirstName || 'N/A';
       const lastName = profileData.localizedLastName || 'N/A';
       const headline = profileData.localizedHeadline || 'N/A';
       
-      setProfileTestResult(`Name: ${firstName} ${lastName}\nHeadline: ${headline}`);
+      let resultText = `Name: ${firstName} ${lastName}\nHeadline: ${headline}`;
+      
+      if (positionsData && positionsData.elements && positionsData.elements.length > 0) {
+        const currentPositions = positionsData.elements.filter(pos => !pos.endDate);
+        if (currentPositions.length > 0) {
+          resultText += `\n\nCurrent Employers:`;
+          currentPositions.forEach(pos => {
+            const companyName = pos.companyName || 'Unknown Company';
+            const title = pos.title || 'Unknown Title';
+            resultText += `\n- ${title} at ${companyName}`;
+          });
+        } else {
+          resultText += `\n\nNo current employment found in profile`;
+        }
+      } else {
+        resultText += `\n\nWork experience: Not accessible (may require additional permissions)`;
+      }
+      
+      setProfileTestResult(resultText);
       
       toast({
         title: "LinkedIn Profile Access Successful",
@@ -152,13 +182,9 @@ export const LinkedInConnect = () => {
         variant: "destructive",
       });
       
-      // If we can't access LinkedIn due to token issues, mark as disconnected
+      // If token issues, mark as disconnected
       if (error.message.includes('token') || error.message.includes('401') || error.message.includes('403')) {
         setIsConnected(false);
-        toast({
-          title: "Connection Status Updated",
-          description: "LinkedIn connection appears to be invalid. Please reconnect.",
-        });
       }
     } finally {
       setIsTestingConnection(false);
@@ -170,72 +196,38 @@ export const LinkedInConnect = () => {
     setIsConnecting(true);
     
     try {
-      // Use profile page as redirect to stay within Atlas
       const redirectUrl = `${window.location.origin}/profile`;
       console.log('Redirect URL:', redirectUrl);
 
-      // Expanded scopes for full profile access needed for career assessment
-      const expandedScopes = 'openid profile email w_member_social r_basicprofile r_emailaddress rw_company_admin r_fullprofile';
+      // Use only valid LinkedIn scopes
+      const validScopes = 'openid profile email r_basicprofile r_emailaddress';
 
-      // Use linkIdentity for already authenticated users
-      const { data, error } = await supabase.auth.linkIdentity({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
-          scopes: expandedScopes
+          scopes: validScopes,
+          queryParams: {
+            access_type: 'online',
+            prompt: 'consent'
+          }
         }
       });
 
-      console.log('Supabase OAuth response:', { data, error });
-
       if (error) {
         console.error('OAuth error:', error);
-        // If linkIdentity fails (manual linking disabled), fall back to signInWithOAuth
-        if (error.message?.includes('Manual linking is disabled')) {
-          console.log('Manual linking disabled, using signInWithOAuth...');
-          
-          const { data: signInData, error: signInError } = await supabase.auth.signInWithOAuth({
-            provider: 'linkedin_oidc',
-            options: {
-              redirectTo: redirectUrl,
-              scopes: expandedScopes,
-              queryParams: {
-                access_type: 'online',
-                prompt: 'consent'
-              }
-            }
-          });
-
-          if (signInError) {
-            console.error('SignInWithOAuth error:', signInError);
-            toast({
-              title: "LinkedIn Connection Failed",
-              description: signInError.message,
-              variant: "destructive",
-            });
-            setIsConnecting(false);
-          } else {
-            console.log('OAuth initiated successfully with signInWithOAuth');
-            toast({
-              title: "Redirecting to LinkedIn",
-              description: "Please complete the authentication process to grant full profile access.",
-            });
-          }
-        } else {
-          toast({
-            title: "LinkedIn Connection Failed",
-            description: error.message,
-            variant: "destructive",
-          });
-          setIsConnecting(false);
-        }
+        toast({
+          title: "LinkedIn Connection Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        setIsConnecting(false);
       } else {
-        console.log('OAuth initiated successfully with linkIdentity');
+        console.log('OAuth initiated successfully');
         toast({
           title: "Redirecting to LinkedIn",
-          description: "Please complete the authentication process to grant full profile access.",
+          description: "Please complete the authentication process.",
         });
-        // Don't set isConnecting to false here - let the auth state change handle it
       }
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -253,7 +245,6 @@ export const LinkedInConnect = () => {
     setIsDisconnecting(true);
     
     try {
-      // Open LinkedIn permissions page in new tab
       window.open('https://www.linkedin.com/mypreferences/d/data-sharing-for-permitted-services', '_blank');
       
       toast({
@@ -262,7 +253,7 @@ export const LinkedInConnect = () => {
       });
       
     } catch (error) {
-      console.error('Unexpected error during disconnect:', error);
+      console.error('Error during disconnect:', error);
       toast({
         title: "Error",
         description: "Failed to open LinkedIn permissions page. Please visit linkedin.com/mypreferences manually.",
@@ -284,14 +275,14 @@ export const LinkedInConnect = () => {
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Connect your LinkedIn profile to import your complete professional information for comprehensive career assessment.
+            Connect your LinkedIn profile to import your professional information for career assessment.
           </p>
           
           {isConnected ? (
             <div className="space-y-3">
               <div className="flex items-center space-x-2 text-green-600">
                 <CheckCircle className="h-4 w-4" />
-                <span className="text-sm">LinkedIn profile connected with full access</span>
+                <span className="text-sm">LinkedIn profile connected</span>
               </div>
               
               <div className="flex gap-2 flex-wrap">
@@ -364,28 +355,49 @@ export const LinkedInConnect = () => {
             <div className="space-y-3">
               <div className="bg-blue-50 p-3 rounded-lg">
                 <p className="text-xs text-blue-800">
-                  <strong>Full Profile Access Required:</strong> To provide comprehensive career insights, 
-                  we request access to your complete LinkedIn profile including work experience, 
-                  education, skills, and endorsements.
+                  <strong>Profile Access:</strong> Connect your LinkedIn to import your professional 
+                  information for comprehensive career assessment.
                 </p>
               </div>
-              <Button 
-                onClick={handleLinkedInConnect}
-                disabled={isConnecting}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isConnecting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    <Linkedin className="h-4 w-4 mr-2" />
-                    Connect LinkedIn (Full Access)
-                  </>
-                )}
-              </Button>
+              
+              <div className="flex gap-2">
+                <Button 
+                  onClick={handleLinkedInConnect}
+                  disabled={isConnecting}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {isConnecting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Connecting...
+                    </>
+                  ) : (
+                    <>
+                      <Linkedin className="h-4 w-4 mr-2" />
+                      Connect LinkedIn
+                    </>
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={checkConnectionStatus}
+                  disabled={isRefreshing}
+                  variant="outline"
+                  size="sm"
+                >
+                  {isRefreshing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Refreshing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh Status
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           )}
         </div>
