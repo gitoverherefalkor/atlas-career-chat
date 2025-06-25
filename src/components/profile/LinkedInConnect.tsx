@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -115,30 +114,24 @@ export const LinkedInConnect = () => {
         throw new Error('No active session found');
       }
 
-      const linkedinToken = session.provider_token;
+      console.log('Testing LinkedIn API access via edge function...');
       
-      if (!linkedinToken) {
-        throw new Error('No LinkedIn access token found. Please reconnect to LinkedIn.');
-      }
-
-      console.log('Testing LinkedIn API access...');
-      
-      // Test basic profile access
-      const profileResponse = await fetch('https://api.linkedin.com/v2/people/~', {
+      // Call our edge function instead of making direct API call
+      const { data, error } = await supabase.functions.invoke('linkedin-profile', {
         headers: {
-          'Authorization': `Bearer ${linkedinToken}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.access_token}`,
         },
       });
 
-      if (!profileResponse.ok) {
-        if (profileResponse.status === 401) {
-          throw new Error('LinkedIn access token is invalid or expired. Please reconnect.');
-        }
-        throw new Error(`LinkedIn API error: ${profileResponse.status} ${profileResponse.statusText}`);
+      if (error) {
+        throw new Error(error.message || 'Failed to fetch LinkedIn profile');
       }
 
-      const profileData = await profileResponse.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Unknown error occurred');
+      }
+
+      const profileData = data.data;
       console.log('LinkedIn profile data:', profileData);
       
       // Format results
