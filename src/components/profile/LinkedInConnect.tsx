@@ -26,12 +26,15 @@ export const LinkedInConnect = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user?.app_metadata?.providers?.includes('linkedin_oidc')) {
         console.log('LinkedIn connection detected');
-        setIsConnected(true);
-        setIsConnecting(false);
-        toast({
-          title: "LinkedIn Connected!",
-          description: "Your LinkedIn profile has been successfully connected.",
-        });
+        // Check if we actually have a token
+        if (session?.provider_token) {
+          setIsConnected(true);
+          setIsConnecting(false);
+          toast({
+            title: "LinkedIn Connected!",
+            description: "Your LinkedIn profile has been successfully connected.",
+          });
+        }
       }
     });
 
@@ -56,20 +59,27 @@ export const LinkedInConnect = () => {
       console.log('LinkedIn provider status:', hasLinkedInProvider);
       console.log('Provider token available:', hasProviderToken);
       
-      // Only consider connected if both provider is linked AND we have a token
+      // User is only connected if they have BOTH provider AND token
       const connectionStatus = hasLinkedInProvider && hasProviderToken;
       
-      if (connectionStatus !== isConnected) {
-        setIsConnected(connectionStatus);
-        setProfileTestResult(null);
-        
-        if (!connectionStatus && isConnected) {
-          toast({
-            title: "LinkedIn Disconnected",
-            description: "LinkedIn connection has been removed from your account.",
-          });
-        }
+      console.log('Final connection status:', connectionStatus);
+      
+      setIsConnected(connectionStatus);
+      setProfileTestResult(null);
+      
+      // Show toast on status change
+      if (connectionStatus && !isConnected) {
+        toast({
+          title: "LinkedIn Connected",
+          description: "LinkedIn connection verified.",
+        });
+      } else if (!connectionStatus && isConnected) {
+        toast({
+          title: "LinkedIn Disconnected",
+          description: "LinkedIn connection has been removed.",
+        });
       }
+      
     } catch (error) {
       console.error('Error checking connection status:', error);
       toast({
@@ -128,42 +138,12 @@ export const LinkedInConnect = () => {
       const profileData = await profileResponse.json();
       console.log('LinkedIn profile data:', profileData);
       
-      // Test work experience access (this is what we need for the career assessment)
-      const positionsResponse = await fetch('https://api.linkedin.com/v2/people/~/positions', {
-        headers: {
-          'Authorization': `Bearer ${linkedinToken}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      let positionsData = null;
-      if (positionsResponse.ok) {
-        positionsData = await positionsResponse.json();
-        console.log('LinkedIn positions data:', positionsData);
-      }
-
       // Format results
       const firstName = profileData.localizedFirstName || 'N/A';
       const lastName = profileData.localizedLastName || 'N/A';
       const headline = profileData.localizedHeadline || 'N/A';
       
-      let resultText = `Name: ${firstName} ${lastName}\nHeadline: ${headline}`;
-      
-      if (positionsData && positionsData.elements && positionsData.elements.length > 0) {
-        const currentPositions = positionsData.elements.filter(pos => !pos.endDate);
-        if (currentPositions.length > 0) {
-          resultText += `\n\nCurrent Employers:`;
-          currentPositions.forEach(pos => {
-            const companyName = pos.companyName || 'Unknown Company';
-            const title = pos.title || 'Unknown Title';
-            resultText += `\n- ${title} at ${companyName}`;
-          });
-        } else {
-          resultText += `\n\nNo current employment found in profile`;
-        }
-      } else {
-        resultText += `\n\nWork experience: Not accessible (may require additional permissions)`;
-      }
+      let resultText = `✅ Successfully retrieved LinkedIn profile:\n\nName: ${firstName} ${lastName}\nHeadline: ${headline}`;
       
       setProfileTestResult(resultText);
       
@@ -174,7 +154,7 @@ export const LinkedInConnect = () => {
 
     } catch (error) {
       console.error('LinkedIn profile test error:', error);
-      setProfileTestResult(`Error: ${error.message}`);
+      setProfileTestResult(`❌ Error: ${error.message}`);
       
       toast({
         title: "LinkedIn Profile Access Failed",
@@ -199,14 +179,11 @@ export const LinkedInConnect = () => {
       const redirectUrl = `${window.location.origin}/profile`;
       console.log('Redirect URL:', redirectUrl);
 
-      // Use only valid LinkedIn scopes
-      const validScopes = 'openid profile email r_basicprofile r_emailaddress';
-
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
           redirectTo: redirectUrl,
-          scopes: validScopes,
+          scopes: 'openid profile email',
           queryParams: {
             access_type: 'online',
             prompt: 'consent'
@@ -314,7 +291,7 @@ export const LinkedInConnect = () => {
                   {isRefreshing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Refreshing...
+                      Checking...
                     </>
                   ) : (
                     <>
@@ -388,7 +365,7 @@ export const LinkedInConnect = () => {
                   {isRefreshing ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Refreshing...
+                      Checking...
                     </>
                   ) : (
                     <>
