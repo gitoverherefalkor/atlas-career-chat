@@ -12,16 +12,13 @@ export const LinkedInConnect = () => {
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isTestingConnection, setIsTestingConnection] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [profileTestResult, setProfileTestResult] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
-    // Check if user has LinkedIn connection on component mount
-    if (user?.app_metadata?.providers?.includes('linkedin_oidc')) {
-      console.log('User already connected to LinkedIn');
-      setIsConnected(true);
-    }
+    checkConnectionStatus();
   }, [user]);
 
   useEffect(() => {
@@ -43,6 +40,8 @@ export const LinkedInConnect = () => {
 
   const checkConnectionStatus = async () => {
     console.log('Checking LinkedIn connection status...');
+    setIsRefreshing(true);
+    
     try {
       // Refresh the session to get the latest auth state
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -54,20 +53,32 @@ export const LinkedInConnect = () => {
 
       const hasLinkedInProvider = session?.user?.app_metadata?.providers?.includes('linkedin_oidc');
       console.log('LinkedIn provider status:', hasLinkedInProvider);
+      console.log('Provider token available:', !!session?.provider_token);
       
-      if (hasLinkedInProvider !== isConnected) {
-        setIsConnected(hasLinkedInProvider || false);
-        
-        if (!hasLinkedInProvider && isConnected) {
-          toast({
-            title: "LinkedIn Disconnected",
-            description: "LinkedIn connection has been removed from your account.",
-          });
-          setProfileTestResult(null);
-        }
+      const wasConnected = isConnected;
+      setIsConnected(hasLinkedInProvider || false);
+      
+      if (!hasLinkedInProvider && wasConnected) {
+        toast({
+          title: "LinkedIn Disconnected",
+          description: "LinkedIn connection has been removed from your account.",
+        });
+        setProfileTestResult(null);
+      } else if (hasLinkedInProvider && !wasConnected) {
+        toast({
+          title: "LinkedIn Connected",
+          description: "LinkedIn connection detected.",
+        });
       }
     } catch (error) {
       console.error('Error checking connection status:', error);
+      toast({
+        title: "Connection Check Failed",
+        description: "Failed to check LinkedIn connection status.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -96,10 +107,10 @@ export const LinkedInConnect = () => {
       const linkedinToken = session.provider_token;
       
       if (!linkedinToken) {
-        throw new Error('No LinkedIn access token found');
+        throw new Error('No LinkedIn access token found in session. Please reconnect to LinkedIn.');
       }
 
-      console.log('Testing LinkedIn API access...');
+      console.log('Testing LinkedIn API access with token...');
       
       // Test LinkedIn API call to get basic profile
       const response = await fetch('https://api.linkedin.com/v2/people/~', {
@@ -110,6 +121,9 @@ export const LinkedInConnect = () => {
       });
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('LinkedIn access token is invalid or expired. Please reconnect.');
+        }
         throw new Error(`LinkedIn API error: ${response.status} ${response.statusText}`);
       }
 
@@ -138,12 +152,12 @@ export const LinkedInConnect = () => {
         variant: "destructive",
       });
       
-      // If we can't access LinkedIn, the connection might be stale
-      if (error.message.includes('401') || error.message.includes('403')) {
+      // If we can't access LinkedIn due to token issues, mark as disconnected
+      if (error.message.includes('token') || error.message.includes('401') || error.message.includes('403')) {
         setIsConnected(false);
         toast({
           title: "Connection Status Updated",
-          description: "LinkedIn connection appears to be disconnected. Please reconnect.",
+          description: "LinkedIn connection appears to be invalid. Please reconnect.",
         });
       }
     } finally {
@@ -302,11 +316,21 @@ export const LinkedInConnect = () => {
                 
                 <Button 
                   onClick={checkConnectionStatus}
+                  disabled={isRefreshing}
                   variant="outline"
                   size="sm"
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh Status
+                  {isRefreshing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Refreshing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Refresh Status
+                    </>
+                  )}
                 </Button>
                 
                 <Button 
