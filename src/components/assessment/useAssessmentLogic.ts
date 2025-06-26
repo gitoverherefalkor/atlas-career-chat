@@ -1,29 +1,41 @@
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useReports } from '@/hooks/useReports';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-
-// Survey type mapping
-const SURVEY_TYPE_MAPPING: Record<string, string> = {
-  'Office / Business Pro - 2025 v1 EN': '00000000-0000-0000-0000-000000000001',
-};
+import { getSurveyIdFromAccessCode } from './constants';
+import { useSessionToken } from './hooks/useSessionToken';
+import { useAccessCodeHandling } from './hooks/useAccessCodeHandling';
+import { useSurveyCompletion } from './hooks/useSurveyCompletion';
+import { useAssessmentNavigation } from './hooks/useAssessmentNavigation';
 
 export const useAssessmentLogic = () => {
   console.log('useAssessmentLogic hook initialized');
   
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [isVerified, setIsVerified] = useState(false);
-  const [showPreSurveyUpload, setShowPreSurveyUpload] = useState(false);
-  const [accessCodeData, setAccessCodeData] = useState<any>(null);
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
-  
   const { user, isLoading: authLoading } = useAuth();
-  const { createReport } = useReports();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const { redirectToAuth } = useAssessmentNavigation();
+  
+  const {
+    sessionToken,
+    setSessionToken,
+    createNewSession,
+    clearSession
+  } = useSessionToken();
+  
+  const {
+    accessCodeData,
+    isVerified,
+    showPreSurveyUpload,
+    setAccessCodeData,
+    setIsVerified,
+    handleAccessCodeVerified: baseHandleAccessCodeVerified,
+    handlePreSurveyUploadComplete
+  } = useAccessCodeHandling();
+  
+  const {
+    isCompleted,
+    handleSurveyComplete: baseSurveyComplete
+  } = useSurveyCompletion();
+  
+  const { handleExitAssessment } = useAssessmentNavigation();
 
   console.log('useAssessmentLogic state:', {
     isCompleted,
@@ -46,122 +58,17 @@ export const useAssessmentLogic = () => {
 
     // Redirect to auth if not logged in
     if (!user) {
-      console.log('No user, redirecting to auth');
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to take the assessment.",
-        variant: "destructive",
-      });
-      navigate('/auth');
+      redirectToAuth();
       return;
     }
-  }, [user, authLoading, navigate, toast]);
-
-  const generateSessionToken = () => {
-    const token = Date.now().toString(36) + Math.random().toString(36).substr(2);
-    console.log('Generated session token:', token);
-    return token;
-  };
+  }, [user, authLoading, redirectToAuth]);
 
   const handleAccessCodeVerified = async (data: any) => {
-    console.log('Access code verified:', data);
-    
-    if (!data) {
-      console.error('No data received from access code verification');
-      return;
-    }
-    
-    const token = generateSessionToken();
-    
-    setAccessCodeData(data);
-    setSessionToken(token);
-    setIsVerified(true);
-    setShowPreSurveyUpload(true); // Show upload step after verification
+    await baseHandleAccessCodeVerified(data, createNewSession);
   };
-
-  const handlePreSurveyUploadComplete = () => {
-    setShowPreSurveyUpload(false);
-  };
-
-  function getSurveyIdFromAccessCode(accessCodeData: any): string {
-    if (!accessCodeData) {
-      console.error('No access code data provided to getSurveyIdFromAccessCode');
-      return SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
-    }
-    
-    const surveyType = accessCodeData?.survey_type || 'Office / Business Pro - 2025 v1 EN';
-    const surveyId = SURVEY_TYPE_MAPPING[surveyType] || SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
-    console.log('Survey ID for access code:', { surveyType, surveyId });
-    return surveyId;
-  }
 
   const handleSurveyComplete = async (responses: Record<string, any>) => {
-    console.log('Survey completed with responses:', responses);
-    
-    if (!accessCodeData || !user) {
-      console.error('Missing required data for survey completion:', { accessCodeData, user });
-      toast({
-        title: "Error",
-        description: "Missing required data to complete survey.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    const surveyId = getSurveyIdFromAccessCode(accessCodeData);
-    
-    try {
-      await createReport({
-        title: `Atlas Career Assessment - ${new Date().toLocaleDateString()}`,
-        payload: {
-          responses,
-          accessCode: accessCodeData?.code,
-          completedAt: new Date().toISOString(),
-          surveyType: accessCodeData?.survey_type,
-        },
-        access_code_id: accessCodeData?.id,
-        survey_id: surveyId,
-      });
-
-      // Update access code usage count
-      if (accessCodeData?.id && accessCodeData.id !== 'existing-session') {
-        await supabase
-          .from('access_codes')
-          .update({ 
-            usage_count: (accessCodeData.usage_count || 0) + 1,
-            used_at: new Date().toISOString(),
-            user_id: user?.id
-          })
-          .eq('id', accessCodeData.id);
-      }
-
-      setSessionToken(null);
-      
-      toast({
-        title: "Assessment Complete!",
-        description: "Your assessment has been submitted successfully.",
-      });
-      
-      setIsCompleted(true);
-    } catch (error) {
-      console.error('Error saving report:', error);
-      toast({
-        title: "Warning",
-        description: "Assessment completed but failed to save report. Your responses were submitted successfully.",
-        variant: "destructive",
-      });
-      setIsCompleted(true); // Still mark as completed even if report save failed
-    }
-  };
-
-  const handleExitAssessment = () => {
-    const confirmExit = window.confirm(
-      "Are you sure you want to exit the assessment? Your progress will be saved and you can continue later."
-    );
-    
-    if (confirmExit) {
-      navigate('/dashboard');
-    }
+    await baseSurveyComplete(responses, accessCodeData, clearSession);
   };
 
   return {
