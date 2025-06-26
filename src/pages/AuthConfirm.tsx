@@ -18,6 +18,9 @@ const AuthConfirm = () => {
       const token = searchParams.get('token');
       const type = searchParams.get('type');
       const redirectTo = searchParams.get('redirect_to');
+      const accessCode = searchParams.get('code'); // Get access code from URL
+
+      console.log('AuthConfirm params:', { token, type, redirectTo, accessCode });
 
       if (!token || !type) {
         setStatus('error');
@@ -42,15 +45,12 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
           
-          // Check for pending access code from localStorage (stored during signup)
-          const pendingAccessCode = localStorage.getItem('pendingAccessCode');
-          
           // Redirect after a short delay
           setTimeout(() => {
-            if (pendingAccessCode) {
-              // Clear the pending access code and redirect to assessment
-              localStorage.removeItem('pendingAccessCode');
-              navigate(`/assessment?code=${pendingAccessCode}`);
+            if (accessCode) {
+              // Redirect to assessment with access code from URL
+              console.log('Redirecting to assessment with code:', accessCode);
+              navigate(`/assessment?code=${accessCode}`);
             } else if (redirectTo) {
               window.location.href = decodeURIComponent(redirectTo);
             } else {
