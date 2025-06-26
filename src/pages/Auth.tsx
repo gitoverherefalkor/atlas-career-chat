@@ -47,6 +47,11 @@ const Auth = () => {
       }));
     }
 
+    // Store access code in localStorage if present (for use after email confirmation)
+    if (accessCodeFromUrl) {
+      localStorage.setItem('pendingAccessCode', accessCodeFromUrl);
+    }
+
     // Check if user is already logged in
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -93,15 +98,17 @@ const Auth = () => {
             description: "You've been logged in successfully.",
           });
           
-          // Redirect to assessment if access code is provided
-          if (accessCodeFromUrl) {
-            navigate(`/assessment?code=${accessCodeFromUrl}`);
+          // Check for pending access code or URL parameter
+          const pendingCode = localStorage.getItem('pendingAccessCode') || accessCodeFromUrl;
+          if (pendingCode) {
+            localStorage.removeItem('pendingAccessCode');
+            navigate(`/assessment?code=${pendingCode}`);
           } else {
             navigate('/dashboard');
           }
         }
       } else {
-        const redirectUrl = `https://atlas-assessments.com/`;
+        const redirectUrl = `https://atlas-assessments.com/auth/confirm`;
         
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,

@@ -42,25 +42,15 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
           
-          // Check if user came from purchase flow by looking for access code in localStorage
-          const purchaseData = localStorage.getItem('purchaseData');
-          let accessCode = null;
-          
-          if (purchaseData) {
-            try {
-              const parsed = JSON.parse(purchaseData);
-              accessCode = parsed.accessCode;
-            } catch (e) {
-              console.warn('Could not parse purchase data:', e);
-            }
-          }
+          // Check for pending access code from localStorage (stored during signup)
+          const pendingAccessCode = localStorage.getItem('pendingAccessCode');
           
           // Redirect after a short delay
           setTimeout(() => {
-            if (accessCode) {
-              // Clear the purchase data and redirect to assessment with access code
-              localStorage.removeItem('purchaseData');
-              navigate(`/assessment?code=${accessCode}`);
+            if (pendingAccessCode) {
+              // Clear the pending access code and redirect to assessment
+              localStorage.removeItem('pendingAccessCode');
+              navigate(`/assessment?code=${pendingAccessCode}`);
             } else if (redirectTo) {
               window.location.href = decodeURIComponent(redirectTo);
             } else {
