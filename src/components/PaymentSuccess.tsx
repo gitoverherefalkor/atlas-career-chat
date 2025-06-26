@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -13,6 +14,7 @@ const PaymentSuccess = () => {
   const [accessCode, setAccessCode] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   
   useEffect(() => {
     const sessionId = searchParams.get('session_id');
@@ -75,8 +77,13 @@ const PaymentSuccess = () => {
   }, [searchParams, navigate, toast]);
 
   const handleStartAssessment = () => {
-    // Navigate to assessment with the access code pre-filled
-    navigate(`/assessment?code=${accessCode}`);
+    if (!user) {
+      // User needs to create an account first - redirect to auth page with access code
+      navigate(`/auth?code=${accessCode}&flow=signup`);
+    } else {
+      // User is authenticated - go directly to assessment with access code
+      navigate(`/assessment?code=${accessCode}`);
+    }
   };
   
   return (
@@ -113,9 +120,16 @@ const PaymentSuccess = () => {
             )}
             
             <p className="text-gray-600 mb-8">
-              {searchParams.get('demo') === 'true' 
-                ? 'Thank you for trying our demo purchase flow. You can now start the assessment!'
-                : 'Thank you for your purchase. We\'ve sent your access code to your email. You can now start your assessment!'}
+              {!user ? (
+                <>
+                  Thank you for your purchase! To start your assessment, you'll need to create an account first. 
+                  {searchParams.get('demo') !== 'true' && ' Your purchase details will help pre-fill the registration form.'}
+                </>
+              ) : (
+                searchParams.get('demo') === 'true' 
+                  ? 'Thank you for trying our demo purchase flow. You can now start the assessment!'
+                  : 'Thank you for your purchase. We\'ve sent your access code to your email. You can now start your assessment!'
+              )}
             </p>
             
             <div className="space-y-3">
@@ -124,8 +138,17 @@ const PaymentSuccess = () => {
                 className="w-full flex items-center justify-center gap-2 bg-atlas-teal hover:bg-atlas-teal/90"
                 size="lg"
               >
-                Start Assessment Now
-                <ArrowRight className="h-4 w-4" />
+                {!user ? (
+                  <>
+                    Create Account & Start Assessment
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                ) : (
+                  <>
+                    Start Assessment Now
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
               
               <Button 

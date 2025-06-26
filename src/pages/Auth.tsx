@@ -1,15 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { Loader2, Mail, Lock, User, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
+  const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,16 +23,30 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Check URL params for flow and access code
+  const flowFromUrl = searchParams.get('flow');
+  const accessCodeFromUrl = searchParams.get('code');
+
   useEffect(() => {
+    // Set initial flow based on URL parameter
+    if (flowFromUrl === 'signup') {
+      setIsLogin(false);
+    }
+
     // Check if user is already logged in
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate('/dashboard');
+        // If user is already logged in and has access code, go to assessment
+        if (accessCodeFromUrl) {
+          navigate(`/assessment?code=${accessCodeFromUrl}`);
+        } else {
+          navigate('/dashboard');
+        }
       }
     };
     checkAuth();
-  }, [navigate]);
+  }, [navigate, flowFromUrl, accessCodeFromUrl]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -63,13 +78,22 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You've been logged in successfully.",
           });
-          navigate('/dashboard');
+          
+          // Redirect to assessment if access code is provided
+          if (accessCodeFromUrl) {
+            navigate(`/assessment?code=${accessCodeFromUrl}`);
+          } else {
+            navigate('/dashboard');
+          }
         }
       } else {
+        const redirectUrl = `${window.location.origin}/`;
+        
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
           options: {
+            emailRedirectTo: redirectUrl,
             data: {
               first_name: formData.firstName,
               last_name: formData.lastName
@@ -85,9 +109,12 @@ const Auth = () => {
         if (data.user) {
           toast({
             title: "Account created!",
-            description: "Welcome to Atlas Assessment. You can now start taking assessments.",
+            description: "Please check your email to verify your account before proceeding.",
           });
-          navigate('/dashboard');
+          
+          // Show verification message instead of immediate redirect
+          setError('Please check your email and click the verification link to activate your account. Once verified, you can sign in below.');
+          setIsLogin(true); // Switch to login mode
         }
       }
     } catch (error) {
@@ -105,10 +132,29 @@ const Auth = () => {
           <h1 className="text-3xl font-bold text-atlas-navy mb-2">
             Atlas Assessment
           </h1>
+          {accessCodeFromUrl && (
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <p className="text-green-700 font-medium">Purchase Complete!</p>
+            </div>
+          )}
           <p className="text-gray-600">
-            {isLogin ? 'Welcome back!' : 'Create your account'}
+            {accessCodeFromUrl 
+              ? (isLogin ? 'Sign in to start your assessment' : 'Create your account to begin')
+              : (isLogin ? 'Welcome back!' : 'Create your account')
+            }
           </p>
         </div>
+
+        {accessCodeFromUrl && (
+          <Alert className="mb-6 border-green-200 bg-green-50">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              Your access code <strong>{accessCodeFromUrl}</strong> is ready! 
+              {isLogin ? ' Sign in to start your assessment.' : ' Create an account to begin.'}
+            </AlertDescription>
+          </Alert>
+        )}
 
         <Card>
           <CardHeader>
@@ -204,7 +250,7 @@ const Auth = () => {
               </div>
 
               {error && (
-                <Alert variant="destructive">
+                <Alert variant={error.includes('verification') ? "default" : "destructive"}>
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
