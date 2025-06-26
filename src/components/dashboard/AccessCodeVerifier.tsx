@@ -82,13 +82,6 @@ const AccessCodeVerifier = ({ prefilledCode, onVerified }: AccessCodeVerifierPro
     }
   };
 
-  // Auto-verify if prefilled code is provided
-  React.useEffect(() => {
-    if (prefilledCode && !isVerified && !isLoading) {
-      handleVerify();
-    }
-  }, [prefilledCode]);
-
   if (isVerified) {
     return (
       <Card className="border-green-200 bg-green-50">

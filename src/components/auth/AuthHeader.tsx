@@ -15,7 +15,7 @@ const AuthHeader = ({ isLogin }: AuthHeaderProps) => {
         {isLogin ? 'Sign in to your account' : 'Create your account to get started'}
       </p>
       {!isLogin && (
-        <p className="text-sm text-red-600 max-w-md mx-auto">
+        <p className="text-sm text-atlas-teal max-w-md mx-auto">
           <span className="font-medium">Why create an account?</span> Your personal info stays secure in the survey, and you can easily find your results later.
         </p>
       )}
