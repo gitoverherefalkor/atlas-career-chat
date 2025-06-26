@@ -7,6 +7,25 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Simple PDF text extraction function
+async function extractPDFText(arrayBuffer: ArrayBuffer): Promise<string> {
+  try {
+    // Import pdf-parse which is the most reliable for Deno
+    const pdfParse = (await import('https://esm.sh/pdf-parse@1.1.1')).default;
+    
+    // Parse the PDF
+    const data = await pdfParse(arrayBuffer);
+    
+    console.log(`PDF parsed successfully. Pages: ${data.numpages}, Text length: ${data.text.length}`);
+    
+    return data.text || '';
+    
+  } catch (error) {
+    console.error('PDF parsing error:', error);
+    throw error;
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -43,27 +62,110 @@ serve(async (req) => {
 
     let fileContent = '';
     
+    // Handle PDF files
     if (file.type === 'application/pdf') {
-      // TODO: Implement PDF parsing
-      // For now, return an error with instructions for implementation
-      return new Response(JSON.stringify({ 
-        error: 'PDF parsing needs to be implemented. The file was received successfully but PDF text extraction is not yet available.',
-        success: false,
-        fileInfo: {
-          name: file.name,
-          size: file.size,
-          type: file.type
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        fileContent = await extractPDFText(arrayBuffer);
+        
+        // Clean up the extracted text
+        fileContent = fileContent
+          .replace(/\s+/g, ' ') // Normalize whitespace
+          .replace(/\n\s*\n/g, '\n') // Remove excessive line breaks
+          .trim();
+        
+        console.log(`Successfully extracted ${fileContent.length} characters from PDF`);
+        
+      } catch (pdfError) {
+        console.error('PDF extraction failed:', pdfError);
+        
+        // Provide helpful error message
+        const errorMessage = pdfError.message.toLowerCase();
+        if (errorMessage.includes('password') || errorMessage.includes('encrypted')) {
+          return new Response(JSON.stringify({ 
+            error: 'This PDF is password protected. Please provide an unprotected version of your resume.',
+            success: false 
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } else if (errorMessage.includes('corrupt') || errorMessage.includes('invalid')) {
+          return new Response(JSON.stringify({ 
+            error: 'The PDF file appears to be corrupted. Please try uploading a different version.',
+            success: false 
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } else {
+          return new Response(JSON.stringify({ 
+            error: 'Unable to extract text from this PDF. This might be a scanned image rather than a text-based PDF. Please try converting it to a Word document or ensure it contains selectable text.',
+            success: false 
+          }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
         }
+      }
+    }
+    
+    // Handle Word documents (.docx, .doc)
+    else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+             file.type === 'application/msword') {
+      try {
+        const mammoth = await import('https://esm.sh/mammoth@1.6.0');
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        fileContent = result.value.trim();
+        
+        console.log(`Successfully extracted ${fileContent.length} characters from Word document`);
+        
+      } catch (wordError) {
+        console.error('Word document extraction failed:', wordError);
+        return new Response(JSON.stringify({ 
+          error: 'Unable to extract text from this Word document. Please ensure the file is not corrupted.',
+          success: false 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+    
+    // Handle plain text files
+    else if (file.type === 'text/plain') {
+      fileContent = (await file.text()).trim();
+      console.log(`Successfully read ${fileContent.length} characters from text file`);
+    }
+    
+    // Unsupported file type
+    else {
+      const supportedTypes = [
+        'PDF files (.pdf)',
+        'Word documents (.docx, .doc)', 
+        'Text files (.txt)'
+      ];
+      return new Response(JSON.stringify({ 
+        error: `Unsupported file type: ${file.type}. Please upload one of: ${supportedTypes.join(', ')}`,
+        success: false 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-    } else {
-      // Handle Word documents and plain text
-      fileContent = await file.text();
     }
 
-    // Continue with existing OpenAI processing for non-PDF files
+    // Validate that we extracted meaningful content
+    if (!fileContent || fileContent.length < 20) {
+      return new Response(JSON.stringify({ 
+        error: 'The file appears to be empty or contains very little text. Please ensure your resume has readable content.',
+        success: false 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Continue with existing OpenAI processing for all file types
     const basicExtractionPrompt = `
 You are a professional resume parser. Extract the following information from this resume and return it as a JSON object with these exact fields:
 
