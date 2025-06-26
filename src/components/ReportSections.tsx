@@ -4,7 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2, FileText } from 'lucide-react';
 import { useReportSections } from '@/hooks/useReportSections';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 
 interface ReportSectionsProps {
   reportId: string;
@@ -12,6 +22,17 @@ interface ReportSectionsProps {
 
 const ReportSections: React.FC<ReportSectionsProps> = ({ reportId }) => {
   const { sections, isLoading, deleteSection, isDeleting } = useReportSections(reportId);
+
+  const getSectionTitle = (sectionType: string) => {
+    return sectionType
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const formatContent = (content: string) => {
+    return content.replace(/\n/g, '<br />');
+  };
 
   if (isLoading) {
     return (
@@ -34,13 +55,6 @@ const ReportSections: React.FC<ReportSectionsProps> = ({ reportId }) => {
       </Card>
     );
   }
-
-  const getSectionTitle = (sectionType: string) => {
-    return sectionType
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  };
 
   return (
     <div className="space-y-6">
@@ -85,7 +99,7 @@ const ReportSections: React.FC<ReportSectionsProps> = ({ reportId }) => {
               <div 
                 className="whitespace-pre-wrap text-gray-700"
                 dangerouslySetInnerHTML={{ 
-                  __html: section.content.replace(/\n/g, '<br />') 
+                  __html: formatContent(section.content)
                 }}
               />
             </div>
