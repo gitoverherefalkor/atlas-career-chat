@@ -1,7 +1,6 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -42,14 +41,19 @@ serve(async (req) => {
 
     console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type);
 
-    // Read file content as text (for PDF we'd need more sophisticated parsing)
     let fileContent = '';
     
     if (file.type === 'application/pdf') {
-      // For now, return a helpful error message for PDFs instead of throwing
+      // TODO: Implement PDF parsing
+      // For now, return an error with instructions for implementation
       return new Response(JSON.stringify({ 
-        error: 'PDF parsing not yet implemented. Please use Word documents (.doc, .docx) or plain text files for now.',
-        success: false 
+        error: 'PDF parsing needs to be implemented. The file was received successfully but PDF text extraction is not yet available.',
+        success: false,
+        fileInfo: {
+          name: file.name,
+          size: file.size,
+          type: file.type
+        }
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -59,7 +63,7 @@ serve(async (req) => {
       fileContent = await file.text();
     }
 
-    // Step 1: Extract basic structured data
+    // Continue with existing OpenAI processing for non-PDF files
     const basicExtractionPrompt = `
 You are a professional resume parser. Extract the following information from this resume and return it as a JSON object with these exact fields:
 

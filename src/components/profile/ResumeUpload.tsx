@@ -19,22 +19,22 @@ export const ResumeUpload = () => {
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type - exclude PDFs for now
-      const allowedTypes = ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
+      // Validate file type - accept PDFs, Word docs, and text files
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
       if (!allowedTypes.includes(file.type)) {
         toast({
           title: "File type not supported",
-          description: "Please upload a Word document (.doc, .docx) or plain text file. PDF support coming soon!",
+          description: "Please upload a PDF, Word document (.doc, .docx) or plain text file.",
           variant: "destructive",
         });
         return;
       }
 
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
+      // Validate file size (10MB max for PDFs)
+      if (file.size > 10 * 1024 * 1024) {
         toast({
           title: "File too large",
-          description: "Please upload a file smaller than 5MB.",
+          description: "Please upload a file smaller than 10MB.",
           variant: "destructive",
         });
         return;
@@ -120,7 +120,7 @@ export const ResumeUpload = () => {
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Upload your Word document (.doc, .docx) or plain text resume. PDF support coming soon!
+            Upload your PDF, Word document (.doc, .docx) or plain text resume.
           </p>
 
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -159,7 +159,7 @@ export const ResumeUpload = () => {
                 <Upload className="h-12 w-12 text-gray-400 mx-auto" />
                 <div>
                   <p className="text-lg font-medium">Upload your document</p>
-                  <p className="text-sm text-gray-500">Word (.doc, .docx) or plain text files, up to 5MB</p>
+                  <p className="text-sm text-gray-500">PDF, Word (.doc, .docx) or plain text files, up to 10MB</p>
                   <p className="text-xs text-gray-400 mt-1">Processing will start automatically after upload</p>
                 </div>
                 <Button onClick={() => fileInputRef.current?.click()}>
@@ -169,7 +169,7 @@ export const ResumeUpload = () => {
                   ref={fileInputRef}
                   type="file"
                   className="hidden"
-                  accept=".doc,.docx,.txt"
+                  accept=".pdf,.doc,.docx,.txt"
                   onChange={handleFileSelect}
                 />
               </div>
