@@ -17,10 +17,8 @@ const AuthConfirm = () => {
     const confirmEmail = async () => {
       const token = searchParams.get('token');
       const type = searchParams.get('type');
-      const redirectTo = searchParams.get('redirect_to');
-      const accessCode = searchParams.get('code'); // Get access code from URL parameters
 
-      console.log('AuthConfirm params:', { token, type, redirectTo, accessCode });
+      console.log('AuthConfirm params:', { token, type });
 
       if (!token || !type) {
         setStatus('error');
@@ -45,17 +43,9 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
           
-          // Redirect after a short delay
+          // Always redirect to dashboard after successful email verification
           setTimeout(() => {
-            if (accessCode) {
-              // Redirect to assessment with access code from URL
-              console.log('Redirecting to assessment with code:', accessCode);
-              navigate(`/assessment?code=${accessCode}`);
-            } else if (redirectTo) {
-              window.location.href = decodeURIComponent(redirectTo);
-            } else {
-              navigate('/dashboard');
-            }
+            navigate('/dashboard');
           }, 2000);
         }
       } catch (error) {
@@ -99,7 +89,7 @@ const AuthConfirm = () => {
 
             {status === 'success' && (
               <p className="text-sm text-gray-600 text-center mt-4">
-                Redirecting you to start your assessment...
+                Redirecting you to your dashboard...
               </p>
             )}
 

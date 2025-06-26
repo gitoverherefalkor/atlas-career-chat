@@ -4,16 +4,12 @@ import { SurveyForm } from '@/components/survey/SurveyForm';
 import { AssessmentWelcome } from '@/components/survey/AssessmentWelcome';
 import { AssessmentLayout } from '@/components/assessment/AssessmentLayout';
 import { AssessmentCompletion } from '@/components/assessment/AssessmentCompletion';
-import { SessionManager } from '@/components/assessment/SessionManager';
 import { PreSurveyUpload } from '@/components/assessment/PreSurveyUpload';
 import { useAssessmentLogic } from '@/components/assessment/useAssessmentLogic';
-import { useSearchParams } from 'react-router-dom';
+import AccessCodeVerifier from '@/components/dashboard/AccessCodeVerifier';
 
 const Assessment = () => {
   console.log('Assessment component rendered');
-  
-  const [searchParams] = useSearchParams();
-  console.log('Search params:', Object.fromEntries(searchParams.entries()));
   
   const {
     isCompleted,
@@ -21,7 +17,6 @@ const Assessment = () => {
     showPreSurveyUpload,
     sessionToken,
     accessCodeData,
-    prefilledCode,
     authLoading,
     user,
     getSurveyIdFromAccessCode,
@@ -29,9 +24,6 @@ const Assessment = () => {
     handlePreSurveyUploadComplete,
     handleSurveyComplete,
     handleExitAssessment,
-    setIsVerified,
-    setAccessCodeData,
-    setSessionToken
   } = useAssessmentLogic();
 
   console.log('Assessment state:', {
@@ -40,17 +32,9 @@ const Assessment = () => {
     showPreSurveyUpload,
     sessionToken,
     accessCodeData,
-    prefilledCode,
     authLoading,
     user: user ? { id: user.id, email: user.email } : null
   });
-
-  const handleSessionValidated = React.useCallback(({ accessCodeData: validatedAccessCodeData, sessionToken: validatedSessionToken }: { accessCodeData: any; sessionToken: string }) => {
-    console.log('Session validated:', { validatedAccessCodeData, validatedSessionToken });
-    setAccessCodeData(validatedAccessCodeData);
-    setSessionToken(validatedSessionToken);
-    setIsVerified(true);
-  }, [setAccessCodeData, setSessionToken, setIsVerified]);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -83,14 +67,25 @@ const Assessment = () => {
   }
 
   if (!isVerified || !sessionToken) {
-    console.log('Not verified or no session token, showing session manager');
+    console.log('Not verified or no session token, showing access code verifier');
     return (
-      <SessionManager 
-        searchParams={searchParams} 
-        onSessionValidated={handleSessionValidated}
-      >
-        <AssessmentWelcome onVerified={handleAccessCodeVerified} prefilledCode={prefilledCode} />
-      </SessionManager>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-atlas-navy mb-2">
+              Atlas Assessment
+            </h1>
+            <p className="text-gray-600">Enter your access code to begin</p>
+          </div>
+          
+          <AccessCodeVerifier 
+            onVerified={() => {
+              // This will be handled by the assessment logic
+              console.log('Access code verified from assessment page');
+            }}
+          />
+        </div>
+      </div>
     );
   }
 

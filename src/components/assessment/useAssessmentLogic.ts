@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useReports } from '@/hooks/useReports';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,13 +14,11 @@ const SURVEY_TYPE_MAPPING: Record<string, string> = {
 export const useAssessmentLogic = () => {
   console.log('useAssessmentLogic hook initialized');
   
-  const [searchParams] = useSearchParams();
   const [isCompleted, setIsCompleted] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
   const [showPreSurveyUpload, setShowPreSurveyUpload] = useState(false);
   const [accessCodeData, setAccessCodeData] = useState<any>(null);
   const [sessionToken, setSessionToken] = useState<string | null>(null);
-  const [prefilledCode, setPrefilledCode] = useState<string | null>(null);
   
   const { user, isLoading: authLoading } = useAuth();
   const { createReport } = useReports();
@@ -33,7 +31,6 @@ export const useAssessmentLogic = () => {
     showPreSurveyUpload,
     accessCodeData,
     sessionToken,
-    prefilledCode,
     authLoading,
     user: user ? { id: user.id, email: user.email } : null
   });
@@ -58,14 +55,7 @@ export const useAssessmentLogic = () => {
       navigate('/auth');
       return;
     }
-
-    // Check if there's a pre-filled access code from the URL
-    const codeFromUrl = searchParams.get('code');
-    if (codeFromUrl && codeFromUrl !== prefilledCode) {
-      console.log('Found code from URL:', codeFromUrl);
-      setPrefilledCode(codeFromUrl);
-    }
-  }, [searchParams, user, authLoading, navigate, toast, prefilledCode]);
+  }, [user, authLoading, navigate, toast]);
 
   const generateSessionToken = () => {
     const token = Date.now().toString(36) + Math.random().toString(36).substr(2);
@@ -87,12 +77,6 @@ export const useAssessmentLogic = () => {
     setSessionToken(token);
     setIsVerified(true);
     setShowPreSurveyUpload(true); // Show upload step after verification
-    
-    // Update URL to include session token
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set('token', token);
-    newSearchParams.delete('code');
-    navigate(`/assessment?${newSearchParams.toString()}`, { replace: true });
   };
 
   const handlePreSurveyUploadComplete = () => {
@@ -186,7 +170,6 @@ export const useAssessmentLogic = () => {
     showPreSurveyUpload,
     sessionToken,
     accessCodeData,
-    prefilledCode,
     authLoading,
     user,
     getSurveyIdFromAccessCode,

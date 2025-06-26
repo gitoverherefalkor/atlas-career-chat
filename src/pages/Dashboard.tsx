@@ -1,22 +1,25 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, User, LogOut, Plus, Settings, Play } from 'lucide-react';
+import { Loader2, User, LogOut, Settings, Play } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
 import { useSurveySession } from '@/hooks/useSurveySession';
 import ReportDisplay from '@/components/ReportDisplay';
+import PurchaseAccessButton from '@/components/dashboard/PurchaseAccessButton';
+import AccessCodeVerifier from '@/components/dashboard/AccessCodeVerifier';
 
 const Dashboard = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { reports, isLoading: reportsLoading } = useReports();
   const [isReportSectionExpanded, setIsReportSectionExpanded] = useState(false);
+  const [showAccessCodeVerifier, setShowAccessCodeVerifier] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -107,7 +110,7 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Only show welcome section and quick actions when report section is not expanded */}
+        {/* Welcome Section - Only show when report section is not expanded */}
         {!isReportSectionExpanded && (
           <>
             <div className="mb-8">
@@ -115,13 +118,14 @@ const Dashboard = () => {
                 Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
               </h2>
               <p className="text-gray-600">
-                Manage your career assessments and view your personalized reports.
+                Your secure space to manage career assessments and view personalized reports.
               </p>
             </div>
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 gap-6 mb-8">
-              {savedSession ? (
+              {/* Continue Assessment Card */}
+              {savedSession && (
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
@@ -135,26 +139,35 @@ const Dashboard = () => {
                     </div>
                   </CardContent>
                 </Card>
-              ) : (
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-atlas-blue bg-opacity-10 p-3 rounded-full">
-                        <Plus className="h-6 w-6 text-atlas-blue" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Take Assessment</h3>
-                        <p className="text-sm text-gray-600">Start a new career assessment</p>
-                      </div>
+              )}
+
+              {/* Purchase Access Button */}
+              <PurchaseAccessButton />
+
+              {/* Manual Access Code Entry */}
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAccessCodeVerifier(!showAccessCodeVerifier)}>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-blue-100 p-3 rounded-full">
+                      <User className="h-6 w-6 text-blue-600" />
                     </div>
-                  </CardContent>
-                </Card>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Already have an access code?</h3>
+                      <p className="text-sm text-gray-600">Enter your access code to start the assessment</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Access Code Verifier */}
+              {showAccessCodeVerifier && (
+                <AccessCodeVerifier onVerified={() => setShowAccessCodeVerifier(false)} />
               )}
             </div>
           </>
         )}
 
-        {/* Report Display - Let ReportDisplay handle its own title */}
+        {/* Report Display */}
         {latestReport && (
           <ReportDisplay 
             userEmail={profile?.email} 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, User, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, Lock, User, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
@@ -24,12 +24,8 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Check URL params for flow and access code
+  // Check URL params for initial flow
   const flowFromUrl = searchParams.get('flow');
-  const accessCodeFromUrl = searchParams.get('code');
-  const emailFromUrl = searchParams.get('email');
-  const firstNameFromUrl = searchParams.get('firstName');
-  const lastNameFromUrl = searchParams.get('lastName');
 
   useEffect(() => {
     // Set initial flow based on URL parameter
@@ -37,35 +33,15 @@ const Auth = () => {
       setIsLogin(false);
     }
 
-    // Pre-fill form with purchase data if available
-    if (emailFromUrl || firstNameFromUrl || lastNameFromUrl) {
-      setFormData(prev => ({
-        ...prev,
-        email: emailFromUrl || prev.email,
-        firstName: firstNameFromUrl || prev.firstName,
-        lastName: lastNameFromUrl || prev.lastName
-      }));
-    }
-
-    // Store access code in localStorage if present (for use after email confirmation)
-    if (accessCodeFromUrl) {
-      localStorage.setItem('pendingAccessCode', accessCodeFromUrl);
-    }
-
     // Check if user is already logged in
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // If user is already logged in and has access code, go to assessment
-        if (accessCodeFromUrl) {
-          navigate(`/assessment?code=${accessCodeFromUrl}`);
-        } else {
-          navigate('/dashboard');
-        }
+        navigate('/dashboard');
       }
     };
     checkAuth();
-  }, [navigate, flowFromUrl, accessCodeFromUrl, emailFromUrl, firstNameFromUrl, lastNameFromUrl]);
+  }, [navigate, flowFromUrl]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -97,22 +73,11 @@ const Auth = () => {
             title: "Welcome back!",
             description: "You've been logged in successfully.",
           });
-          
-          // Check for pending access code or URL parameter
-          const pendingCode = localStorage.getItem('pendingAccessCode') || accessCodeFromUrl;
-          if (pendingCode) {
-            localStorage.removeItem('pendingAccessCode');
-            navigate(`/assessment?code=${pendingCode}`);
-          } else {
-            navigate('/dashboard');
-          }
+          navigate('/dashboard');
         }
       } else {
-        // Build redirect URL that includes access code as a URL parameter
-        let redirectUrl = `https://atlas-assessments.com/auth/confirm`;
-        if (accessCodeFromUrl) {
-          redirectUrl += `?code=${accessCodeFromUrl}`;
-        }
+        // Simple redirect URL - always go to dashboard after email verification
+        const redirectUrl = `https://atlas-assessments.com/dashboard`;
         
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
@@ -137,9 +102,8 @@ const Auth = () => {
             description: "Please check your email to verify your account before proceeding.",
           });
           
-          // Show verification message instead of immediate redirect
           setError('Please check your email and click the verification link to activate your account. Once verified, you can sign in below.');
-          setIsLogin(true); // Switch to login mode
+          setIsLogin(true);
         }
       }
     } catch (error) {
@@ -157,22 +121,10 @@ const Auth = () => {
           <h1 className="text-3xl font-bold text-atlas-navy mb-2">
             Atlas Assessment
           </h1>
-          {!accessCodeFromUrl && (
-            <p className="text-gray-600">
-              {isLogin ? 'Welcome back!' : 'Create your account'}
-            </p>
-          )}
+          <p className="text-gray-600">
+            {isLogin ? 'Welcome back!' : 'Create your account to get started'}
+          </p>
         </div>
-
-        {accessCodeFromUrl && (
-          <Alert className="mb-6 border-green-200 bg-green-50">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              Your access code <strong>{accessCodeFromUrl}</strong> is ready! 
-              {isLogin ? ' Sign in to start your assessment.' : ' Create an account to begin.'}
-            </AlertDescription>
-          </Alert>
-        )}
 
         <Card>
           <CardHeader>
@@ -292,34 +244,27 @@ const Auth = () => {
               </Button>
             </form>
 
-            {/* Only show account switching if user doesn't have an access code (hasn't purchased) */}
-            {!accessCodeFromUrl && (
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600">
-                  {isLogin ? "Need to purchase an access code first?" : "Already have an account?"}
-                </p>
-                <Button
-                  variant="link"
-                  onClick={() => {
-                    if (isLogin) {
-                      navigate('/');
-                    } else {
-                      setIsLogin(true);
-                      setError('');
-                      setFormData({
-                        email: '',
-                        password: '',
-                        firstName: '',
-                        lastName: ''
-                      });
-                    }
-                  }}
-                  className="p-0 h-auto font-medium"
-                >
-                  {isLogin ? 'Go to homepage to purchase' : 'Sign in here'}
-                </Button>
-              </div>
-            )}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                {isLogin ? "Need to create an account?" : "Already have an account?"}
+              </p>
+              <Button
+                variant="link"
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setError('');
+                  setFormData({
+                    email: '',
+                    password: '',
+                    firstName: '',
+                    lastName: ''
+                  });
+                }}
+                className="p-0 h-auto font-medium"
+              >
+                {isLogin ? 'Sign up here' : 'Sign in here'}
+              </Button>
+            </div>
 
             <div className="mt-6 text-center">
               <Button
