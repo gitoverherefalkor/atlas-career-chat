@@ -14,7 +14,7 @@ export const useAccessCodeHandling = () => {
       return;
     }
     
-    const token = onSessionCreated();
+    const token = onSessionCreated('dummy-token'); // Fix: Pass a token parameter
     
     setAccessCodeData(data);
     setIsVerified(true);

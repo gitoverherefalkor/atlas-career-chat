@@ -1,12 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Star } from 'lucide-react';
-import { CheckoutForm } from './CheckoutForm';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 const Pricing = () => {
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
   const features = [
     "Analyses adjusted to your primary goals",
     "Top 3 suggestions + 7 runner-ups + 3 out-of-the-box careers",
@@ -18,6 +20,16 @@ const Pricing = () => {
     "AI impact rating on suggested roles",
     "Bonus: Realistic dream job pivot assessment"
   ];
+
+  const handleGetBetaAccess = () => {
+    if (user) {
+      // User is logged in, go to dashboard
+      navigate('/dashboard');
+    } else {
+      // User is not logged in, go to auth page
+      navigate('/auth');
+    }
+  };
 
   return <section id="pricing" className="section bg-gray-50">
       <div className="container-atlas">
@@ -52,22 +64,9 @@ const Pricing = () => {
                   </li>)}
               </ul>
               
-              <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full btn-primary text-lg py-6">
-                    Get Beta Access Now
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
-                  <DialogHeader>
-                    <DialogTitle>Complete Your Purchase</DialogTitle>
-                    <DialogDescription>
-                      Enter your details to receive your Atlas Assessment access code.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <CheckoutForm />
-                </DialogContent>
-              </Dialog>
+              <Button onClick={handleGetBetaAccess} className="w-full btn-primary text-lg py-6">
+                Get Beta Access Now
+              </Button>
               
               <p className="text-sm text-gray-500 mt-4 text-center">
                 Your journey begins here. After purchase, you'll receive immediate access to the questionnaire, get quick results, and start your interactive AI coaching session.
