@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -107,11 +108,10 @@ const Auth = () => {
           }
         }
       } else {
-        // Build redirect URL that includes access code in the path
+        // Build redirect URL that includes access code as a URL parameter
         let redirectUrl = `https://atlas-assessments.com/auth/confirm`;
         if (accessCodeFromUrl) {
-          // Encode the access code in the redirect_to parameter
-          redirectUrl = `https://atlas-assessments.com/assessment?code=${accessCodeFromUrl}`;
+          redirectUrl += `?code=${accessCodeFromUrl}`;
         }
         
         const { data, error } = await supabase.auth.signUp({

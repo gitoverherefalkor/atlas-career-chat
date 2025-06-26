@@ -18,7 +18,7 @@ const AuthConfirm = () => {
       const token = searchParams.get('token');
       const type = searchParams.get('type');
       const redirectTo = searchParams.get('redirect_to');
-      const accessCode = searchParams.get('code'); // Get access code from URL
+      const accessCode = searchParams.get('code'); // Get access code from URL parameters
 
       console.log('AuthConfirm params:', { token, type, redirectTo, accessCode });
 
