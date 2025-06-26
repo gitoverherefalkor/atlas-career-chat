@@ -107,10 +107,11 @@ const Auth = () => {
           }
         }
       } else {
-        // Build redirect URL with access code if present
+        // Build redirect URL that includes access code in the path
         let redirectUrl = `https://atlas-assessments.com/auth/confirm`;
         if (accessCodeFromUrl) {
-          redirectUrl += `?code=${accessCodeFromUrl}`;
+          // Encode the access code in the redirect_to parameter
+          redirectUrl = `https://atlas-assessments.com/assessment?code=${accessCodeFromUrl}`;
         }
         
         const { data, error } = await supabase.auth.signUp({
