@@ -1,10 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "https://esm.sh/resend@2.0.0";
-import { Webhook } from "https://esm.sh/standardwebhooks@1.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-const hookSecret = Deno.env.get("SEND_EMAIL_HOOK_SECRET") as string;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -26,32 +24,15 @@ serve(async (req) => {
     const payload = await req.text();
     console.log("Received payload:", payload);
     
-    const headers = Object.fromEntries(req.headers);
-    console.log("Headers:", headers);
-    
-    const wh = new Webhook(hookSecret);
+    // Parse the payload directly since it's coming from Supabase Auth
+    const webhookData = JSON.parse(payload);
     
     const {
       user,
       email_data: { token, token_hash, redirect_to, email_action_type },
-    } = wh.verify(payload, headers) as {
-      user: {
-        email: string;
-        user_metadata?: {
-          first_name?: string;
-          last_name?: string;
-        };
-      };
-      email_data: {
-        token: string;
-        token_hash: string;
-        redirect_to: string;
-        email_action_type: string;
-        site_url: string;
-      };
-    };
+    } = webhookData;
 
-    console.log("Webhook verified successfully for user:", user.email);
+    console.log("Processing webhook for user:", user.email);
 
     const firstName = user.user_metadata?.first_name || "there";
     const confirmationUrl = `https://atlas-assessments.com/auth/confirm?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent("https://atlas-assessments.com/")}`;
