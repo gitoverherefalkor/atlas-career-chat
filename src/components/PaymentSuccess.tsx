@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +11,11 @@ const PaymentSuccess = () => {
   const [isProcessing, setIsProcessing] = useState(true);
   const [isComplete, setIsComplete] = useState(false);
   const [accessCode, setAccessCode] = useState<string | null>(null);
+  const [purchaseData, setPurchaseData] = useState<{
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+  }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -52,6 +56,11 @@ const PaymentSuccess = () => {
         if (data?.accessCode) {
           setAccessCode(data.accessCode);
         }
+
+        // Store purchase data for pre-filling the auth form
+        if (data?.purchaseData) {
+          setPurchaseData(data.purchaseData);
+        }
         
         setIsComplete(true);
         toast({
@@ -78,8 +87,18 @@ const PaymentSuccess = () => {
 
   const handleStartAssessment = () => {
     if (!user) {
-      // User needs to create an account first - redirect to auth page with access code
-      navigate(`/auth?code=${accessCode}&flow=signup`);
+      // Build URL with access code and purchase data for pre-filling
+      const params = new URLSearchParams({
+        code: accessCode || '',
+        flow: 'signup'
+      });
+      
+      // Add purchase data if available
+      if (purchaseData.email) params.append('email', purchaseData.email);
+      if (purchaseData.firstName) params.append('firstName', purchaseData.firstName);
+      if (purchaseData.lastName) params.append('lastName', purchaseData.lastName);
+      
+      navigate(`/auth?${params.toString()}`);
     } else {
       // User is authenticated - go directly to assessment with access code
       navigate(`/assessment?code=${accessCode}`);

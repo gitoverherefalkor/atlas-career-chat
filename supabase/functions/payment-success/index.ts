@@ -192,6 +192,11 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         accessCode: accessCode,
+        purchaseData: {
+          email: customerEmail,
+          firstName: firstName,
+          lastName: lastName
+        },
         message: "Payment processed successfully" 
       }),
       { 

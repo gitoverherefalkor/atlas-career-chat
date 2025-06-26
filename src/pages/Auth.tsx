@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,11 +25,24 @@ const Auth = () => {
   // Check URL params for flow and access code
   const flowFromUrl = searchParams.get('flow');
   const accessCodeFromUrl = searchParams.get('code');
+  const emailFromUrl = searchParams.get('email');
+  const firstNameFromUrl = searchParams.get('firstName');
+  const lastNameFromUrl = searchParams.get('lastName');
 
   useEffect(() => {
     // Set initial flow based on URL parameter
     if (flowFromUrl === 'signup') {
       setIsLogin(false);
+    }
+
+    // Pre-fill form with purchase data if available
+    if (emailFromUrl || firstNameFromUrl || lastNameFromUrl) {
+      setFormData(prev => ({
+        ...prev,
+        email: emailFromUrl || prev.email,
+        firstName: firstNameFromUrl || prev.firstName,
+        lastName: lastNameFromUrl || prev.lastName
+      }));
     }
 
     // Check if user is already logged in
@@ -46,7 +58,7 @@ const Auth = () => {
       }
     };
     checkAuth();
-  }, [navigate, flowFromUrl, accessCodeFromUrl]);
+  }, [navigate, flowFromUrl, accessCodeFromUrl, emailFromUrl, firstNameFromUrl, lastNameFromUrl]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -132,18 +144,11 @@ const Auth = () => {
           <h1 className="text-3xl font-bold text-atlas-navy mb-2">
             Atlas Assessment
           </h1>
-          {accessCodeFromUrl && (
-            <div className="flex items-center justify-center gap-2 mb-4">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <p className="text-green-700 font-medium">Purchase Complete!</p>
-            </div>
+          {!accessCodeFromUrl && (
+            <p className="text-gray-600">
+              {isLogin ? 'Welcome back!' : 'Create your account'}
+            </p>
           )}
-          <p className="text-gray-600">
-            {accessCodeFromUrl 
-              ? (isLogin ? 'Sign in to start your assessment' : 'Create your account to begin')
-              : (isLogin ? 'Welcome back!' : 'Create your account')
-            }
-          </p>
         </div>
 
         {accessCodeFromUrl && (
@@ -277,10 +282,10 @@ const Auth = () => {
                   setIsLogin(!isLogin);
                   setError('');
                   setFormData({
-                    email: '',
+                    email: emailFromUrl || '',
                     password: '',
-                    firstName: '',
-                    lastName: ''
+                    firstName: firstNameFromUrl || '',
+                    lastName: lastNameFromUrl || ''
                   });
                 }}
                 className="p-0 h-auto font-medium"
