@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -5,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, User, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Loader2, Mail, Lock, User, ArrowLeft, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -238,18 +240,25 @@ const Auth = () => {
                   <Input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={formData.password}
                     onChange={handleInputChange}
-                    className="pl-10"
+                    className="pl-10 pr-10"
                     placeholder={isLogin ? "Enter your password" : "Create a password"}
-                    minLength={6}
+                    minLength={8}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
                 {!isLogin && (
                   <p className="text-xs text-gray-500 mt-1">
-                    Password must be at least 6 characters long
+                    Password must be at least 8 characters long
                   </p>
                 )}
               </div>
@@ -272,27 +281,34 @@ const Auth = () => {
               </Button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                {isLogin ? "Don't have an account?" : "Already have an account?"}
-              </p>
-              <Button
-                variant="link"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError('');
-                  setFormData({
-                    email: emailFromUrl || '',
-                    password: '',
-                    firstName: firstNameFromUrl || '',
-                    lastName: lastNameFromUrl || ''
-                  });
-                }}
-                className="p-0 h-auto font-medium"
-              >
-                {isLogin ? 'Create one here' : 'Sign in here'}
-              </Button>
-            </div>
+            {/* Only show account switching if user doesn't have an access code (hasn't purchased) */}
+            {!accessCodeFromUrl && (
+              <div className="mt-6 text-center">
+                <p className="text-sm text-gray-600">
+                  {isLogin ? "Need to purchase an access code first?" : "Already have an account?"}
+                </p>
+                <Button
+                  variant="link"
+                  onClick={() => {
+                    if (isLogin) {
+                      navigate('/');
+                    } else {
+                      setIsLogin(true);
+                      setError('');
+                      setFormData({
+                        email: '',
+                        password: '',
+                        firstName: '',
+                        lastName: ''
+                      });
+                    }
+                  }}
+                  className="p-0 h-auto font-medium"
+                >
+                  {isLogin ? 'Go to homepage to purchase' : 'Sign in here'}
+                </Button>
+              </div>
+            )}
 
             <div className="mt-6 text-center">
               <Button
