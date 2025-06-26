@@ -86,6 +86,18 @@ async function extractPDFText(arrayBuffer: ArrayBuffer): Promise<string> {
   throw new Error('All PDF extraction methods failed');
 }
 
+// Function to clean text for database storage
+function cleanTextForDatabase(text: string): string {
+  return text
+    // Remove null bytes and other problematic Unicode characters
+    .replace(/\u0000/g, '') // Remove null bytes
+    .replace(/[\u0001-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F]/g, '') // Remove control characters
+    .replace(/\uFEFF/g, '') // Remove BOM
+    // Normalize whitespace
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 serve(async (req) => {
   console.log('=== EDGE FUNCTION STARTED ===');
   console.log('Method:', req.method);
@@ -193,10 +205,9 @@ serve(async (req) => {
       throw new Error(`Insufficient content extracted. Got ${fileContent?.length || 0} characters`);
     }
 
-    // Clean the content
-    fileContent = fileContent
-      .replace(/\s+/g, ' ')
-      .trim();
+    // Clean the content for database storage
+    fileContent = cleanTextForDatabase(fileContent);
+    console.log('Text cleaned for database, final length:', fileContent.length);
 
     const wordCount = fileContent.split(/\s+/).length;
     console.log('Content validation passed:', {
