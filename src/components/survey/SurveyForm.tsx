@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
 import { useSurveySession } from '@/hooks/useSurveySession';
@@ -13,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import { mapResumeToSurveyAnswers } from '@/utils/resumeToSurveyMapper';
 
 interface SurveyFormProps {
   surveyId: string;
@@ -75,6 +75,39 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       setIsSessionLoaded(true);
     }
   }, [survey, isSessionLoaded, getStoredSession]);
+
+  // Load resume data and apply pre-fills - ONLY ONCE after session is loaded
+  useEffect(() => {
+    if (survey && isSessionLoaded && user && Object.keys(responses).length === 0) {
+      console.log('Checking for resume data to pre-fill...');
+      
+      // Get user profile with resume data
+      supabase
+        .from('profiles')
+        .select('resume_data')
+        .eq('id', user.id)
+        .maybeSingle()
+        .then(({ data: profile, error }) => {
+          if (error) {
+            console.error('Error fetching profile for pre-fill:', error);
+            return;
+          }
+
+          if (profile?.resume_data) {
+            console.log('Found resume data, applying pre-fills...');
+            const preFillData = mapResumeToSurveyAnswers(profile.resume_data);
+            
+            if (Object.keys(preFillData).length > 0) {
+              setResponses(preFillData);
+              toast({
+                title: "Survey Pre-filled",
+                description: `${Object.keys(preFillData).length} fields have been pre-filled from your resume. Please review and update as needed.`,
+              });
+            }
+          }
+        });
+    }
+  }, [survey, isSessionLoaded, user, responses, toast]);
 
   // Save session whenever state changes - but only after session is loaded
   useEffect(() => {

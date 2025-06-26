@@ -42,8 +42,8 @@ serve(async (req) => {
       fileContent = await file.text();
     }
 
-    // Use OpenAI to extract structured data from resume
-    const prompt = `
+    // Step 1: Extract basic structured data
+    const basicExtractionPrompt = `
 You are a professional resume parser. Extract the following information from this resume and return it as a JSON object with these exact fields:
 
 {
@@ -75,7 +75,6 @@ You are a professional resume parser. Extract the following information from thi
     }
   ],
   "skills": ["array of skills"],
-  "industries": ["array of industries worked in"],
   "key_achievements": ["array of key achievements"]
 }
 
@@ -85,7 +84,7 @@ Resume content:
 ${fileContent}
 `;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const basicResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${openAIApiKey}`,
@@ -98,36 +97,99 @@ ${fileContent}
             role: 'system', 
             content: 'You are a professional resume parser that extracts structured data from resumes and returns valid JSON only.' 
           },
-          { role: 'user', content: prompt }
+          { role: 'user', content: basicExtractionPrompt }
         ],
         temperature: 0.1,
       }),
     });
 
-    if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.statusText}`);
+    if (!basicResponse.ok) {
+      throw new Error(`OpenAI API error: ${basicResponse.statusText}`);
     }
 
-    const data = await response.json();
-    const extractedText = data.choices[0].message.content;
-
-    console.log('OpenAI extracted text:', extractedText);
-
-    // Parse the JSON response
-    let extractedData;
+    const basicData = await basicResponse.json();
+    const basicExtractedText = basicData.choices[0].message.content;
+    
+    let basicExtractedData;
     try {
-      extractedData = JSON.parse(extractedText);
+      basicExtractedData = JSON.parse(basicExtractedText);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response as JSON:', parseError);
-      throw new Error('Failed to parse resume data');
+      console.error('Failed to parse basic extraction response as JSON:', parseError);
+      throw new Error('Failed to parse basic resume data');
     }
 
-    console.log('Parsed resume data:', extractedData);
+    // Step 2: Intelligent analysis with GPT-4o for complex deductions
+    const intelligentAnalysisPrompt = `
+You are an expert career analyst. Analyze this resume content and make intelligent deductions about the person's interests, accomplishments, and industries. Return a JSON object with these exact fields:
+
+{
+  "interests": ["array of professional/personal interests deduced from projects, activities, volunteer work, hobbies mentioned"],
+  "accomplishments_most_proud": ["array of 3-5 most significant accomplishments that show impact and results"],
+  "industries": ["array of industries the person has worked in or has experience with, inferred from company types, role contexts, and projects"]
+}
+
+Guidelines:
+- For interests: Look for patterns in projects, volunteer work, side activities, certifications that indicate genuine interests
+- For accomplishments: Focus on quantifiable results, leadership roles, innovations, or significant contributions that demonstrate impact
+- For industries: Go beyond just job titles - consider company types, project contexts, clients worked with, domain knowledge demonstrated
+
+Only return the JSON object, no additional text.
+
+Resume content:
+${fileContent}
+`;
+
+    const intelligentResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { 
+            role: 'system', 
+            content: 'You are an expert career analyst who makes intelligent deductions from professional documents.' 
+          },
+          { role: 'user', content: intelligentAnalysisPrompt }
+        ],
+        temperature: 0.3,
+      }),
+    });
+
+    if (!intelligentResponse.ok) {
+      throw new Error(`OpenAI intelligent analysis error: ${intelligentResponse.statusText}`);
+    }
+
+    const intelligentData = await intelligentResponse.json();
+    const intelligentExtractedText = intelligentData.choices[0].message.content;
+    
+    let intelligentExtractedData;
+    try {
+      intelligentExtractedData = JSON.parse(intelligentExtractedText);
+    } catch (parseError) {
+      console.error('Failed to parse intelligent analysis response as JSON:', parseError);
+      // If intelligent analysis fails, continue with basic data only
+      intelligentExtractedData = {
+        interests: [],
+        accomplishments_most_proud: [],
+        industries: []
+      };
+    }
+
+    // Combine both extractions
+    const combinedExtractedData = {
+      ...basicExtractedData,
+      ...intelligentExtractedData
+    };
+
+    console.log('Combined extracted data:', combinedExtractedData);
 
     return new Response(JSON.stringify({ 
       success: true,
-      extractedData,
-      message: 'Resume processed successfully'
+      extractedData: combinedExtractedData,
+      message: 'Resume processed successfully with intelligent analysis'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
