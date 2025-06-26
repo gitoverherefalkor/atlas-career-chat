@@ -11,6 +11,7 @@ export const ResumeUpload = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [hasProcessed, setHasProcessed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -40,21 +41,24 @@ export const ResumeUpload = () => {
       }
 
       setUploadedFile(file);
+      setHasProcessed(false);
+      
+      // Auto-process the file immediately after upload
+      handleUploadAndProcess(file);
     }
   };
 
-  const handleUploadAndProcess = async () => {
-    if (!uploadedFile || !user) return;
+  const handleUploadAndProcess = async (fileToProcess?: File) => {
+    const file = fileToProcess || uploadedFile;
+    if (!file || !user) return;
 
     setIsUploading(true);
     setIsProcessing(true);
 
     try {
-      // First upload the file to a temporary location or process it directly
       const formData = new FormData();
-      formData.append('file', uploadedFile);
+      formData.append('file', file);
 
-      // Call edge function to process resume
       const { data, error } = await supabase.functions.invoke('parse-resume', {
         body: formData
       });
@@ -63,12 +67,12 @@ export const ResumeUpload = () => {
         throw error;
       }
 
-      // Update user profile with extracted data
       if (data?.extractedData) {
         const { error: updateError } = await supabase
           .from('profiles')
           .update({
             resume_data: data.extractedData,
+            resume_uploaded_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
           .eq('id', user.id);
@@ -77,6 +81,7 @@ export const ResumeUpload = () => {
           throw updateError;
         }
 
+        setHasProcessed(true);
         toast({
           title: "Resume processed successfully",
           description: "Your professional information has been extracted and will pre-fill your survey.",
@@ -87,7 +92,7 @@ export const ResumeUpload = () => {
       console.error('Error processing resume:', error);
       toast({
         title: "Processing failed",
-        description: "Failed to process your resume. Please try again.",
+        description: "Failed to process your resume. Please try again or continue manually.",
         variant: "destructive",
       });
     } finally {
@@ -98,6 +103,7 @@ export const ResumeUpload = () => {
 
   const handleRemoveFile = () => {
     setUploadedFile(null);
+    setHasProcessed(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -114,18 +120,21 @@ export const ResumeUpload = () => {
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Upload your resume to automatically extract your professional experience, skills, and education.
+            Upload LinkedIn PDF or your own recent resume if you do not have a detailed or updated LinkedIn resume.
           </p>
 
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
             {uploadedFile ? (
               <div className="space-y-4">
                 <div className="flex items-center justify-center space-x-2">
+                  {hasProcessed && <CheckCircle className="h-6 w-6 text-green-600" />}
                   <FileText className="h-8 w-8 text-blue-600" />
                   <div className="text-left">
                     <p className="font-medium">{uploadedFile.name}</p>
                     <p className="text-sm text-gray-500">
                       {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
+                      {hasProcessed && " - Processed ✓"}
+                      {isProcessing && " - Processing..."}
                     </p>
                   </div>
                   <Button
@@ -138,30 +147,20 @@ export const ResumeUpload = () => {
                   </Button>
                 </div>
 
-                <Button 
-                  onClick={handleUploadAndProcess}
-                  disabled={isUploading}
-                  className="w-full"
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processing Resume...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Process Resume
-                    </>
-                  )}
-                </Button>
+                {isProcessing && (
+                  <div className="flex items-center justify-center space-x-2 text-sm text-blue-600">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Processing your resume...</span>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="space-y-4">
                 <Upload className="h-12 w-12 text-gray-400 mx-auto" />
                 <div>
-                  <p className="text-lg font-medium">Upload your resume</p>
-                  <p className="text-sm text-gray-500">PDF or Word document, up to 5MB</p>
+                  <p className="text-lg font-medium">Upload your document</p>
+                  <p className="text-sm text-gray-500">LinkedIn PDF or resume (Word/PDF), up to 5MB</p>
+                  <p className="text-xs text-gray-400 mt-1">Processing will start automatically after upload</p>
                 </div>
                 <Button onClick={() => fileInputRef.current?.click()}>
                   Select File

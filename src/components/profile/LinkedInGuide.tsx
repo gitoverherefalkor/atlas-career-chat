@@ -15,7 +15,7 @@ export const LinkedInGuide = () => {
       <CardContent>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Since LinkedIn's API doesn't provide full profile data, export your LinkedIn profile as a PDF and upload it here.
+            Since LinkedIn's API doesn't provide full profile data, export your LinkedIn profile as a PDF and upload it to the right.
           </p>
           
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -66,7 +66,7 @@ export const LinkedInGuide = () => {
             <Download className="h-4 w-4" />
             <ArrowRight className="h-4 w-4" />
             <Upload className="h-4 w-4" />
-            <span>Export from LinkedIn → Upload below</span>
+            <span>Export from LinkedIn → Upload to the right</span>
           </div>
 
           <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">

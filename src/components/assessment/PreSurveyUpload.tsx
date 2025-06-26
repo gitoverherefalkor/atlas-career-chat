@@ -47,18 +47,22 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
 
       setUploadedFile(file);
       setHasProcessed(false);
+      
+      // Auto-process the file immediately after upload
+      handleUploadAndProcess(file);
     }
   };
 
-  const handleUploadAndProcess = async () => {
-    if (!uploadedFile || !user) return;
+  const handleUploadAndProcess = async (fileToProcess?: File) => {
+    const file = fileToProcess || uploadedFile;
+    if (!file || !user) return;
 
     setIsUploading(true);
     setIsProcessing(true);
 
     try {
       const formData = new FormData();
-      formData.append('file', uploadedFile);
+      formData.append('file', file);
 
       const { data, error } = await supabase.functions.invoke('parse-resume', {
         body: formData
@@ -114,6 +118,9 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
     onContinue();
   };
 
+  // Continue button should be disabled while processing
+  const isContinueDisabled = isProcessing;
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
@@ -139,7 +146,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-gray-600">
-                  Upload your most recent resume to automatically extract your professional experience, skills, and education.
+                  Upload LinkedIn PDF or your own recent resume if you do not have a detailed or updated LinkedIn resume.
                 </p>
 
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -153,6 +160,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                           <p className="text-sm text-gray-500">
                             {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
                             {hasProcessed && " - Processed ✓"}
+                            {isProcessing && " - Processing..."}
                           </p>
                         </div>
                         <Button
@@ -165,32 +173,20 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                         </Button>
                       </div>
 
-                      {!hasProcessed && (
-                        <Button 
-                          onClick={handleUploadAndProcess}
-                          disabled={isUploading}
-                          className="w-full"
-                        >
-                          {isProcessing ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Processing Resume...
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="h-4 w-4 mr-2" />
-                              Process Resume
-                            </>
-                          )}
-                        </Button>
+                      {isProcessing && (
+                        <div className="flex items-center justify-center space-x-2 text-sm text-blue-600">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Processing your document...</span>
+                        </div>
                       )}
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <Upload className="h-12 w-12 text-gray-400 mx-auto" />
                       <div>
-                        <p className="text-lg font-medium">Upload your resume</p>
-                        <p className="text-sm text-gray-500">PDF or Word document, up to 5MB</p>
+                        <p className="text-lg font-medium">Upload your document</p>
+                        <p className="text-sm text-gray-500">LinkedIn PDF or resume (Word/PDF), up to 5MB</p>
+                        <p className="text-xs text-gray-400 mt-1">Processing will start automatically after upload</p>
                       </div>
                       <Button onClick={() => fileInputRef.current?.click()}>
                         Select File
@@ -215,6 +211,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             variant="outline" 
             onClick={handleSkip}
             size="lg"
+            disabled={isContinueDisabled}
           >
             Skip for Now
           </Button>
@@ -222,9 +219,19 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             onClick={onContinue}
             size="lg"
             className="flex items-center"
+            disabled={isContinueDisabled}
           >
-            Continue to Assessment
-            <ArrowRight className="h-4 w-4 ml-2" />
+            {isProcessing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                Continue to Assessment
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </>
+            )}
           </Button>
         </div>
       </div>
