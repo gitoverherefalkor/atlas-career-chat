@@ -12,6 +12,7 @@ export const ResumeUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [hasProcessed, setHasProcessed] = useState(false);
+  const [processingResult, setProcessingResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -42,6 +43,7 @@ export const ResumeUpload = () => {
 
       setUploadedFile(file);
       setHasProcessed(false);
+      setProcessingResult(null);
       
       // Auto-process the file immediately after upload
       handleUploadAndProcess(file);
@@ -67,32 +69,47 @@ export const ResumeUpload = () => {
         throw error;
       }
 
-      if (data?.extractedData) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            resume_data: data.extractedData,
-            resume_uploaded_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', user.id);
+      console.log('Parse resume response:', data);
+      setProcessingResult(data);
 
-        if (updateError) {
-          throw updateError;
+      if (data?.success && data?.extractedText) {
+        // Check if we got meaningful content
+        const wordCount = data.wordCount || 0;
+        const charCount = data.contentLength || 0;
+        
+        if (wordCount > 20 && charCount > 100) {
+          setHasProcessed(true);
+          toast({
+            title: "Resume processed successfully! ✅",
+            description: `Extracted ${wordCount} words from your ${file.name}. Your professional information is ready to pre-fill survey questions.`,
+          });
+
+          // Store the extracted data in the profile
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+              resume_data: data.extractedText,
+              resume_uploaded_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+
+          if (updateError) {
+            console.warn('Failed to save resume data to profile:', updateError);
+            // Don't throw error, file was still processed successfully
+          }
+        } else {
+          throw new Error(`Document processed but contains very little text (${wordCount} words). Please ensure your resume has readable content.`);
         }
-
-        setHasProcessed(true);
-        toast({
-          title: "Resume processed successfully",
-          description: "Your professional information has been extracted and will pre-fill your survey.",
-        });
+      } else {
+        throw new Error(data?.error || 'Failed to extract text from document');
       }
 
     } catch (error) {
       console.error('Error processing resume:', error);
       toast({
         title: "Processing failed",
-        description: "Failed to process your resume. Please try again or continue manually.",
+        description: error.message || "Failed to process your resume. Please try again or continue manually.",
         variant: "destructive",
       });
     } finally {
@@ -104,6 +121,7 @@ export const ResumeUpload = () => {
   const handleRemoveFile = () => {
     setUploadedFile(null);
     setHasProcessed(false);
+    setProcessingResult(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -133,7 +151,7 @@ export const ResumeUpload = () => {
                     <p className="font-medium">{uploadedFile.name}</p>
                     <p className="text-sm text-gray-500">
                       {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                      {hasProcessed && " - Processed ✓"}
+                      {hasProcessed && " - Successfully processed ✓"}
                       {isProcessing && " - Processing..."}
                     </p>
                   </div>
@@ -151,6 +169,20 @@ export const ResumeUpload = () => {
                   <div className="flex items-center justify-center space-x-2 text-sm text-blue-600">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Processing your resume...</span>
+                  </div>
+                )}
+
+                {hasProcessed && processingResult && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm">
+                    <div className="flex items-center space-x-2 text-green-800 mb-2">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="font-medium">Document successfully parsed!</span>
+                    </div>
+                    <div className="text-green-700 space-y-1">
+                      <p>• Extracted {processingResult.wordCount || 0} words</p>
+                      <p>• Method: {processingResult.processingMethod || 'Text extraction'}</p>
+                      <p>• Your information is ready to pre-fill survey questions</p>
+                    </div>
                   </div>
                 )}
               </div>
