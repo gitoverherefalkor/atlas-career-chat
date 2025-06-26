@@ -93,9 +93,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             return;
           }
 
-          if (profile?.resume_data) {
+          if (profile?.resume_data && typeof profile.resume_data === 'object') {
             console.log('Found resume data, applying pre-fills...');
-            const preFillData = mapResumeToSurveyAnswers(profile.resume_data);
+            const preFillData = mapResumeToSurveyAnswers(profile.resume_data as any);
             
             if (Object.keys(preFillData).length > 0) {
               setResponses(preFillData);
