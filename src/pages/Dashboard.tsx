@@ -60,6 +60,17 @@ const Dashboard = () => {
     return reports[0]; // Reports are ordered by created_at desc
   };
 
+  // Check if this is truly a returning user (has reports or meaningful saved session)
+  const isReturningUser = () => {
+    const hasReports = reports && reports.length > 0;
+    const hasMeaningfulSession = savedSession && (
+      savedSession.currentSectionIndex > 0 || 
+      savedSession.currentQuestionIndex > 0 ||
+      Object.keys(savedSession.responses || {}).length > 0
+    );
+    return hasReports || hasMeaningfulSession;
+  };
+
   if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -115,7 +126,7 @@ const Dashboard = () => {
           <>
             <div className="mb-8">
               <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                Welcome back{profile?.first_name ? `, ${profile.first_name}` : ''}!
+                {isReturningUser() ? 'Welcome back' : 'Welcome'}{profile?.first_name ? `, ${profile.first_name}` : ''}!
               </h2>
               <p className="text-gray-600">
                 Your secure space to manage career assessments and view personalized reports.
@@ -124,8 +135,8 @@ const Dashboard = () => {
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 gap-6 mb-8">
-              {/* Continue Assessment Card */}
-              {savedSession && (
+              {/* Continue Assessment Card - Only show if there's meaningful progress */}
+              {savedSession && (savedSession.currentSectionIndex > 0 || savedSession.currentQuestionIndex > 0 || Object.keys(savedSession.responses || {}).length > 0) && (
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">

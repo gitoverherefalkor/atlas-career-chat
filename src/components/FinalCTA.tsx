@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
@@ -14,8 +13,8 @@ const FinalCTA = () => {
       // User is logged in, go to dashboard
       navigate('/dashboard');
     } else {
-      // User is not logged in, go to auth page
-      navigate('/auth');
+      // User is not logged in, go to auth page with signup flow
+      navigate('/auth?flow=signup');
     }
   };
 
