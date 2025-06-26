@@ -5,341 +5,263 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-// Simple PDF text extraction function
+// Function to safely extract PDF text with fallback methods
 async function extractPDFText(arrayBuffer: ArrayBuffer): Promise<string> {
+  console.log('Starting PDF text extraction...');
+  console.log('ArrayBuffer size:', arrayBuffer.byteLength, 'bytes');
+  
+  // Method 1: Try pdf-parse from esm.sh
   try {
-    // Import pdf-parse which is the most reliable for Deno
+    console.log('Attempting Method 1: pdf-parse from esm.sh');
     const pdfParse = (await import('https://esm.sh/pdf-parse@1.1.1')).default;
-    
-    // Parse the PDF
     const data = await pdfParse(arrayBuffer);
-    
-    console.log(`PDF parsed successfully. Pages: ${data.numpages}, Text length: ${data.text.length}`);
-    
+    console.log('Method 1 SUCCESS - Pages:', data.numpages, 'Text length:', data.text?.length || 0);
     return data.text || '';
-    
-  } catch (error) {
-    console.error('PDF parsing error:', error);
-    throw error;
-  }
-}
-
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  } catch (error1) {
+    console.log('Method 1 FAILED:', error1.message);
   }
 
+  // Method 2: Try different CDN
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      return new Response(JSON.stringify({ 
-        error: 'OpenAI API key not configured',
-        success: false 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    console.log('Attempting Method 2: pdf-parse from cdn.skypack.dev');
+    const pdfParse = (await import('https://cdn.skypack.dev/pdf-parse@1.1.1')).default;
+    const data = await pdfParse(arrayBuffer);
+    console.log('Method 2 SUCCESS - Pages:', data.numpages, 'Text length:', data.text?.length || 0);
+    return data.text || '';
+  } catch (error2) {
+    console.log('Method 2 FAILED:', error2.message);
+  }
 
-    // Get the uploaded file
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
+  // Method 3: Basic text extraction fallback
+  try {
+    console.log('Attempting Method 3: Basic text extraction');
+    const uint8Array = new Uint8Array(arrayBuffer);
+    const decoder = new TextDecoder('utf-8', { fatal: false });
+    const pdfString = decoder.decode(uint8Array);
     
-    if (!file) {
-      return new Response(JSON.stringify({ 
-        error: 'No file uploaded',
-        success: false 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type);
-
-    let fileContent = '';
+    // Look for text patterns in PDF
+    const streamRegex = /stream\s*(.*?)\s*endstream/gs;
+    const textRegex = /\((.*?)\)/g;
     
-    // Handle PDF files
-    if (file.type === 'application/pdf') {
-      try {
-        const arrayBuffer = await file.arrayBuffer();
-        fileContent = await extractPDFText(arrayBuffer);
-        
-        // Clean up the extracted text
-        fileContent = fileContent
-          .replace(/\s+/g, ' ') // Normalize whitespace
-          .replace(/\n\s*\n/g, '\n') // Remove excessive line breaks
-          .trim();
-        
-        console.log(`Successfully extracted ${fileContent.length} characters from PDF`);
-        
-      } catch (pdfError) {
-        console.error('PDF extraction failed:', pdfError);
-        
-        // Provide helpful error message
-        const errorMessage = pdfError.message.toLowerCase();
-        if (errorMessage.includes('password') || errorMessage.includes('encrypted')) {
-          return new Response(JSON.stringify({ 
-            error: 'This PDF is password protected. Please provide an unprotected version of your resume.',
-            success: false 
-          }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        } else if (errorMessage.includes('corrupt') || errorMessage.includes('invalid')) {
-          return new Response(JSON.stringify({ 
-            error: 'The PDF file appears to be corrupted. Please try uploading a different version.',
-            success: false 
-          }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        } else {
-          return new Response(JSON.stringify({ 
-            error: 'Unable to extract text from this PDF. This might be a scanned image rather than a text-based PDF. Please try converting it to a Word document or ensure it contains selectable text.',
-            success: false 
-          }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+    let extractedText = '';
+    let match;
+    
+    // Extract from streams
+    while ((match = streamRegex.exec(pdfString)) !== null) {
+      const streamContent = match[1];
+      let textMatch;
+      while ((textMatch = textRegex.exec(streamContent)) !== null) {
+        extractedText += textMatch[1] + ' ';
       }
     }
     
-    // Handle Word documents (.docx, .doc)
-    else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
-             file.type === 'application/msword') {
+    // Also try direct text extraction
+    let directMatch;
+    while ((directMatch = textRegex.exec(pdfString)) !== null) {
+      extractedText += directMatch[1] + ' ';
+    }
+    
+    // Clean up the text
+    extractedText = extractedText
+      .replace(/\\[rn]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    console.log('Method 3 result - Text length:', extractedText.length);
+    
+    if (extractedText.length > 10) {
+      console.log('Method 3 SUCCESS');
+      return extractedText;
+    } else {
+      throw new Error('Insufficient text extracted');
+    }
+    
+  } catch (error3) {
+    console.log('Method 3 FAILED:', error3.message);
+  }
+
+  throw new Error('All PDF extraction methods failed');
+}
+
+serve(async (req) => {
+  console.log('=== EDGE FUNCTION STARTED ===');
+  console.log('Method:', req.method);
+  console.log('URL:', req.url);
+  console.log('Headers:', Object.fromEntries(req.headers.entries()));
+
+  // Handle CORS preflight
+  if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    console.log('Processing request...');
+    
+    // Check if this is a basic test
+    if (req.url.includes('test-basic')) {
+      console.log('Basic test endpoint');
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          message: 'Edge function is working',
+          timestamp: new Date().toISOString()
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Check content type
+    const contentType = req.headers.get('content-type') || '';
+    console.log('Content-Type:', contentType);
+    
+    if (!contentType.includes('multipart/form-data')) {
+      throw new Error(`Expected multipart/form-data, got: ${contentType}`);
+    }
+
+    // Parse form data
+    console.log('Parsing form data...');
+    const formData = await req.formData();
+    console.log('Form data keys:', Array.from(formData.keys()));
+
+    const file = formData.get('file') as File;
+    console.log('File object:', {
+      name: file?.name,
+      type: file?.type,
+      size: file?.size,
+      exists: !!file
+    });
+
+    if (!file) {
+      throw new Error('No file found in form data');
+    }
+
+    let fileContent = '';
+    let processingMethod = 'unknown';
+
+    // Handle different file types
+    if (file.type === 'application/pdf') {
+      console.log('Processing PDF file...');
+      processingMethod = 'PDF';
+      
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        console.log('PDF ArrayBuffer created, size:', arrayBuffer.byteLength);
+        
+        fileContent = await extractPDFText(arrayBuffer);
+        console.log('PDF text extracted successfully, length:', fileContent.length);
+        
+      } catch (pdfError) {
+        console.error('PDF processing error:', pdfError.message);
+        console.error('PDF error stack:', pdfError.stack);
+        throw new Error(`PDF processing failed: ${pdfError.message}`);
+      }
+      
+    } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
+               file.type === 'application/msword') {
+      console.log('Processing Word document...');
+      processingMethod = 'Word';
+      
       try {
         const mammoth = await import('https://esm.sh/mammoth@1.6.0');
         const arrayBuffer = await file.arrayBuffer();
         const result = await mammoth.extractRawText({ arrayBuffer });
-        fileContent = result.value.trim();
-        
-        console.log(`Successfully extracted ${fileContent.length} characters from Word document`);
+        fileContent = result.value;
+        console.log('Word text extracted successfully, length:', fileContent.length);
         
       } catch (wordError) {
-        console.error('Word document extraction failed:', wordError);
-        return new Response(JSON.stringify({ 
-          error: 'Unable to extract text from this Word document. Please ensure the file is not corrupted.',
-          success: false 
-        }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+        console.error('Word processing error:', wordError.message);
+        throw new Error(`Word processing failed: ${wordError.message}`);
       }
-    }
-    
-    // Handle plain text files
-    else if (file.type === 'text/plain') {
-      fileContent = (await file.text()).trim();
-      console.log(`Successfully read ${fileContent.length} characters from text file`);
-    }
-    
-    // Unsupported file type
-    else {
-      const supportedTypes = [
-        'PDF files (.pdf)',
-        'Word documents (.docx, .doc)', 
-        'Text files (.txt)'
-      ];
-      return new Response(JSON.stringify({ 
-        error: `Unsupported file type: ${file.type}. Please upload one of: ${supportedTypes.join(', ')}`,
-        success: false 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Validate that we extracted meaningful content
-    if (!fileContent || fileContent.length < 20) {
-      return new Response(JSON.stringify({ 
-        error: 'The file appears to be empty or contains very little text. Please ensure your resume has readable content.',
-        success: false 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Continue with existing OpenAI processing for all file types
-    const basicExtractionPrompt = `
-You are a professional resume parser. Extract the following information from this resume and return it as a JSON object with these exact fields:
-
-{
-  "personal_info": {
-    "full_name": "string",
-    "email": "string",
-    "phone": "string",
-    "location": "string"
-  },
-  "professional_summary": "string",
-  "current_role": {
-    "title": "string",
-    "company": "string",
-    "duration": "string"
-  },
-  "experience": [
-    {
-      "title": "string",
-      "company": "string",
-      "duration": "string", 
-      "description": "string"
-    }
-  ],
-  "education": [
-    {
-      "degree": "string",
-      "institution": "string",
-      "year": "string"
-    }
-  ],
-  "skills": ["array of skills"],
-  "key_achievements": ["array of key achievements"]
-}
-
-Only return the JSON object, no additional text. If any field is not available, use null or an empty array as appropriate.
-
-Resume content:
-${fileContent}
-`;
-
-    const basicResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are a professional resume parser that extracts structured data from resumes and returns valid JSON only.' 
-          },
-          { role: 'user', content: basicExtractionPrompt }
-        ],
-        temperature: 0.1,
-      }),
-    });
-
-    if (!basicResponse.ok) {
-      return new Response(JSON.stringify({ 
-        error: `OpenAI API error: ${basicResponse.statusText}`,
-        success: false 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const basicData = await basicResponse.json();
-    const basicExtractedText = basicData.choices[0].message.content;
-    
-    let basicExtractedData;
-    try {
-      basicExtractedData = JSON.parse(basicExtractedText);
-    } catch (parseError) {
-      console.error('Failed to parse basic extraction response as JSON:', parseError);
-      return new Response(JSON.stringify({ 
-        error: 'Failed to parse basic resume data',
-        success: false 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Step 2: Intelligent analysis with GPT-4o for complex deductions
-    const intelligentAnalysisPrompt = `
-You are an expert career analyst. Analyze this resume content and make intelligent deductions about the person's interests, accomplishments, and industries. Return a JSON object with these exact fields:
-
-{
-  "interests": ["array of professional/personal interests deduced from projects, activities, volunteer work, hobbies mentioned"],
-  "accomplishments_most_proud": ["array of 3-5 most significant accomplishments that show impact and results"],
-  "industries": ["array of industries the person has worked in or has experience with, inferred from company types, role contexts, and projects"]
-}
-
-Guidelines:
-- For interests: Look for patterns in projects, volunteer work, side activities, certifications that indicate genuine interests
-- For accomplishments: Focus on quantifiable results, leadership roles, innovations, or significant contributions that demonstrate impact
-- For industries: Go beyond just job titles - consider company types, project contexts, clients worked with, domain knowledge demonstrated
-
-Only return the JSON object, no additional text.
-
-Resume content:
-${fileContent}
-`;
-
-    const intelligentResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are an expert career analyst who makes intelligent deductions from professional documents.' 
-          },
-          { role: 'user', content: intelligentAnalysisPrompt }
-        ],
-        temperature: 0.3,
-      }),
-    });
-
-    if (!intelligentResponse.ok) {
-      console.error('OpenAI intelligent analysis error:', intelligentResponse.statusText);
-      // If intelligent analysis fails, continue with basic data only
-    }
-
-    let intelligentExtractedData = {
-      interests: [],
-      accomplishments_most_proud: [],
-      industries: []
-    };
-
-    if (intelligentResponse.ok) {
-      const intelligentData = await intelligentResponse.json();
-      const intelligentExtractedText = intelligentData.choices[0].message.content;
       
-      try {
-        intelligentExtractedData = JSON.parse(intelligentExtractedText);
-      } catch (parseError) {
-        console.error('Failed to parse intelligent analysis response as JSON:', parseError);
-        // Continue with empty intelligent data if parsing fails
-      }
+    } else if (file.type === 'text/plain') {
+      console.log('Processing text file...');
+      processingMethod = 'Text';
+      fileContent = await file.text();
+      console.log('Text file read successfully, length:', fileContent.length);
+      
+    } else {
+      throw new Error(`Unsupported file type: ${file.type}`);
     }
 
-    // Combine both extractions
-    const combinedExtractedData = {
-      ...basicExtractedData,
-      ...intelligentExtractedData
+    // Validate extracted content
+    console.log('Validating extracted content...');
+    if (!fileContent || fileContent.trim().length < 10) {
+      throw new Error(`Insufficient content extracted. Got ${fileContent?.length || 0} characters`);
+    }
+
+    // Clean the content
+    fileContent = fileContent
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    const wordCount = fileContent.split(/\s+/).length;
+    console.log('Content validation passed:', {
+      charCount: fileContent.length,
+      wordCount: wordCount,
+      method: processingMethod
+    });
+
+    // For now, just return the extracted text without OpenAI processing
+    // This will help us confirm the PDF extraction is working
+    const result = {
+      success: true,
+      filename: file.name,
+      fileType: file.type,
+      fileSize: file.size,
+      processingMethod: processingMethod,
+      contentLength: fileContent.length,
+      wordCount: wordCount,
+      extractedText: fileContent,
+      preview: fileContent.substring(0, 200) + (fileContent.length > 200 ? '...' : ''),
+      timestamp: new Date().toISOString(),
+      message: 'File processed successfully - OpenAI integration temporarily disabled for debugging'
     };
 
-    console.log('Combined extracted data:', combinedExtractedData);
-
-    return new Response(JSON.stringify({ 
-      success: true,
-      extractedData: combinedExtractedData,
-      message: 'Resume processed successfully with intelligent analysis'
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    console.log('=== SUCCESS ===');
+    console.log('Response summary:', {
+      success: result.success,
+      filename: result.filename,
+      contentLength: result.contentLength,
+      wordCount: result.wordCount
     });
+
+    return new Response(
+      JSON.stringify(result),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      }
+    );
 
   } catch (error) {
-    console.error('Error in parse-resume function:', error);
-    return new Response(JSON.stringify({ 
+    console.error('=== ERROR ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error type:', error.constructor.name);
+
+    const errorResponse = {
+      success: false,
       error: error.message,
-      success: false 
-    }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+      errorType: error.constructor.name,
+      timestamp: new Date().toISOString(),
+      debug: {
+        method: req.method,
+        url: req.url,
+        contentType: req.headers.get('content-type'),
+        userAgent: req.headers.get('user-agent')
+      }
+    };
+
+    return new Response(
+      JSON.stringify(errorResponse),
+      {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
 });
