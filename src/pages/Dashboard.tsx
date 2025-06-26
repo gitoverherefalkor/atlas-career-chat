@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,15 +59,20 @@ const Dashboard = () => {
     return reports[0]; // Reports are ordered by created_at desc
   };
 
-  // Check if this is truly a returning user (has reports or meaningful saved session)
+  // Check if this is truly a returning user - ONLY based on reports, not saved sessions
   const isReturningUser = () => {
-    const hasReports = reports && reports.length > 0;
-    const hasMeaningfulSession = savedSession && (
-      savedSession.currentSectionIndex > 0 || 
-      savedSession.currentQuestionIndex > 0 ||
-      Object.keys(savedSession.responses || {}).length > 0
-    );
-    return hasReports || hasMeaningfulSession;
+    return reports && reports.length > 0;
+  };
+
+  // Check if there's meaningful assessment progress (not just at question 1)
+  const hasMeaningfulProgress = () => {
+    if (!savedSession) return false;
+    
+    // Only show continue if they're beyond the first question OR have actual responses
+    const beyondFirstQuestion = savedSession.currentSectionIndex > 0 || savedSession.currentQuestionIndex > 0;
+    const hasResponses = savedSession.responses && Object.keys(savedSession.responses).length > 0;
+    
+    return beyondFirstQuestion || hasResponses;
   };
 
   if (authLoading || profileLoading) {
@@ -136,7 +140,7 @@ const Dashboard = () => {
             {/* Quick Actions */}
             <div className="grid grid-cols-1 gap-6 mb-8">
               {/* Continue Assessment Card - Only show if there's meaningful progress */}
-              {savedSession && (savedSession.currentSectionIndex > 0 || savedSession.currentQuestionIndex > 0 || Object.keys(savedSession.responses || {}).length > 0) && (
+              {hasMeaningfulProgress() && (
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
