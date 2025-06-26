@@ -42,9 +42,26 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
           
+          // Check if user came from purchase flow by looking for access code in localStorage
+          const purchaseData = localStorage.getItem('purchaseData');
+          let accessCode = null;
+          
+          if (purchaseData) {
+            try {
+              const parsed = JSON.parse(purchaseData);
+              accessCode = parsed.accessCode;
+            } catch (e) {
+              console.warn('Could not parse purchase data:', e);
+            }
+          }
+          
           // Redirect after a short delay
           setTimeout(() => {
-            if (redirectTo) {
+            if (accessCode) {
+              // Clear the purchase data and redirect to assessment with access code
+              localStorage.removeItem('purchaseData');
+              navigate(`/assessment?code=${accessCode}`);
+            } else if (redirectTo) {
               window.location.href = decodeURIComponent(redirectTo);
             } else {
               navigate('/dashboard');
@@ -92,7 +109,7 @@ const AuthConfirm = () => {
 
             {status === 'success' && (
               <p className="text-sm text-gray-600 text-center mt-4">
-                Redirecting you to the homepage...
+                Redirecting you to start your assessment...
               </p>
             )}
 
