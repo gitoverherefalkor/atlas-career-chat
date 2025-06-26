@@ -24,12 +24,12 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      // Validate file type - exclude PDFs for now
+      const allowedTypes = ['application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'text/plain'];
       if (!allowedTypes.includes(file.type)) {
         toast({
-          title: "Invalid file type",
-          description: "Please upload a PDF or Word document.",
+          title: "File type not supported",
+          description: "Please upload a Word document (.doc, .docx) or plain text file. PDF support coming soon!",
           variant: "destructive",
         });
         return;
@@ -129,7 +129,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             Pre-fill Your Assessment
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload your LinkedIn profile PDF or resume to automatically populate information in the Intake section of your survey.
+            Upload your resume to automatically populate information in the Intake section of your survey.
           </p>
         </div>
 
@@ -146,7 +146,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             <CardContent>
               <div className="space-y-4">
                 <p className="text-sm text-gray-600">
-                  Upload LinkedIn PDF or your own recent resume if you do not have a detailed or updated LinkedIn resume.
+                  Upload your Word document (.doc, .docx) or plain text resume. PDF support coming soon!
                 </p>
 
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
@@ -185,7 +185,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                       <Upload className="h-12 w-12 text-gray-400 mx-auto" />
                       <div>
                         <p className="text-lg font-medium">Upload your document</p>
-                        <p className="text-sm text-gray-500">LinkedIn PDF or resume (Word/PDF), up to 5MB</p>
+                        <p className="text-sm text-gray-500">Word (.doc, .docx) or plain text files, up to 5MB</p>
                         <p className="text-xs text-gray-400 mt-1">Processing will start automatically after upload</p>
                       </div>
                       <Button onClick={() => fileInputRef.current?.click()}>
@@ -195,7 +195,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                         ref={fileInputRef}
                         type="file"
                         className="hidden"
-                        accept=".pdf,.doc,.docx"
+                        accept=".doc,.docx,.txt"
                         onChange={handleFileSelect}
                       />
                     </div>
