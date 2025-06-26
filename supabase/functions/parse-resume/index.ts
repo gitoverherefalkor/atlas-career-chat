@@ -17,7 +17,13 @@ serve(async (req) => {
   try {
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+      return new Response(JSON.stringify({ 
+        error: 'OpenAI API key not configured',
+        success: false 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Get the uploaded file
@@ -25,7 +31,13 @@ serve(async (req) => {
     const file = formData.get('file') as File;
     
     if (!file) {
-      throw new Error('No file uploaded');
+      return new Response(JSON.stringify({ 
+        error: 'No file uploaded',
+        success: false 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     console.log('Processing file:', file.name, 'Size:', file.size, 'Type:', file.type);
@@ -34,9 +46,14 @@ serve(async (req) => {
     let fileContent = '';
     
     if (file.type === 'application/pdf') {
-      // For now, we'll let the user know PDF parsing needs additional setup
-      // In production, you'd want to use a PDF parsing library
-      throw new Error('PDF parsing not yet implemented. Please use Word documents for now.');
+      // For now, return a helpful error message for PDFs instead of throwing
+      return new Response(JSON.stringify({ 
+        error: 'PDF parsing not yet implemented. Please use Word documents (.doc, .docx) or plain text files for now.',
+        success: false 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     } else {
       // Handle Word documents and plain text
       fileContent = await file.text();
@@ -104,7 +121,13 @@ ${fileContent}
     });
 
     if (!basicResponse.ok) {
-      throw new Error(`OpenAI API error: ${basicResponse.statusText}`);
+      return new Response(JSON.stringify({ 
+        error: `OpenAI API error: ${basicResponse.statusText}`,
+        success: false 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const basicData = await basicResponse.json();
@@ -115,7 +138,13 @@ ${fileContent}
       basicExtractedData = JSON.parse(basicExtractedText);
     } catch (parseError) {
       console.error('Failed to parse basic extraction response as JSON:', parseError);
-      throw new Error('Failed to parse basic resume data');
+      return new Response(JSON.stringify({ 
+        error: 'Failed to parse basic resume data',
+        success: false 
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Step 2: Intelligent analysis with GPT-4o for complex deductions
@@ -159,23 +188,26 @@ ${fileContent}
     });
 
     if (!intelligentResponse.ok) {
-      throw new Error(`OpenAI intelligent analysis error: ${intelligentResponse.statusText}`);
+      console.error('OpenAI intelligent analysis error:', intelligentResponse.statusText);
+      // If intelligent analysis fails, continue with basic data only
     }
 
-    const intelligentData = await intelligentResponse.json();
-    const intelligentExtractedText = intelligentData.choices[0].message.content;
-    
-    let intelligentExtractedData;
-    try {
-      intelligentExtractedData = JSON.parse(intelligentExtractedText);
-    } catch (parseError) {
-      console.error('Failed to parse intelligent analysis response as JSON:', parseError);
-      // If intelligent analysis fails, continue with basic data only
-      intelligentExtractedData = {
-        interests: [],
-        accomplishments_most_proud: [],
-        industries: []
-      };
+    let intelligentExtractedData = {
+      interests: [],
+      accomplishments_most_proud: [],
+      industries: []
+    };
+
+    if (intelligentResponse.ok) {
+      const intelligentData = await intelligentResponse.json();
+      const intelligentExtractedText = intelligentData.choices[0].message.content;
+      
+      try {
+        intelligentExtractedData = JSON.parse(intelligentExtractedText);
+      } catch (parseError) {
+        console.error('Failed to parse intelligent analysis response as JSON:', parseError);
+        // Continue with empty intelligent data if parsing fails
+      }
     }
 
     // Combine both extractions
