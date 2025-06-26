@@ -101,7 +101,7 @@ const Auth = () => {
           }
         }
       } else {
-        const redirectUrl = `${window.location.origin}/`;
+        const redirectUrl = `https://atlas-assessments.com/`;
         
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,

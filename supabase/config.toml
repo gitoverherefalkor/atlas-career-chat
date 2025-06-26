@@ -30,3 +30,13 @@ verify_jwt = false
 
 [functions.test-n8n-integration]
 verify_jwt = false
+
+[functions.send-confirmation-email]
+verify_jwt = false
+
+[auth]
+site_url = "https://atlas-assessments.com"
+additional_redirect_urls = ["https://atlas-career-chat.lovable.app", "http://localhost:3000"]
+
+[auth.email]
+enable_confirmations = true
