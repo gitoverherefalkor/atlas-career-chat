@@ -12,6 +12,8 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log("Function called with method:", req.method);
+  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -22,7 +24,11 @@ serve(async (req) => {
 
   try {
     const payload = await req.text();
+    console.log("Received payload:", payload);
+    
     const headers = Object.fromEntries(req.headers);
+    console.log("Headers:", headers);
+    
     const wh = new Webhook(hookSecret);
     
     const {
@@ -45,8 +51,12 @@ serve(async (req) => {
       };
     };
 
+    console.log("Webhook verified successfully for user:", user.email);
+
     const firstName = user.user_metadata?.first_name || "there";
     const confirmationUrl = `https://atlas-assessments.com/auth/confirm?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent("https://atlas-assessments.com/")}`;
+
+    console.log("Sending confirmation email to:", user.email);
 
     const { data, error } = await resend.emails.send({
       from: "Atlas Assessment <no-reply@atlas-assessments.com>",
