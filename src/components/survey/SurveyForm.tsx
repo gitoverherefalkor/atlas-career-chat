@@ -93,17 +93,79 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             return;
           }
 
-          if (profile?.resume_data && typeof profile.resume_data === 'object') {
-            console.log('Found resume data, applying pre-fills...');
-            const preFillData = mapResumeToSurveyAnswers(profile.resume_data as any);
-            
-            if (Object.keys(preFillData).length > 0) {
-              setResponses(preFillData);
-              toast({
-                title: "Survey Pre-filled",
-                description: `${Object.keys(preFillData).length} fields have been pre-filled from your resume. Please review and update as needed.`,
-              });
+          console.log('Profile data retrieved:', profile);
+          console.log('Resume data type:', typeof profile?.resume_data);
+          console.log('Resume data content:', profile?.resume_data);
+
+          if (profile?.resume_data) {
+            // Check if resume_data is a string (raw text) or structured object
+            if (typeof profile.resume_data === 'string') {
+              console.log('Resume data is raw text, length:', profile.resume_data.length);
+              console.log('First 200 characters:', profile.resume_data.substring(0, 200));
+              
+              // For now, let's try to extract some basic info from the raw text
+              const resumeText = profile.resume_data.toLowerCase();
+              const preFillData: Record<string, any> = {};
+              
+              // Try to extract email
+              const emailMatch = profile.resume_data.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+              if (emailMatch) {
+                preFillData['email'] = emailMatch[0];
+                console.log('Extracted email:', emailMatch[0]);
+              }
+              
+              // Try to extract phone number
+              const phoneMatch = profile.resume_data.match(/(\+?1?[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/);
+              if (phoneMatch) {
+                preFillData['phone'] = phoneMatch[0];
+                console.log('Extracted phone:', phoneMatch[0]);
+              }
+              
+              // Look for common job titles
+              const jobTitlePatterns = [
+                /manager/i, /director/i, /analyst/i, /developer/i, /engineer/i, 
+                /coordinator/i, /specialist/i, /consultant/i, /administrator/i
+              ];
+              
+              for (const pattern of jobTitlePatterns) {
+                const match = profile.resume_data.match(new RegExp(`\\b\\w*${pattern.source}\\w*\\b`, 'i'));
+                if (match) {
+                  preFillData['current_job_title'] = match[0];
+                  console.log('Extracted job title:', match[0]);
+                  break;
+                }
+              }
+              
+              if (Object.keys(preFillData).length > 0) {
+                console.log('Setting pre-fill data from raw text:', preFillData);
+                setResponses(preFillData);
+                toast({
+                  title: "Survey Pre-filled",
+                  description: `${Object.keys(preFillData).length} fields have been pre-filled from your resume. Please review and update as needed.`,
+                });
+              } else {
+                console.log('No extractable data found in resume text');
+                toast({
+                  title: "Resume Uploaded",
+                  description: "Your resume was processed but no specific fields could be automatically filled. You can reference your resume while filling out the survey.",
+                });
+              }
+              
+            } else if (typeof profile.resume_data === 'object') {
+              console.log('Resume data is structured object, applying mapper...');
+              const preFillData = mapResumeToSurveyAnswers(profile.resume_data as any);
+              
+              if (Object.keys(preFillData).length > 0) {
+                console.log('Setting pre-fill data from structured object:', preFillData);
+                setResponses(preFillData);
+                toast({
+                  title: "Survey Pre-filled",
+                  description: `${Object.keys(preFillData).length} fields have been pre-filled from your resume. Please review and update as needed.`,
+                });
+              }
             }
+          } else {
+            console.log('No resume data found in profile');
           }
         });
     }
