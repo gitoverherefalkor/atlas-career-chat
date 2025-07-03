@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { extractTextFromFile } from '../utils/clientSidePdfParser';
 import { parseResumeWithAI } from '../utils/aiResumeParser';
 
 interface UseAIResumeUploadProps {
@@ -26,49 +27,72 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
     setIsProcessing(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      console.log('Step 1: Extracting text from file:', file.name);
-
-      // First, extract text from the document using existing function
-      const { data: extractionData, error: extractionError } = await supabase.functions.invoke('parse-resume', {
-        body: formData
-      });
-
-      if (extractionError || !extractionData?.extractedText) {
-        throw new Error('Failed to extract text from document');
+      console.log('Step 1: Processing file client-side:', file.name, file.type);
+      
+      // Extract text client-side
+      const extractedText = await extractTextFromFile(file);
+      
+      console.log('Step 2: Extracted text length:', extractedText.length);
+      console.log('First 200 characters:', extractedText.substring(0, 200));
+      
+      if (!extractedText || extractedText.length < 100) {
+        throw new Error('Document appears to be empty or text could not be extracted');
       }
-
-      console.log('Step 2: Text extracted, length:', extractionData.extractedText.length);
-
-      // Then, use AI to parse the extracted text
+      
+      // Parse with AI
       console.log('Step 3: Parsing with AI...');
-      const aiParsedData = await parseResumeWithAI(extractionData.extractedText);
+      const aiParsedData = await parseResumeWithAI(extractedText);
       
       console.log('Step 4: AI parsing complete, fields extracted:', Object.keys(aiParsedData).length);
 
       // Save both raw text and AI-parsed data to profile
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          resume_data: extractionData.extractedText,
-          resume_parsed_data: aiParsedData,
-          resume_uploaded_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
+      const updateData: any = {
+        resume_data: extractedText,
+        resume_uploaded_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
 
-      if (updateError) {
-        console.warn('Failed to save resume data to profile:', updateError);
-      } else {
-        console.log('Step 5: Resume data saved to profile successfully');
+      // Only add resume_parsed_data if the column exists
+      // We'll check this by attempting the update and handling the error
+      try {
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            ...updateData,
+            resume_parsed_data: aiParsedData
+          })
+          .eq('id', user.id);
+
+        if (updateError) {
+          console.warn('Failed to save with resume_parsed_data, trying without:', updateError);
+          // Fallback: save without the parsed data column
+          const { error: fallbackError } = await supabase
+            .from('profiles')
+            .update(updateData)
+            .eq('id', user.id);
+            
+          if (fallbackError) {
+            console.error('Failed to save resume data to profile:', fallbackError);
+          }
+        }
+      } catch (err) {
+        console.warn('Database update error, using fallback approach');
+        const { error: fallbackError } = await supabase
+          .from('profiles')
+          .update(updateData)
+          .eq('id', user.id);
+          
+        if (fallbackError) {
+          console.error('Failed to save resume data to profile:', fallbackError);
+        }
       }
 
       const result = {
-        ...extractionData,
+        success: true,
+        extractedText,
         aiParsedData,
         surveyPreFillData: aiParsedData,
+        wordCount: extractedText.split(/\s+/).length,
         fieldsExtracted: Object.keys(aiParsedData).length
       };
 

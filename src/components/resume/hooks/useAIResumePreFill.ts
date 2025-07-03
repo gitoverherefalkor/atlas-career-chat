@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -20,7 +19,7 @@ export const useAIResumePreFill = ({ isSessionLoaded, responses, setResponses }:
       
       supabase
         .from('profiles')
-        .select('resume_parsed_data, resume_data')
+        .select('resume_data')
         .eq('id', user.id)
         .maybeSingle()
         .then(({ data: profile, error }) => {
@@ -31,30 +30,13 @@ export const useAIResumePreFill = ({ isSessionLoaded, responses, setResponses }:
 
           console.log('Profile data retrieved for pre-fill:', profile);
 
-          // First try AI-parsed data (structured)
-          if (profile?.resume_parsed_data && typeof profile.resume_parsed_data === 'object') {
-            console.log('Using AI-parsed structured data:', profile.resume_parsed_data);
-            
-            const preFillData = profile.resume_parsed_data as Record<string, any>;
-            const fieldCount = Object.keys(preFillData).length;
-            
-            if (fieldCount > 0) {
-              console.log('Setting AI pre-fill data:', preFillData);
-              setResponses(preFillData);
-              toast({
-                title: "Survey Pre-filled with AI! 🤖",
-                description: `${fieldCount} fields have been intelligently filled from your resume. Please review and update as needed.`,
-              });
-              return;
-            }
-          }
-
-          // Fallback: if no AI data but raw text exists, inform user
+          // For now, we'll work with the raw resume_data and could potentially 
+          // call AI parsing here if needed, but let's keep it simple
           if (profile?.resume_data && typeof profile.resume_data === 'string') {
-            console.log('Raw resume data found but no AI parsing available');
+            console.log('Raw resume data found, user can reference it during survey');
             toast({
-              title: "Resume Uploaded",
-              description: "Your resume was processed but AI parsing wasn't available. You can reference your resume while filling out the survey.",
+              title: "Resume Available",
+              description: "Your resume data is available. AI parsing will be enhanced once the database is updated.",
             });
           } else {
             console.log('No resume data found in profile');
