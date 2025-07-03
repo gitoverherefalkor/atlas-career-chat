@@ -58,6 +58,7 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
       console.log('Verification response:', data);
 
       if (data.valid) {
+        console.log('Calling onVerified with:', data.accessCode);
         onVerified(data.accessCode);
       } else {
         setError(data.error);

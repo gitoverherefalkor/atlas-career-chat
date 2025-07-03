@@ -11,14 +11,14 @@ import { useReports } from '@/hooks/useReports';
 import { useSurveySession } from '@/hooks/useSurveySession';
 import ReportDisplay from '@/components/ReportDisplay';
 import PurchaseAccessButton from '@/components/dashboard/PurchaseAccessButton';
-import AccessCodeVerifier from '@/components/dashboard/AccessCodeVerifier';
+
 
 const Dashboard = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { reports, isLoading: reportsLoading } = useReports();
   const [isReportSectionExpanded, setIsReportSectionExpanded] = useState(false);
-  const [showAccessCodeVerifier, setShowAccessCodeVerifier] = useState(false);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -160,7 +160,7 @@ const Dashboard = () => {
               <PurchaseAccessButton />
 
               {/* Manual Access Code Entry */}
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setShowAccessCodeVerifier(!showAccessCodeVerifier)}>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
                     <div className="bg-blue-100 p-3 rounded-full">
@@ -173,11 +173,6 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Access Code Verifier */}
-              {showAccessCodeVerifier && (
-                <AccessCodeVerifier onVerified={() => setShowAccessCodeVerifier(false)} />
-              )}
             </div>
           </>
         )}
