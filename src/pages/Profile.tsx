@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, User, Save, FileText, CheckCircle } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
-import { LinkedInGuide } from '@/components/profile/LinkedInGuide';
-import { ResumeUpload } from '@/components/profile/ResumeUpload';
+import { supabase } from '@/integrations/supabase/client';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -81,16 +80,43 @@ const Profile = () => {
           <CardContent>
             {profile?.resume_uploaded_at ? (
               <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="h-6 w-6 text-green-600" />
-                  <div>
-                    <p className="font-medium">Resume uploaded successfully</p>
-                    <p className="text-sm text-gray-500">
-                      Uploaded on {new Date(profile.resume_uploaded_at).toLocaleDateString()}
-                    </p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="h-6 w-6 text-green-600" />
+                    <div>
+                      <p className="font-medium">Resume uploaded successfully</p>
+                      <p className="text-sm text-gray-500">
+                        Uploaded on {new Date(profile.resume_uploaded_at).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={async () => {
+                      const { error } = await supabase
+                        .from('profiles')
+                        .update({
+                          resume_data: null,
+                          resume_parsed_data: null,
+                          resume_uploaded_at: null,
+                          updated_at: new Date().toISOString()
+                        })
+                        .eq('id', user?.id);
+                      
+                      if (!error) {
+                        window.location.reload();
+                      }
+                    }}
+                  >
+                    Remove
+                  </Button>
                 </div>
-                <ResumeUpload />
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Want to upload a new resume?</strong> You can upload a new resume when starting a new Atlas Assessment for the best pre-filling experience.
+                  </p>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -101,11 +127,10 @@ const Profile = () => {
                   <div>
                     <p className="font-medium">No resume uploaded</p>
                     <p className="text-sm text-gray-500">
-                      Upload your resume to improve future assessment experiences
+                      Upload your resume when starting your next Atlas Assessment for automatic pre-filling
                     </p>
                   </div>
                 </div>
-                <ResumeUpload />
               </div>
             )}
           </CardContent>
