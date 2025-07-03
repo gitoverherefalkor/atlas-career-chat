@@ -210,9 +210,9 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             <RadioGroup value={value || ''} onValueChange={onChange} className="space-y-1.5">
               {question.config?.choices?.map((choice) => (
                 <div key={choice} className="flex items-center space-x-3">
-                  <RadioGroupItem value={choice} id={choice} />
+                  <RadioGroupItem value={choice} id={`radio-${choice}`} />
                   <Label 
-                    htmlFor={choice} 
+                    htmlFor={`radio-${choice}`} 
                     className="text-base font-light leading-snug cursor-pointer"
                     dangerouslySetInnerHTML={formatTextWithEmphasis(choice)}
                   />
