@@ -46,46 +46,22 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
       console.log('Step 4: AI parsing complete, fields extracted:', Object.keys(aiParsedData).length);
 
       // Save both raw text and AI-parsed data to profile
-      const updateData: any = {
-        resume_data: extractedText,
-        resume_uploaded_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          resume_data: extractedText,
+          resume_parsed_data: aiParsedData,
+          resume_uploaded_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
 
-      // Only add resume_parsed_data if the column exists
-      // We'll check this by attempting the update and handling the error
-      try {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({
-            ...updateData,
-            resume_parsed_data: aiParsedData
-          })
-          .eq('id', user.id);
-
-        if (updateError) {
-          console.warn('Failed to save with resume_parsed_data, trying without:', updateError);
-          // Fallback: save without the parsed data column
-          const { error: fallbackError } = await supabase
-            .from('profiles')
-            .update(updateData)
-            .eq('id', user.id);
-            
-          if (fallbackError) {
-            console.error('Failed to save resume data to profile:', fallbackError);
-          }
-        }
-      } catch (err) {
-        console.warn('Database update error, using fallback approach');
-        const { error: fallbackError } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', user.id);
-          
-        if (fallbackError) {
-          console.error('Failed to save resume data to profile:', fallbackError);
-        }
+      if (updateError) {
+        console.error('Failed to save resume data to profile:', updateError);
+        throw new Error('Failed to save resume data');
       }
+
+      console.log('Step 5: Successfully saved to database');
 
       const result = {
         success: true,
