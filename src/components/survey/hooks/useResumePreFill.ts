@@ -1,4 +1,4 @@
 
-import { useResumePreFill as useResumePreFillBase } from '../../resume/hooks/useResumePreFill';
+import { useAIResumePreFill as useAIResumePreFillBase } from '../../resume/hooks/useAIResumePreFill';
 
-export const useResumePreFill = useResumePreFillBase;
+export const useResumePreFill = useAIResumePreFillBase;
