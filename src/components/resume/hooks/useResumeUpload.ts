@@ -92,6 +92,7 @@ export const useResumeUpload = ({ onSuccess, onError }: UseResumeUploadProps) =>
     isUploading,
     isProcessing,
     hasProcessed,
+    setHasProcessed,
     processingResult,
     uploadAndProcess,
     resetState

@@ -27,12 +27,12 @@ export const ResumeUploadCard: React.FC<ResumeUploadCardProps> = ({
     isUploading,
     isProcessing,
     hasProcessed,
+    setHasProcessed,
     processingResult,
     uploadAndProcess,
     resetState
   } = useResumeUpload({
     onSuccess: (data) => {
-      setHasProcessed(true);
       if (showSuccessMessage) {
         toast({
           title: "Resume processed successfully! ✅",
