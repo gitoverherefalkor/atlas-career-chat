@@ -7,7 +7,6 @@ import WhatIsAtlas from '@/components/WhatIsAtlas';
 import HowItWorks from '@/components/HowItWorks';
 import WhyAtlas from '@/components/WhyAtlas';
 import Pricing from '@/components/Pricing';
-import NextSteps from '@/components/NextSteps';
 import Examples from '@/components/Examples';
 import Testimonials from '@/components/Testimonials';
 import About from '@/components/About';
@@ -25,7 +24,6 @@ const Index = () => {
         <HowItWorks />
         <WhyAtlas />
         <Pricing />
-        <NextSteps />
         <Examples />
         <Testimonials />
         <About />
