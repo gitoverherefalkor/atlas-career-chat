@@ -7,6 +7,11 @@ interface SurveySession {
   currentQuestionIndex: number;
   showSectionIntro: boolean;
   completedSections: number[];
+  // Verification data
+  isVerified?: boolean;
+  accessCodeData?: any;
+  sessionToken?: string;
+  showPreSurveyUpload?: boolean;
 }
 
 export const useSurveySession = (surveyId: string) => {
