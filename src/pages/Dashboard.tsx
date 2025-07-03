@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -73,6 +74,11 @@ const Dashboard = () => {
     const hasResponses = savedSession.responses && Object.keys(savedSession.responses).length > 0;
     
     return beyondFirstQuestion || hasResponses;
+  };
+
+  // Check if user has already verified access code (meaning they don't need purchase/access code options)
+  const hasVerifiedAccess = () => {
+    return savedSession?.isVerified || savedSession?.accessCodeData || hasMeaningfulProgress();
   };
 
   if (authLoading || profileLoading) {
@@ -156,23 +162,28 @@ const Dashboard = () => {
                 </Card>
               )}
 
-              {/* Purchase Access Button */}
-              <PurchaseAccessButton />
+              {/* Only show purchase and access code options if user hasn't verified access yet */}
+              {!hasVerifiedAccess() && (
+                <>
+                  {/* Purchase Access Button */}
+                  <PurchaseAccessButton />
 
-              {/* Manual Access Code Entry */}
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
-                <CardContent className="p-6">
-                  <div className="flex items-center space-x-4">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <User className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Already have an access code?</h3>
-                      <p className="text-sm text-gray-600">Enter your access code to start the assessment</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  {/* Manual Access Code Entry */}
+                  <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center space-x-4">
+                        <div className="bg-blue-100 p-3 rounded-full">
+                          <User className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-gray-900">Already have an access code?</h3>
+                          <p className="text-sm text-gray-600">Enter your access code to start the assessment</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
             </div>
           </>
         )}
