@@ -55,17 +55,15 @@ const AccessCodeVerifier = ({ prefilledCode, onVerified }: AccessCodeVerifierPro
       setIsVerified(true);
       toast({
         title: "Access Code Verified!",
-        description: "Your access code is valid. You can now start the assessment.",
+        description: "Your access code is valid. Redirecting to assessment...",
       });
 
       if (onVerified) {
         onVerified();
       }
 
-      // Redirect to assessment after short delay
-      setTimeout(() => {
-        navigate('/assessment');
-      }, 1500);
+      // Navigate to assessment immediately
+      navigate('/assessment');
 
     } catch (error) {
       console.error('Access code verification failed:', error);

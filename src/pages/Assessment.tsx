@@ -6,7 +6,6 @@ import { AssessmentLayout } from '@/components/assessment/AssessmentLayout';
 import { AssessmentCompletion } from '@/components/assessment/AssessmentCompletion';
 import { PreSurveyUpload } from '@/components/assessment/PreSurveyUpload';
 import { useAssessmentLogic } from '@/components/assessment/useAssessmentLogic';
-import AccessCodeVerifier from '@/components/dashboard/AccessCodeVerifier';
 
 const Assessment = () => {
   console.log('Assessment component rendered');
@@ -67,25 +66,11 @@ const Assessment = () => {
   }
 
   if (!isVerified || !sessionToken) {
-    console.log('Not verified or no session token, showing access code verifier');
+    console.log('Not verified or no session token, showing assessment welcome');
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-atlas-navy mb-2">
-              Atlas Assessment
-            </h1>
-            <p className="text-gray-600">Enter your access code to begin</p>
-          </div>
-          
-          <AccessCodeVerifier 
-            onVerified={() => {
-              // This will be handled by the assessment logic
-              console.log('Access code verified from assessment page');
-            }}
-          />
-        </div>
-      </div>
+      <AssessmentWelcome 
+        onVerified={handleAccessCodeVerified}
+      />
     );
   }
 

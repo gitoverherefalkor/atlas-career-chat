@@ -7,21 +7,31 @@ export const useAccessCodeHandling = () => {
   const [showPreSurveyUpload, setShowPreSurveyUpload] = useState(false);
 
   const handleAccessCodeVerified = async (data: any, onSessionCreated: (token: string) => void) => {
-    console.log('Access code verified:', data);
+    console.log('Access code verified in assessment:', data);
     
     if (!data) {
       console.error('No data received from access code verification');
       return;
     }
     
-    const token = onSessionCreated('dummy-token'); // Fix: Pass a token parameter
+    // Create session token
+    const token = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    onSessionCreated(token);
     
+    // Update state to proceed to next step
     setAccessCodeData(data);
     setIsVerified(true);
     setShowPreSurveyUpload(true); // Show upload step after verification
+    
+    console.log('Assessment state updated after verification:', {
+      accessCodeData: data,
+      isVerified: true,
+      showPreSurveyUpload: true
+    });
   };
 
   const handlePreSurveyUploadComplete = () => {
+    console.log('Pre-survey upload completed, proceeding to survey');
     setShowPreSurveyUpload(false);
   };
 
