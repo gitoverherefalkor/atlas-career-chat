@@ -15,6 +15,13 @@ export const useAIResumePreFill = ({ isSessionLoaded, responses, setResponses }:
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('useAIResumePreFill effect triggered:', {
+      isSessionLoaded,
+      hasUser: !!user,
+      responsesCount: Object.keys(responses).length,
+      responses
+    });
+    
     if (isSessionLoaded && user && Object.keys(responses).length === 0) {
       console.log('Checking for AI-parsed resume data to pre-fill...');
       
@@ -30,13 +37,17 @@ export const useAIResumePreFill = ({ isSessionLoaded, responses, setResponses }:
           }
 
           console.log('Profile data retrieved for pre-fill:', profile);
+          console.log('resume_parsed_data type:', typeof profile?.resume_parsed_data);
+          console.log('resume_parsed_data content:', profile?.resume_parsed_data);
 
           // Try to use structured AI-parsed data first
           if (profile?.resume_parsed_data && typeof profile.resume_parsed_data === 'object') {
             const parsedData = profile.resume_parsed_data as Record<string, any>;
             console.log('Using AI-parsed structured data:', parsedData);
+            console.log('Parsed data keys:', Object.keys(parsedData));
             
             if (Object.keys(parsedData).length > 0) {
+              console.log('Setting responses with parsed data:', parsedData);
               setResponses(parsedData);
               toast({
                 title: "AI Pre-fill Complete! 🎉",
@@ -59,6 +70,12 @@ export const useAIResumePreFill = ({ isSessionLoaded, responses, setResponses }:
             console.log('No resume data found in profile');
           }
         });
+    } else {
+      console.log('Pre-fill conditions not met:', {
+        isSessionLoaded,
+        hasUser: !!user,
+        responsesEmpty: Object.keys(responses).length === 0
+      });
     }
   }, [isSessionLoaded, user, responses, setResponses, toast]);
 };
