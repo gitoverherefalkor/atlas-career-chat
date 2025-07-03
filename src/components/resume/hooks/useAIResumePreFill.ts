@@ -22,7 +22,7 @@ export const useAIResumePreFill = ({ isSessionLoaded, responses, setResponses }:
       responses
     });
     
-    if (isSessionLoaded && user && Object.keys(responses).length === 0) {
+    if (isSessionLoaded && user) {
       console.log('Checking for AI-parsed resume data to pre-fill...');
       
       supabase
