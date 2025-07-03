@@ -1,8 +1,7 @@
-
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker to match the installed version
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.js`;
+// Configure PDF.js worker to match the installed version (5.3.31)
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.mjs`;
 
 export const extractTextFromPDF = async (file: File): Promise<string> => {
   try {
