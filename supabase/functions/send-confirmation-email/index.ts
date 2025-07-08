@@ -24,20 +24,53 @@ serve(async (req) => {
     const payload = await req.text();
     console.log("Received payload:", payload);
     
-    // Parse the payload directly since it's coming from Supabase Auth
-    const webhookData = JSON.parse(payload);
+    // Parse the payload - it could be from the webhook or direct call
+    let webhookData;
+    try {
+      webhookData = JSON.parse(payload);
+    } catch (e) {
+      console.error("Failed to parse payload as JSON:", e);
+      return new Response("Invalid JSON payload", { status: 400, headers: corsHeaders });
+    }
+
+    // Handle different payload structures
+    let user, emailData;
     
-    const {
-      user,
-      email_data: { token, token_hash, redirect_to, email_action_type },
-    } = webhookData;
+    if (webhookData.user) {
+      // Webhook format
+      user = webhookData.user;
+      emailData = webhookData.email_data;
+    } else if (webhookData.record) {
+      // Alternative webhook format
+      user = webhookData.record;
+      emailData = webhookData.email_data;
+    } else {
+      // Direct call format
+      user = webhookData;
+      emailData = webhookData.email_data || {};
+    }
 
-    console.log("Processing webhook for user:", user.email);
+    if (!user || !user.email) {
+      console.error("No user email found in payload");
+      return new Response("No user email found", { status: 400, headers: corsHeaders });
+    }
 
-    const firstName = user.user_metadata?.first_name || "there";
-    const confirmationUrl = `https://atlas-assessments.com/auth/confirm?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent("https://atlas-assessments.com/")}`;
+    console.log("Processing email for user:", user.email);
+
+    const firstName = user.user_metadata?.first_name || user.raw_user_meta_data?.first_name || "there";
+    
+    // Build confirmation URL - handle different possible token formats
+    let confirmationUrl;
+    if (emailData && emailData.token_hash) {
+      const redirectTo = emailData.redirect_to || "https://atlas-assessments.com/dashboard";
+      confirmationUrl = `https://atlas-assessments.com/auth/confirm?token=${emailData.token_hash}&type=${emailData.email_action_type || 'signup'}&redirect_to=${encodeURIComponent(redirectTo)}`;
+    } else {
+      // Fallback URL
+      confirmationUrl = "https://atlas-assessments.com/auth";
+    }
 
     console.log("Sending confirmation email to:", user.email);
+    console.log("Using confirmation URL:", confirmationUrl);
 
     const { data, error } = await resend.emails.send({
       from: "Atlas Assessment <no-reply@atlas-assessments.com>",
