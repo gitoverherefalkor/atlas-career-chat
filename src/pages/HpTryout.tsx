@@ -36,11 +36,10 @@ const HpTryout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
-      {/* Organic Background Elements */}
+      {/* Simplified Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-amber-400/20 to-orange-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute top-1/3 -left-40 w-80 h-80 bg-gradient-to-br from-violet-500/20 to-purple-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute bottom-20 right-1/4 w-72 h-72 bg-gradient-to-br from-emerald-500/20 to-green-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-emerald-400/10 to-emerald-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 left-1/4 w-80 h-80 bg-gradient-to-br from-amber-500/10 to-amber-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '3s' }}></div>
       </div>
 
       {/* Diagonal Hero Section */}
@@ -59,11 +58,11 @@ const HpTryout = () => {
                 </div>
                 
                 <h1 className="text-5xl lg:text-7xl font-bold mb-8 leading-tight">
-                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-amber-400 to-violet-400">
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">
                     Transform
                   </span>
                   <span className="block text-white">Your Career</span>
-                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-amber-400 to-emerald-400">
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-emerald-400">
                     Journey
                   </span>
                 </h1>
@@ -74,11 +73,11 @@ const HpTryout = () => {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-4 text-lg rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-2xl">
+                  <Button className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-4 text-lg rounded-2xl transform hover:scale-105 transition-all duration-300 shadow-2xl">
                     Begin Your Transformation
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
-                  <Button variant="outline" className="border-2 border-violet-400 text-violet-400 hover:bg-violet-400 hover:text-white px-8 py-4 text-lg rounded-2xl transform hover:scale-105 transition-all duration-300">
+                  <Button variant="outline" className="border-2 border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-slate-900 px-8 py-4 text-lg rounded-2xl transform hover:scale-105 transition-all duration-300">
                     Explore the Journey
                   </Button>
                 </div>
@@ -96,17 +95,17 @@ const HpTryout = () => {
                   </CardContent>
                 </Card>
                 
-                <Card className="absolute top-32 left-8 w-48 bg-gradient-to-br from-amber-500/20 to-orange-600/20 backdrop-blur-sm border-amber-400/30 transform -rotate-6 hover:-rotate-12 transition-transform duration-500">
+                <Card className="absolute top-32 left-8 w-48 bg-gradient-to-br from-amber-500/20 to-amber-600/20 backdrop-blur-sm border-amber-400/30 transform -rotate-6 hover:-rotate-12 transition-transform duration-500">
                   <CardContent className="p-4">
                     <Sunrise className="h-8 w-8 text-amber-400 mb-2" />
                     <p className="text-amber-300 text-sm font-medium">Dawn of Clarity</p>
                   </CardContent>
                 </Card>
                 
-                <Card className="absolute top-64 right-12 w-48 bg-gradient-to-br from-violet-500/20 to-purple-600/20 backdrop-blur-sm border-violet-400/30 transform rotate-3 hover:rotate-6 transition-transform duration-500">
+                <Card className="absolute top-64 right-12 w-48 bg-gradient-to-br from-slate-600/20 to-slate-700/20 backdrop-blur-sm border-slate-400/30 transform rotate-3 hover:rotate-6 transition-transform duration-500">
                   <CardContent className="p-4">
-                    <Star className="h-8 w-8 text-violet-400 mb-2" />
-                    <p className="text-violet-300 text-sm font-medium">Unlock Potential</p>
+                    <Star className="h-8 w-8 text-slate-300 mb-2" />
+                    <p className="text-slate-300 text-sm font-medium">Unlock Potential</p>
                   </CardContent>
                 </Card>
               </div>
@@ -123,12 +122,12 @@ const HpTryout = () => {
         </svg>
       </div>
 
-      {/* Journey Steps - Organic Flow */}
+      {/* Journey Steps - Left to Right Upward Angle */}
       <section ref={addToRefs} className="py-20 bg-slate-900/80 relative">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-violet-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">
                 Your Transformation Path
               </span>
             </h2>
@@ -137,16 +136,16 @@ const HpTryout = () => {
             </p>
           </div>
 
-          {/* Diagonal Flow Layout */}
+          {/* Diagonal Flow Layout - Left to Right Upward */}
           <div className="relative">
-            {/* Path Line */}
+            {/* Path Line - Angled from bottom-left to top-right */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="w-full h-1 bg-gradient-to-r from-emerald-400 via-amber-400 to-violet-400 opacity-30 transform rotate-12"></div>
+              <div className="w-full h-1 bg-gradient-to-r from-emerald-400 to-amber-400 opacity-30 transform -rotate-12 origin-left"></div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 relative z-10">
-              {/* Step 1 - Offset up */}
-              <div className="transform lg:-translate-y-8">
+              {/* Step 1 - Start lower */}
+              <div className="transform lg:translate-y-8">
                 <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/10 backdrop-blur-sm border-emerald-400/30 hover:border-emerald-400/60 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2">
                   <CardContent className="p-8 text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -161,11 +160,11 @@ const HpTryout = () => {
                 </Card>
               </div>
 
-              {/* Step 2 - Center */}
+              {/* Step 2 - Middle position */}
               <div className="transform lg:translate-y-0">
-                <Card className="bg-gradient-to-br from-amber-500/10 to-orange-600/10 backdrop-blur-sm border-amber-400/30 hover:border-amber-400/60 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2">
+                <Card className="bg-gradient-to-br from-amber-500/10 to-amber-600/10 backdrop-blur-sm border-amber-400/30 hover:border-amber-400/60 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2">
                   <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Lightbulb className="h-8 w-8 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold text-amber-400 mb-4">Illuminate</h3>
@@ -177,14 +176,14 @@ const HpTryout = () => {
                 </Card>
               </div>
 
-              {/* Step 3 - Offset down */}
-              <div className="transform lg:translate-y-8">
-                <Card className="bg-gradient-to-br from-violet-500/10 to-purple-600/10 backdrop-blur-sm border-violet-400/30 hover:border-violet-400/60 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2">
+              {/* Step 3 - End higher */}
+              <div className="transform lg:-translate-y-8">
+                <Card className="bg-gradient-to-br from-slate-600/10 to-slate-700/10 backdrop-blur-sm border-slate-400/30 hover:border-slate-400/60 transition-all duration-500 transform hover:scale-105 hover:-translate-y-2">
                   <CardContent className="p-8 text-center">
-                    <div className="w-16 h-16 bg-gradient-to-br from-violet-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <div className="w-16 h-16 bg-gradient-to-br from-slate-500 to-slate-700 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Target className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-2xl font-bold text-violet-400 mb-4">Transform</h3>
+                    <h3 className="text-2xl font-bold text-slate-300 mb-4">Transform</h3>
                     <p className="text-slate-300 leading-relaxed">
                       Get your personalized roadmap with concrete next steps. Interactive AI coaching 
                       guides your transition with confidence and clarity.
@@ -197,14 +196,14 @@ const HpTryout = () => {
         </div>
       </section>
 
-      {/* Final CTA - Organic Shape */}
+      {/* Final CTA - Simplified */}
       <section ref={addToRefs} className="py-20 relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/50 via-amber-900/50 to-violet-900/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/30 to-amber-900/30"></div>
         
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-4xl lg:text-6xl font-bold mb-8">
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-amber-400 to-violet-400">
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-amber-400">
                 Ready to Transform?
               </span>
             </h2>
@@ -214,7 +213,7 @@ const HpTryout = () => {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center">
-              <Button className="bg-gradient-to-r from-emerald-500 via-amber-500 to-violet-500 hover:from-emerald-600 hover:via-amber-600 hover:to-violet-600 text-white px-12 py-6 text-xl rounded-full transform hover:scale-110 transition-all duration-300 shadow-2xl">
+              <Button className="bg-gradient-to-r from-emerald-500 to-amber-500 hover:from-emerald-600 hover:to-amber-600 text-white px-12 py-6 text-xl rounded-full transform hover:scale-110 transition-all duration-300 shadow-2xl">
                 Start Your Journey - €39
                 <ArrowRight className="ml-3 h-6 w-6" />
               </Button>
