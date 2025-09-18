@@ -6,8 +6,9 @@ import { AssessmentLayout } from '@/components/assessment/AssessmentLayout';
 import { AssessmentCompletion } from '@/components/assessment/AssessmentCompletion';
 import { PreSurveyUpload } from '@/components/assessment/PreSurveyUpload';
 import { useAssessmentLogic } from '@/components/assessment/useAssessmentLogic';
+import { AssessmentSessionProvider } from '@/components/assessment/AssessmentSessionContext';
 
-const Assessment = () => {
+const AssessmentPage = () => {
   console.log('Assessment component rendered');
   
   const {
@@ -25,6 +26,9 @@ const Assessment = () => {
     handleExitAssessment,
   } = useAssessmentLogic();
 
+  // Check if pre-survey upload is complete (either uploaded or skipped)
+  const preSurveyUploadComplete = localStorage.getItem('pre_survey_upload_complete') === 'true';
+
   console.log('Assessment state:', {
     isCompleted,
     isVerified,
@@ -32,7 +36,8 @@ const Assessment = () => {
     sessionToken,
     accessCodeData,
     authLoading,
-    user: user ? { id: user.id, email: user.email } : null
+    user: user ? { id: user.id, email: user.email } : null,
+    preSurveyUploadComplete
   });
 
   // Show loading while checking auth
@@ -74,8 +79,8 @@ const Assessment = () => {
     );
   }
 
-  // Show pre-survey upload step after verification
-  if (showPreSurveyUpload) {
+  // Always show pre-survey upload step after verification, unless explicitly completed
+  if (!preSurveyUploadComplete) {
     console.log('Showing pre-survey upload');
     return <PreSurveyUpload onContinue={handlePreSurveyUploadComplete} />;
   }
@@ -105,5 +110,11 @@ const Assessment = () => {
     </AssessmentLayout>
   );
 };
+
+const Assessment = () => (
+  <AssessmentSessionProvider>
+    <AssessmentPage />
+  </AssessmentSessionProvider>
+);
 
 export default Assessment;

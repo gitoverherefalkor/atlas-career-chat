@@ -59,7 +59,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
           navigate('/dashboard');
         }
       } else {
-        const redirectUrl = `${window.location.origin}/dashboard`;
+        const redirectUrl = `${window.location.origin}/payment`;
         
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useCallback } from 'react';
 import { QuestionRenderer } from './QuestionRenderer';
 import { SectionIntroduction } from './SectionIntroduction';
@@ -13,6 +12,25 @@ import { useResumePreFill } from './hooks/useResumePreFill';
 import { useSurveyNavigation } from './hooks/useSurveyNavigation';
 import { useSurveySubmission } from './hooks/useSurveySubmission';
 
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true };
+  }
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div className="text-center py-8 text-red-600">Something went wrong. Please refresh or contact support.</div>;
+    }
+    return this.props.children;
+  }
+}
+
 interface SurveyFormProps {
   surveyId: string;
   onComplete: (responses: Record<string, any>) => void;
@@ -26,7 +44,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 }) => {
   const navigate = useNavigate();
   
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL LOGIC
   // Custom hooks for state management
+  const surveyState = useSurveyState(surveyId);
   const {
     survey,
     isLoading,
@@ -49,13 +69,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     shouldSkipQuestion,
     getFilteredQuestions,
     clearSession
-  } = useSurveyState(surveyId);
+  } = surveyState;
 
-  // Resume pre-fill functionality
-  useResumePreFill({ isSessionLoaded, responses, setResponses });
+  // IMPORTANT: Call ALL hooks unconditionally
+  useResumePreFill({ isSessionLoaded, responses, setResponses, surveyId });
 
-  // Navigation functionality
-  const { handleNext, handleBack, handleSectionNavigation } = useSurveyNavigation({
+  const surveyNavigation = useSurveyNavigation({
     survey,
     currentSectionIndex,
     currentQuestionIndex,
@@ -65,9 +84,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     setCompletedSections,
     getFilteredQuestions
   });
+  const { handleNext, handleBack, handleSectionNavigation } = surveyNavigation;
 
-  // Submission functionality
-  const { handleSubmit, handleRetrySubmission } = useSurveySubmission({
+  const surveySubmission = useSurveySubmission({
     surveyId,
     responses,
     accessCodeData,
@@ -75,6 +94,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     setSubmissionStatus,
     onComplete
   });
+  const { handleSubmit, handleRetrySubmission } = surveySubmission;
 
   // Helper function to check if current question is complete
   const checkIfCurrentQuestionComplete = useCallback((question: any) => {
@@ -104,7 +124,17 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     if (question.type === 'ranking') {
       // For ranking questions, ensure all items are ranked
       const choices = question.config?.choices || [];
-      return Array.isArray(response) && response.length === choices.length;
+      
+      // Check if response is an object with rankings
+      if (!response || typeof response !== 'object') return false;
+      
+      // Check if all items have been ranked
+      const rankedItems = Object.keys(response).filter(key => 
+        response[key] !== null && response[key] !== undefined
+      );
+      
+      // All choices must be ranked
+      return rankedItems.length === choices.length;
     }
     
     return response !== undefined && response !== null && response !== '';
@@ -140,6 +170,22 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     }
   }, [survey, currentSectionIndex, currentQuestionIndex, responses, handleSubmit, handleNext, getFilteredQuestions, checkIfCurrentQuestionComplete]);
 
+  const handleResponseChange = useCallback((questionId: string, value: any) => {
+    setResponses(prev => ({
+      ...prev,
+      [questionId]: value
+    }));
+  }, [setResponses]);
+
+  const handleSectionIntroContinue = useCallback(() => {
+    setShowSectionIntro(false);
+  }, [setShowSectionIntro]);
+
+  const handleClearSession = useCallback(() => {
+    clearSession();
+    navigate('/dashboard');
+  }, [clearSession, navigate]);
+
   // Add keyboard event listener
   useEffect(() => {
     document.addEventListener('keydown', handleKeyDown);
@@ -148,6 +194,22 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     };
   }, [handleKeyDown]);
 
+  // Log section questions when survey loads
+  useEffect(() => {
+    if (isSessionLoaded && survey) {
+      // Print all question IDs and labels for section 1 (index 0)
+      const section1 = survey.sections[0];
+      if (section1) {
+        console.log('Section 1 (Intake) Questions:');
+        section1.questions.forEach(q => {
+          console.log(`ID: ${q.id} | Label: ${q.label}`);
+        });
+      }
+    }
+  }, [isSessionLoaded, survey]);
+
+  // NOW we can do conditional returns, AFTER all hooks have been called
+  
   // Loading states
   if (isLoading) {
     return (
@@ -184,19 +246,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const totalQuestionsInSection = filteredQuestions.length;
   const progress = (currentQuestionInSection / totalQuestionsInSection) * 100;
 
-  const handleResponseChange = (questionId: string, value: any) => {
-    setResponses(prev => ({
-      ...prev,
-      [questionId]: value
-    }));
-  };
-
   const isCurrentQuestionComplete = () => {
     return checkIfCurrentQuestionComplete(currentQuestion);
-  };
-
-  const handleSectionIntroContinue = () => {
-    setShowSectionIntro(false);
   };
 
   const isLastQuestion = () => {
@@ -208,14 +259,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     return currentSectionIndex === 0 && currentQuestionIndex === 0 && !showSectionIntro;
   };
 
-  // Function to manually clear session (only when user confirms everything worked)
-  const handleClearSession = () => {
-    clearSession();
-    navigate('/dashboard');
-  };
-
   // Show section introduction for all sections (including first)
   if (showSectionIntro) {
+    // Unlock the current section as soon as its intro is shown
+    if (!completedSections.includes(currentSectionIndex)) {
+      setCompletedSections(prev => prev.includes(currentSectionIndex) ? prev : [...prev, currentSectionIndex]);
+    }
     const sectionDescription = currentSection.description || "Let's continue with the next set of questions.";
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -249,6 +298,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   }
 
   return (
+    <ErrorBoundary>
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="flex gap-6 max-w-7xl mx-auto px-6">
         <SurveyNavigation
@@ -330,6 +380,43 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             </Card>
           )}
 
+          {/* Navigation (adjusted spacing) */}
+          <div className="flex justify-between mt-4 mb-4">
+            <Button
+              variant="ghost"
+              onClick={handleBack}
+              disabled={isFirstQuestion() || submissionStatus === 'submitted'}
+              className={isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back
+            </Button>
+            <Button
+              onClick={isLastQuestion() ? handleSubmit : handleNext}
+              disabled={
+                submissionStatus === 'submitted' ||
+                !isCurrentQuestionComplete() ||
+                isLoading ||
+                isSubmitting
+              }
+              className="bg-atlas-teal text-white hover:bg-atlas-teal/90"
+            >
+              {isSubmitting ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : isLastQuestion() ? (
+                <>
+                  Submit
+                  <Send className="h-4 w-4 ml-2" />
+                </>
+              ) : (
+                <>
+                  Continue
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </div>
+
           {/* Current Question */}
           <Card>
             <CardContent className="space-y-6 pt-6">
@@ -341,61 +428,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
                   onChange={(value) => handleResponseChange(currentQuestion.id, value)}
                 />
               </div>
-
-              {/* Navigation */}
-              <div className="flex justify-between pt-6">
-                <Button
-                  variant="ghost"
-                  onClick={handleBack}
-                  disabled={isFirstQuestion() || submissionStatus === 'submitted'}
-                  className={isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-
-                {!isLastQuestion() ? (
-                  <Button
-                    onClick={handleNext}
-                    disabled={!isCurrentQuestionComplete() || submissionStatus === 'submitted'}
-                    className={!isCurrentQuestionComplete() ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
-                    style={!isCurrentQuestionComplete() ? { backgroundColor: '#99cccc' } : {}}
-                  >
-                    Continue
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={submissionStatus === 'failed' ? handleRetrySubmission : handleSubmit}
-                    disabled={(!isCurrentQuestionComplete() && submissionStatus !== 'failed') || isSubmitting || submissionStatus === 'submitted'}
-                    className={(!isCurrentQuestionComplete() && submissionStatus !== 'failed') ? "opacity-50" : "bg-atlas-teal hover:bg-atlas-teal/90"}
-                    style={(!isCurrentQuestionComplete() && submissionStatus !== 'failed') ? { backgroundColor: '#99cccc' } : {}}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {submissionStatus === 'failed' ? 'Retrying...' : 'Submitting...'}
-                      </>
-                    ) : submissionStatus === 'submitted' ? (
-                      <>
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Submitted Successfully
-                      </>
-                    ) : submissionStatus === 'failed' ? (
-                      'Retry Submission'
-                    ) : (
-                      <>
-                        Submit Assessment
-                        <Send className="h-4 w-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                )}
-              </div>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
+    </ErrorBoundary>
   );
 };

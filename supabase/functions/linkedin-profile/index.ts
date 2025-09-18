@@ -1,10 +1,20 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { jwtVerify, createRemoteJWKSet } from 'https://esm.sh/jose@5.2.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+const jwks = createRemoteJWKSet(new URL('https://pcoyafgsirrznhmdaiji.supabase.co/auth/v1/keys'));
+
+async function verifySupabaseJWT(token) {
+  const { payload } = await jwtVerify(token, jwks, {
+    issuer: 'https://pcoyafgsirrznhmdaiji.supabase.co/auth/v1',
+  });
+  return payload;
 }
 
 serve(async (req) => {
@@ -15,9 +25,9 @@ serve(async (req) => {
 
   try {
     // Initialize Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     )
 
     // Get the authorization header
@@ -26,21 +36,22 @@ serve(async (req) => {
       throw new Error('No authorization header')
     }
 
-    // Verify the JWT token and get user
+    // Verify the JWT token and get user info from payload
     const jwt = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(jwt)
-    
-    if (userError || !user) {
-      console.error('User verification failed:', userError)
-      throw new Error('Invalid token')
+    let userPayload;
+    try {
+      userPayload = await verifySupabaseJWT(jwt);
+    } catch (err) {
+      console.error('JWT verification failed:', err);
+      throw new Error('Invalid or expired token');
     }
-
-    console.log('User ID:', user.id)
+    const userId = userPayload.sub;
+    console.log('User ID from JWT payload:', userId);
 
     let linkedinToken = null
 
     // Get user with admin privileges to access all data
-    const { data: adminUserData, error: adminError } = await supabaseClient.auth.admin.getUserById(user.id)
+    const { data: adminUserData, error: adminError } = await supabase.auth.admin.getUserById(userId)
     
     if (adminError) {
       console.error('Admin user fetch error:', adminError)

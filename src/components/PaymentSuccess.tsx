@@ -147,7 +147,7 @@ const PaymentSuccess = () => {
               ) : (
                 searchParams.get('demo') === 'true' 
                   ? 'Thank you for trying our demo purchase flow. You can now start the assessment!'
-                  : 'Thank you for your purchase. We\'ve sent your access code to your email. You can now start your assessment!'
+                  : 'Thank you for your purchase. We\'ve sent your access code to your email as well. You can now start your assessment!'
               )}
             </p>
             

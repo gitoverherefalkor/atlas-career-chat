@@ -36,12 +36,12 @@ const Chat = () => {
     }
 
     try {
-      // For now, let's validate using the report ID as token and relevance_user_id
+      // For now, let's validate using the report ID as token and n8n_user_id
       const { data: report, error } = await supabase
         .from('reports')
         .select('*')
         .eq('id', token)
-        .eq('relevance_user_id', userId)
+        .eq('n8n_user_id', userId)
         .single();
 
       if (error || !report) {
@@ -132,15 +132,11 @@ const Chat = () => {
               Chat with your personalized AI career coach about your assessment results and career path.
             </p>
           </CardHeader>
-          <CardContent className="h-full p-0">
-            <iframe 
-              src={`https://app.relevanceai.com/agents/d7b62b/cd9443294731-442f-ac7b-9abdfdd30fae/d1f599a9-1a50-4a3a-ba93-ebe1be45a105/embed-chat?hide_tool_steps=true&hide_file_uploads=true&hide_conversation_list=true&bubble_style=agent&primary_color=%234b7bb9&bubble_icon=pd%2Fchat&input_placeholder_text=To+send+a+message%2C+click+the+arrow+or+cmd%2Benter+%28cntl+on+Windows%29&hide_logo=true&hide_description=false&user_id=${userId}`}
-              width="100%" 
-              height="100%" 
-              frameBorder="0"
-              className="rounded-lg"
-              title="Atlas Career Coach Chat"
-            />
+          <CardContent className="h-full p-0 flex items-center justify-center">
+            {/* Relevance AI chat removed. Placeholder below. */}
+            <div className="text-center text-gray-500">
+              <p>AI chat will be available soon via our new n8n-powered system.</p>
+            </div>
           </CardContent>
         </Card>
       </div>

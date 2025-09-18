@@ -43,9 +43,9 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
           
-          // Always redirect to dashboard after successful email verification
+          // Always redirect to payment after successful email verification
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/payment');
           }, 2000);
         }
       } catch (error) {

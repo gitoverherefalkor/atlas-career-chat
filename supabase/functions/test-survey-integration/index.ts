@@ -19,7 +19,7 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
 
     // Test response data
@@ -107,7 +107,7 @@ serve(async (req) => {
     }
 
     console.log('Test response inserted successfully:', data);
-    console.log('Database trigger should now call forward-to-relevance function');
+    console.log('Database trigger should now call downstream processing (n8n/payload webhook)');
 
     return new Response(JSON.stringify({ 
       success: true, 

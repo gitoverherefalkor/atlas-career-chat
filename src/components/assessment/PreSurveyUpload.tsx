@@ -11,13 +11,34 @@ interface PreSurveyUploadProps {
 
 export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) => {
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const [hasUploadedResume, setHasUploadedResume] = React.useState(false);
 
   const handleProcessingComplete = (data: any) => {
     console.log('AI Resume processing completed:', data);
-    // Could add additional logic here if needed
+    // Store the survey prefill data (with correct question IDs) if available
+    if (data && data.surveyPreFillData) {
+      sessionStorage.setItem('resume_parsed_data', JSON.stringify(data.surveyPreFillData));
+      console.log('[PreSurveyUpload] Stored survey prefill data in sessionStorage:', data.surveyPreFillData);
+      localStorage.setItem('resume_parsed_data', JSON.stringify(data.surveyPreFillData));
+      localStorage.setItem('resume_parsed_timestamp', new Date().toISOString());
+      setHasUploadedResume(true);
+    } else if (data && data.aiParsedData) {
+      // Fallback to AI parsed data if surveyPreFillData not available
+      sessionStorage.setItem('resume_parsed_data', JSON.stringify(data.aiParsedData));
+      console.log('[PreSurveyUpload] Stored AI parsed data in sessionStorage:', data.aiParsedData);
+      localStorage.setItem('resume_parsed_data', JSON.stringify(data.aiParsedData));
+      localStorage.setItem('resume_parsed_timestamp', new Date().toISOString());
+      setHasUploadedResume(true);
+    }
   };
 
   const handleSkip = () => {
+    localStorage.setItem('pre_survey_upload_complete', 'true');
+    onContinue();
+  };
+
+  const handleContinue = () => {
+    localStorage.setItem('pre_survey_upload_complete', 'true');
     onContinue();
   };
 
@@ -33,19 +54,23 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Upload your resume and let our AI intelligently extract information to automatically populate your assessment.
           </p>
+          {hasUploadedResume && (
+            <p className="text-green-600 mt-2">
+              ✓ Resume processed successfully! Your information will be pre-filled in the assessment.
+            </p>
+          )}
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <LinkedInGuide />
-          
           <AIResumeUploadCard 
             title="AI Resume Processing"
             description="Our AI will intelligently analyze your resume and extract relevant information to pre-fill your assessment."
             showSuccessMessage={true}
             onProcessingComplete={handleProcessingComplete}
+            onProcessingStart={() => setIsProcessing(true)}
+            onProcessingEnd={() => setIsProcessing(false)}
           />
         </div>
-
         <div className="flex justify-center space-x-4">
           <Button 
             variant="outline" 
@@ -56,7 +81,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             Skip for Now
           </Button>
           <Button 
-            onClick={onContinue}
+            onClick={handleContinue}
             size="lg"
             className="flex items-center"
             disabled={isContinueDisabled}

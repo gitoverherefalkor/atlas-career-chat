@@ -111,9 +111,9 @@ serve(async (req) => {
     }
 
     // Create a Supabase client (using service role key to bypass RLS)
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") || "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || ""
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
 
     // Generate a new access code
@@ -130,7 +130,7 @@ serve(async (req) => {
     const currency = session.currency?.toUpperCase() || 'EUR';
 
     // Store the access code in the database with pricing info
-    const { data: codeData, error: codeError } = await supabaseAdmin
+    const { data: codeData, error: codeError } = await supabase
       .from("access_codes")
       .insert({
         code: accessCode,
@@ -159,7 +159,7 @@ serve(async (req) => {
     console.log("Customer details:", { customerEmail, firstName, lastName, country });
 
     // Store the purchase details
-    const { error: purchaseError } = await supabaseAdmin
+    const { error: purchaseError } = await supabase
       .from("purchases")
       .insert({
         email: customerEmail,

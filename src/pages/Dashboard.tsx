@@ -131,6 +131,17 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Button
+          variant="destructive"
+          className="mb-6"
+          onClick={() => {
+            localStorage.removeItem('survey_session_00000000-0000-0000-0000-000000000001');
+            localStorage.removeItem('pre_survey_upload_complete');
+            window.location.reload();
+          }}
+        >
+          Reset/Clear Progress
+        </Button>
         {/* Welcome Section - Only show when report section is not expanded */}
         {!isReportSectionExpanded && (
           <>

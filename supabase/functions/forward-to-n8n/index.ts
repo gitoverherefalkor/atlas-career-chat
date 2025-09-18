@@ -32,49 +32,42 @@ serve(async (req) => {
       });
     }
 
-    // Initialize Supabase client
+    // Debug log to confirm which key is being used
+    console.log("Using key:", Deno.env.get("NEW_N8N_SERVICE_ROLE_KEY")?.slice(0, 10));
+    // Initialize Supabase client with the new key only
     const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
 
-    // Find the user with email sjn.geurts@gmail.com or create a default user for testing
+    // Determine user ID strictly from request body; do not use hardcoded emails
     let userId = requestBody.user_id;
-    
-    if (!userId) {
-      console.log('No user_id provided, looking for test user sjn.geurts@gmail.com');
-      
-      // First try to find the user by email in profiles
-      const { data: profileData, error: profileError } = await supabase
+    const userEmail = requestBody.user_email as string | undefined;
+
+    if (!userId && userEmail) {
+      const { data: profileData } = await supabase
         .from('profiles')
         .select('id')
-        .eq('email', 'sjn.geurts@gmail.com')
+        .eq('email', userEmail)
         .maybeSingle();
-      
-      if (profileData) {
-        userId = profileData.id;
-        console.log('Found user ID from profiles:', userId);
-      } else {
-        console.log('User not found in profiles, using fallback user ID');
-        // Use a fallback user ID for testing - you can replace this with any valid UUID
-        userId = '00000000-0000-0000-0000-000000000000';
-      }
+      userId = profileData?.id;
+    }
+
+    if (!userId) {
+      return new Response(JSON.stringify({ error: 'user_id or user_email required' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // Step 1: Create a report record first
     console.log('Creating report record for user:', userId);
-    const { data: reportData, error: reportError } = await supabase
-      .from('reports')
-      .insert({
-        user_id: userId,
-        title: 'Career Assessment Report (N8N)',
-        status: 'processing',
-        payload: surveyData,
-        access_code_id: requestBody.access_code_id || null,
-        survey_id: requestBody.survey_id || null
-      })
-      .select()
-      .single();
+    const { data: reportData, error: reportError } = await supabase.from('reports').insert({
+      user_id: userId,
+      title: 'Career Assessment Report (N8N)',
+      status: 'processing',
+      payload: surveyData
+    }).select().single();
 
     if (reportError) {
       console.error('Error creating report:', reportError);
@@ -91,8 +84,6 @@ serve(async (req) => {
       // Main item with all the data
       user_id: userId,
       report_id: reportData.id,
-      access_code_id: requestBody.access_code_id || null,
-      survey_id: requestBody.survey_id || null,
       // Survey data preserving order - this is the key part
       survey_responses: surveyData,
       // Additional metadata

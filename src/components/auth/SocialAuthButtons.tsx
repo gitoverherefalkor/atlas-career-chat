@@ -23,7 +23,7 @@ const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/payment`
         }
       });
 
@@ -49,7 +49,7 @@ const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/payment`
         }
       });
 

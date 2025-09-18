@@ -17,10 +17,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
   const [expandedCareerSection, setExpandedCareerSection] = useState<string | null>(null);
   const { reports } = useReports();
 
-  // Only show for Sjoerd's profile
-  if (userEmail !== 'sjn.geurts@gmail.com') {
-    return null;
-  }
+  // Always show when there are reports available
 
   const getLatestReport = () => {
     if (!reports || reports.length === 0) return null;

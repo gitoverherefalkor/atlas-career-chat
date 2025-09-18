@@ -17,14 +17,22 @@ serve(async (req) => {
     
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Look for user with email sjn.geurts@gmail.com
+    const { email: requestEmail } = (await req.json().catch(() => ({}))) as { email?: string };
+    if (!requestEmail) {
+      return new Response(JSON.stringify({ error: 'email is required in request body' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Look for user with provided email
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('id')
-      .eq('email', 'sjn.geurts@gmail.com')
+      .eq('email', requestEmail)
       .maybeSingle();
 
     let userId;
@@ -38,9 +46,9 @@ serve(async (req) => {
         .from('profiles')
         .insert({
           id: '00000000-0000-0000-0000-000000000001',
-          email: 'sjn.geurts@gmail.com',
-          first_name: 'Sjoerd',
-          last_name: 'Geurts'
+          email: requestEmail,
+          first_name: 'Test',
+          last_name: 'User'
         })
         .select()
         .single();
@@ -61,7 +69,7 @@ serve(async (req) => {
         title: 'Test Career Assessment Report',
         status: 'completed',
         payload: {
-          personal_name: "Sjoerd Geurts",
+          personal_name: "Test User",
           test: true,
           created_for: "Dashboard testing"
         }

@@ -1,8 +1,11 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Circle, Lock } from 'lucide-react';
-import { Section } from '@/hooks/useSurvey';
+
+interface Section {
+  id: string;
+  title: string;
+}
 
 interface SurveyNavigationProps {
   sections: Section[];
@@ -22,7 +25,7 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
       return 'completed';
     } else if (sectionIndex === currentSectionIndex) {
       return 'current';
-    } else if (sectionIndex < currentSectionIndex) {
+    } else if (sectionIndex <= currentSectionIndex) {
       return 'accessible';
     } else {
       return 'locked';
@@ -34,7 +37,7 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
       case 'completed':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
       case 'current':
-        return <Circle className="h-5 w-5 text-atlas-teal fill-current" />;
+        return <Circle className="h-5 w-5 text-gray-400" />;
       case 'accessible':
         return <Circle className="h-5 w-5 text-gray-400" />;
       default:
@@ -49,7 +52,7 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
         <div className="space-y-2">
           {sections.map((section, index) => {
             const status = getSectionStatus(index);
-            const isClickable = status === 'completed' || status === 'accessible';
+            const isClickable = status === 'completed' || status === 'accessible' || status === 'current';
             
             return (
               <div

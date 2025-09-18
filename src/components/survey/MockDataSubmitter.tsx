@@ -19,7 +19,9 @@ export const MockDataSubmitter = () => {
     try {
       console.log('Creating test report for dashboard testing...');
       
-      const { data, error } = await supabase.functions.invoke('create-test-report');
+      const { data, error } = await supabase.functions.invoke('create-test-report', {
+        body: { email: user?.email }
+      });
 
       if (error) {
         throw error;
@@ -28,7 +30,7 @@ export const MockDataSubmitter = () => {
       if (data.success) {
         toast({
           title: "Success!",
-          description: "Test report created successfully for sjn.geurts@gmail.com. You can now test the dashboard view.",
+          description: `Test report created successfully for ${user?.email}. You can now test the dashboard view.`,
         });
         console.log('Test report creation result:', data);
       } else {
@@ -52,7 +54,9 @@ export const MockDataSubmitter = () => {
     try {
       console.log('Cleaning up old test reports...');
       
-      const { data, error } = await supabase.functions.invoke('cleanup-test-reports');
+      const { data, error } = await supabase.functions.invoke('cleanup-test-reports', {
+        body: { email: user?.email }
+      });
 
       if (error) {
         throw error;
@@ -120,7 +124,7 @@ export const MockDataSubmitter = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-gray-600">
-            Manage test reports for sjn.geurts@gmail.com dashboard testing.
+            Manage test reports for your account. Uses your current login email.
           </p>
           
           <div className="space-y-3">
