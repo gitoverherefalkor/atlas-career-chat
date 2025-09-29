@@ -34,3 +34,12 @@ additional_redirect_urls = ["https://atlas-career-chat.lovable.app", "http://loc
 
 [auth.email]
 enable_confirmations = true
+
+[auth.email.template.confirmation]
+subject = "Confirm Your Atlas Assessment Account"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.hooks.send_email]
+enabled = true
+uri = "https://pcoyafgsirrznhmdaiji.supabase.co/functions/v1/send-confirmation-email"
+secrets = ["SEND_EMAIL_HOOK_SECRET"]
