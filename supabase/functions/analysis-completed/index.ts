@@ -73,7 +73,7 @@ serve(async (req) => {
     }
 
     const resend = new Resend(resendApiKey);
-    const dashboardUrl = `https://atlas-assessments.com/dashboard`;
+    const chatUrl = `https://atlas-assessments.com/chat`;
 
     const firstName = profile.first_name || 'there';
     const subject = 'Your Atlas career report is ready';
@@ -81,10 +81,10 @@ serve(async (req) => {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
         <h2 style="color: #4361ee;">Your report is ready, ${firstName}!</h2>
         <p>Your career report${updated.title ? ` "${updated.title}"` : ''} is now available.</p>
+        <p>Log in to view your personalized career assessment and chat with your AI career coach:</p>
         <p>
-          <a href="${dashboardUrl}" style="background:#4361ee;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block">View your report</a>
+          <a href="${chatUrl}" style="background:#4361ee;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block">Chat with your career coach</a>
         </p>
-        ${n8nUserId ? `<p style="color:#666">Chat session ID: ${n8nUserId}</p>` : ''}
         <p style="color:#888;font-size:12px;margin-top:24px;">If you did not request this, you can ignore this email.</p>
       </div>
     `;
