@@ -1,5 +1,6 @@
 
 import { useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +24,7 @@ export const useSurveySubmission = ({
 }: UseSurveySubmissionProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const markAccessCodeAsUsed = useCallback(async () => {
     if (!accessCodeData?.id) return;
@@ -106,11 +108,16 @@ export const useSurveySubmission = ({
 
       toast({
         title: "Survey Submitted Successfully",
-        description: "Your responses are saved. Your report is being generated and you'll receive an email when ready.",
+        description: "Redirecting to processing page...",
       });
 
       // Call completion handler (but don't clear session yet)
       onComplete(responses);
+
+      // Redirect to processing page
+      setTimeout(() => {
+        navigate('/report-processing');
+      }, 1500);
     } catch (error) {
       console.error('Error submitting survey:', error);
       setSubmissionStatus('failed');

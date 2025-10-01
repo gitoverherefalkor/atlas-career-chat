@@ -16,6 +16,7 @@ import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Chat from "./pages/Chat";
 import Report from "./pages/Report";
+import ReportProcessing from "./pages/ReportProcessing";
 import N8nChat from "./pages/N8nChat";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
@@ -23,8 +24,11 @@ import Payment from "./pages/Payment";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const App = () => {
+  console.log("App component loaded");
+
+  return (
+    <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
         <Toaster />
@@ -41,6 +45,7 @@ const App = () => (
             <Route path="/test-data" element={<TestData />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/report" element={<Report />} />
+            <Route path="/report-processing" element={<ReportProcessing />} />
             <Route path="/n8n-chat" element={<N8nChat />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-conditions" element={<TermsOfService />} />
@@ -52,6 +57,7 @@ const App = () => (
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
