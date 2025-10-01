@@ -25,16 +25,6 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
-            REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
-
-            Review this code for bugs and security issues only. Focus on:
-            - Security vulnerabilities (auth bypasses, injection risks, exposed secrets)
-            - Critical bugs that could cause crashes or data loss
-            - Type safety issues in TypeScript
-
-            Keep feedback concise and actionable.
-
-            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
+            Please review this pull request and look for bugs and security issues. Only report on bugs and potential vulnerabilities you find. Be concise.
 
           claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
