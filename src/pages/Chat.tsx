@@ -64,7 +64,7 @@ const Chat = () => {
         },
         showWelcomeScreen: false,
         loadPreviousSession: true,
-        enableStreaming: true,
+        enableStreaming: false,
       });
 
       setChatInitialized(true);
