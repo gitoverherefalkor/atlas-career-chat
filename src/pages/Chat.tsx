@@ -7,12 +7,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, ArrowLeft, MessageSquare } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
+import '@n8n/chat/style.css';
+import '@/styles/n8n-chat.css';
+import { createChat } from '@n8n/chat';
 
 type ReportData = Tables<'reports'>;
 
 const Chat = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [chatInitialized, setChatInitialized] = useState(false);
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -22,6 +26,50 @@ const Chat = () => {
       loadUserReport();
     }
   }, [authLoading, user]);
+
+  // Initialize n8n chat when report is loaded
+  useEffect(() => {
+    if (reportData && !chatInitialized) {
+      const n8nWebhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
+
+      if (!n8nWebhookUrl) {
+        console.error('N8N webhook URL not configured');
+        toast({
+          title: "Configuration Error",
+          description: "Chat is not properly configured. Please contact support.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      createChat({
+        webhookUrl: n8nWebhookUrl,
+        mode: 'fullscreen',
+        target: '#n8n-chat-container',
+        metadata: {
+          report_id: reportData.id,
+        },
+        initialMessages: [
+          'Hi there! 👋',
+          'I\'m your AI career coach. I\'ve reviewed your assessment and I\'m here to discuss your results and answer any questions about your career path.',
+        ],
+        i18n: {
+          en: {
+            title: 'Atlas Career Coach',
+            subtitle: 'Discuss your personalized career assessment',
+            footer: '',
+            getStarted: 'Start Conversation',
+            inputPlaceholder: 'Ask me about your results...',
+          },
+        },
+        showWelcomeScreen: false,
+        loadPreviousSession: true,
+        enableStreaming: true,
+      });
+
+      setChatInitialized(true);
+    }
+  }, [reportData, chatInitialized, toast]);
 
   const loadUserReport = async () => {
     if (!user) {
@@ -121,24 +169,8 @@ const Chat = () => {
       </div>
 
       {/* Chat Interface */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Card className="h-[calc(100vh-200px)]">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-atlas-blue" />
-              Your AI Career Coach
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              Chat with your personalized AI career coach about your assessment results and career path.
-            </p>
-          </CardHeader>
-          <CardContent className="h-full p-0 flex items-center justify-center">
-            {/* Relevance AI chat removed. Placeholder below. */}
-            <div className="text-center text-gray-500">
-              <p>AI chat will be available soon via our new n8n-powered system.</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="mx-auto" style={{ height: 'calc(100vh - 64px)' }}>
+        <div id="n8n-chat-container" style={{ width: '100%', height: '100%' }}></div>
       </div>
     </div>
   );
