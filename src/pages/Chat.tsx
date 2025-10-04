@@ -10,12 +10,15 @@ import type { Tables } from '@/integrations/supabase/types';
 import '@n8n/chat/style.css';
 import '@/styles/n8n-chat.css';
 import { createChat } from '@n8n/chat';
+import { WelcomeCard } from '@/components/chat/WelcomeCard';
 
 type ReportData = Tables<'reports'>;
 
 const Chat = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(false);
   const [chatInitialized, setChatInitialized] = useState(false);
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -27,49 +30,87 @@ const Chat = () => {
     }
   }, [authLoading, user]);
 
-  // Initialize n8n chat when report is loaded
-  useEffect(() => {
-    if (reportData && !chatInitialized) {
-      const n8nWebhookUrl = import.meta.env.VITE_N8N_WEBHOOK_URL;
+  const handleStartSession = async () => {
+    if (!reportData) return;
 
-      if (!n8nWebhookUrl) {
-        console.error('N8N webhook URL not configured');
+    setIsInitializing(true);
+
+    try {
+      // Call webhook trigger to initialize session with report_id
+      const webhookTriggerUrl = import.meta.env.VITE_N8N_WEBHOOK_TRIGGER_URL;
+
+      if (!webhookTriggerUrl) {
+        console.error('Webhook trigger URL not configured');
         toast({
           title: "Configuration Error",
-          description: "Chat is not properly configured. Please contact support.",
+          description: "Chat initialization is not properly configured.",
           variant: "destructive",
         });
+        setIsInitializing(false);
         return;
       }
 
-      createChat({
-        webhookUrl: n8nWebhookUrl,
-        mode: 'fullscreen',
-        target: '#n8n-chat-container',
-        metadata: {
+      const response = await fetch(webhookTriggerUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           report_id: reportData.id,
-        },
-        initialMessages: [
-          'Hi there! 👋',
-          'I\'m your AI career coach. I\'ve reviewed your assessment and I\'m here to discuss your results and answer any questions about your career path.',
-        ],
-        i18n: {
-          en: {
-            title: 'Atlas Career Coach',
-            subtitle: 'Discuss your personalized career assessment',
-            footer: '',
-            getStarted: 'Start Conversation',
-            inputPlaceholder: 'Ask me about your results...',
-          },
-        },
-        showWelcomeScreen: false,
-        loadPreviousSession: true,
-        enableStreaming: false,
+          user_id: user?.id,
+        }),
       });
 
-      setChatInitialized(true);
+      if (!response.ok) {
+        throw new Error('Failed to initialize session');
+      }
+
+      // Hide welcome card and initialize chat
+      setShowWelcome(false);
+
+      // Initialize n8n chat widget
+      setTimeout(() => {
+        const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
+
+        if (!chatWebhookUrl) {
+          console.error('Chat webhook URL not configured');
+          return;
+        }
+
+        createChat({
+          webhookUrl: chatWebhookUrl,
+          mode: 'fullscreen',
+          target: '#n8n-chat-container',
+          metadata: {
+            report_id: reportData.id,
+          },
+          i18n: {
+            en: {
+              title: 'Atlas Career Coach',
+              subtitle: 'Discuss your personalized career assessment',
+              footer: '',
+              getStarted: 'Continue Conversation',
+              inputPlaceholder: 'Ask me anything...',
+            },
+          },
+          showWelcomeScreen: false,
+          loadPreviousSession: true,
+          enableStreaming: false,
+        });
+
+        setChatInitialized(true);
+        setIsInitializing(false);
+      }, 500);
+    } catch (error) {
+      console.error('Error initializing session:', error);
+      toast({
+        title: "Initialization Error",
+        description: "Failed to start your career coaching session. Please try again.",
+        variant: "destructive",
+      });
+      setIsInitializing(false);
     }
-  }, [reportData, chatInitialized, toast]);
+  };
 
   const loadUserReport = async () => {
     if (!user) {
@@ -168,10 +209,19 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Chat Interface */}
-      <div className="mx-auto" style={{ height: 'calc(100vh - 64px)' }}>
-        <div id="n8n-chat-container" style={{ width: '100%', height: '100%' }}></div>
-      </div>
+      {/* Content */}
+      {showWelcome ? (
+        <div style={{ height: 'calc(100vh - 64px)', overflow: 'auto' }}>
+          <WelcomeCard
+            onReady={handleStartSession}
+            isLoading={isInitializing}
+          />
+        </div>
+      ) : (
+        <div className="mx-auto" style={{ height: 'calc(100vh - 64px)' }}>
+          <div id="n8n-chat-container" style={{ width: '100%', height: '100%' }}></div>
+        </div>
+      )}
     </div>
   );
 };
