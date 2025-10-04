@@ -83,17 +83,21 @@ const Chat = () => {
           metadata: {
             report_id: reportData.id,
           },
+          initialMessages: [
+            'Chat is ready! 👋',
+            'Say hi to get started and I\'ll walk you through your Executive Summary and career insights.'
+          ],
           i18n: {
             en: {
               title: 'Atlas Career Coach',
               subtitle: 'Discuss your personalized career assessment',
               footer: '',
-              getStarted: 'Continue Conversation',
-              inputPlaceholder: 'Ask me anything...',
+              getStarted: 'Start Chatting',
+              inputPlaceholder: 'Type "hi" to begin...',
             },
           },
           showWelcomeScreen: false,
-          loadPreviousSession: true,
+          loadPreviousSession: false,
           enableStreaming: false,
         });
 
