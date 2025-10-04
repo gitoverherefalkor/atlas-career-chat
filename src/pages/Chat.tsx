@@ -57,7 +57,6 @@ const Chat = () => {
         },
         body: JSON.stringify({
           report_id: reportData.id,
-          user_id: user?.id,
         }),
       });
 
