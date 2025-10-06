@@ -14,7 +14,48 @@ const AuthConfirm = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const confirmEmail = async () => {
+    const handleAuthConfirm = async () => {
+      // Check if this is an OAuth callback (has code/token in hash or query)
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (session?.user) {
+        // OAuth callback successful - user is authenticated
+        console.log('OAuth successful, user authenticated:', session.user.email);
+
+        // Check if profile exists, create if not
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        if (!existingProfile) {
+          // Create profile from OAuth data
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+              id: session.user.id,
+              email: session.user.email!,
+              first_name: session.user.user_metadata?.full_name?.split(' ')[0] || '',
+              last_name: session.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+            });
+
+          if (profileError) {
+            console.error('Error creating profile:', profileError);
+          }
+        }
+
+        setStatus('success');
+        setMessage('Successfully signed in!');
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 1500);
+        return;
+      }
+
+      // Handle email confirmation (old flow)
       const token = searchParams.get('token');
       const type = searchParams.get('type');
 
@@ -42,8 +83,8 @@ const AuthConfirm = () => {
         if (data.user) {
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
-          
-          // Always redirect to payment after successful email verification
+
+          // Redirect to payment after email verification
           setTimeout(() => {
             navigate('/payment');
           }, 2000);
@@ -55,7 +96,7 @@ const AuthConfirm = () => {
       }
     };
 
-    confirmEmail();
+    handleAuthConfirm();
   }, [searchParams, navigate]);
 
   return (

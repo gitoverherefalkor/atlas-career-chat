@@ -20,14 +20,23 @@ const Auth = () => {
       setIsLogin(false);
     }
 
+    // Only check auth if NOT coming from payment flow
+    // (payment flow sends users here to complete signup)
     const checkAuth = async () => {
+      const accessCode = searchParams.get('code');
+
+      // If user has access code, they're in payment flow - let them through
+      if (accessCode) {
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         navigate('/dashboard');
       }
     };
     checkAuth();
-  }, [navigate, flowFromUrl]);
+  }, [navigate, flowFromUrl, searchParams]);
 
   const handleToggle = () => {
     setIsLogin(!isLogin);
