@@ -30,6 +30,9 @@ const AuthConfirm = () => {
           .single();
 
         if (!existingProfile) {
+          // Get auth provider from session
+          const provider = session.user.app_metadata?.provider || 'email';
+
           // Create profile from OAuth data
           const { error: profileError } = await supabase
             .from('profiles')
@@ -38,6 +41,7 @@ const AuthConfirm = () => {
               email: session.user.email!,
               first_name: session.user.user_metadata?.full_name?.split(' ')[0] || '',
               last_name: session.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
+              auth_provider: provider,
             });
 
           if (profileError) {
@@ -84,9 +88,9 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
 
-          // Redirect to payment after email verification
+          // Redirect to dashboard after email verification
           setTimeout(() => {
-            navigate('/payment');
+            navigate('/dashboard');
           }, 2000);
         }
       } catch (error) {

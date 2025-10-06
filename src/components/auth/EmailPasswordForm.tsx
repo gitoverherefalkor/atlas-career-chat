@@ -59,8 +59,18 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
           navigate('/dashboard');
         }
       } else {
-        const redirectUrl = `${window.location.origin}/payment`;
-        
+        // Check if user has an access code from URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessCode = urlParams.get('code');
+
+        // If no access code, prevent signup
+        if (!accessCode) {
+          setError('You need an access code to create an account. Please purchase an assessment first or use the access code from your email.');
+          return;
+        }
+
+        const redirectUrl = `${window.location.origin}/auth/confirm`;
+
         const { data, error } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -68,7 +78,8 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
             emailRedirectTo: redirectUrl,
             data: {
               first_name: formData.firstName,
-              last_name: formData.lastName
+              last_name: formData.lastName,
+              access_code: accessCode
             }
           }
         });
@@ -83,7 +94,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
             title: "Account created!",
             description: "Please check your email to verify your account before proceeding.",
           });
-          
+
           setError('Please check your email and click the verification link to activate your account. Once verified, you can sign in below.');
         }
       }
