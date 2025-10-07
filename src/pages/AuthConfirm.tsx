@@ -79,7 +79,7 @@ const AuthConfirm = () => {
         return;
       }
 
-      // Handle email confirmation (old flow)
+      // Handle email confirmation and password reset
       const token = searchParams.get('token');
       const type = searchParams.get('type');
 
@@ -105,6 +105,14 @@ const AuthConfirm = () => {
         }
 
         if (data.user) {
+          // If this is a password reset (recovery), redirect to reset password page
+          if (type === 'recovery') {
+            console.log('Password reset detected, redirecting to reset-password page');
+            navigate('/reset-password');
+            return;
+          }
+
+          // Regular email confirmation
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
 
