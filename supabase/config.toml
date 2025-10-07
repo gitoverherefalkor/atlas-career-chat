@@ -39,7 +39,8 @@ enable_confirmations = true
 subject = "Confirm Your Atlas Assessment Account"
 content_path = "./supabase/templates/confirmation.html"
 
-[auth.hooks.send_email]
-enabled = true
-uri = "https://pcoyafgsirrznhmdaiji.supabase.co/functions/v1/send-confirmation-email"
-secrets = ["SEND_EMAIL_HOOK_SECRET"]
+# Auth hooks are configured in Supabase dashboard
+# [auth.hooks.send_email]
+# enabled = true
+# uri = "https://pcoyafgsirrznhmdaiji.supabase.co/functions/v1/send-confirmation-email"
+# secrets = ["SEND_EMAIL_HOOK_SECRET"]
