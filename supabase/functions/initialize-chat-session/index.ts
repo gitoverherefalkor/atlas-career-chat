@@ -16,16 +16,6 @@ serve(async (req) => {
   try {
     console.log('Initialize chat session function called');
 
-    // Get authorization header for user verification
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('No authorization header');
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     // Get the request body
     const { report_id } = await req.json();
     console.log('Report ID:', report_id);
@@ -38,35 +28,17 @@ serve(async (req) => {
       });
     }
 
-    // Initialize Supabase client with user's auth token to verify they own the report
+    // Initialize Supabase client with service role key (same pattern as other functions)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      {
-        global: {
-          headers: { Authorization: authHeader }
-        }
-      }
+      Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
 
-    // Verify user is authenticated
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      console.error('User not authenticated:', authError);
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('Authenticated user:', user.id);
-
-    // Verify report exists, belongs to user, and is in pending_review status
+    // Verify report exists and is in pending_review status
     const { data: report, error: reportError } = await supabase
       .from('reports')
       .select('*')
       .eq('id', report_id)
-      .eq('user_id', user.id)
       .single();
 
     if (reportError || !report) {
