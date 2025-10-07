@@ -12,6 +12,8 @@ import Assessment from "./pages/Assessment";
 import TestData from "./pages/TestData";
 import Auth from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
 import Chat from "./pages/Chat";
@@ -38,6 +40,8 @@ const App = () => {
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/confirm" element={<AuthConfirm />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />

@@ -169,9 +169,20 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
       </div>
 
       <div>
-        <label htmlFor="password" className="block text-sm font-medium mb-1">
-          Password
-        </label>
+        <div className="flex items-center justify-between mb-1">
+          <label htmlFor="password" className="block text-sm font-medium">
+            Password
+          </label>
+          {isLogin && (
+            <button
+              type="button"
+              onClick={() => navigate('/forgot-password')}
+              className="text-xs text-atlas-navy hover:underline"
+            >
+              Forgot password?
+            </button>
+          )}
+        </div>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
