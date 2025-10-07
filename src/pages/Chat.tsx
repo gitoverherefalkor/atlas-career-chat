@@ -36,33 +36,21 @@ const Chat = () => {
     setIsInitializing(true);
 
     try {
-      // Call Supabase edge function to initialize chat session
-      const { data, error } = await supabase.functions.invoke('initialize-chat-session', {
-        body: {
-          report_id: reportData.id,
-        },
-      });
-
-      if (error) {
-        console.error('Error initializing session:', error);
-        throw new Error(error.message || 'Failed to initialize session');
-      }
-
-      if (!data?.success) {
-        throw new Error(data?.error || 'Failed to initialize session');
-      }
-
-      console.log('Chat session initialized:', data);
-
       // Hide welcome card and initialize chat
       setShowWelcome(false);
 
-      // Initialize n8n chat widget
+      // Initialize n8n chat widget with report_id in metadata
       setTimeout(() => {
         const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
 
         if (!chatWebhookUrl) {
           console.error('Chat webhook URL not configured');
+          toast({
+            title: "Configuration Error",
+            description: "Chat is not properly configured. Please contact support.",
+            variant: "destructive",
+          });
+          setIsInitializing(false);
           return;
         }
 
