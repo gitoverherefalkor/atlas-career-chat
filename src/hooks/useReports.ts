@@ -63,6 +63,7 @@ export const useReports = () => {
           payload: report.payload,
           access_code_id: report.access_code_id || null,
           survey_id: report.survey_id || null,
+          status: 'processing', // Initial status when report is created
         })
         .select()
         .single();
