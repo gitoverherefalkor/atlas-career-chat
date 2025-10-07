@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, User, LogOut, Settings, Play } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2, User, LogOut, Settings, Play, MessageSquare, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -201,10 +202,62 @@ const Dashboard = () => {
 
         {/* Report Display */}
         {latestReport && (
-          <ReportDisplay 
-            userEmail={profile?.email} 
-            onSectionExpanded={setIsReportSectionExpanded}
-          />
+          <>
+            {/* Show pending review message if report is not completed */}
+            {latestReport.status === 'pending_review' && (
+              <Card className="mb-6 border-blue-200 bg-blue-50">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-blue-100 p-3 rounded-full">
+                      <MessageSquare className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900 mb-2">Your Report is Ready for Review!</h3>
+                      <p className="text-blue-800 mb-4">
+                        Your personalized career assessment has been generated. To unlock your final report,
+                        complete a brief conversation with our AI to refine and personalize your insights based on your feedback.
+                      </p>
+                      <Button
+                        onClick={() => navigate('/chat')}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        Start AI Chat to Unlock Report
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Show processing message if report is still being generated */}
+            {latestReport.status === 'processing' && (
+              <Card className="mb-6 border-gray-200 bg-gray-50">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-gray-100 p-3 rounded-full">
+                      <Clock className="h-6 w-6 text-gray-600 animate-pulse" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 mb-2">Your Report is Being Generated</h3>
+                      <p className="text-gray-700">
+                        Our AI is analyzing your survey responses and creating your personalized career assessment.
+                        This usually takes 5-10 minutes. You'll receive an email when it's ready.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Only show full report if status is completed */}
+            {latestReport.status === 'completed' && (
+              <ReportDisplay
+                userEmail={profile?.email}
+                onSectionExpanded={setIsReportSectionExpanded}
+              />
+            )}
+          </>
         )}
       </div>
     </div>
