@@ -188,6 +188,26 @@ const Profile = () => {
               </div>
 
               <div>
+                <label htmlFor="auth_provider" className="block text-sm font-medium mb-2">
+                  Sign-in Method
+                </label>
+                <Input
+                  id="auth_provider"
+                  value={
+                    profile?.auth_provider === 'google' ? 'Google' :
+                    profile?.auth_provider === 'linkedin_oidc' ? 'LinkedIn' :
+                    profile?.auth_provider === 'email' ? 'Email/Password' :
+                    'Email/Password'
+                  }
+                  disabled
+                  className="bg-gray-50"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  The authentication method used to create your account
+                </p>
+              </div>
+
+              <div>
                 <label htmlFor="country" className="block text-sm font-medium mb-2">
                   Country
                 </label>
