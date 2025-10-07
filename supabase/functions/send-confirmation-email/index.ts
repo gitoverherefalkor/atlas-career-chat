@@ -65,7 +65,18 @@ serve(async (req) => {
 
     if (emailData && emailData.token_hash) {
       const redirectTo = emailData.redirect_to || "https://atlas-assessments.com/dashboard";
-      confirmationUrl = `https://atlas-assessments.com/auth/confirm?token=${emailData.token_hash}&type=${emailActionType}&redirect_to=${encodeURIComponent(redirectTo)}`;
+
+      // Extract the origin from redirect_to to determine the correct base URL
+      let baseUrl;
+      try {
+        const redirectUrl = new URL(redirectTo);
+        baseUrl = redirectUrl.origin;
+      } catch {
+        // Fallback if redirect_to is not a valid URL
+        baseUrl = "https://atlas-assessments.com";
+      }
+
+      confirmationUrl = `${baseUrl}/auth/confirm?token=${emailData.token_hash}&type=${emailActionType}&redirect_to=${encodeURIComponent(redirectTo)}`;
     } else {
       // Fallback URL
       confirmationUrl = "https://atlas-assessments.com/auth";
