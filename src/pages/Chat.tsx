@@ -36,33 +36,23 @@ const Chat = () => {
     setIsInitializing(true);
 
     try {
-      // Call webhook trigger to initialize session with report_id
-      const webhookTriggerUrl = import.meta.env.VITE_N8N_WEBHOOK_TRIGGER_URL;
-
-      if (!webhookTriggerUrl) {
-        console.error('Webhook trigger URL not configured');
-        toast({
-          title: "Configuration Error",
-          description: "Chat initialization is not properly configured.",
-          variant: "destructive",
-        });
-        setIsInitializing(false);
-        return;
-      }
-
-      const response = await fetch(webhookTriggerUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+      // Call Supabase edge function to initialize chat session
+      const { data, error } = await supabase.functions.invoke('initialize-chat-session', {
+        body: {
           report_id: reportData.id,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to initialize session');
+      if (error) {
+        console.error('Error initializing session:', error);
+        throw new Error(error.message || 'Failed to initialize session');
       }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'Failed to initialize session');
+      }
+
+      console.log('Chat session initialized:', data);
 
       // Hide welcome card and initialize chat
       setShowWelcome(false);
@@ -131,7 +121,7 @@ const Chat = () => {
         .from('reports')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'completed')
+        .eq('status', 'pending_review')
         .order('created_at', { ascending: false })
         .limit(1);
 
