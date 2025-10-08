@@ -85,30 +85,23 @@ const Chat = () => {
               const text = message.textContent || '';
               console.log('Message text:', text.substring(0, 200));
 
-              // Parse section headers - STRICT patterns to avoid false positives
-              const sectionPatterns = [
-                /^##\s*(.+?)(?::|$)/m,  // Markdown headers: ## Title
-                /^(Executive Summary|Section \d+|Understanding Your Approach|Motivations & Lifestyle|Leadership & Collaboration|Skills & Experience|Career Recommendations):/mi,  // Known section titles with colon
-              ];
+              // Parse section headers - ONLY ### markdown headers
+              const match = text.match(/^###\s*(.+?)$/m);
 
-              for (const pattern of sectionPatterns) {
-                const match = text.match(pattern);
-                if (match) {
-                  const title = match[1].trim();
-                  const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+              if (match) {
+                const title = match[1].trim();
+                const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-                  console.log('Found section:', { title, id });
+                console.log('Found section:', { title, id });
 
-                  // Add section if not already revealed
-                  setRevealedSections(prev => {
-                    if (prev.find(s => s.id === id)) return prev;
-                    console.log('Adding new section:', title);
-                    return [...prev, { id, title }];
-                  });
+                // Add section if not already revealed
+                setRevealedSections(prev => {
+                  if (prev.find(s => s.id === id)) return prev;
+                  console.log('Adding new section:', title);
+                  return [...prev, { id, title }];
+                });
 
-                  setCurrentSection(id);
-                  break;
-                }
+                setCurrentSection(id);
               }
             });
           }
