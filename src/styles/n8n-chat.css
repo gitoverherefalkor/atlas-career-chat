@@ -60,15 +60,19 @@
 /* Additional custom styles for better integration */
 #n8n-chat-container {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-    max-width: 900px;
-    margin: 0 auto;
     height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Improve chat message container spacing */
+/* Wrapper for messages to constrain width */
 #n8n-chat .chat-messages-list {
     padding: 2rem 1.5rem;
     gap: 1.25rem;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Better message bubble styling */
@@ -119,6 +123,10 @@
     padding: 1.25rem 1.5rem;
     border-top: 1px solid var(--chat--color-light-shade-100);
     background: var(--chat--color-white);
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #n8n-chat .chat-input {

@@ -26,37 +26,39 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
 }) => {
   const [activeSection, setActiveSection] = useState<string>('executive_summary');
 
-  // Parse report data into sections
+  // Parse report data from payload JSON
+  const payload = reportData?.payload as any || {};
+
   const sections: ReportSection[] = [
     {
       id: 'executive_summary',
       title: 'Executive Summary',
-      content: reportData?.executive_summary || ''
+      content: payload?.executive_summary || payload?.ExecutiveSummary || ''
     },
     {
       id: 'section_1',
       title: 'Understanding Your Approach',
-      content: reportData?.section_1_understanding_your_approach || ''
+      content: payload?.section_1_understanding_your_approach || payload?.['Section 1'] || ''
     },
     {
       id: 'section_2',
       title: 'Motivations & Lifestyle',
-      content: reportData?.section_2_motivations_lifestyle || ''
+      content: payload?.section_2_motivations_lifestyle || payload?.['Section 2'] || ''
     },
     {
       id: 'section_3',
       title: 'Leadership & Collaboration',
-      content: reportData?.section_3_leadership_collaboration || ''
+      content: payload?.section_3_leadership_collaboration || payload?.['Section 3'] || ''
     },
     {
       id: 'section_4',
       title: 'Skills & Experience',
-      content: reportData?.section_4_skills_experience || ''
+      content: payload?.section_4_skills_experience || payload?.['Section 4'] || ''
     },
     {
       id: 'section_5',
       title: 'Career Insights',
-      content: reportData?.section_5_career_insights || ''
+      content: payload?.section_5_career_insights || payload?.['Section 5'] || ''
     }
   ].filter(section => section.content);
 
