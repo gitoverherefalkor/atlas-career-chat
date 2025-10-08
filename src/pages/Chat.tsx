@@ -82,27 +82,28 @@ const Chat = () => {
             }
 
             botMessages.forEach((message) => {
-              const text = message.textContent || '';
-              console.log('Message text:', text.substring(0, 200));
+              // Look for <h3> elements (rendered from ### markdown)
+              const h3Elements = message.querySelectorAll('h3');
 
-              // Parse section headers - ONLY ### markdown headers
-              const match = text.match(/^###\s*(.+?)$/m);
+              console.log(`Found ${h3Elements.length} h3 elements in message`);
 
-              if (match) {
-                const title = match[1].trim();
+              h3Elements.forEach((h3) => {
+                const title = h3.textContent?.trim();
+                if (!title) return;
+
                 const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-                console.log('Found section:', { title, id });
+                console.log('Found section header:', { title, id });
 
                 // Add section if not already revealed
                 setRevealedSections(prev => {
                   if (prev.find(s => s.id === id)) return prev;
-                  console.log('Adding new section:', title);
+                  console.log('Adding new section to sidebar:', title);
                   return [...prev, { id, title }];
                 });
 
                 setCurrentSection(id);
-              }
+              });
             });
           }
         });
