@@ -15,6 +15,11 @@ import { ReportSidebar } from '@/components/chat/ReportSidebar';
 
 type ReportData = Tables<'reports'>;
 
+interface RevealedSection {
+  id: string;
+  title: string;
+}
+
 const Chat = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -22,6 +27,8 @@ const Chat = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [chatInitialized, setChatInitialized] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [revealedSections, setRevealedSections] = useState<RevealedSection[]>([]);
+  const [currentSection, setCurrentSection] = useState<string | undefined>();
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -31,6 +38,75 @@ const Chat = () => {
       loadUserReport();
     }
   }, [authLoading, user]);
+
+  // Watch for new chat messages and detect section headers
+  useEffect(() => {
+    if (!chatInitialized) return;
+
+    const chatContainer = document.querySelector('#n8n-chat-container');
+    if (!chatContainer) return;
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = node as Element;
+
+            // Look for bot messages
+            const botMessages = element.querySelectorAll('.chat-message-from-bot');
+            botMessages.forEach((message) => {
+              const text = message.textContent || '';
+
+              // Parse section headers (e.g., "## Executive Summary", "Executive Summary:")
+              const sectionPatterns = [
+                /^##\s*(.+?)(?::|$)/m,  // Markdown headers
+                /^(.+?):/m,              // Plain text with colon
+              ];
+
+              for (const pattern of sectionPatterns) {
+                const match = text.match(pattern);
+                if (match) {
+                  const title = match[1].trim();
+                  const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+                  // Add section if not already revealed
+                  setRevealedSections(prev => {
+                    if (prev.find(s => s.id === id)) return prev;
+                    return [...prev, { id, title }];
+                  });
+
+                  setCurrentSection(id);
+                  break;
+                }
+              }
+            });
+          }
+        });
+      });
+    });
+
+    observer.observe(chatContainer, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => observer.disconnect();
+  }, [chatInitialized]);
+
+  const handleSectionClick = (sectionId: string) => {
+    // Find the message containing this section
+    const messages = document.querySelectorAll('.chat-message-from-bot');
+    for (const message of messages) {
+      const text = message.textContent || '';
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+      if (id.includes(sectionId) || text.toLowerCase().includes(sectionId.replace(/-/g, ' '))) {
+        message.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setCurrentSection(sectionId);
+        break;
+      }
+    }
+  };
 
   const handleStartSession = async () => {
     if (!reportData) return;
@@ -217,9 +293,11 @@ const Chat = () => {
 
           {/* Report Sidebar */}
           <ReportSidebar
-            reportData={reportData}
+            revealedSections={revealedSections}
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            onSectionClick={handleSectionClick}
+            currentSection={currentSection}
           />
         </div>
       )}
