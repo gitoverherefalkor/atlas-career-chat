@@ -43,24 +43,52 @@ const Chat = () => {
   useEffect(() => {
     if (!chatInitialized) return;
 
+    console.log('Setting up chat observer...');
     const chatContainer = document.querySelector('#n8n-chat-container');
-    if (!chatContainer) return;
+    if (!chatContainer) {
+      console.log('Chat container not found');
+      return;
+    }
 
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as Element;
+            console.log('New element added:', element);
 
-            // Look for bot messages
-            const botMessages = element.querySelectorAll('.chat-message-from-bot');
+            // Try multiple selectors for bot messages
+            const selectors = [
+              '.chat-message-from-bot',
+              '.chat-message.bot',
+              '.message-bot',
+              '[data-role="bot"]',
+              '.chat-message'
+            ];
+
+            let botMessages: Element[] = [];
+            for (const selector of selectors) {
+              const found = element.querySelectorAll(selector);
+              if (found.length > 0) {
+                console.log(`Found ${found.length} messages with selector: ${selector}`);
+                botMessages = Array.from(found);
+                break;
+              }
+            }
+
+            // Also check if the element itself is a message
+            if (element.classList.contains('chat-message') || element.textContent) {
+              botMessages.push(element);
+            }
+
             botMessages.forEach((message) => {
               const text = message.textContent || '';
+              console.log('Message text:', text.substring(0, 200));
 
-              // Parse section headers (e.g., "## Executive Summary", "Executive Summary:")
+              // Parse section headers - STRICT patterns to avoid false positives
               const sectionPatterns = [
-                /^##\s*(.+?)(?::|$)/m,  // Markdown headers
-                /^(.+?):/m,              // Plain text with colon
+                /^##\s*(.+?)(?::|$)/m,  // Markdown headers: ## Title
+                /^(Executive Summary|Section \d+|Understanding Your Approach|Motivations & Lifestyle|Leadership & Collaboration|Skills & Experience|Career Recommendations):/mi,  // Known section titles with colon
               ];
 
               for (const pattern of sectionPatterns) {
@@ -69,9 +97,12 @@ const Chat = () => {
                   const title = match[1].trim();
                   const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
+                  console.log('Found section:', { title, id });
+
                   // Add section if not already revealed
                   setRevealedSections(prev => {
                     if (prev.find(s => s.id === id)) return prev;
+                    console.log('Adding new section:', title);
                     return [...prev, { id, title }];
                   });
 
@@ -89,6 +120,8 @@ const Chat = () => {
       childList: true,
       subtree: true,
     });
+
+    console.log('Observer attached to chat container');
 
     return () => observer.disconnect();
   }, [chatInitialized]);

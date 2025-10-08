@@ -24,7 +24,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
 }) => {
   if (revealedSections.length === 0) {
     return (
-      <div className="w-64 bg-gray-50 border-l border-gray-200 flex items-center justify-center p-4">
+      <div className="w-64 bg-gray-50 border-l border-gray-200 flex items-center justify-center p-4 sticky top-0 h-screen">
         <p className="text-xs text-gray-400 text-center">Sections will appear here as you progress through the chat</p>
       </div>
     );
@@ -32,7 +32,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
 
   if (isCollapsed) {
     return (
-      <div className="w-12 bg-gray-50 border-l border-gray-200 flex flex-col items-center py-4 space-y-4">
+      <div className="w-12 bg-gray-50 border-l border-gray-200 flex flex-col items-center py-4 space-y-4 sticky top-0 h-screen">
         <Button
           variant="ghost"
           size="sm"
@@ -65,9 +65,9 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   }
 
   return (
-    <div className="w-64 bg-gray-50 border-l border-gray-200 flex flex-col animate-fade-in">
+    <div className="w-64 bg-gray-50 border-l border-gray-200 flex flex-col animate-fade-in sticky top-0 h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white flex-shrink-0">
         <div className="flex items-center space-x-2">
           <FileText className="h-5 w-5 text-atlas-teal" />
           <h2 className="font-heading font-semibold text-atlas-navy text-sm">Sections</h2>
