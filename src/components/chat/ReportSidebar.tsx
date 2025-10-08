@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useReportSections } from '@/hooks/useReportSections';
 
 interface ReportSection {
   title: string;
@@ -24,43 +25,49 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   onToggleCollapse,
   currentSection
 }) => {
-  const [activeSection, setActiveSection] = useState<string>('executive_summary');
+  const [activeSection, setActiveSection] = useState<string>('executive-summary');
 
-  // Parse report data from payload JSON
-  const payload = reportData?.payload as any || {};
+  // Fetch report sections from database
+  const { sections: dbSections, isLoading } = useReportSections(reportData?.id);
 
-  const sections: ReportSection[] = [
-    {
-      id: 'executive_summary',
-      title: 'Executive Summary',
-      content: payload?.executive_summary || payload?.ExecutiveSummary || ''
-    },
-    {
-      id: 'section_1',
-      title: 'Understanding Your Approach',
-      content: payload?.section_1_understanding_your_approach || payload?.['Section 1'] || ''
-    },
-    {
-      id: 'section_2',
-      title: 'Motivations & Lifestyle',
-      content: payload?.section_2_motivations_lifestyle || payload?.['Section 2'] || ''
-    },
-    {
-      id: 'section_3',
-      title: 'Leadership & Collaboration',
-      content: payload?.section_3_leadership_collaboration || payload?.['Section 3'] || ''
-    },
-    {
-      id: 'section_4',
-      title: 'Skills & Experience',
-      content: payload?.section_4_skills_experience || payload?.['Section 4'] || ''
-    },
-    {
-      id: 'section_5',
-      title: 'Career Insights',
-      content: payload?.section_5_career_insights || payload?.['Section 5'] || ''
-    }
-  ].filter(section => section.content);
+  // Map database sections to display sections
+  const sections: ReportSection[] = useMemo(() => {
+    if (!dbSections || dbSections.length === 0) return [];
+
+    const sectionMap: Record<string, ReportSection> = {};
+
+    dbSections.forEach(section => {
+      // Use section_id as the key (e.g., 'executive-summary', 'personality-team', etc.)
+      const key = section.section_id || section.id;
+      const title = section.title || 'Untitled Section';
+
+      if (!sectionMap[key]) {
+        sectionMap[key] = {
+          id: key,
+          title: title,
+          content: section.content
+        };
+      }
+    });
+
+    return Object.values(sectionMap);
+  }, [dbSections]);
+
+  if (isLoading) {
+    return (
+      <div className="w-96 bg-gray-50 border-l border-gray-200 flex items-center justify-center">
+        <p className="text-sm text-gray-500">Loading report...</p>
+      </div>
+    );
+  }
+
+  if (sections.length === 0) {
+    return (
+      <div className="w-96 bg-gray-50 border-l border-gray-200 flex items-center justify-center p-4">
+        <p className="text-sm text-gray-500 text-center">No report sections available yet.</p>
+      </div>
+    );
+  }
 
   if (isCollapsed) {
     return (
