@@ -4,13 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, ArrowLeft, MessageSquare, LayoutDashboard } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import '@n8n/chat/style.css';
 import '@/styles/n8n-chat.css';
 import { createChat } from '@n8n/chat';
 import { WelcomeCard } from '@/components/chat/WelcomeCard';
+import { ReportSidebar } from '@/components/chat/ReportSidebar';
 
 type ReportData = Tables<'reports'>;
 
@@ -20,6 +21,7 @@ const Chat = () => {
   const [showWelcome, setShowWelcome] = useState(true);
   const [isInitializing, setIsInitializing] = useState(false);
   const [chatInitialized, setChatInitialized] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -171,36 +173,54 @@ const Chat = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Clean Header - Homepage Style */}
+      <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
+        <div className="container-atlas">
+          <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-atlas-navy">Atlas Career Coach</h1>
+              <a href="/" className="flex items-center">
+                <span className="text-2xl font-bold bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent font-heading">
+                  Atlas Assessment
+                </span>
+              </a>
               <span className="ml-4 text-sm text-gray-500">
-                {reportData.title}
+                Career Coach
               </span>
             </div>
-            <Button variant="outline" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
+            <Button
+              variant="outline"
+              onClick={() => navigate('/dashboard')}
+              className="hover:bg-atlas-blue/10 hover:text-atlas-navy hover:border-atlas-blue"
+            >
+              <LayoutDashboard className="h-4 w-4 mr-2" />
               Dashboard
             </Button>
           </div>
         </div>
-      </div>
+      </nav>
 
       {/* Content */}
       {showWelcome ? (
-        <div style={{ height: 'calc(100vh - 64px)', overflow: 'auto' }}>
+        <div className="flex-1 bg-gray-50 overflow-auto">
           <WelcomeCard
             onReady={handleStartSession}
             isLoading={isInitializing}
           />
         </div>
       ) : (
-        <div className="mx-auto" style={{ height: 'calc(100vh - 64px)' }}>
-          <div id="n8n-chat-container" style={{ width: '100%', height: '100%' }}></div>
+        <div className="flex-1 flex overflow-hidden">
+          {/* Chat Area */}
+          <div className="flex-1 flex flex-col bg-gray-50">
+            <div id="n8n-chat-container" className="flex-1"></div>
+          </div>
+
+          {/* Report Sidebar */}
+          <ReportSidebar
+            reportData={reportData}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          />
         </div>
       )}
     </div>
