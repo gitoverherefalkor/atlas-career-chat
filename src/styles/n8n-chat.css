@@ -125,10 +125,10 @@
     position: fixed !important;
     bottom: 50px !important;
     left: 0 !important;
-    right: 256px !important; /* Account for sidebar width (w-64 = 256px) */
+    right: auto !important;
     width: 675px !important;
-    max-width: 675px !important;
-    margin: 0 auto !important;
+    max-width: calc(100vw - 256px - 3rem) !important; /* Viewport width - sidebar - padding */
+    margin-left: max(calc((100vw - 256px - 900px) / 2), 1.5rem) !important; /* Center within chat area or use padding */
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
