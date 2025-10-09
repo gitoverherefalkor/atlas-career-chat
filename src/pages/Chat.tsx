@@ -46,12 +46,14 @@ const Chat = () => {
     if (reportData) {
       // Check for n8n session
       const hasSession = localStorage.getItem('sessionId');
+      console.log('🔍 Session check:', { hasSession, reportDataId: reportData.id });
 
       // Restore revealed sections
       const storedSections = localStorage.getItem(`chat_sections_${reportData.id}`);
       if (storedSections) {
         try {
           const sections = JSON.parse(storedSections);
+          console.log('📋 Restoring sections:', sections);
           setRevealedSections(sections);
         } catch (e) {
           console.error('Failed to restore sections:', e);
@@ -60,7 +62,7 @@ const Chat = () => {
 
       // If session exists, skip welcome and auto-initialize
       if (hasSession) {
-        console.log('Found existing chat session, auto-initializing...');
+        console.log('✅ Found existing chat session, auto-initializing...', { sessionId: hasSession });
         setShowWelcome(false);
 
         // Initialize chat after a short delay to ensure DOM is ready
@@ -71,6 +73,7 @@ const Chat = () => {
             return;
           }
 
+          console.log('🚀 Initializing chat widget with previous session...');
           createChat({
             webhookUrl: chatWebhookUrl,
             mode: 'fullscreen',
@@ -97,6 +100,7 @@ const Chat = () => {
             enableStreaming: false,
           });
 
+          console.log('✅ Chat widget initialized');
           setChatInitialized(true);
         }, 500);
       }

@@ -204,31 +204,39 @@ const Dashboard = () => {
         {latestReport && (
           <>
             {/* Show pending review message if report is not completed */}
-            {latestReport.status === 'pending_review' && (
-              <Card className="mb-6 border-blue-200 bg-blue-50">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <MessageSquare className="h-6 w-6 text-blue-600" />
+            {latestReport.status === 'pending_review' && (() => {
+              const hasExistingSession = localStorage.getItem('sessionId');
+
+              return (
+                <Card className="mb-6 border-blue-200 bg-blue-50">
+                  <CardContent className="p-6">
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-blue-100 p-3 rounded-full">
+                        <MessageSquare className="h-6 w-6 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-blue-900 mb-2">
+                          {hasExistingSession ? 'Continue Your Career Chat' : 'Your Report is Ready for Review!'}
+                        </h3>
+                        <p className="text-blue-800 mb-4">
+                          {hasExistingSession
+                            ? 'Pick up where you left off in your career coaching conversation.'
+                            : 'Your personalized career assessment has been generated. To unlock your final report, complete a brief conversation with our AI to refine and personalize your insights based on your feedback.'
+                          }
+                        </p>
+                        <Button
+                          onClick={() => navigate('/chat')}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-2" />
+                          {hasExistingSession ? 'Continue Chat' : 'Start AI Chat to Unlock Report'}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-blue-900 mb-2">Your Report is Ready for Review!</h3>
-                      <p className="text-blue-800 mb-4">
-                        Your personalized career assessment has been generated. To unlock your final report,
-                        complete a brief conversation with our AI to refine and personalize your insights based on your feedback.
-                      </p>
-                      <Button
-                        onClick={() => navigate('/chat')}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Start AI Chat to Unlock Report
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             {/* Show processing message if report is still being generated */}
             {latestReport.status === 'processing' && (
