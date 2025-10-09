@@ -32,9 +32,10 @@
     --chat--header--border-bottom: none;
 
     /* Input */
-    --chat--textarea--height: 56px;
+    --chat--textarea--height: 60px;
     --chat--input--background: var(--chat--color-white);
     --chat--input--border: 1px solid var(--chat--color-light-shade-100);
+    --chat--border-radius: 8px;
 
     /* Messages */
     --chat--message--font-size: 0.9375rem;
@@ -120,39 +121,48 @@
 
 /* Input area styling - Fixed positioning */
 #n8n-chat .chat-input-container {
-    position: fixed;
-    bottom: 50px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 675px;
-    padding: 0;
-    border: none;
-    background: transparent;
-    z-index: 10;
+    position: fixed !important;
+    bottom: 50px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 675px !important;
+    max-width: 675px !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    z-index: 10 !important;
 }
 
-#n8n-chat .chat-input {
-    width: 100%;
-    height: 60px;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-    padding: 0 1.25rem;
-    font-family: inherit;
-    font-size: 0.9375rem;
-    transition: all 0.2s;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    box-sizing: border-box;
+#n8n-chat .chat-input,
+#n8n-chat input[type="text"],
+#n8n-chat textarea {
+    width: 100% !important;
+    height: 60px !important;
+    min-height: 60px !important;
+    max-height: 60px !important;
+    border-radius: 8px !important;
+    border: 1px solid #e5e7eb !important;
+    padding: 0 1.25rem !important;
+    font-family: inherit !important;
+    font-size: 0.9375rem !important;
+    transition: all 0.2s !important;
+    background: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    box-sizing: border-box !important;
 }
 
-#n8n-chat .chat-input:focus {
-    outline: none;
-    border-color: var(--chat--color-primary);
-    box-shadow: 0 0 0 3px rgba(39, 161, 161, 0.08), 0 2px 8px rgba(0, 0, 0, 0.1);
+#n8n-chat .chat-input:focus,
+#n8n-chat input[type="text"]:focus,
+#n8n-chat textarea:focus {
+    outline: none !important;
+    border-color: var(--chat--color-primary) !important;
+    box-shadow: 0 0 0 3px rgba(39, 161, 161, 0.08), 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
-#n8n-chat .chat-input::placeholder {
-    color: #9ca3af;
+#n8n-chat .chat-input::placeholder,
+#n8n-chat input[type="text"]::placeholder,
+#n8n-chat textarea::placeholder {
+    color: #9ca3af !important;
 }
 
 /* Send button */
