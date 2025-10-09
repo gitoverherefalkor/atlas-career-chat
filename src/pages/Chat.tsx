@@ -11,7 +11,6 @@ import type { Tables } from '@/integrations/supabase/types';
 import '@n8n/chat/style.css';
 import '@/styles/n8n-chat.css';
 import { createChat } from '@n8n/chat';
-import { WelcomeCard } from '@/components/chat/WelcomeCard';
 import { ReportSidebar } from '@/components/chat/ReportSidebar';
 
 type ReportData = Tables<'reports'>;
@@ -24,8 +23,6 @@ interface RevealedSection {
 const Chat = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [isInitializing, setIsInitializing] = useState(false);
   const [chatInitialized, setChatInitialized] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [revealedSections, setRevealedSections] = useState<RevealedSection[]>([]);
@@ -41,14 +38,12 @@ const Chat = () => {
     }
   }, [authLoading, user]);
 
-  // Check for existing session on mount and auto-initialize chat
+  // Initialize chat automatically when report data loads
   useEffect(() => {
-    if (reportData) {
-      // Check for n8n session
-      const hasSession = localStorage.getItem('sessionId');
-      console.log('🔍 Session check:', { hasSession, reportDataId: reportData.id });
+    if (reportData && profile !== undefined && !chatInitialized) {
+      console.log('🚀 Auto-initializing chat for report:', reportData.id);
 
-      // Restore revealed sections
+      // Restore revealed sections from localStorage
       const storedSections = localStorage.getItem(`chat_sections_${reportData.id}`);
       if (storedSections) {
         try {
@@ -60,52 +55,50 @@ const Chat = () => {
         }
       }
 
-      // If session exists, skip welcome and auto-initialize
-      if (hasSession) {
-        console.log('✅ Found existing chat session, auto-initializing...', { sessionId: hasSession });
-        setShowWelcome(false);
-
-        // Initialize chat after a short delay to ensure DOM is ready
-        setTimeout(() => {
-          const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
-          if (!chatWebhookUrl) {
-            console.error('Chat webhook URL not configured');
-            return;
-          }
-
-          console.log('🚀 Initializing chat widget with previous session...');
-          createChat({
-            webhookUrl: chatWebhookUrl,
-            mode: 'fullscreen',
-            target: '#n8n-chat-container',
-            metadata: {
-              report_id: reportData.id,
-              first_name: profile?.first_name || '',
-            },
-            initialMessages: [
-              'Chat is ready! 👋',
-              'Say hi to get started and I\'ll walk you through your Executive Summary and career insights.'
-            ],
-            i18n: {
-              en: {
-                title: 'Atlas Career Coach',
-                subtitle: 'Discuss your personalized career assessment',
-                footer: '',
-                getStarted: 'Start Chatting',
-                inputPlaceholder: 'Type here',
-              },
-            },
-            showWelcomeScreen: false,
-            loadPreviousSession: true,
-            enableStreaming: false,
+      // Initialize chat after a short delay to ensure DOM is ready
+      setTimeout(() => {
+        const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
+        if (!chatWebhookUrl) {
+          console.error('Chat webhook URL not configured');
+          toast({
+            title: "Configuration Error",
+            description: "Chat is not properly configured. Please contact support.",
+            variant: "destructive",
           });
+          return;
+        }
 
-          console.log('✅ Chat widget initialized');
-          setChatInitialized(true);
-        }, 500);
-      }
+        console.log('✅ Initializing chat widget (n8n will handle session restoration)');
+        createChat({
+          webhookUrl: chatWebhookUrl,
+          mode: 'fullscreen',
+          target: '#n8n-chat-container',
+          metadata: {
+            report_id: reportData.id,
+            first_name: profile?.first_name || '',
+          },
+          initialMessages: [
+            'Chat is ready! 👋',
+            'Say hi to get started and I\'ll walk you through your Executive Summary and career insights.'
+          ],
+          i18n: {
+            en: {
+              title: 'Atlas Career Coach',
+              subtitle: 'Discuss your personalized career assessment',
+              footer: '',
+              getStarted: 'Start Chatting',
+              inputPlaceholder: 'Type here',
+            },
+          },
+          showWelcomeScreen: false,
+          loadPreviousSession: true,
+          enableStreaming: false,
+        });
+
+        setChatInitialized(true);
+      }, 500);
     }
-  }, [reportData, profile]);
+  }, [reportData, profile, chatInitialized]);
 
   // Save revealed sections to localStorage whenever they change
   useEffect(() => {
@@ -232,69 +225,6 @@ const Chat = () => {
     }
   };
 
-  const handleStartSession = async () => {
-    if (!reportData) return;
-
-    setIsInitializing(true);
-
-    try {
-      // Hide welcome card and initialize chat
-      setShowWelcome(false);
-
-      // Initialize n8n chat widget with report_id in metadata
-      setTimeout(() => {
-        const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
-
-        if (!chatWebhookUrl) {
-          console.error('Chat webhook URL not configured');
-          toast({
-            title: "Configuration Error",
-            description: "Chat is not properly configured. Please contact support.",
-            variant: "destructive",
-          });
-          setIsInitializing(false);
-          return;
-        }
-
-        createChat({
-          webhookUrl: chatWebhookUrl,
-          mode: 'fullscreen',
-          target: '#n8n-chat-container',
-          metadata: {
-            report_id: reportData.id,
-            first_name: profile?.first_name || '',
-          },
-          initialMessages: [
-            'Chat is ready! 👋',
-            'Say hi to get started and I\'ll walk you through your Executive Summary and career insights.'
-          ],
-          i18n: {
-            en: {
-              title: 'Atlas Career Coach',
-              subtitle: 'Discuss your personalized career assessment',
-              footer: '',
-              getStarted: 'Start Chatting',
-              inputPlaceholder: 'Type here',
-            },
-          },
-          showWelcomeScreen: false,
-          loadPreviousSession: true,
-          enableStreaming: false,
-        });
-
-        setChatInitialized(true);
-        setIsInitializing(false);
-      }, 500);
-    } catch (error) {
-      console.error('Error initializing session:', error);
-      toast({
-        title: "Initialization Error",
-        description: "Failed to start your career coaching session. Please try again.",
-        variant: "destructive",
-      });
-      setIsInitializing(false);
-    }
-  };
 
   const loadUserReport = async () => {
     if (!user) {
@@ -402,30 +332,21 @@ const Chat = () => {
       </nav>
 
       {/* Content */}
-      {showWelcome ? (
-        <div className="flex-1 bg-gray-50 overflow-auto">
-          <WelcomeCard
-            onReady={handleStartSession}
-            isLoading={isInitializing}
-          />
+      <div className="flex-1 flex overflow-hidden">
+        {/* Chat Area */}
+        <div className="flex-1 flex flex-col bg-gray-50">
+          <div id="n8n-chat-container" className="flex-1"></div>
         </div>
-      ) : (
-        <div className="flex-1 flex overflow-hidden">
-          {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-gray-50">
-            <div id="n8n-chat-container" className="flex-1"></div>
-          </div>
 
-          {/* Report Sidebar */}
-          <ReportSidebar
-            revealedSections={revealedSections}
-            isCollapsed={isSidebarCollapsed}
-            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            onSectionClick={handleSectionClick}
-            currentSection={currentSection}
-          />
-        </div>
-      )}
+        {/* Report Sidebar */}
+        <ReportSidebar
+          revealedSections={revealedSections}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onSectionClick={handleSectionClick}
+          currentSection={currentSection}
+        />
+      </div>
     </div>
   );
 };
