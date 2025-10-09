@@ -22,9 +22,12 @@ interface RevealedSection {
 }
 
 const Chat = () => {
+  // Check for existing session immediately to avoid flash
+  const hasExistingSession = localStorage.getItem('sessionId') !== null;
+
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(!hasExistingSession);
   const [isInitializing, setIsInitializing] = useState(false);
   const [chatInitialized, setChatInitialized] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -41,10 +44,10 @@ const Chat = () => {
     }
   }, [authLoading, user]);
 
-  // Check for existing session and auto-initialize if found
+  // Auto-initialize chat when returning with existing session
   useEffect(() => {
-    if (reportData && profile !== undefined && !chatInitialized) {
-      const hasSession = localStorage.getItem('sessionId');
+    if (reportData && !chatInitialized && hasExistingSession) {
+      console.log('✅ Existing session detected, auto-initializing chat');
 
       // Restore revealed sections
       const storedSections = localStorage.getItem(`chat_sections_${reportData.id}`);
@@ -57,31 +60,35 @@ const Chat = () => {
         }
       }
 
-      // If session exists, skip welcome card and initialize chat
-      if (hasSession) {
-        console.log('✅ Existing session found, skipping welcome card');
-        setShowWelcome(false);
-        initializeChat();
-      }
+      // Initialize chat automatically
+      initializeChat();
     }
-  }, [reportData, profile, chatInitialized]);
+  }, [reportData, chatInitialized, hasExistingSession]);
 
   const initializeChat = () => {
-    if (!reportData) return;
+    if (!reportData) {
+      console.error('Cannot initialize chat: reportData is null');
+      return;
+    }
+
+    const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
+    if (!chatWebhookUrl) {
+      console.error('Chat webhook URL not configured');
+      toast({
+        title: "Configuration Error",
+        description: "Chat is not properly configured. Please contact support.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('🚀 Initializing chat widget', {
+      reportId: reportData.id,
+      hasSession: hasExistingSession,
+      firstName: profile?.first_name || 'N/A'
+    });
 
     setTimeout(() => {
-      const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
-      if (!chatWebhookUrl) {
-        console.error('Chat webhook URL not configured');
-        toast({
-          title: "Configuration Error",
-          description: "Chat is not properly configured. Please contact support.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log('🚀 Initializing chat widget');
       createChat({
         webhookUrl: chatWebhookUrl,
         mode: 'fullscreen',
