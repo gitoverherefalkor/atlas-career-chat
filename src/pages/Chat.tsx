@@ -41,31 +41,67 @@ const Chat = () => {
     }
   }, [authLoading, user]);
 
-  // Restore revealed sections from localStorage on mount
+  // Check for existing session on mount and auto-initialize chat
   useEffect(() => {
     if (reportData) {
-      const stored = localStorage.getItem(`chat_sections_${reportData.id}`);
-      if (stored) {
+      // Check for n8n session
+      const hasSession = localStorage.getItem('sessionId');
+
+      // Restore revealed sections
+      const storedSections = localStorage.getItem(`chat_sections_${reportData.id}`);
+      if (storedSections) {
         try {
-          const sections = JSON.parse(stored);
+          const sections = JSON.parse(storedSections);
           setRevealedSections(sections);
         } catch (e) {
           console.error('Failed to restore sections:', e);
         }
       }
-    }
-  }, [reportData]);
 
-  // Auto-initialize chat if there's a previous session (skip welcome card)
-  useEffect(() => {
-    if (reportData && showWelcome) {
-      const hasSession = localStorage.getItem('sessionId');
+      // If session exists, skip welcome and auto-initialize
       if (hasSession) {
         console.log('Found existing chat session, auto-initializing...');
-        handleStartSession();
+        setShowWelcome(false);
+
+        // Initialize chat after a short delay to ensure DOM is ready
+        setTimeout(() => {
+          const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
+          if (!chatWebhookUrl) {
+            console.error('Chat webhook URL not configured');
+            return;
+          }
+
+          createChat({
+            webhookUrl: chatWebhookUrl,
+            mode: 'fullscreen',
+            target: '#n8n-chat-container',
+            metadata: {
+              report_id: reportData.id,
+              first_name: profile?.first_name || '',
+            },
+            initialMessages: [
+              'Chat is ready! 👋',
+              'Say hi to get started and I\'ll walk you through your Executive Summary and career insights.'
+            ],
+            i18n: {
+              en: {
+                title: 'Atlas Career Coach',
+                subtitle: 'Discuss your personalized career assessment',
+                footer: '',
+                getStarted: 'Start Chatting',
+                inputPlaceholder: 'Type here',
+              },
+            },
+            showWelcomeScreen: false,
+            loadPreviousSession: true,
+            enableStreaming: false,
+          });
+
+          setChatInitialized(true);
+        }, 500);
       }
     }
-  }, [reportData]);
+  }, [reportData, profile]);
 
   // Save revealed sections to localStorage whenever they change
   useEffect(() => {
