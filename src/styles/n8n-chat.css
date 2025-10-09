@@ -67,8 +67,9 @@
 }
 
 /* Wrapper for messages to constrain width */
-#n8n-chat .chat-messages-list {
-    padding: 2rem 1.5rem 150px 1.5rem;
+#n8n-chat .chat-messages-list,
+.chat-messages-list {
+    padding: 2rem 1.5rem 200px 1.5rem !important;
     gap: 1.25rem;
     max-width: 900px;
     margin: 0 auto;
@@ -123,14 +124,16 @@
 .chat-footer {
     position: fixed !important;
     bottom: 50px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
+    left: 0 !important;
+    right: 256px !important; /* Account for sidebar width (w-64 = 256px) */
     width: 675px !important;
     max-width: 675px !important;
+    margin: 0 auto !important;
     padding: 0 !important;
     border: none !important;
     background: transparent !important;
     z-index: 10 !important;
+    transform: none !important;
 }
 
 .chat-inputs,
