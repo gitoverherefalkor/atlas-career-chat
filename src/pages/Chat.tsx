@@ -176,7 +176,7 @@ const Chat = () => {
               subtitle: 'Discuss your personalized career assessment',
               footer: '',
               getStarted: 'Start Chatting',
-              inputPlaceholder: 'Type "hi" to begin...',
+              inputPlaceholder: 'Type here',
             },
           },
           showWelcomeScreen: false,
