@@ -39,6 +39,39 @@ const Chat = () => {
     }
   }, [authLoading, user]);
 
+  // Restore revealed sections from localStorage on mount
+  useEffect(() => {
+    if (reportData) {
+      const stored = localStorage.getItem(`chat_sections_${reportData.id}`);
+      if (stored) {
+        try {
+          const sections = JSON.parse(stored);
+          setRevealedSections(sections);
+        } catch (e) {
+          console.error('Failed to restore sections:', e);
+        }
+      }
+    }
+  }, [reportData]);
+
+  // Auto-initialize chat if there's a previous session (skip welcome card)
+  useEffect(() => {
+    if (reportData && showWelcome) {
+      const hasSession = localStorage.getItem('sessionId');
+      if (hasSession) {
+        console.log('Found existing chat session, auto-initializing...');
+        handleStartSession();
+      }
+    }
+  }, [reportData]);
+
+  // Save revealed sections to localStorage whenever they change
+  useEffect(() => {
+    if (reportData && revealedSections.length > 0) {
+      localStorage.setItem(`chat_sections_${reportData.id}`, JSON.stringify(revealedSections));
+    }
+  }, [revealedSections, reportData]);
+
   // Watch for new chat messages and detect section headers
   useEffect(() => {
     if (!chatInitialized) return;
@@ -117,6 +150,28 @@ const Chat = () => {
 
     console.log('Observer attached to chat container');
 
+    // Initial scan of existing messages (for loaded previous session)
+    setTimeout(() => {
+      const existingMessages = chatContainer.querySelectorAll('.chat-message-from-bot, .chat-message');
+      console.log(`Scanning ${existingMessages.length} existing messages for sections`);
+
+      existingMessages.forEach((message) => {
+        const h3Elements = message.querySelectorAll('h3');
+        h3Elements.forEach((h3) => {
+          const title = h3.textContent?.trim();
+          if (!title) return;
+
+          const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          console.log('Found section in loaded history:', { title, id });
+
+          setRevealedSections(prev => {
+            if (prev.find(s => s.id === id)) return prev;
+            return [...prev, { id, title }];
+          });
+        });
+      });
+    }, 1000); // Wait for messages to render
+
     return () => observer.disconnect();
   }, [chatInitialized]);
 
@@ -180,7 +235,7 @@ const Chat = () => {
             },
           },
           showWelcomeScreen: false,
-          loadPreviousSession: false,
+          loadPreviousSession: true,
           enableStreaming: false,
         });
 
