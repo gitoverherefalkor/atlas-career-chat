@@ -23,7 +23,14 @@ interface RevealedSection {
 
 const Chat = () => {
   // Check for existing session immediately to avoid flash
+  // Log ALL localStorage to see what n8n actually stores
+  console.log('🔍 localStorage contents:', Object.keys(localStorage).reduce((acc, key) => {
+    acc[key] = localStorage.getItem(key);
+    return acc;
+  }, {} as Record<string, string | null>));
+
   const hasExistingSession = localStorage.getItem('sessionId') !== null;
+  console.log('🔍 Session check on init:', { hasExistingSession, sessionId: localStorage.getItem('sessionId') });
 
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -93,6 +100,7 @@ const Chat = () => {
         webhookUrl: chatWebhookUrl,
         mode: 'fullscreen',
         target: '#n8n-chat-container',
+        chatSessionKey: 'sessionId', // Explicitly set the session key
         metadata: {
           report_id: reportData.id,
           first_name: profile?.first_name || '',
@@ -113,6 +121,11 @@ const Chat = () => {
         showWelcomeScreen: false,
         loadPreviousSession: true,
         enableStreaming: false,
+      });
+
+      console.log('✅ Chat initialized, checking localStorage after init:', {
+        sessionId: localStorage.getItem('sessionId'),
+        allKeys: Object.keys(localStorage)
       });
 
       setChatInitialized(true);
