@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,6 +31,7 @@ const Chat = () => {
   const [revealedSections, setRevealedSections] = useState<RevealedSection[]>([]);
   const [currentSection, setCurrentSection] = useState<string | undefined>();
   const { user, isLoading: authLoading } = useAuth();
+  const { profile } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -220,6 +222,7 @@ const Chat = () => {
           target: '#n8n-chat-container',
           metadata: {
             report_id: reportData.id,
+            first_name: profile?.first_name || '',
           },
           initialMessages: [
             'Chat is ready! 👋',
