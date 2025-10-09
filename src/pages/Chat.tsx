@@ -226,7 +226,28 @@ const Chat = () => {
           },
           initialMessages: [
             'Chat is ready! 👋',
-            'Say hi to get started and I\'ll walk you through your Executive Summary and career insights.'
+            'Say hi to get started and I\'ll walk you through your Executive Summary and career insights.',
+            `### Test Section: Spacing Format Check
+
+This is section content that would come from the database.
+
+
+---
+
+
+**Boilerplate question starts here:** Does this spacing look good?
+
+---
+
+**Alternative with HTML breaks:**<br><br>Does this work better?
+
+---
+
+**Option 3 - Four newlines:**
+
+
+
+Should create two blank lines above this text.`
           ],
           i18n: {
             en: {
