@@ -205,12 +205,7 @@ const Dashboard = () => {
           <>
             {/* Show pending review message if report is not completed */}
             {latestReport.status === 'pending_review' && (() => {
-              const hasExistingSession = localStorage.getItem('sessionId');
-              console.log('📊 Dashboard session check:', {
-                hasExistingSession,
-                allKeys: Object.keys(localStorage),
-                sessionId: localStorage.getItem('sessionId')
-              });
+              const hasExistingSession = localStorage.getItem('n8n-chat/sessionId');
 
               return (
                 <Card className="mb-6 border-blue-200 bg-blue-50">
