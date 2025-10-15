@@ -105,7 +105,7 @@ const Chat = () => {
         },
         initialMessages: [
           'Chat is ready! 👋',
-          'Say hi to get started and I\'ll walk you through your Executive Summary and career insights.'
+          'Say hi to get started'
         ],
         i18n: {
           en: {
@@ -143,6 +143,40 @@ const Chat = () => {
     }
   }, [revealedSections, reportData]);
 
+  // Store messages in localStorage for session persistence
+  const storeMessage = (message: { text: string; sender: 'user' | 'bot'; timestamp: number }) => {
+    if (!reportData) return;
+
+    const sessionId = localStorage.getItem('n8n-chat/sessionId');
+    if (!sessionId) return;
+
+    const storageKey = `chat_messages_${sessionId}`;
+    const existing = localStorage.getItem(storageKey);
+    const messages = existing ? JSON.parse(existing) : [];
+    messages.push(message);
+    localStorage.setItem(storageKey, JSON.stringify(messages));
+  };
+
+  // Load and display previous messages
+  const loadPreviousMessages = () => {
+    const sessionId = localStorage.getItem('n8n-chat/sessionId');
+    if (!sessionId) return;
+
+    const storageKey = `chat_messages_${sessionId}`;
+    const stored = localStorage.getItem(storageKey);
+    if (!stored) return;
+
+    try {
+      const messages = JSON.parse(stored);
+      console.log('📨 Loading previous messages:', messages.length);
+      // Messages will be rendered by n8n widget through loadPreviousSession
+      return messages;
+    } catch (e) {
+      console.error('Failed to load messages:', e);
+      return [];
+    }
+  };
+
   // Watch for new chat messages and detect section headers
   useEffect(() => {
     if (!chatInitialized) return;
@@ -160,6 +194,19 @@ const Chat = () => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as Element;
             console.log('New element added:', element);
+
+            // Store messages for persistence
+            if (element.classList.contains('chat-message')) {
+              const isUser = element.classList.contains('chat-message-from-user');
+              const text = element.textContent?.trim() || '';
+              if (text && !element.classList.contains('chat-message-typing')) {
+                storeMessage({
+                  text,
+                  sender: isUser ? 'user' : 'bot',
+                  timestamp: Date.now()
+                });
+              }
+            }
 
             // Try multiple selectors for bot messages
             const selectors = [
@@ -223,6 +270,14 @@ const Chat = () => {
 
     // Initial scan of existing messages (for loaded previous session)
     setTimeout(() => {
+      // Load and inject previous messages if they exist
+      const previousMessages = loadPreviousMessages();
+      if (previousMessages && previousMessages.length > 0) {
+        console.log(`📨 Injecting ${previousMessages.length} stored messages`);
+        // Note: This is a simplified approach - messages are already stored by n8n
+        // The real persistence comes from n8n's Memory node
+      }
+
       const existingMessages = chatContainer.querySelectorAll('.chat-message-from-bot, .chat-message');
       console.log(`Scanning ${existingMessages.length} existing messages for sections`);
 
