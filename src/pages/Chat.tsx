@@ -39,7 +39,7 @@ const Chat = () => {
   const [revealedSections, setRevealedSections] = useState<RevealedSection[]>([]);
   const [currentSection, setCurrentSection] = useState<string | undefined>();
   const { user, isLoading: authLoading } = useAuth();
-  const { profile } = useProfile();
+  const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -51,9 +51,10 @@ const Chat = () => {
 
   // Auto-initialize chat when returning with existing session
   useEffect(() => {
-    if (reportData && profile !== undefined && !chatInitialized && hasExistingSession) {
+    if (reportData && !profileLoading && !chatInitialized && hasExistingSession) {
       console.log('✅ Existing session detected, auto-initializing chat', {
-        firstName: profile?.first_name || 'N/A'
+        firstName: profile?.first_name || 'N/A',
+        profileLoaded: !profileLoading
       });
 
       // Restore revealed sections
@@ -70,7 +71,7 @@ const Chat = () => {
       // Initialize chat automatically
       initializeChat();
     }
-  }, [reportData, profile, chatInitialized, hasExistingSession]);
+  }, [reportData, profileLoading, chatInitialized, hasExistingSession]);
 
   const initializeChat = () => {
     if (!reportData) {
@@ -132,14 +133,18 @@ const Chat = () => {
   };
 
   const handleStartSession = () => {
-    if (!profile) {
-      console.warn('Profile not loaded yet, waiting...');
+    if (profileLoading) {
+      console.warn('Profile still loading, waiting...');
       toast({
         title: "Loading...",
         description: "Please wait a moment while we load your profile.",
       });
       return;
     }
+
+    console.log('🎯 Starting new session with profile:', {
+      firstName: profile?.first_name || 'N/A'
+    });
 
     setIsInitializing(true);
     setShowWelcome(false);
