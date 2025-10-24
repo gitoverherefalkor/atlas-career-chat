@@ -51,8 +51,10 @@ const Chat = () => {
 
   // Auto-initialize chat when returning with existing session
   useEffect(() => {
-    if (reportData && !chatInitialized && hasExistingSession) {
-      console.log('✅ Existing session detected, auto-initializing chat');
+    if (reportData && profile !== undefined && !chatInitialized && hasExistingSession) {
+      console.log('✅ Existing session detected, auto-initializing chat', {
+        firstName: profile?.first_name || 'N/A'
+      });
 
       // Restore revealed sections
       const storedSections = localStorage.getItem(`chat_sections_${reportData.id}`);
@@ -68,7 +70,7 @@ const Chat = () => {
       // Initialize chat automatically
       initializeChat();
     }
-  }, [reportData, chatInitialized, hasExistingSession]);
+  }, [reportData, profile, chatInitialized, hasExistingSession]);
 
   const initializeChat = () => {
     if (!reportData) {
@@ -130,6 +132,15 @@ const Chat = () => {
   };
 
   const handleStartSession = () => {
+    if (!profile) {
+      console.warn('Profile not loaded yet, waiting...');
+      toast({
+        title: "Loading...",
+        description: "Please wait a moment while we load your profile.",
+      });
+      return;
+    }
+
     setIsInitializing(true);
     setShowWelcome(false);
     initializeChat();
