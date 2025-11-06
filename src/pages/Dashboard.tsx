@@ -10,23 +10,30 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
-import { useSurveySession } from '@/hooks/useSurveySession';
 import ReportDisplay from '@/components/ReportDisplay';
 import PurchaseAccessButton from '@/components/dashboard/PurchaseAccessButton';
 
+// Helper to get assessment session from localStorage
+const getAssessmentSession = () => {
+  try {
+    const stored = localStorage.getItem('assessment_session');
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
 
 const Dashboard = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { reports, isLoading: reportsLoading } = useReports();
   const [isReportSectionExpanded, setIsReportSectionExpanded] = useState(false);
-  
+
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Check for saved assessment progress
-  const { getStoredSession } = useSurveySession('00000000-0000-0000-0000-000000000001');
-  const savedSession = getStoredSession();
+  const savedSession = getAssessmentSession();
 
   const handleSignOut = async () => {
     try {
@@ -136,7 +143,7 @@ const Dashboard = () => {
           variant="destructive"
           className="mb-6"
           onClick={() => {
-            localStorage.removeItem('survey_session_00000000-0000-0000-0000-000000000001');
+            localStorage.removeItem('assessment_session');
             localStorage.removeItem('pre_survey_upload_complete');
             window.location.reload();
           }}

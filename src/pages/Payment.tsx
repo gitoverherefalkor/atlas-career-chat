@@ -4,15 +4,14 @@ import { useSurvey } from '../hooks/useSurvey';
 import { getSurveyIdFromAccessCode, SURVEY_TYPE_MAPPING } from '../components/assessment/constants';
 
 export default function Payment() {
-  // Try to get accessCodeData from the default session (first/only survey for now)
+  // Try to get accessCodeData from assessment session
   const defaultSurveyId = SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
-  const sessionKey = `survey_session_${defaultSurveyId}`;
   const [accessCodeData, setAccessCodeData] = useState<any>(null);
   const [surveyId, setSurveyId] = useState<string>(defaultSurveyId);
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(sessionKey);
+      const stored = localStorage.getItem('assessment_session');
       if (stored) {
         const session = JSON.parse(stored);
         if (session?.accessCodeData) {
