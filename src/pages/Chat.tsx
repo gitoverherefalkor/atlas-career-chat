@@ -51,7 +51,7 @@ const Chat = () => {
 
   // Auto-initialize chat when returning with existing session
   useEffect(() => {
-    if (reportData && !profileLoading && !chatInitialized && hasExistingSession) {
+    if (reportData && !profileLoading && profile && !chatInitialized && hasExistingSession) {
       console.log('✅ Existing session detected, auto-initializing chat', {
         firstName: profile?.first_name || 'N/A',
         profileLoaded: !profileLoading
@@ -133,7 +133,7 @@ const Chat = () => {
   };
 
   const handleStartSession = () => {
-    if (profileLoading) {
+    if (profileLoading || !profile) {
       console.warn('Profile still loading, waiting...');
       toast({
         title: "Loading...",
