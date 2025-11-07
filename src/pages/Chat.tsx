@@ -12,6 +12,7 @@ import '@n8n/chat/style.css';
 import '@/styles/n8n-chat.css';
 import { createChat } from '@n8n/chat';
 import { WelcomeCard } from '@/components/chat/WelcomeCard';
+import { ClosingCard } from '@/components/chat/ClosingCard';
 import { ReportSidebar } from '@/components/chat/ReportSidebar';
 
 type ReportData = Tables<'reports'>;
@@ -33,6 +34,7 @@ const Chat = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [showWelcome, setShowWelcome] = useState(!hasExistingSession);
+  const [showClosing, setShowClosing] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [chatInitialized, setChatInitialized] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -249,6 +251,15 @@ const Chat = () => {
             }
 
             botMessages.forEach((message) => {
+              const messageText = message.textContent?.trim() || '';
+
+              // Check for session completion marker
+              if (messageText.includes('SESSION_COMPLETE')) {
+                console.log('🏁 Session completion detected');
+                setShowClosing(true);
+                return;
+              }
+
               // Look for <h3> elements (rendered from ### markdown)
               const h3Elements = message.querySelectorAll('h3');
 
@@ -445,6 +456,10 @@ const Chat = () => {
             onReady={handleStartSession}
             isLoading={isInitializing}
           />
+        </div>
+      ) : showClosing ? (
+        <div className="flex-1 bg-gray-50 overflow-auto">
+          <ClosingCard firstName={profile?.first_name || undefined} />
         </div>
       ) : (
         <div className="flex-1 flex overflow-hidden">
