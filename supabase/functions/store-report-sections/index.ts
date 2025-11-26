@@ -18,11 +18,12 @@ serve(async (req) => {
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const { 
+    const {
+      REPORT_ID,
       USER_ID,
       REPORT_DATE,
       EXEC_SUMMARY,
-      STRENGTHS, 
+      STRENGTHS,
       GROWTH,
       PERS_TEAM,
       VALUES,
@@ -34,30 +35,39 @@ serve(async (req) => {
       DREAM
     } = await req.json()
 
-    if (!USER_ID) {
+    // REPORT_ID should be passed from n8n (which received it from forward-to-n8n)
+    // Fall back to USER_ID lookup only if REPORT_ID is not provided (for backwards compatibility)
+    let reportId = REPORT_ID;
+
+    if (!reportId && !USER_ID) {
       return new Response(
-        JSON.stringify({ error: 'USER_ID is required' }),
+        JSON.stringify({ error: 'Either REPORT_ID or USER_ID is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Get the report_id from the reports table for this user
-    const { data: report, error: reportError } = await supabaseClient
-      .from('reports')
-      .select('id')
-      .eq('user_id', USER_ID)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .single()
+    // If no REPORT_ID provided, look up by USER_ID (legacy behavior)
+    if (!reportId) {
+      console.log('REPORT_ID not provided, falling back to USER_ID lookup (legacy)');
+      const { data: report, error: reportError } = await supabaseClient
+        .from('reports')
+        .select('id')
+        .eq('user_id', USER_ID)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
 
-    if (reportError || !report) {
-      return new Response(
-        JSON.stringify({ error: 'No report found for this user' }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      if (reportError || !report) {
+        return new Response(
+          JSON.stringify({ error: 'No report found for this user' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      reportId = report.id
     }
 
-    const reportId = report.id
+    console.log('Using report ID:', reportId)
 
     // Define the sections to insert
     const sectionsToInsert = [
