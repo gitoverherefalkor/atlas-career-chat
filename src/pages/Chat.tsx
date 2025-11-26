@@ -12,6 +12,7 @@ import '@n8n/chat/style.css';
 import '@/styles/n8n-chat.css';
 import { createChat } from '@n8n/chat';
 import { WelcomeCard } from '@/components/chat/WelcomeCard';
+import { WelcomeBackCard } from '@/components/chat/WelcomeBackCard';
 import { ClosingCard } from '@/components/chat/ClosingCard';
 import { ReportSidebar } from '@/components/chat/ReportSidebar';
 
@@ -26,14 +27,31 @@ const Chat = () => {
   // Check for existing session immediately to avoid flash
   // n8n stores sessionId under 'n8n-chat/sessionId' key
   const hasExistingSession = localStorage.getItem('n8n-chat/sessionId') !== null;
+
+  // Check if session is stale (older than 72 hours)
+  const getSessionTimestamp = () => {
+    const timestamp = localStorage.getItem('n8n-chat/sessionTimestamp');
+    return timestamp ? parseInt(timestamp) : null;
+  };
+
+  const isSessionStale = () => {
+    const timestamp = getSessionTimestamp();
+    if (!timestamp) return false;
+    const hoursSinceLastActivity = (Date.now() - timestamp) / (1000 * 60 * 60);
+    return hoursSinceLastActivity > 72;
+  };
+
+  const sessionIsStale = hasExistingSession && isSessionStale();
+
   console.log('🔍 Session check on init:', {
     hasExistingSession,
+    sessionIsStale,
     sessionId: localStorage.getItem('n8n-chat/sessionId')
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
-  const [showWelcome, setShowWelcome] = useState(!hasExistingSession);
+  const [showWelcome, setShowWelcome] = useState(!hasExistingSession || sessionIsStale);
   const [showClosing, setShowClosing] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [chatInitialized, setChatInitialized] = useState(false);
@@ -51,13 +69,16 @@ const Chat = () => {
     }
   }, [authLoading, user]);
 
-  // Auto-initialize chat when returning with existing session
+  // Auto-initialize chat when returning with existing session (only if not stale)
   useEffect(() => {
-    if (reportData && !profileLoading && profile && !chatInitialized && hasExistingSession) {
+    if (reportData && !profileLoading && profile && !chatInitialized && hasExistingSession && !sessionIsStale) {
       console.log('✅ Existing session detected, auto-initializing chat', {
         firstName: profile?.first_name || 'N/A',
         profileLoaded: !profileLoading
       });
+
+      // Update session timestamp
+      localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
 
       // Restore revealed sections
       const storedSections = localStorage.getItem(`chat_sections_${reportData.id}`);
@@ -148,11 +169,17 @@ const Chat = () => {
       firstName: profile?.first_name || 'N/A'
     });
 
+    // Update session timestamp
+    localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
+
     setIsInitializing(true);
     setShowWelcome(false);
     initializeChat();
     setIsInitializing(false);
   };
+
+  // Determine if this is a returning user with stale/expired session
+  const isReturningUser = sessionIsStale && revealedSections.length > 0;
 
   // Save revealed sections to localStorage whenever they change
   useEffect(() => {
@@ -452,10 +479,18 @@ const Chat = () => {
       {/* Content */}
       {showWelcome ? (
         <div className="flex-1 bg-gray-50 overflow-auto">
-          <WelcomeCard
-            onReady={handleStartSession}
-            isLoading={isInitializing}
-          />
+          {isReturningUser ? (
+            <WelcomeBackCard
+              onContinue={handleStartSession}
+              firstName={profile?.first_name || undefined}
+              revealedSections={revealedSections}
+            />
+          ) : (
+            <WelcomeCard
+              onReady={handleStartSession}
+              isLoading={isInitializing}
+            />
+          )}
         </div>
       ) : showClosing ? (
         <div className="flex-1 bg-gray-50 overflow-auto">
