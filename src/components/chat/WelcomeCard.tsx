@@ -21,8 +21,8 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({ onReady, isLoading = f
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          <p className="text-lg text-gray-700 leading-relaxed">
+        <CardContent className="space-y-5">
+          <p className="text-gray-700 leading-relaxed">
             Hi, and great to have you here! Welcome to your career insights session. My goal is to walk you through your personality profile and career recommendations in a way that's clear, engaging, and actionable.
           </p>
 
@@ -31,21 +31,21 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({ onReady, isLoading = f
           </p>
 
           <div className="bg-blue-50 border-l-4 border-atlas-blue p-5 rounded-r-lg">
-            <p className="font-semibold text-atlas-navy mb-3">Here's how this will work:</p>
+            <p className="text-atlas-navy mb-3 font-medium">Here's how this will work:</p>
             <ol className="space-y-2 text-gray-700">
               <li className="flex items-start gap-2">
-                <span className="font-semibold text-atlas-blue mt-0.5">1.</span>
-                <span>We'll start with a quick <strong>Executive Summary</strong>.</span>
+                <span className="text-atlas-navy mt-0.5">1.</span>
+                <span>We'll start with a quick Executive Summary.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="font-semibold text-atlas-blue mt-0.5">2.</span>
-                <span>Then do a deeper dive into your <strong>Personality Insights</strong>, exploring what drives you, how you work best, and key takeaways that shape your career direction.</span>
+                <span className="text-atlas-navy mt-0.5">2.</span>
+                <span>Then do a deeper dive into your Personality Insights, exploring what drives you, how you work best, and key takeaways that shape your career direction.</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="font-semibold text-atlas-blue mt-0.5">3.</span>
+                <span className="text-atlas-navy mt-0.5">3.</span>
                 <div>
-                  <span>Then, we'll move on to your <strong>Career matches</strong>:</span>
-                  <ul className="ml-4 mt-1 space-y-1 text-sm">
+                  <span>Then, we'll move on to your Career matches:</span>
+                  <ul className="ml-4 mt-1 space-y-1">
                     <li>• Top 3 best fits</li>
                     <li>• Suitable Runner-up suggestions</li>
                     <li>• Some Outside-the-box careers you might not have considered</li>
@@ -56,20 +56,19 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({ onReady, isLoading = f
             </ol>
           </div>
 
-          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-            <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-gray-700">
-              <strong>No need to take notes</strong> — you'll receive a full report with all the details and your feedback at the end of this session in your dashboard.
-            </p>
-          </div>
-
           <p className="text-gray-700 leading-relaxed">
             Feel free to ask anything along the way, whether it's clarification, exploring a career further, or sharing feedback on your results.
           </p>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <p className="text-sm text-gray-700">
-              <strong>A quick final note:</strong> I'm doing a lot of 'thinking' and directing different AI tools in the background so sometimes I might take a little longer to get back to you. Thanks for your patience!
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-atlas-blue mt-0.5 flex-shrink-0" />
+              <p className="text-gray-700">
+                No need to take notes — you'll receive a full report with all the details and your feedback at the end of this session in your dashboard.
+              </p>
+            </div>
+            <p className="text-gray-600 pl-8">
+              I'm doing a lot of 'thinking' and directing different AI tools in the background so sometimes I might take a little longer to get back to you. Thanks for your patience!
             </p>
           </div>
 
