@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, FileDown, LayoutDashboard, Info } from 'lucide-react';
+import { Award, FileDown, LayoutDashboard, Info, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ClosingCardProps {
@@ -36,34 +36,52 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
 
         <CardContent className="space-y-6">
           <p className="text-lg text-gray-700 leading-relaxed">
-            Thanks for taking the time to go through this assessment with me!
+            Thank you for completing your Atlas Career Assessment!
           </p>
 
           <p className="text-gray-700 leading-relaxed">
-            Your career isn't a straight line, and that's actually a good thing. The professional world keeps evolving, new roles emerge, industries shift, and your own interests will likely change over time. This assessment gives you a solid foundation to work from, but think of it as a strategic starting point rather than a fixed blueprint.
+            Your session is complete. All your feedback and insights from our conversation have been securely saved and are being incorporated into your final report.
           </p>
 
-          <p className="text-gray-700 leading-relaxed">
-            Use these insights to guide your decisions while staying open to opportunities that align with your strengths, values, and goals. The most valuable skills you can cultivate? Adaptability, curiosity, and a willingness to learn as you go. Your most rewarding career moves might come from unexpected directions.
-          </p>
-
-          <p className="text-gray-700 leading-relaxed">
-            Stay proactive. Keep developing your skills. Trust yourself to navigate your own path. What matters most is finding work where you can leverage your unique strengths while continuing to grow in ways that feel right for you.
-          </p>
-
-          <div className="bg-blue-50 border-l-4 border-blue-400 p-5 rounded-r-lg">
+          <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-r-lg">
             <div className="flex items-start gap-3">
-              <Info className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+              <div className="space-y-3">
+                <p className="font-semibold text-green-900">What happens next?</p>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    <span>Your final report will be available in your dashboard shortly</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    <span>You'll receive an email notification when it's ready</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    <span>All your feedback and report content is stored securely</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border-l-4 border-amber-400 p-5 rounded-r-lg">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="space-y-2">
-                <p className="font-semibold text-blue-900">A quick note:</p>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Atlas Career Path Assessment is still in beta. Our recommendations are designed to be helpful exploratory guidance, not definitive answers. Every career journey is unique, and this represents one informed perspective on your professional potential and personality.
-                </p>
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  We encourage you to use this as a reflection tool alongside your own experiences, mentorship, and ongoing exploration.
+                <p className="font-semibold text-amber-900">Please note:</p>
+                <p className="text-sm text-gray-700">
+                  This chat conversation won't be preserved for privacy reasons, but your assessment results and all feedback you provided have been saved and will be reflected in your final report.
                 </p>
               </div>
             </div>
+          </div>
+
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              <strong>Beta disclaimer:</strong> Atlas Career Path Assessment is in beta. Our recommendations are exploratory guidance, not definitive answers. Use this as a reflection tool alongside your experiences and ongoing career exploration.
+            </p>
           </div>
 
           <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
