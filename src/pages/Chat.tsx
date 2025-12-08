@@ -14,14 +14,9 @@ import { createChat } from '@n8n/chat';
 import { WelcomeCard } from '@/components/chat/WelcomeCard';
 import { WelcomeBackCard } from '@/components/chat/WelcomeBackCard';
 import { ClosingCard } from '@/components/chat/ClosingCard';
-import { ReportSidebar } from '@/components/chat/ReportSidebar';
+import { ReportSidebar, ALL_SECTIONS } from '@/components/chat/ReportSidebar';
 
 type ReportData = Tables<'reports'>;
-
-interface RevealedSection {
-  id: string;
-  title: string;
-}
 
 const Chat = () => {
   // Check for existing session immediately to avoid flash
@@ -56,8 +51,7 @@ const Chat = () => {
   const [isInitializing, setIsInitializing] = useState(false);
   const [chatInitialized, setChatInitialized] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [revealedSections, setRevealedSections] = useState<RevealedSection[]>([]);
-  const [currentSection, setCurrentSection] = useState<string | undefined>();
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(-1); // -1 = not started
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
@@ -80,14 +74,12 @@ const Chat = () => {
       // Update session timestamp
       localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
 
-      // Restore revealed sections
-      const storedSections = localStorage.getItem(`chat_sections_${reportData.id}`);
-      if (storedSections) {
-        try {
-          const sections = JSON.parse(storedSections);
-          setRevealedSections(sections);
-        } catch (e) {
-          console.error('Failed to restore sections:', e);
+      // Restore section progress
+      const storedIndex = localStorage.getItem(`chat_section_index_${reportData.id}`);
+      if (storedIndex) {
+        const index = parseInt(storedIndex, 10);
+        if (!isNaN(index)) {
+          setCurrentSectionIndex(index);
         }
       }
 
@@ -179,14 +171,17 @@ const Chat = () => {
   };
 
   // Determine if this is a returning user with stale/expired session
-  const isReturningUser = sessionIsStale && revealedSections.length > 0;
+  const storedProgressIndex = reportData
+    ? parseInt(localStorage.getItem(`chat_section_index_${reportData.id}`) || '-1', 10)
+    : -1;
+  const isReturningUser = sessionIsStale && storedProgressIndex >= 0;
 
-  // Save revealed sections to localStorage whenever they change
+  // Save section progress to localStorage whenever it changes
   useEffect(() => {
-    if (reportData && revealedSections.length > 0) {
-      localStorage.setItem(`chat_sections_${reportData.id}`, JSON.stringify(revealedSections));
+    if (reportData && currentSectionIndex >= 0) {
+      localStorage.setItem(`chat_section_index_${reportData.id}`, currentSectionIndex.toString());
     }
-  }, [revealedSections, reportData]);
+  }, [currentSectionIndex, reportData]);
 
   // Store messages in localStorage for session persistence
   const storeMessage = (message: { text: string; sender: 'user' | 'bot'; timestamp: number }) => {
@@ -226,90 +221,85 @@ const Chat = () => {
   useEffect(() => {
     if (!chatInitialized) return;
 
-    console.log('Setting up chat observer...');
+    console.log('🔍 Setting up chat section observer...');
     const chatContainer = document.querySelector('#n8n-chat-container');
     if (!chatContainer) {
       console.log('Chat container not found');
       return;
     }
 
+    // Helper to find which section a title matches
+    const findSectionIndex = (text: string): number => {
+      const lowerText = text.toLowerCase();
+      return ALL_SECTIONS.findIndex(section => {
+        const sectionWords = section.title.toLowerCase();
+        // Match if the text contains key words from the section title
+        return lowerText.includes(sectionWords) ||
+          lowerText.includes(section.id.replace(/-/g, ' '));
+      });
+    };
+
+    // Scan for section headers in a message
+    const scanForSections = (element: Element) => {
+      const messageText = element.textContent?.trim() || '';
+
+      // Check for session completion
+      if (messageText.includes('SESSION_COMPLETE')) {
+        console.log('🏁 Session completion detected');
+        setShowClosing(true);
+        return;
+      }
+
+      // Look for h3, h2, strong elements or specific patterns
+      const headings = element.querySelectorAll('h2, h3, strong, b');
+
+      headings.forEach((heading) => {
+        const title = heading.textContent?.trim();
+        if (!title || title.length < 5 || title.length > 50) return;
+
+        const sectionIndex = findSectionIndex(title);
+        if (sectionIndex >= 0) {
+          console.log(`📍 Section detected: "${title}" → index ${sectionIndex} (${ALL_SECTIONS[sectionIndex].title})`);
+          setCurrentSectionIndex(prev => Math.max(prev, sectionIndex));
+        }
+      });
+
+      // Also check the message text itself for section keywords
+      ALL_SECTIONS.forEach((section, index) => {
+        // Check for clear section markers like "### Executive Summary" or "**Executive Summary**"
+        const patterns = [
+          `### ${section.title}`,
+          `## ${section.title}`,
+          `**${section.title}**`,
+          `__${section.title}__`,
+        ];
+
+        if (patterns.some(p => messageText.includes(p))) {
+          console.log(`📍 Section pattern matched: ${section.title} → index ${index}`);
+          setCurrentSectionIndex(prev => Math.max(prev, index));
+        }
+      });
+    };
+
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const element = node as Element;
-            console.log('New element added:', element);
+          if (node.nodeType !== Node.ELEMENT_NODE) return;
+          const element = node as Element;
 
-            // Store messages for persistence
-            if (element.classList.contains('chat-message')) {
-              const isUser = element.classList.contains('chat-message-from-user');
-              const text = element.textContent?.trim() || '';
-              if (text && !element.classList.contains('chat-message-typing')) {
-                storeMessage({
-                  text,
-                  sender: isUser ? 'user' : 'bot',
-                  timestamp: Date.now()
-                });
-              }
-            }
+          // Check bot messages
+          if (element.classList.contains('chat-message-from-bot') ||
+              element.querySelector('.chat-message-from-bot')) {
+            const messages = element.classList.contains('chat-message-from-bot')
+              ? [element]
+              : Array.from(element.querySelectorAll('.chat-message-from-bot'));
 
-            // Try multiple selectors for bot messages
-            const selectors = [
-              '.chat-message-from-bot',
-              '.chat-message.bot',
-              '.message-bot',
-              '[data-role="bot"]',
-              '.chat-message'
-            ];
+            messages.forEach(scanForSections);
+          }
 
-            let botMessages: Element[] = [];
-            for (const selector of selectors) {
-              const found = element.querySelectorAll(selector);
-              if (found.length > 0) {
-                console.log(`Found ${found.length} messages with selector: ${selector}`);
-                botMessages = Array.from(found);
-                break;
-              }
-            }
-
-            // Also check if the element itself is a message
-            if (element.classList.contains('chat-message') || element.textContent) {
-              botMessages.push(element);
-            }
-
-            botMessages.forEach((message) => {
-              const messageText = message.textContent?.trim() || '';
-
-              // Check for session completion marker
-              if (messageText.includes('SESSION_COMPLETE')) {
-                console.log('🏁 Session completion detected');
-                setShowClosing(true);
-                return;
-              }
-
-              // Look for <h3> elements (rendered from ### markdown)
-              const h3Elements = message.querySelectorAll('h3');
-
-              console.log(`Found ${h3Elements.length} h3 elements in message`);
-
-              h3Elements.forEach((h3) => {
-                const title = h3.textContent?.trim();
-                if (!title) return;
-
-                const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
-                console.log('Found section header:', { title, id });
-
-                // Add section if not already revealed
-                setRevealedSections(prev => {
-                  if (prev.find(s => s.id === id)) return prev;
-                  console.log('Adding new section to sidebar:', title);
-                  return [...prev, { id, title }];
-                });
-
-                setCurrentSection(id);
-              });
-            });
+          // Also scan any chat-message element
+          if (element.classList.contains('chat-message')) {
+            scanForSections(element);
           }
         });
       });
@@ -320,51 +310,31 @@ const Chat = () => {
       subtree: true,
     });
 
-    console.log('Observer attached to chat container');
+    console.log('✅ Section observer attached');
 
-    // Initial scan of existing messages (for loaded previous session)
+    // Initial scan of existing messages
     setTimeout(() => {
-      // Load and inject previous messages if they exist
-      const previousMessages = loadPreviousMessages();
-      if (previousMessages && previousMessages.length > 0) {
-        console.log(`📨 Injecting ${previousMessages.length} stored messages`);
-        // Note: This is a simplified approach - messages are already stored by n8n
-        // The real persistence comes from n8n's Memory node
-      }
-
-      const existingMessages = chatContainer.querySelectorAll('.chat-message-from-bot, .chat-message');
-      console.log(`Scanning ${existingMessages.length} existing messages for sections`);
-
-      existingMessages.forEach((message) => {
-        const h3Elements = message.querySelectorAll('h3');
-        h3Elements.forEach((h3) => {
-          const title = h3.textContent?.trim();
-          if (!title) return;
-
-          const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-          console.log('Found section in loaded history:', { title, id });
-
-          setRevealedSections(prev => {
-            if (prev.find(s => s.id === id)) return prev;
-            return [...prev, { id, title }];
-          });
-        });
-      });
-    }, 1000); // Wait for messages to render
+      const existingMessages = chatContainer.querySelectorAll('.chat-message-from-bot, .chat-message-markdown');
+      console.log(`📖 Scanning ${existingMessages.length} existing messages for sections`);
+      existingMessages.forEach(scanForSections);
+    }, 1500);
 
     return () => observer.disconnect();
   }, [chatInitialized]);
 
-  const handleSectionClick = (sectionId: string) => {
+  const handleSectionClick = (sectionId: string, index: number) => {
+    // Find the section title from ALL_SECTIONS
+    const section = ALL_SECTIONS.find(s => s.id === sectionId);
+    if (!section) return;
+
     // Find the message containing this section
     const messages = document.querySelectorAll('.chat-message-from-bot');
     for (const message of messages) {
-      const text = message.textContent || '';
-      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const text = message.textContent?.toLowerCase() || '';
+      const sectionTitle = section.title.toLowerCase();
 
-      if (id.includes(sectionId) || text.toLowerCase().includes(sectionId.replace(/-/g, ' '))) {
+      if (text.includes(sectionTitle) || text.includes(sectionId.replace(/-/g, ' '))) {
         message.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setCurrentSection(sectionId);
         break;
       }
     }
@@ -483,7 +453,7 @@ const Chat = () => {
             <WelcomeBackCard
               onContinue={handleStartSession}
               firstName={profile?.first_name || undefined}
-              revealedSections={revealedSections}
+              completedSectionIndex={storedProgressIndex}
             />
           ) : (
             <WelcomeCard
@@ -505,11 +475,10 @@ const Chat = () => {
 
           {/* Report Sidebar */}
           <ReportSidebar
-            revealedSections={revealedSections}
+            currentSectionIndex={currentSectionIndex}
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onSectionClick={handleSectionClick}
-            currentSection={currentSection}
           />
         </div>
       )}

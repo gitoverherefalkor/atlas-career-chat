@@ -2,18 +2,24 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, CheckCircle2, Shield } from 'lucide-react';
+import { ALL_SECTIONS } from './ReportSidebar';
 
 interface WelcomeBackCardProps {
   onContinue: () => void;
   firstName?: string;
-  revealedSections: Array<{ id: string; title: string }>;
+  completedSectionIndex: number; // -1 = none, 0+ = index of last completed section
 }
 
 export const WelcomeBackCard: React.FC<WelcomeBackCardProps> = ({
   onContinue,
   firstName,
-  revealedSections
+  completedSectionIndex
 }) => {
+  // Get the sections that were completed (up to last 5)
+  const completedSections = completedSectionIndex >= 0
+    ? ALL_SECTIONS.slice(0, completedSectionIndex + 1).slice(-5)
+    : [];
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <Card className="border-2 border-atlas-blue/20 shadow-lg">
@@ -31,11 +37,11 @@ export const WelcomeBackCard: React.FC<WelcomeBackCardProps> = ({
             It's been a while since we last spoke. I'm ready to continue our conversation about your career assessment!
           </p>
 
-          {revealedSections.length > 0 && (
+          {completedSections.length > 0 && (
             <div className="bg-blue-50 border-l-4 border-atlas-blue p-5 rounded-r-lg">
               <p className="font-semibold text-atlas-navy mb-3">Last time we reviewed:</p>
               <ul className="space-y-2 text-gray-700">
-                {revealedSections.slice(-5).map((section) => (
+                {completedSections.map((section) => (
                   <li key={section.id} className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-atlas-blue mt-0.5 flex-shrink-0" />
                     <span>{section.title}</span>
