@@ -239,7 +239,7 @@ const Chat = () => {
       });
     };
 
-    // Scan for section headers in a message
+    // Scan for section headers in a message (only h3 elements from ### markdown)
     const scanForSections = (element: Element) => {
       const messageText = element.textContent?.trim() || '';
 
@@ -250,33 +250,17 @@ const Chat = () => {
         return;
       }
 
-      // Look for h3, h2, strong elements or specific patterns
-      const headings = element.querySelectorAll('h2, h3, strong, b');
+      // Only look for h3 elements (rendered from ### markdown)
+      const h3Elements = element.querySelectorAll('h3');
 
-      headings.forEach((heading) => {
-        const title = heading.textContent?.trim();
-        if (!title || title.length < 5 || title.length > 50) return;
+      h3Elements.forEach((h3) => {
+        const title = h3.textContent?.trim();
+        if (!title) return;
 
         const sectionIndex = findSectionIndex(title);
         if (sectionIndex >= 0) {
           console.log(`📍 Section detected: "${title}" → index ${sectionIndex} (${ALL_SECTIONS[sectionIndex].title})`);
           setCurrentSectionIndex(prev => Math.max(prev, sectionIndex));
-        }
-      });
-
-      // Also check the message text itself for section keywords
-      ALL_SECTIONS.forEach((section, index) => {
-        // Check for clear section markers like "### Executive Summary" or "**Executive Summary**"
-        const patterns = [
-          `### ${section.title}`,
-          `## ${section.title}`,
-          `**${section.title}**`,
-          `__${section.title}__`,
-        ];
-
-        if (patterns.some(p => messageText.includes(p))) {
-          console.log(`📍 Section pattern matched: ${section.title} → index ${index}`);
-          setCurrentSectionIndex(prev => Math.max(prev, index));
         }
       });
     };
