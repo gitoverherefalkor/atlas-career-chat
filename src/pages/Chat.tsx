@@ -120,6 +120,7 @@ const Chat = () => {
         metadata: {
           report_id: reportData.id,
           first_name: profile?.first_name || '',
+          country: profile?.country || '',
         },
         initialMessages: [
           'Chat is ready! 👋',
