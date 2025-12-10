@@ -20,6 +20,15 @@ export const ALL_SECTIONS = [
 
 export type SectionId = typeof ALL_SECTIONS[number]['id'];
 
+// Pre-compute sections by chapter for cleaner rendering
+const ABOUT_YOU_SECTIONS = ALL_SECTIONS
+  .map((section, index) => ({ ...section, globalIndex: index }))
+  .filter(s => s.chapter === 'about-you');
+
+const CAREER_SECTIONS = ALL_SECTIONS
+  .map((section, index) => ({ ...section, globalIndex: index }))
+  .filter(s => s.chapter === 'career-suggestions');
+
 interface ReportSidebarProps {
   currentSectionIndex: number; // -1 = none started, 0 = first section, etc.
   isCollapsed: boolean;
@@ -33,15 +42,23 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   onToggleCollapse,
   onSectionClick
 }) => {
+  // Determine section state based on current progress
   const getSectionState = (index: number): 'past' | 'current' | 'upcoming' => {
     if (index < currentSectionIndex) return 'past';
     if (index === currentSectionIndex) return 'current';
     return 'upcoming';
   };
 
-  // Check if section is clickable (past OR current)
+  // Section is clickable if it's been reached (past or current)
   const isClickable = (index: number): boolean => {
     return index <= currentSectionIndex;
+  };
+
+  // Handle section click - delegate to parent
+  const handleClick = (sectionId: string, index: number) => {
+    if (isClickable(index)) {
+      onSectionClick(sectionId, index);
+    }
   };
 
   if (isCollapsed) {
@@ -57,25 +74,23 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         </Button>
         {ALL_SECTIONS.map((section, index) => {
           const state = getSectionState(index);
-          const isPast = state === 'past';
-          const isCurrent = state === 'current';
-          const canClick = isClickable(index);
+          const clickable = isClickable(index);
 
           return (
             <button
               key={section.id}
-              onClick={() => canClick && onSectionClick(section.id, index)}
-              disabled={!canClick}
+              onClick={() => handleClick(section.id, index)}
+              disabled={!clickable}
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
-                isCurrent
+                state === 'current'
                   ? 'bg-atlas-teal text-white ring-2 ring-atlas-teal/30 cursor-pointer hover:ring-atlas-teal/50'
-                  : isPast
+                  : state === 'past'
                     ? 'bg-atlas-teal/20 text-atlas-teal hover:bg-atlas-teal/30 cursor-pointer'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
               title={section.title}
             >
-              {isPast ? <Check className="h-3 w-3" /> : index + 1}
+              {state === 'past' ? <Check className="h-3 w-3" /> : index + 1}
             </button>
           );
         })}
@@ -107,20 +122,15 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         <div className="px-4 py-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">About You</p>
           <div className="space-y-1">
-            {ALL_SECTIONS.filter(s => s.chapter === 'about-you').map((section, idx) => {
-              const globalIndex = idx;
-              const state = getSectionState(globalIndex);
-              const canClick = isClickable(globalIndex);
-              return (
-                <SectionButton
-                  key={section.id}
-                  section={section}
-                  state={state}
-                  canClick={canClick}
-                  onClick={() => canClick && onSectionClick(section.id, globalIndex)}
-                />
-              );
-            })}
+            {ABOUT_YOU_SECTIONS.map((section) => (
+              <SectionButton
+                key={section.id}
+                title={section.title}
+                state={getSectionState(section.globalIndex)}
+                onClick={() => handleClick(section.id, section.globalIndex)}
+                disabled={!isClickable(section.globalIndex)}
+              />
+            ))}
           </div>
         </div>
 
@@ -128,20 +138,15 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         <div className="px-4 py-2 mt-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Career Suggestions</p>
           <div className="space-y-1">
-            {ALL_SECTIONS.filter(s => s.chapter === 'career-suggestions').map((section) => {
-              const globalIndex = ALL_SECTIONS.findIndex(s => s.id === section.id);
-              const state = getSectionState(globalIndex);
-              const canClick = isClickable(globalIndex);
-              return (
-                <SectionButton
-                  key={section.id}
-                  section={section}
-                  state={state}
-                  canClick={canClick}
-                  onClick={() => canClick && onSectionClick(section.id, globalIndex)}
-                />
-              );
-            })}
+            {CAREER_SECTIONS.map((section) => (
+              <SectionButton
+                key={section.id}
+                title={section.title}
+                state={getSectionState(section.globalIndex)}
+                onClick={() => handleClick(section.id, section.globalIndex)}
+                disabled={!isClickable(section.globalIndex)}
+              />
+            ))}
           </div>
         </div>
       </div>
@@ -163,40 +168,38 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   );
 };
 
-// Individual section button component
+// Individual section button - simplified props
 interface SectionButtonProps {
-  section: typeof ALL_SECTIONS[number];
+  title: string;
   state: 'past' | 'current' | 'upcoming';
-  canClick: boolean;
   onClick: () => void;
+  disabled: boolean;
 }
 
-const SectionButton: React.FC<SectionButtonProps> = ({ section, state, canClick, onClick }) => {
-  const isPast = state === 'past';
-  const isCurrent = state === 'current';
-  const isUpcoming = state === 'upcoming';
-
+const SectionButton: React.FC<SectionButtonProps> = ({ title, state, onClick, disabled }) => {
   return (
     <button
       onClick={onClick}
-      disabled={!canClick}
+      disabled={disabled}
       className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-        isCurrent
+        state === 'current'
           ? 'bg-atlas-teal text-white shadow-sm cursor-pointer hover:bg-atlas-teal/90'
-          : isPast
+          : state === 'past'
             ? 'text-atlas-navy hover:bg-atlas-teal/10 cursor-pointer'
             : 'text-gray-400 cursor-not-allowed'
       }`}
     >
       {/* Status icon */}
-      <span className={`flex-shrink-0 ${isCurrent ? 'text-white' : isPast ? 'text-atlas-teal' : 'text-gray-300'}`}>
-        {isPast && <Check className="h-4 w-4" />}
-        {isCurrent && <Circle className="h-4 w-4 fill-current" />}
-        {isUpcoming && <Lock className="h-3.5 w-3.5" />}
+      <span className={`flex-shrink-0 ${
+        state === 'current' ? 'text-white' : state === 'past' ? 'text-atlas-teal' : 'text-gray-300'
+      }`}>
+        {state === 'past' && <Check className="h-4 w-4" />}
+        {state === 'current' && <Circle className="h-4 w-4 fill-current" />}
+        {state === 'upcoming' && <Lock className="h-3.5 w-3.5" />}
       </span>
 
       {/* Title */}
-      <span className={isUpcoming ? 'opacity-60' : ''}>{section.title}</span>
+      <span className={state === 'upcoming' ? 'opacity-60' : ''}>{title}</span>
     </button>
   );
 };
