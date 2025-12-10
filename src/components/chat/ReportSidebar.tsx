@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 // All sections in order - matches store-report-sections
 export const ALL_SECTIONS = [
   { id: 'executive-summary', title: 'Executive Summary', chapter: 'about-you' },
-  { id: 'personality-team', title: 'Personality & Team', chapter: 'about-you' },
+  { id: 'personality-team', title: 'Your Approach', chapter: 'about-you' },
   { id: 'strengths', title: 'Your Strengths', chapter: 'about-you' },
   { id: 'growth', title: 'Growth Opportunities', chapter: 'about-you' },
   { id: 'values', title: 'Career Values', chapter: 'about-you' },
@@ -40,7 +40,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
 
   if (isCollapsed) {
     return (
-      <div className="w-12 bg-white border-l border-gray-200 flex flex-col items-center py-4 space-y-2 sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto">
+      <div className="w-12 bg-white border-l border-gray-200 flex flex-col items-center py-4 space-y-2 fixed right-0 top-[73px] h-[calc(100vh-73px)] overflow-y-auto z-40">
         <Button
           variant="ghost"
           size="sm"
@@ -77,7 +77,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   }
 
   return (
-    <div className="w-72 bg-white border-l border-gray-200 flex flex-col sticky top-[73px] h-[calc(100vh-73px)]">
+    <div className="w-72 bg-white border-l border-gray-200 flex flex-col fixed right-0 top-[73px] h-[calc(100vh-73px)] z-40">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-100 flex-shrink-0">
         <div className="flex items-center space-x-2">

@@ -312,13 +312,32 @@ const Chat = () => {
     const section = ALL_SECTIONS.find(s => s.id === sectionId);
     if (!section) return;
 
-    // Find the message containing this section
+    console.log('🔗 Clicking section:', section.title);
+
+    // First try to find h3 elements directly (most accurate)
+    const allH3s = document.querySelectorAll('#n8n-chat-container h3');
+    for (const h3 of allH3s) {
+      const h3Text = h3.textContent?.toLowerCase() || '';
+      const sectionTitle = section.title.toLowerCase();
+
+      // Match against section title or common variations
+      if (h3Text.includes(sectionTitle) ||
+          h3Text.includes(sectionId.replace(/-/g, ' ')) ||
+          sectionTitle.includes(h3Text.substring(0, 10))) {
+        console.log('✅ Found h3:', h3Text);
+        h3.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
+      }
+    }
+
+    // Fallback: search through bot messages
     const messages = document.querySelectorAll('.chat-message-from-bot');
     for (const message of messages) {
       const text = message.textContent?.toLowerCase() || '';
       const sectionTitle = section.title.toLowerCase();
 
       if (text.includes(sectionTitle) || text.includes(sectionId.replace(/-/g, ' '))) {
+        console.log('✅ Found in message text');
         message.scrollIntoView({ behavior: 'smooth', block: 'start' });
         break;
       }
@@ -452,13 +471,13 @@ const Chat = () => {
           <ClosingCard firstName={profile?.first_name || undefined} />
         </div>
       ) : (
-        <div className="flex-1 flex overflow-hidden">
-          {/* Chat Area */}
-          <div className="flex-1 flex flex-col bg-gray-50">
+        <div className="flex-1 flex relative">
+          {/* Chat Area - scrollable, with right margin for fixed sidebar */}
+          <div className={`flex-1 flex flex-col bg-gray-50 overflow-y-auto transition-all ${isSidebarCollapsed ? 'mr-12' : 'mr-72'}`}>
             <div id="n8n-chat-container" className="flex-1"></div>
           </div>
 
-          {/* Report Sidebar */}
+          {/* Report Sidebar - fixed position */}
           <ReportSidebar
             currentSectionIndex={currentSectionIndex}
             isCollapsed={isSidebarCollapsed}

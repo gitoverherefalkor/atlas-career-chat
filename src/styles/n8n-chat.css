@@ -254,3 +254,17 @@ button[data-test-id="send-button"]:disabled {
 #n8n-chat .chat-message-typing {
     color: var(--chat--color-typing);
 }
+
+/* Scroll offset for section headers (account for sticky navbar) */
+#n8n-chat-container h3,
+.chat-message-markdown h3 {
+    scroll-margin-top: 100px;
+}
+
+/* Section headers styling */
+#n8n-chat-container h3 {
+    color: var(--chat--color-dark);
+    font-weight: 600;
+    margin-top: 0.5rem;
+    margin-bottom: 0.75rem;
+}
