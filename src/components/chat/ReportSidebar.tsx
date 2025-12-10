@@ -38,6 +38,11 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
     return 'upcoming';
   };
 
+  // Check if section is clickable (past OR current)
+  const isClickable = (index: number): boolean => {
+    return index <= currentSectionIndex;
+  };
+
   if (isCollapsed) {
     return (
       <div className="w-12 bg-white border-l border-gray-200 flex flex-col items-center py-4 space-y-2 fixed right-0 top-[73px] h-[calc(100vh-73px)] overflow-y-auto z-40">
@@ -53,15 +58,16 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
           const state = getSectionState(index);
           const isPast = state === 'past';
           const isCurrent = state === 'current';
+          const canClick = isClickable(index);
 
           return (
             <button
               key={section.id}
-              onClick={() => isPast && onSectionClick(section.id, index)}
-              disabled={!isPast}
+              onClick={() => canClick && onSectionClick(section.id, index)}
+              disabled={!canClick}
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
                 isCurrent
-                  ? 'bg-atlas-teal text-white ring-2 ring-atlas-teal/30'
+                  ? 'bg-atlas-teal text-white ring-2 ring-atlas-teal/30 cursor-pointer hover:ring-atlas-teal/50'
                   : isPast
                     ? 'bg-atlas-teal/20 text-atlas-teal hover:bg-atlas-teal/30 cursor-pointer'
                     : 'bg-gray-100 text-gray-400 cursor-not-allowed'
@@ -103,12 +109,14 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
             {ALL_SECTIONS.filter(s => s.chapter === 'about-you').map((section, idx) => {
               const globalIndex = idx;
               const state = getSectionState(globalIndex);
+              const canClick = isClickable(globalIndex);
               return (
                 <SectionButton
                   key={section.id}
                   section={section}
                   state={state}
-                  onClick={() => state === 'past' && onSectionClick(section.id, globalIndex)}
+                  canClick={canClick}
+                  onClick={() => canClick && onSectionClick(section.id, globalIndex)}
                 />
               );
             })}
@@ -122,12 +130,14 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
             {ALL_SECTIONS.filter(s => s.chapter === 'career-suggestions').map((section) => {
               const globalIndex = ALL_SECTIONS.findIndex(s => s.id === section.id);
               const state = getSectionState(globalIndex);
+              const canClick = isClickable(globalIndex);
               return (
                 <SectionButton
                   key={section.id}
                   section={section}
                   state={state}
-                  onClick={() => state === 'past' && onSectionClick(section.id, globalIndex)}
+                  canClick={canClick}
+                  onClick={() => canClick && onSectionClick(section.id, globalIndex)}
                 />
               );
             })}
@@ -156,10 +166,11 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
 interface SectionButtonProps {
   section: typeof ALL_SECTIONS[number];
   state: 'past' | 'current' | 'upcoming';
+  canClick: boolean;
   onClick: () => void;
 }
 
-const SectionButton: React.FC<SectionButtonProps> = ({ section, state, onClick }) => {
+const SectionButton: React.FC<SectionButtonProps> = ({ section, state, canClick, onClick }) => {
   const isPast = state === 'past';
   const isCurrent = state === 'current';
   const isUpcoming = state === 'upcoming';
@@ -167,10 +178,10 @@ const SectionButton: React.FC<SectionButtonProps> = ({ section, state, onClick }
   return (
     <button
       onClick={onClick}
-      disabled={!isPast}
+      disabled={!canClick}
       className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
         isCurrent
-          ? 'bg-atlas-teal text-white shadow-sm'
+          ? 'bg-atlas-teal text-white shadow-sm cursor-pointer hover:bg-atlas-teal/90'
           : isPast
             ? 'text-atlas-navy hover:bg-atlas-teal/10 cursor-pointer'
             : 'text-gray-400 cursor-not-allowed'

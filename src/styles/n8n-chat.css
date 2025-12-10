@@ -69,9 +69,9 @@
 /* Wrapper for messages to constrain width */
 #n8n-chat .chat-messages-list,
 .chat-messages-list {
-    padding: 2rem 1.5rem 200px 1.5rem !important;
+    padding: 2rem 1.5rem 140px 1.5rem !important; /* Bottom padding: input height + 35px gap */
     gap: 1.25rem;
-    max-width: 900px;
+    max-width: 800px;
     margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
@@ -139,19 +139,19 @@
     display: list-item !important;
 }
 
-/* Input area styling - Fixed positioning */
+/* Input area styling - Fixed positioning at bottom */
 .chat-footer {
     position: fixed !important;
-    bottom: 50px !important;
+    bottom: 24px !important;
     left: 0 !important;
-    right: auto !important;
-    width: 675px !important;
-    max-width: calc(100vw - 256px - 3rem) !important; /* Viewport width - sidebar - padding */
-    margin-left: max(calc((100vw - 256px - 900px) / 2), 1.5rem) !important; /* Center within chat area or use padding */
-    padding: 0 !important;
+    right: 288px !important; /* Account for sidebar width */
+    width: auto !important;
+    max-width: 800px !important;
+    margin: 0 auto !important;
+    padding: 0 1.5rem !important;
     border: none !important;
     background: transparent !important;
-    z-index: 10 !important;
+    z-index: 30 !important;
     transform: none !important;
 }
 
@@ -160,7 +160,7 @@
     padding: 0 !important;
     margin: 0 !important;
     display: flex !important;
-    align-items: center !important;
+    align-items: flex-end !important;
     position: relative !important;
 }
 
@@ -175,20 +175,21 @@ textarea[data-test-id="chat-input"],
 .chat-input textarea,
 #n8n-chat textarea {
     width: 100% !important;
-    height: 60px !important;
-    min-height: 60px !important;
-    max-height: 60px !important;
-    border-radius: 8px !important;
+    height: auto !important;
+    min-height: 56px !important;
+    max-height: 200px !important;
+    border-radius: 12px !important;
     border: 1px solid #e5e7eb !important;
     padding: 1rem 60px 1rem 1.25rem !important; /* Extra padding on right for button */
     font-family: inherit !important;
     font-size: 0.9375rem !important;
     line-height: 1.5 !important;
-    transition: all 0.2s !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
     background: #ffffff !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
     box-sizing: border-box !important;
     resize: none !important;
+    overflow-y: auto !important;
 }
 
 textarea[data-test-id="chat-input"]:focus,
