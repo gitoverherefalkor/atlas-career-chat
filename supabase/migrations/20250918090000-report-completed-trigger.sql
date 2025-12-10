@@ -13,8 +13,7 @@ declare
     'Content-Type', 'application/json'
   );
   payload jsonb := jsonb_build_object(
-    'report_id', NEW.id,
-    'n8n_user_id', NEW.n8n_user_id
+    'report_id', NEW.id
   );
   resp jsonb;
 begin

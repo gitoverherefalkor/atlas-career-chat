@@ -15,7 +15,6 @@ serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({}));
     const reportId = body.report_id as string | undefined;
-    const n8nUserId = body.n8n_user_id as string | undefined;
 
     if (!reportId) {
       return new Response(JSON.stringify({ error: 'report_id is required' }), {
@@ -29,13 +28,10 @@ serve(async (req) => {
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Update report status and optional n8n_user_id
-    const updatePayload: Record<string, unknown> = { status: 'completed' };
-    if (n8nUserId) updatePayload.n8n_user_id = n8nUserId;
-
+    // Update report status to completed
     const { data: updated, error: updateError } = await supabase
       .from('reports')
-      .update(updatePayload)
+      .update({ status: 'completed' })
       .eq('id', reportId)
       .select('id, user_id, title')
       .single();
