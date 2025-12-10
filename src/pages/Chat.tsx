@@ -6,7 +6,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, ArrowLeft, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { Loader2, ArrowLeft, MessageSquare, LayoutDashboard, RefreshCw } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
 import '@n8n/chat/style.css';
 import '@/styles/n8n-chat.css';
@@ -52,6 +52,7 @@ const Chat = () => {
   const [chatInitialized, setChatInitialized] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(-1); // -1 = not started
+  const [showSessionBanner, setShowSessionBanner] = useState(false);
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
@@ -82,6 +83,11 @@ const Chat = () => {
           setCurrentSectionIndex(index);
         }
       }
+
+      // Show session restored banner
+      setShowSessionBanner(true);
+      // Auto-hide banner after 5 seconds
+      setTimeout(() => setShowSessionBanner(false), 5000);
 
       // Initialize chat automatically
       initializeChat();
@@ -480,6 +486,19 @@ const Chat = () => {
         <div className="flex-1 flex relative">
           {/* Chat Area - scrollable, with right margin for fixed sidebar */}
           <div className={`flex-1 flex flex-col bg-gray-50 overflow-y-auto transition-all ${isSidebarCollapsed ? 'mr-12' : 'mr-72'}`}>
+            {/* Session Restored Banner */}
+            {showSessionBanner && (
+              <div className="bg-atlas-teal/10 border-b border-atlas-teal/20 px-4 py-2 flex items-center justify-center gap-2 text-sm text-atlas-navy">
+                <RefreshCw className="h-4 w-4 text-atlas-teal" />
+                <span>Session restored - your coach remembers the conversation</span>
+                <button
+                  onClick={() => setShowSessionBanner(false)}
+                  className="ml-2 text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              </div>
+            )}
             <div id="n8n-chat-container" className="flex-1"></div>
           </div>
 

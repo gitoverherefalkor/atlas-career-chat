@@ -13,8 +13,8 @@ export const ALL_SECTIONS = [
   { id: 'first-career', title: 'Primary Career Match', altTitles: ['primary career', 'first career', 'career match', 'career 1:', 'career 1'], chapter: 'career-suggestions' },
   { id: 'second-career', title: 'Second Career Match', altTitles: ['second career', 'secondary career', 'career 2:', 'career 2'], chapter: 'career-suggestions' },
   { id: 'third-career', title: 'Third Career Match', altTitles: ['third career', 'career 3:', 'career 3'], chapter: 'career-suggestions' },
-  { id: 'runner-up', title: 'Runner-up Careers', altTitles: ['runner-up', 'runner up', 'honorable mention', 'career 4:', 'career 4'], chapter: 'career-suggestions' },
-  { id: 'outside-box', title: 'Outside the Box', altTitles: ['outside the box', 'unconventional', 'wildcard', 'career 5:', 'career 5'], chapter: 'career-suggestions' },
+  { id: 'runner-up', title: 'Runner-up Careers', altTitles: ['runner-up', 'runner up', 'honorable mention', 'honorable mentions'], chapter: 'career-suggestions' },
+  { id: 'outside-box', title: 'Outside the Box', altTitles: ['outside the box', 'unconventional', 'wildcard'], chapter: 'career-suggestions' },
   { id: 'dream-jobs', title: 'Dream Job Assessment', altTitles: ['dream job', 'dream jobs', 'dream career'], chapter: 'career-suggestions' },
 ] as const;
 
