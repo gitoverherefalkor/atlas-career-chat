@@ -231,12 +231,15 @@ const Chat = () => {
 
     // Helper to find which section a title matches
     const findSectionIndex = (text: string): number => {
-      const lowerText = text.toLowerCase();
+      const lowerText = text.toLowerCase().trim();
       return ALL_SECTIONS.findIndex(section => {
-        const sectionWords = section.title.toLowerCase();
-        // Match if the text contains key words from the section title
-        return lowerText.includes(sectionWords) ||
-          lowerText.includes(section.id.replace(/-/g, ' '));
+        // Check main title
+        if (lowerText.includes(section.title.toLowerCase())) return true;
+        // Check alternative titles (what the agent might output)
+        if (section.altTitles.some(alt => lowerText.includes(alt))) return true;
+        // Check section id
+        if (lowerText.includes(section.id.replace(/-/g, ' '))) return true;
+        return false;
       });
     };
 
@@ -308,22 +311,26 @@ const Chat = () => {
   }, [chatInitialized]);
 
   const handleSectionClick = (sectionId: string, index: number) => {
-    // Find the section title from ALL_SECTIONS
+    // Find the section from ALL_SECTIONS
     const section = ALL_SECTIONS.find(s => s.id === sectionId);
     if (!section) return;
 
     console.log('🔗 Clicking section:', section.title);
 
+    // Build list of terms to search for
+    const searchTerms = [
+      section.title.toLowerCase(),
+      ...section.altTitles,
+      sectionId.replace(/-/g, ' ')
+    ];
+
     // First try to find h3 elements directly (most accurate)
     const allH3s = document.querySelectorAll('#n8n-chat-container h3');
     for (const h3 of allH3s) {
       const h3Text = h3.textContent?.toLowerCase() || '';
-      const sectionTitle = section.title.toLowerCase();
 
-      // Match against section title or common variations
-      if (h3Text.includes(sectionTitle) ||
-          h3Text.includes(sectionId.replace(/-/g, ' ')) ||
-          sectionTitle.includes(h3Text.substring(0, 10))) {
+      // Match against any of the search terms
+      if (searchTerms.some(term => h3Text.includes(term))) {
         console.log('✅ Found h3:', h3Text);
         h3.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
@@ -334,9 +341,8 @@ const Chat = () => {
     const messages = document.querySelectorAll('.chat-message-from-bot');
     for (const message of messages) {
       const text = message.textContent?.toLowerCase() || '';
-      const sectionTitle = section.title.toLowerCase();
 
-      if (text.includes(sectionTitle) || text.includes(sectionId.replace(/-/g, ' '))) {
+      if (searchTerms.some(term => text.includes(term))) {
         console.log('✅ Found in message text');
         message.scrollIntoView({ behavior: 'smooth', block: 'start' });
         break;
