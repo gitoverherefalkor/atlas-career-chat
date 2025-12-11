@@ -98,6 +98,38 @@ const Chat = () => {
     }
   }, [reportData, profileLoading, chatInitialized, hasExistingSession]);
 
+  // Subscribe to report status changes (for session completion)
+  useEffect(() => {
+    if (!reportData?.id) return;
+
+    console.log('📡 Setting up realtime subscription for report status');
+
+    const channel = supabase
+      .channel(`report-status-${reportData.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'reports',
+          filter: `id=eq.${reportData.id}`
+        },
+        (payload) => {
+          console.log('📡 Report status changed:', payload.new);
+          if (payload.new && payload.new.status === 'completed') {
+            console.log('🏁 Session completion detected via database');
+            setShowClosing(true);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      console.log('📡 Cleaning up realtime subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [reportData?.id]);
+
   const initializeChat = () => {
     // Prevent double initialization
     if (chatInitialized || chatInitRef.current) {
@@ -267,9 +299,10 @@ const Chat = () => {
     const scanForSections = (element: Element) => {
       const messageText = element.textContent?.trim() || '';
 
-      // Check for session completion
+      // Legacy: Check for session completion via text (fallback)
+      // Primary method is now via Supabase realtime subscription on report status
       if (messageText.includes('SESSION_COMPLETE')) {
-        console.log('🏁 Session completion detected');
+        console.log('🏁 Session completion detected via text (legacy)');
         setShowClosing(true);
         return;
       }
