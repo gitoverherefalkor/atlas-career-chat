@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,11 +38,11 @@ const Chat = () => {
 
   const sessionIsStale = hasExistingSession && isSessionStale();
 
-  console.log('🔍 Session check on init:', {
-    hasExistingSession,
-    sessionIsStale,
-    sessionId: localStorage.getItem('n8n-chat/sessionId')
-  });
+  // Only log once on initial mount (not every render)
+  if (typeof window !== 'undefined' && !(window as any).__chatSessionLogged) {
+    console.log('🔍 Session check:', { hasExistingSession, sessionIsStale });
+    (window as any).__chatSessionLogged = true;
+  }
 
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -53,6 +53,7 @@ const Chat = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(-1); // -1 = not started
   const [showSessionBanner, setShowSessionBanner] = useState(false);
+  const chatInitRef = useRef(false); // Ref to prevent double initialization
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
@@ -66,7 +67,13 @@ const Chat = () => {
 
   // Auto-initialize chat when returning with existing session (only if not stale)
   useEffect(() => {
-    if (reportData && !profileLoading && profile && !chatInitialized && hasExistingSession && !sessionIsStale) {
+    // Use ref to prevent multiple initializations (ref updates immediately, state doesn't)
+    if (chatInitRef.current || chatInitialized) return;
+
+    if (reportData && !profileLoading && profile && hasExistingSession && !sessionIsStale) {
+      // Mark as initializing immediately via ref
+      chatInitRef.current = true;
+
       console.log('✅ Existing session detected, auto-initializing chat', {
         firstName: profile?.first_name || 'N/A',
         profileLoaded: !profileLoading
@@ -95,6 +102,12 @@ const Chat = () => {
   }, [reportData, profileLoading, chatInitialized, hasExistingSession]);
 
   const initializeChat = () => {
+    // Prevent double initialization
+    if (chatInitialized || chatInitRef.current) {
+      console.log('⚠️ Chat already initialized, skipping');
+      return;
+    }
+
     if (!reportData) {
       console.error('Cannot initialize chat: reportData is null');
       return;
@@ -111,18 +124,22 @@ const Chat = () => {
       return;
     }
 
+    // Mark as initializing immediately
+    chatInitRef.current = true;
+
     console.log('🚀 Initializing chat widget', {
       reportId: reportData.id,
       hasSession: hasExistingSession,
       firstName: profile?.first_name || 'N/A'
     });
 
+    // Small delay to ensure DOM is ready
     setTimeout(() => {
       createChat({
         webhookUrl: chatWebhookUrl,
         mode: 'fullscreen',
         target: '#n8n-chat-container',
-        chatSessionKey: 'n8n-chat/sessionId', // Match n8n's actual key
+        chatSessionKey: 'n8n-chat/sessionId',
         metadata: {
           report_id: reportData.id,
           first_name: profile?.first_name || '',
@@ -151,7 +168,7 @@ const Chat = () => {
       });
 
       setChatInitialized(true);
-    }, 500);
+    }, 100); // Reduced delay - just enough for DOM
   };
 
   const handleStartSession = () => {
