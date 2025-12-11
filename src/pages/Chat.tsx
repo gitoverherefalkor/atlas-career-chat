@@ -71,9 +71,6 @@ const Chat = () => {
     if (chatInitRef.current || chatInitialized) return;
 
     if (reportData && !profileLoading && profile && hasExistingSession && !sessionIsStale) {
-      // Mark as initializing immediately via ref
-      chatInitRef.current = true;
-
       console.log('✅ Existing session detected, auto-initializing chat', {
         firstName: profile?.first_name || 'N/A',
         profileLoaded: !profileLoading
@@ -96,7 +93,7 @@ const Chat = () => {
       // Auto-hide banner after 5 seconds
       setTimeout(() => setShowSessionBanner(false), 5000);
 
-      // Initialize chat automatically
+      // Initialize chat automatically (ref is set inside initializeChat)
       initializeChat();
     }
   }, [reportData, profileLoading, chatInitialized, hasExistingSession]);
