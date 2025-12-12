@@ -118,12 +118,22 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
         combinedContent += '\n\n---\n\n';
       }
 
-      // Use title if available, otherwise derive from content
-      if (section.title) {
-        combinedContent += `## ${section.title}\n\n`;
+      const content = section.content || '';
+      const title = section.title || '';
+
+      // Check if content already starts with the title (avoid duplicates)
+      const contentStartsWithTitle = title && (
+        content.startsWith(title) ||
+        content.startsWith(`## ${title}`) ||
+        content.startsWith(`# ${title}`)
+      );
+
+      // Only add title header if content doesn't already have it
+      if (title && !contentStartsWithTitle) {
+        combinedContent += `## ${title}\n\n`;
       }
 
-      combinedContent += section.content || '';
+      combinedContent += content;
 
       // Add feedback if present
       if (section.feedback) {

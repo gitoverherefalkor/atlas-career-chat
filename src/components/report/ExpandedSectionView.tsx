@@ -86,14 +86,52 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
         return;
       }
 
+      // Common subheader patterns (should render as h5)
+      const subheaderPatterns = [
+        'Overview:',
+        'Overview',
+        'Feasibility Rating',
+        'Feasibility Rating:',
+        'Personality Fit',
+        'Personality Fit:',
+        'Steps for Pursuing This Role',
+        'Steps for Pursuing This Role:',
+        'Key Considerations',
+        'Key Considerations:',
+        'Compensation',
+        'Compensation:',
+        'Pros & Cons',
+        'Pros & Cons:',
+        'Pros',
+        'Cons',
+        'What you would do',
+        'Why this fits',
+        'Potential for growth',
+        'Alignment with your ambitions',
+        'Future Outlook',
+      ];
+
+      // Check if line is a subheader (starts with pattern, possibly with colon)
+      const isSubheader = subheaderPatterns.some(pattern =>
+        paragraph.trim() === pattern ||
+        paragraph.trim() === `${pattern}:` ||
+        paragraph.trim().toLowerCase() === pattern.toLowerCase() ||
+        paragraph.trim().toLowerCase() === `${pattern.toLowerCase()}:`
+      );
+
       // Parse the paragraph
       let element: React.ReactNode;
       if (paragraph.startsWith('## ')) {
         // New section header - flush blocks first
         flushBlocks();
-        element = <h3 key={index} className="text-xl font-bold mt-10 mb-4 text-atlas-navy first:mt-0">{paragraph.replace('## ', '')}</h3>;
+        const title = paragraph.replace('## ', '');
+        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        element = <h3 key={index} id={id} className="text-xl font-bold mt-10 mb-4 text-atlas-navy first:mt-0 scroll-mt-24">{title}</h3>;
       } else if (paragraph.startsWith('### ')) {
         element = <h4 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-blue">{paragraph.replace('### ', '')}</h4>;
+      } else if (isSubheader) {
+        // h5 subheader styling
+        element = <h5 key={index} className="text-base font-semibold mt-6 mb-2 text-gray-800">{paragraph.trim()}</h5>;
       } else if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
         element = <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{paragraph.replace(/\*\*/g, '')}</p>;
       } else if (paragraph.startsWith('•') || paragraph.startsWith('- ')) {
@@ -252,6 +290,33 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
             
             <div className="p-6 md:p-8 lg:p-10">
               <div className="max-w-prose mx-auto">
+                {/* Navigation menu for multi-item sections */}
+                {multiItemSections.includes(expandedSection) && groupedSections[expandedSection] && groupedSections[expandedSection].length > 1 && (
+                  <nav className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Jump to:</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {groupedSections[expandedSection].map((section, idx) => {
+                        const title = section.title || `Item ${idx + 1}`;
+                        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                        return (
+                          <button
+                            key={section.id}
+                            onClick={() => {
+                              const element = document.getElementById(id);
+                              if (element) {
+                                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }
+                            }}
+                            className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-full hover:bg-atlas-teal hover:text-white hover:border-atlas-teal transition-colors"
+                          >
+                            {title}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </nav>
+                )}
+
                 <div
                   className="text-gray-700 leading-relaxed"
                   style={{
