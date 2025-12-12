@@ -35,6 +35,7 @@ interface ReportSidebarProps {
   onToggleCollapse: () => void;
   onSectionClick: (sectionId: string, index: number) => void;
   onCompleteSession?: () => void; // Called when user clicks "Complete Session"
+  isSessionCompleted?: boolean; // True when edge function has marked session complete
 }
 
 export const ReportSidebar: React.FC<ReportSidebarProps> = ({
@@ -42,10 +43,9 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   isCollapsed,
   onToggleCollapse,
   onSectionClick,
-  onCompleteSession
+  onCompleteSession,
+  isSessionCompleted = false
 }) => {
-  // Check if all sections are complete (last section is current or past)
-  const allSectionsComplete = currentSectionIndex >= ALL_SECTIONS.length - 1;
   // Determine section state based on current progress
   const getSectionState = (index: number): 'past' | 'current' | 'upcoming' => {
     if (index < currentSectionIndex) return 'past';
@@ -155,8 +155,8 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         </div>
       </div>
 
-      {/* Complete Session Button - shows when all sections done */}
-      {allSectionsComplete && onCompleteSession && (
+      {/* Complete Session Button - shows when edge function marks session complete */}
+      {isSessionCompleted && onCompleteSession && (
         <div className="px-4 py-3 border-t border-gray-100 flex-shrink-0">
           <Button
             onClick={onCompleteSession}

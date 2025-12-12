@@ -53,6 +53,7 @@ const Chat = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(-1); // -1 = not started
   const [showSessionBanner, setShowSessionBanner] = useState(false);
+  const [isSessionCompleted, setIsSessionCompleted] = useState(false); // True when edge function marks complete
   const chatInitRef = useRef(false); // Ref to prevent double initialization
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
@@ -118,7 +119,7 @@ const Chat = () => {
           console.log('📡 Report status changed:', payload.new);
           if (payload.new && payload.new.status === 'completed') {
             console.log('🏁 Session completion detected via database');
-            setShowClosing(true);
+            setIsSessionCompleted(true);
           }
         }
       )
@@ -363,6 +364,26 @@ const Chat = () => {
     return () => observer.disconnect();
   }, [chatInitialized]);
 
+  // Disable chat input when session is completed
+  useEffect(() => {
+    if (!isSessionCompleted) return;
+
+    console.log('🔒 Session completed - disabling chat input');
+
+    // Hide the chat footer/input
+    const chatFooter = document.querySelector('.chat-footer');
+    if (chatFooter) {
+      (chatFooter as HTMLElement).style.display = 'none';
+    }
+
+    // Also try to disable the textarea directly
+    const textarea = document.querySelector('#n8n-chat textarea');
+    if (textarea) {
+      (textarea as HTMLTextAreaElement).disabled = true;
+      (textarea as HTMLTextAreaElement).placeholder = 'Session completed - click "Complete Session" to view your report';
+    }
+  }, [isSessionCompleted]);
+
   const handleSectionClick = (sectionId: string, index: number) => {
     // Find the section from ALL_SECTIONS
     const section = ALL_SECTIONS.find(s => s.id === sectionId);
@@ -556,6 +577,7 @@ const Chat = () => {
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onSectionClick={handleSectionClick}
             onCompleteSession={() => setShowClosing(true)}
+            isSessionCompleted={isSessionCompleted}
           />
         </div>
       )}
