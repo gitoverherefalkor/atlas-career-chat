@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronLeft, ChevronRight, FileText, Check, Circle, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Check, Circle, Lock, PartyPopper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // All sections in order - matches store-report-sections
@@ -34,14 +34,18 @@ interface ReportSidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   onSectionClick: (sectionId: string, index: number) => void;
+  onCompleteSession?: () => void; // Called when user clicks "Complete Session"
 }
 
 export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   currentSectionIndex,
   isCollapsed,
   onToggleCollapse,
-  onSectionClick
+  onSectionClick,
+  onCompleteSession
 }) => {
+  // Check if all sections are complete (last section is current or past)
+  const allSectionsComplete = currentSectionIndex >= ALL_SECTIONS.length - 1;
   // Determine section state based on current progress
   const getSectionState = (index: number): 'past' | 'current' | 'upcoming' => {
     if (index < currentSectionIndex) return 'past';
@@ -150,6 +154,19 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Complete Session Button - shows when all sections done */}
+      {allSectionsComplete && onCompleteSession && (
+        <div className="px-4 py-3 border-t border-gray-100 flex-shrink-0">
+          <Button
+            onClick={onCompleteSession}
+            className="w-full bg-atlas-teal hover:bg-atlas-teal/90 text-white"
+          >
+            <PartyPopper className="h-4 w-4 mr-2" />
+            Complete Session
+          </Button>
+        </div>
+      )}
 
       {/* Progress indicator */}
       <div className="p-4 border-t border-gray-100 flex-shrink-0">

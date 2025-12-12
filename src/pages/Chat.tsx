@@ -555,6 +555,7 @@ const Chat = () => {
             isCollapsed={isSidebarCollapsed}
             onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onSectionClick={handleSectionClick}
+            onCompleteSession={() => setShowClosing(true)}
           />
         </div>
       )}
