@@ -200,13 +200,20 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
     return descriptions[careerId] || 'Detailed career analysis and recommendations';
   };
 
+  // Career section IDs that should use the career view, not the chapter section view
+  const careerSectionIds = ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box', 'dream-jobs'];
+
   return (
     <Card className="mb-6">
       <CardContent className="p-0">
-        {chapters.map(chapter => 
+        {chapters.map(chapter =>
           chapter.sections.map((section: any) => {
+            // Skip if not the expanded section
             if (section.id !== expandedSection) return null;
-            
+
+            // Skip if this is a career section - it will be rendered by the career view below
+            if (careerSectionIds.includes(section.id)) return null;
+
             const nextSection = getNextSection(chapter.id, section.id);
             
             return (
@@ -262,9 +269,8 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
         )}
         
         {/* Individual Career Expanded View */}
-        {/* Check if this is a career section by looking for it in groupedSections */}
-        {(groupedSections[expandedSection] ||
-          ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box', 'dream-jobs'].includes(expandedSection)) && (
+        {/* Check if this is a career section */}
+        {careerSectionIds.includes(expandedSection) && (
           <div>
             {/* Close button - top right */}
             <div className="flex justify-end p-4 border-b border-gray-100">
