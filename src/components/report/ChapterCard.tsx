@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import CareerSection from './CareerSection';
+import { ReportSection } from '@/hooks/useReportSections';
 
 interface Career {
   id: string;
@@ -25,8 +26,13 @@ interface Chapter {
   sections: Section[];
 }
 
+interface GroupedSections {
+  [uiSectionId: string]: ReportSection[];
+}
+
 interface ChapterCardProps {
   chapter: Chapter;
+  groupedSections: GroupedSections;
   expandedCareerSection: string | null;
   onCareerSectionToggle: (sectionId: string) => void;
   onCareerExpand: (careerId: string) => void;
@@ -35,6 +41,7 @@ interface ChapterCardProps {
 
 const ChapterCard: React.FC<ChapterCardProps> = ({
   chapter,
+  groupedSections,
   expandedCareerSection,
   onCareerSectionToggle,
   onCareerExpand,
@@ -68,6 +75,7 @@ const ChapterCard: React.FC<ChapterCardProps> = ({
             <div key={section.id} className="border-b last:border-b-0">
               <CareerSection
                 section={section}
+                groupedSections={groupedSections}
                 expandedCareerSection={expandedCareerSection}
                 onCareerSectionToggle={onCareerSectionToggle}
                 onCareerExpand={onCareerExpand}

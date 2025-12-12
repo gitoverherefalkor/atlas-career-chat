@@ -1,23 +1,26 @@
 
 import React, { useState } from 'react';
 import { useReports } from '@/hooks/useReports';
-import { useReportSections } from '@/hooks/useReportSections';
+import { useReportSections, ReportSection, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import ReportHeader from './report/ReportHeader';
 import ChapterCard from './report/ChapterCard';
 import ExpandedSectionView from './report/ExpandedSectionView';
-import { aboutYouContent, careerSuggestionsContent, chapters } from './report/reportData';
+import { chapters } from './report/reportData';
 
 interface ReportDisplayProps {
   userEmail?: string;
   onSectionExpanded?: (expanded: boolean) => void;
 }
 
+// Group sections by their UI section ID
+interface GroupedSections {
+  [uiSectionId: string]: ReportSection[];
+}
+
 const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpanded }) => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [expandedCareerSection, setExpandedCareerSection] = useState<string | null>(null);
   const { reports } = useReports();
-
-  // Always show when there are reports available
 
   const getLatestReport = () => {
     if (!reports || reports.length === 0) return null;
@@ -27,101 +30,113 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
   const latestReport = getLatestReport();
   const { sections: dbSections } = useReportSections(latestReport?.id);
 
-  // Create a map of database sections by chapter_id and section_id
-  const dbSectionMap = React.useMemo(() => {
-    const map: Record<string, Record<string, string>> = {};
+  // Group database sections by UI section ID
+  const groupedSections = React.useMemo((): GroupedSections => {
+    const grouped: GroupedSections = {};
     dbSections.forEach(section => {
-      if (section.chapter_id && section.section_id) {
-        if (!map[section.chapter_id]) {
-          map[section.chapter_id] = {};
+      const uiSectionId = SECTION_TYPE_MAP[section.section_type];
+      if (uiSectionId) {
+        if (!grouped[uiSectionId]) {
+          grouped[uiSectionId] = [];
         }
-        map[section.chapter_id][section.section_id] = section.content;
+        grouped[uiSectionId].push(section);
       }
     });
-    return map;
+    // Sort each group by order_number
+    Object.keys(grouped).forEach(key => {
+      grouped[key].sort((a, b) => (a.order_number || 0) - (b.order_number || 0));
+    });
+    return grouped;
   }, [dbSections]);
 
+  // Get the title for a career section from the database
+  const getCareerTitle = (careerId: string): string => {
+    const sections = groupedSections[careerId];
+    if (sections && sections.length > 0 && sections[0].title) {
+      return sections[0].title;
+    }
+    // Fallback titles
+    const fallbackTitles: Record<string, string> = {
+      'first-career': 'Primary Career Match',
+      'second-career': 'Second Career Match',
+      'third-career': 'Third Career Match',
+      'runner-up': 'Runner-up Careers',
+      'outside-box': 'Outside-the-Box Careers',
+      'dream-jobs': 'Dream Job Analysis'
+    };
+    return fallbackTitles[careerId] || careerId;
+  };
+
   const getAllCareerIds = () => {
-    const careerIds: string[] = [];
-    chapters.forEach(chapter => {
-      chapter.sections.forEach(section => {
-        if (section.careers) {
-          section.careers.forEach(career => {
-            careerIds.push(career.id);
-          });
-        }
-      });
-    });
-    return careerIds;
+    // Top 3 careers followed by multi-item sections
+    return ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box', 'dream-jobs'];
   };
 
   const getNextCareer = (currentCareerId: string) => {
     const allCareerIds = getAllCareerIds();
     const currentIndex = allCareerIds.indexOf(currentCareerId);
-    
-    if (currentIndex < allCareerIds.length - 1) {
+
+    if (currentIndex >= 0 && currentIndex < allCareerIds.length - 1) {
       const nextCareerId = allCareerIds[currentIndex + 1];
-      
-      // Find the career title
-      for (const chapter of chapters) {
-        for (const section of chapter.sections) {
-          if (section.careers) {
-            const career = section.careers.find(c => c.id === nextCareerId);
-            if (career) {
-              return { id: nextCareerId, title: career.title };
-            }
-          }
-        }
-      }
+      return { id: nextCareerId, title: getCareerTitle(nextCareerId) };
     }
-    
-    // If no next career, go to dream jobs
-    if (currentIndex === allCareerIds.length - 1) {
-      return { id: 'dream-jobs', title: 'Dream Job Analysis' };
-    }
-    
+
     return null;
   };
 
-  const getSectionContent = (chapterId: string, sectionId: string) => {
-    // First try to get content from database
-    const dbContent = dbSectionMap[chapterId]?.[sectionId];
-    if (dbContent) {
-      return dbContent;
+  // Build content string from grouped sections, including feedback/explore
+  const getSectionContent = (chapterId: string, sectionId: string): string => {
+    const sections = groupedSections[sectionId];
+
+    if (!sections || sections.length === 0) {
+      return '';
     }
 
-    // Fall back to hardcoded content if no database content exists
-    if (chapterId === 'about-you') {
-      switch (sectionId) {
-        case 'executive-summary':
-          return aboutYouContent.split('## PERSONALITY AND TEAM DYNAMICS')[0];
-        case 'personality-team':
-          return aboutYouContent.split('## PERSONALITY AND TEAM DYNAMICS')[1]?.split('## YOUR STRENGTHS')[0];
-        case 'strengths':
-          return aboutYouContent.split('## YOUR STRENGTHS')[1]?.split('## OPPORTUNITIES FOR GROWTH')[0];
-        case 'growth':
-          return aboutYouContent.split('## OPPORTUNITIES FOR GROWTH')[1]?.split('## YOUR (CAREER) VALUES')[0];
-        case 'values':
-          return aboutYouContent.split('## YOUR (CAREER) VALUES')[1];
-        default:
-          return aboutYouContent;
+    // For single-item sections (about-you sections, top careers)
+    if (sections.length === 1) {
+      const section = sections[0];
+      let content = section.content || '';
+
+      // Add feedback if present
+      if (section.feedback) {
+        content += `\n\n---\n\n**💬 Chat Session Feedback**\n\n${section.feedback}`;
       }
-    } else if (chapterId === 'career-suggestions') {
-      // Map database section IDs to hardcoded content keys
-      const sectionMap: Record<string, string> = {
-        'first-career': 'cso',
-        'second-career': 'vp-strategic',
-        'third-career': 'business-strategist',
-        'runner-up': 'senior-strategy-consultant',
-        'outside-box': 'landscape-architect',
-        'dream-jobs': 'dream-jobs'
-      };
-      
-      const contentKey = sectionMap[sectionId] || sectionId;
-      return careerSuggestionsContent[contentKey as keyof typeof careerSuggestionsContent] || '';
+
+      // Add explore content if present
+      if (section.explore) {
+        content += `\n\n---\n\n**🔍 Explore More**\n\n${section.explore}`;
+      }
+
+      return content;
     }
-    
-    return '';
+
+    // For multi-item sections (runner-up, outside-box, dream-jobs)
+    // Combine all entries with their titles
+    let combinedContent = '';
+    sections.forEach((section, index) => {
+      if (index > 0) {
+        combinedContent += '\n\n---\n\n';
+      }
+
+      // Use title if available, otherwise derive from content
+      if (section.title) {
+        combinedContent += `## ${section.title}\n\n`;
+      }
+
+      combinedContent += section.content || '';
+
+      // Add feedback if present
+      if (section.feedback) {
+        combinedContent += `\n\n**💬 Chat Session Feedback**\n\n${section.feedback}`;
+      }
+
+      // Add explore content if present
+      if (section.explore) {
+        combinedContent += `\n\n**🔍 Explore More**\n\n${section.explore}`;
+      }
+    });
+
+    return combinedContent;
   };
 
   const getNextSection = (currentChapterId: string, currentSectionId: string) => {
@@ -177,7 +192,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
         <ExpandedSectionView
           expandedSection={expandedSection}
           chapters={chapters}
-          careerSuggestionsContent={careerSuggestionsContent}
+          groupedSections={groupedSections}
           getSectionContent={getSectionContent}
           getNextSection={getNextSection}
           getNextCareer={getNextCareer}
@@ -192,6 +207,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
             <ChapterCard
               key={chapter.id}
               chapter={chapter}
+              groupedSections={groupedSections}
               expandedCareerSection={expandedCareerSection}
               onCareerSectionToggle={handleCareerSectionToggle}
               onCareerExpand={handleCareerExpand}

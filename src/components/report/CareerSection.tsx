@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ReportSection } from '@/hooks/useReportSections';
 
 interface Career {
   id: string;
@@ -15,8 +16,13 @@ interface Section {
   careers?: Career[];
 }
 
+interface GroupedSections {
+  [uiSectionId: string]: ReportSection[];
+}
+
 interface CareerSectionProps {
   section: Section;
+  groupedSections: GroupedSections;
   expandedCareerSection: string | null;
   onCareerSectionToggle: (sectionId: string) => void;
   onCareerExpand: (careerId: string) => void;
@@ -25,11 +31,20 @@ interface CareerSectionProps {
 
 const CareerSection: React.FC<CareerSectionProps> = ({
   section,
+  groupedSections,
   expandedCareerSection,
   onCareerSectionToggle,
   onCareerExpand,
   onSectionExpand
 }) => {
+  // Get the title from database, fall back to static title
+  const getCareerTitle = (careerId: string, fallbackTitle: string): string => {
+    const sections = groupedSections[careerId];
+    if (sections && sections.length > 0 && sections[0].title) {
+      return sections[0].title;
+    }
+    return fallbackTitle;
+  };
   if (section.isCollapsible) {
     return (
       <div>
@@ -58,7 +73,7 @@ const CareerSection: React.FC<CareerSectionProps> = ({
             {section.careers.map((career) => (
               <div key={career.id} className="px-8 py-3 border-b last:border-b-0 hover:bg-gray-100">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-700">{career.title}</span>
+                  <span className="text-sm text-gray-700">{getCareerTitle(career.id, career.title)}</span>
                   <button
                     onClick={() => onCareerExpand(career.id)}
                     className="text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline"

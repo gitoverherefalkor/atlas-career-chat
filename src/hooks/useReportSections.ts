@@ -4,19 +4,37 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-interface ReportSection {
+export interface ReportSection {
   id: string;
   report_id: string;
-  chapter_id: string | null;
-  section_id: string | null;
-  subsection_id: string | null;
   section_type: string;
   title: string | null;
   content: string;
   order_number: number | null;
+  company_size_type: string | null;
+  alternate_titles: string | null;
+  feedback_category: number | null;
+  feedback: string | null;
+  explore: string | null;
+  fb_status: boolean | null;
   created_at: string;
   updated_at: string;
 }
+
+// Map database section_type (underscores) to UI section IDs (hyphens)
+export const SECTION_TYPE_MAP: Record<string, string> = {
+  'executive_summary': 'executive-summary',
+  'personality_team': 'personality-team',
+  'strengths': 'strengths',
+  'development': 'growth',
+  'values': 'values',
+  'top_career_1': 'first-career',
+  'top_career_2': 'second-career',
+  'top_career_3': 'third-career',
+  'runner_ups': 'runner-up',
+  'outside_box': 'outside-box',
+  'dream_jobs': 'dream-jobs',
+};
 
 export const useReportSections = (reportId?: string) => {
   const { user } = useAuth();
@@ -51,13 +69,15 @@ export const useReportSections = (reportId?: string) => {
   const createSectionMutation = useMutation({
     mutationFn: async (section: {
       report_id: string;
-      chapter_id?: string;
-      section_id?: string;
-      subsection_id?: string;
       section_type: string;
       title?: string;
       content: string;
       order_number?: number;
+      company_size_type?: string;
+      alternate_titles?: string;
+      feedback?: string;
+      explore?: string;
+      fb_status?: boolean;
     }) => {
       const { data, error } = await supabase
         .from('report_sections')
