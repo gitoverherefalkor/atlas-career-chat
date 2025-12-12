@@ -266,28 +266,16 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
         {(groupedSections[expandedSection] ||
           ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box', 'dream-jobs'].includes(expandedSection)) && (
           <div>
-            <div className="relative h-64 bg-gradient-to-r from-atlas-blue to-atlas-navy">
-              <img
-                src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop"
-                alt="Career"
-                className="w-full h-full object-cover opacity-80"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
-                <div className="p-6 text-white w-full">
-                  <h3 className="text-2xl font-bold mb-2">
-                    {getCareerTitle(expandedSection)}
-                  </h3>
-                  <p className="text-lg opacity-90">{getSectionDescription(expandedSection)}</p>
-                </div>
-              </div>
+            {/* Close button - top right */}
+            <div className="flex justify-end p-4 border-b border-gray-100">
               <button
                 onClick={() => onSectionExpand(null)}
-                className="absolute bottom-4 right-4 w-10 h-10 bg-black bg-opacity-50 rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
+                className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all"
               >
-                <X className="h-5 w-5 text-white" />
+                <X className="h-5 w-5 text-gray-600" />
               </button>
             </div>
-            
+
             <div className="p-6 md:p-8 lg:p-10">
               <div className="max-w-prose mx-auto">
                 {/* Navigation menu for multi-item sections */}
