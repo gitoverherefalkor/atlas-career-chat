@@ -99,37 +99,41 @@ const Chat = () => {
     }
   }, [reportData, profileLoading, chatInitialized, hasExistingSession]);
 
-  // Subscribe to report status changes (for session completion)
+  // Poll report status when we reach the last section (more reliable than realtime)
   useEffect(() => {
     if (!reportData?.id) return;
+    if (isSessionCompleted) return; // Already completed
 
-    console.log('📡 Setting up realtime subscription for report status');
+    // Only start polling when we're at or past the last section
+    const isAtLastSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
+    if (!isAtLastSection) return;
 
-    const channel = supabase
-      .channel(`report-status-${reportData.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'reports',
-          filter: `id=eq.${reportData.id}`
-        },
-        (payload) => {
-          console.log('📡 Report status changed:', payload.new);
-          if (payload.new && payload.new.status === 'completed') {
-            console.log('🏁 Session completion detected via database');
-            setIsSessionCompleted(true);
-          }
-        }
-      )
-      .subscribe();
+    console.log('📡 Starting status polling for completion...');
+
+    const checkStatus = async () => {
+      const { data, error } = await supabase
+        .from('reports')
+        .select('status')
+        .eq('id', reportData.id)
+        .single();
+
+      if (!error && data?.status === 'completed') {
+        console.log('🏁 Session completion detected via polling');
+        setIsSessionCompleted(true);
+      }
+    };
+
+    // Check immediately
+    checkStatus();
+
+    // Then poll every 3 seconds
+    const interval = setInterval(checkStatus, 3000);
 
     return () => {
-      console.log('📡 Cleaning up realtime subscription');
-      supabase.removeChannel(channel);
+      console.log('📡 Stopping status polling');
+      clearInterval(interval);
     };
-  }, [reportData?.id]);
+  }, [reportData?.id, currentSectionIndex, isSessionCompleted]);
 
   const initializeChat = () => {
     // Prevent double initialization
