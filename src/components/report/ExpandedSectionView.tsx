@@ -28,12 +28,43 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
   onSectionExpand
 }) => {
   const renderSectionContent = (content: string) => {
-    // Track if we're in a feedback or explore block
+    const elements: React.ReactNode[] = [];
+    let currentFeedback: React.ReactNode[] = [];
+    let currentExplore: React.ReactNode[] = [];
     let inFeedbackBlock = false;
     let inExploreBlock = false;
-    const elements: React.ReactNode[] = [];
-    let feedbackContent: React.ReactNode[] = [];
-    let exploreContent: React.ReactNode[] = [];
+    let feedbackBlockKey = 0;
+    let exploreBlockKey = 0;
+
+    // Helper to flush accumulated feedback/explore blocks
+    const flushBlocks = () => {
+      if (currentFeedback.length > 0) {
+        elements.push(
+          <div key={`feedback-${feedbackBlockKey++}`} className="mt-6 p-5 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">💬</span>
+              <h4 className="font-semibold text-amber-800">Chat Session Feedback</h4>
+            </div>
+            <div className="text-amber-900">{currentFeedback}</div>
+          </div>
+        );
+        currentFeedback = [];
+      }
+      if (currentExplore.length > 0) {
+        elements.push(
+          <div key={`explore-${exploreBlockKey++}`} className="mt-4 p-5 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xl">🔍</span>
+              <h4 className="font-semibold text-blue-800">Explore More</h4>
+            </div>
+            <div className="text-blue-900">{currentExplore}</div>
+          </div>
+        );
+        currentExplore = [];
+      }
+      inFeedbackBlock = false;
+      inExploreBlock = false;
+    };
 
     content?.split('\n').forEach((paragraph, index) => {
       // Check for feedback section marker
@@ -49,70 +80,54 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
         return;
       }
 
+      // Section separator - flush current blocks and reset
+      if (paragraph.trim() === '---') {
+        flushBlocks();
+        return;
+      }
+
       // Parse the paragraph
       let element: React.ReactNode;
       if (paragraph.startsWith('## ')) {
-        element = <h3 key={index} className="text-xl font-bold mt-8 mb-4 text-atlas-navy">{paragraph.replace('## ', '')}</h3>;
+        // New section header - flush blocks first
+        flushBlocks();
+        element = <h3 key={index} className="text-xl font-bold mt-10 mb-4 text-atlas-navy first:mt-0">{paragraph.replace('## ', '')}</h3>;
       } else if (paragraph.startsWith('### ')) {
         element = <h4 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-blue">{paragraph.replace('### ', '')}</h4>;
       } else if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
         element = <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{paragraph.replace(/\*\*/g, '')}</p>;
-      } else if (paragraph.startsWith('•')) {
-        element = <p key={index} className="ml-6 mb-2">{paragraph}</p>;
-      } else if (paragraph.trim() === '' || paragraph.trim() === '---') {
-        element = paragraph.trim() === '---' ? null : <br key={index} />;
+      } else if (paragraph.startsWith('•') || paragraph.startsWith('- ')) {
+        const text = paragraph.startsWith('- ') ? paragraph.substring(2) : paragraph.substring(1);
+        element = <p key={index} className="ml-6 mb-2 before:content-['•'] before:mr-2">{text.trim()}</p>;
+      } else if (paragraph.trim() === '') {
+        element = <br key={index} />;
       } else {
         element = <p key={index} className="mb-3">{paragraph}</p>;
       }
 
       if (element) {
         if (inFeedbackBlock) {
-          feedbackContent.push(element);
+          currentFeedback.push(element);
         } else if (inExploreBlock) {
-          exploreContent.push(element);
+          currentExplore.push(element);
         } else {
           elements.push(element);
         }
       }
     });
 
-    // Add feedback block if present
-    if (feedbackContent.length > 0) {
-      elements.push(
-        <div key="feedback-block" className="mt-8 p-5 bg-amber-50 border border-amber-200 rounded-lg">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">💬</span>
-            <h4 className="font-semibold text-amber-800">Chat Session Feedback</h4>
-          </div>
-          <div className="text-amber-900">{feedbackContent}</div>
-        </div>
-      );
-    }
-
-    // Add explore block if present
-    if (exploreContent.length > 0) {
-      elements.push(
-        <div key="explore-block" className="mt-6 p-5 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">🔍</span>
-            <h4 className="font-semibold text-blue-800">Explore More</h4>
-          </div>
-          <div className="text-blue-900">{exploreContent}</div>
-        </div>
-      );
-    }
+    // Flush any remaining blocks at the end
+    flushBlocks();
 
     return elements;
   };
 
+  // Multi-item sections that should use generic titles in header
+  const multiItemSections = ['runner-up', 'outside-box', 'dream-jobs'];
+
   const getCareerTitle = (careerId: string) => {
-    // First try to get title from database
-    const sections = groupedSections[careerId];
-    if (sections && sections.length > 0 && sections[0].title) {
-      return sections[0].title;
-    }
-    // Fallback titles for new section IDs
-    const fallbackTitles: Record<string, string> = {
+    // Section-level titles for display in header
+    const sectionTitles: Record<string, string> = {
       'first-career': 'Primary Career Match',
       'second-career': 'Second Career Match',
       'third-career': 'Third Career Match',
@@ -120,7 +135,31 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
       'outside-box': 'Outside-the-Box Careers',
       'dream-jobs': 'Dream Job Analysis'
     };
-    return fallbackTitles[careerId] || careerId;
+
+    // For multi-item sections, always use the generic section title
+    if (multiItemSections.includes(careerId)) {
+      return sectionTitles[careerId] || careerId;
+    }
+
+    // For single-item sections, try to get title from database
+    const sections = groupedSections[careerId];
+    if (sections && sections.length > 0 && sections[0].title) {
+      return sections[0].title;
+    }
+
+    return sectionTitles[careerId] || careerId;
+  };
+
+  const getSectionDescription = (careerId: string) => {
+    const descriptions: Record<string, string> = {
+      'first-career': 'Your top career match based on your profile',
+      'second-career': 'A strong alternative career path for you',
+      'third-career': 'Another well-suited career option',
+      'runner-up': 'Additional career options worth considering',
+      'outside-box': 'Creative career paths based on your unique interests',
+      'dream-jobs': 'Feasibility analysis of your dream career aspirations'
+    };
+    return descriptions[careerId] || 'Detailed career analysis and recommendations';
   };
 
   return (
@@ -154,30 +193,30 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                   </button>
                 </div>
                 
-                <div className="p-6">
-                  <div className="prose prose-lg max-w-none">
-                    <div 
-                      className="whitespace-pre-wrap text-gray-700 leading-relaxed"
-                      style={{ 
+                <div className="p-6 md:p-8 lg:p-10">
+                  <div className="max-w-prose mx-auto">
+                    <div
+                      className="text-gray-700 leading-relaxed"
+                      style={{
                         fontSize: '16px',
-                        lineHeight: '1.7'
+                        lineHeight: '1.8'
                       }}
                     >
                       {renderSectionContent(getSectionContent(chapter.id, section.id))}
                     </div>
+
+                    {nextSection && (
+                      <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+                        <button
+                          onClick={() => onSectionExpand(nextSection.section.id)}
+                          className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
+                        >
+                          Next: {nextSection.section.title}
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  
-                  {nextSection && (
-                    <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
-                      <button
-                        onClick={() => onSectionExpand(nextSection.section.id)}
-                        className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
-                      >
-                        Next: {nextSection.section.title}
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
             );
@@ -200,7 +239,7 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                   <h3 className="text-2xl font-bold mb-2">
                     {getCareerTitle(expandedSection)}
                   </h3>
-                  <p className="text-lg opacity-90">Detailed career analysis and recommendations</p>
+                  <p className="text-lg opacity-90">{getSectionDescription(expandedSection)}</p>
                 </div>
               </div>
               <button
@@ -211,33 +250,33 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
               </button>
             </div>
             
-            <div className="p-6">
-              <div className="prose prose-lg max-w-none">
-                <div 
-                  className="whitespace-pre-wrap text-gray-700 leading-relaxed"
-                  style={{ 
+            <div className="p-6 md:p-8 lg:p-10">
+              <div className="max-w-prose mx-auto">
+                <div
+                  className="text-gray-700 leading-relaxed"
+                  style={{
                     fontSize: '16px',
-                    lineHeight: '1.7'
+                    lineHeight: '1.8'
                   }}
                 >
                   {renderSectionContent(getSectionContent('career-suggestions', expandedSection))}
                 </div>
+
+                {(() => {
+                  const nextCareer = getNextCareer(expandedSection);
+                  return nextCareer && (
+                    <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
+                      <button
+                        onClick={() => onSectionExpand(nextCareer.id)}
+                        className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
+                      >
+                        Next: {nextCareer.title}
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </button>
+                    </div>
+                  );
+                })()}
               </div>
-              
-              {(() => {
-                const nextCareer = getNextCareer(expandedSection);
-                return nextCareer && (
-                  <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
-                    <button
-                      onClick={() => onSectionExpand(nextCareer.id)}
-                      className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
-                    >
-                      Next: {nextCareer.title}
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </button>
-                  </div>
-                );
-              })()}
             </div>
           </div>
         )}

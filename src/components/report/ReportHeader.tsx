@@ -13,15 +13,12 @@ const ReportHeader: React.FC<ReportHeaderProps> = ({ latestReport }) => {
         <em>These insights are adjusted based on feedback provided in the chat where relevant.</em>
       </p>
       
-      {/* Assessment Title and Completion Date */}
+      {/* Assessment Title */}
       {latestReport && (
         <div className="mb-6">
-          <h4 className="text-lg font-semibold text-atlas-teal mb-1">
+          <h4 className="text-lg font-semibold text-atlas-teal">
             Atlas Personality & Career Assessment 2025 [Office / Business Professional]
           </h4>
-          <p className="text-gray-600">
-            Completed on {new Date(latestReport.created_at).toLocaleDateString()}
-          </p>
         </div>
       )}
     </div>
