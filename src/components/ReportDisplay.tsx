@@ -92,10 +92,26 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
       return '';
     }
 
+    // Career section IDs that should show title header
+    const careerSectionIds = ['first-career', 'second-career', 'third-career'];
+
     // For single-item sections (about-you sections, top careers)
     if (sections.length === 1) {
       const section = sections[0];
       let content = section.content || '';
+      const title = section.title || '';
+
+      // For career sections, add title header if not already in content
+      if (careerSectionIds.includes(sectionId) && title) {
+        const contentStartsWithTitle =
+          content.startsWith(title) ||
+          content.startsWith(`## ${title}`) ||
+          content.startsWith(`# ${title}`);
+
+        if (!contentStartsWithTitle) {
+          content = `## ${title}\n\n${content}`;
+        }
+      }
 
       // Add feedback if present
       if (section.feedback) {

@@ -21,13 +21,18 @@ export interface ReportSection {
   updated_at: string;
 }
 
-// Map database section_type (underscores) to UI section IDs (hyphens)
+// Map database section_type to UI section IDs
+// Include variations to handle different naming conventions in the database
 export const SECTION_TYPE_MAP: Record<string, string> = {
+  // About You sections
+  'exec_summary': 'executive-summary',
   'executive_summary': 'executive-summary',
+  'approach': 'personality-team',
   'personality_team': 'personality-team',
   'strengths': 'strengths',
   'development': 'growth',
   'values': 'values',
+  // Career sections
   'top_career_1': 'first-career',
   'top_career_2': 'second-career',
   'top_career_3': 'third-career',
