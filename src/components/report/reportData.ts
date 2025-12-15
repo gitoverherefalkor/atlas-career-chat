@@ -11,31 +11,31 @@ export const chapters = [
       {
         id: 'executive-summary',
         title: 'Executive Summary',
-        description: 'Overview of your strengths, challenges, and career positioning.',
+        description: 'High-level view of who you are professionally and what drives your career direction.',
         imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=300&fit=crop'
       },
       {
         id: 'personality-team',
-        title: 'Personality and Team Dynamics',
-        description: 'How you interact with teams and leadership considerations.',
+        title: 'Your Approach',
+        description: 'How you work, lead, and navigate challenges in professional settings.',
         imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=300&fit=crop'
       },
       {
         id: 'strengths',
         title: 'Your Strengths',
-        description: 'Key capabilities and how to leverage them effectively.',
+        description: 'What sets you apart and how to use these capabilities strategically.',
         imageUrl: 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=600&h=300&fit=crop'
       },
       {
         id: 'growth',
-        title: 'Opportunities for Growth',
-        description: 'Areas for development and strategic improvement recommendations.',
+        title: 'Development Areas',
+        description: 'Growth opportunities that will help you reach your goals.',
         imageUrl: 'https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=600&h=300&fit=crop'
       },
       {
         id: 'values',
         title: 'Your (Career) Values',
-        description: 'Core professional values and how they shape your career choices.',
+        description: 'What matters most to you and how it shapes the right career fit.',
         imageUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=300&fit=crop'
       }
     ]
@@ -49,7 +49,7 @@ export const chapters = [
       {
         id: 'top-careers',
         title: 'Top Career Suggestions',
-        description: 'Strategic leadership roles best suited to your profile.',
+        description: 'Three roles that best match your profile, skills, and goals.',
         imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop',
         isCollapsible: true,
         careers: [
@@ -61,19 +61,19 @@ export const chapters = [
       {
         id: 'runner-up',
         title: 'Runner-up Careers',
-        description: 'Additional career options organized by function and industry.',
+        description: 'Strong alternative paths worth considering.',
         imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=600&h=300&fit=crop'
       },
       {
         id: 'outside-box',
         title: 'Outside-the-Box Careers',
-        description: 'Creative career combinations based on your unique interests.',
+        description: 'Unconventional options that align with your unique interests and strengths.',
         imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
       },
       {
         id: 'dream-jobs',
         title: 'Dream Job Analysis',
-        description: 'Feasibility analysis of your ideal career aspirations.',
+        description: 'Reality check on your ideal career and what it would take to get there.',
         imageUrl: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&h=300&fit=crop'
       }
     ]
