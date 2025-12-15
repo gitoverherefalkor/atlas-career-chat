@@ -7,20 +7,21 @@ interface ReportHeaderProps {
 
 const ReportHeader: React.FC<ReportHeaderProps> = ({ latestReport }) => {
   return (
-    <div className="text-left mb-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">Your Personalized Career Report</h2>
-      <p className="text-sm text-gray-600 mb-4">
-        <em>These insights are adjusted based on feedback provided in the chat where relevant.</em>
-      </p>
-      
-      {/* Assessment Title */}
+    <div className="mb-8">
+      {/* Assessment Type Badge */}
       {latestReport && (
-        <div className="mb-6">
-          <h4 className="text-lg font-semibold text-atlas-teal">
-            Atlas Personality & Career Assessment 2025 [Office / Business Professional]
-          </h4>
-        </div>
+        <p className="text-sm font-medium text-atlas-teal mb-2">
+          Atlas Personality & Career Assessment 2025
+        </p>
       )}
+
+      {/* Main Title */}
+      <h2 className="text-3xl font-bold text-atlas-navy mb-3">Your Personalized Career Report</h2>
+
+      {/* Subtitle */}
+      <p className="text-gray-600">
+        These insights are adjusted based on feedback provided in the chat where relevant.
+      </p>
     </div>
   );
 };

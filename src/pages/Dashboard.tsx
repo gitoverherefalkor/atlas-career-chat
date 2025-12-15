@@ -85,8 +85,11 @@ const Dashboard = () => {
   };
 
   // Check if user has already verified access code (meaning they don't need purchase/access code options)
+  // Also true if they have a report generated or started a chat session
   const hasVerifiedAccess = () => {
-    return savedSession?.isVerified || savedSession?.accessCodeData || hasMeaningfulProgress();
+    const hasReport = reports && reports.length > 0;
+    const hasChatSession = !!localStorage.getItem('n8n-chat/sessionId');
+    return savedSession?.isVerified || savedSession?.accessCodeData || hasMeaningfulProgress() || hasReport || hasChatSession;
   };
 
   if (authLoading || profileLoading) {

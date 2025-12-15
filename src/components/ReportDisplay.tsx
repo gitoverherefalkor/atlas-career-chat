@@ -84,6 +84,27 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
     return null;
   };
 
+  const getPreviousCareer = (currentCareerId: string) => {
+    const allCareerIds = getAllCareerIds();
+    const currentIndex = allCareerIds.indexOf(currentCareerId);
+
+    if (currentIndex > 0) {
+      const previousCareerId = allCareerIds[currentIndex - 1];
+      return { id: previousCareerId, title: getCareerTitle(previousCareerId) };
+    }
+
+    // If at first career, link back to last About You section
+    if (currentIndex === 0) {
+      const aboutYouChapter = chapters.find(c => c.id === 'about-you');
+      if (aboutYouChapter && aboutYouChapter.sections.length > 0) {
+        const lastSection = aboutYouChapter.sections[aboutYouChapter.sections.length - 1];
+        return { id: lastSection.id, title: lastSection.title };
+      }
+    }
+
+    return null;
+  };
+
   // Build content string from grouped sections, including feedback/explore
   const getSectionContent = (chapterId: string, sectionId: string): string => {
     const sections = groupedSections[sectionId];
@@ -170,7 +191,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
     if (!currentChapter) return null;
 
     const currentSectionIndex = currentChapter.sections.findIndex(s => s.id === currentSectionId);
-    
+
     // If there's a next section in the same chapter
     if (currentSectionIndex < currentChapter.sections.length - 1) {
       return {
@@ -178,18 +199,32 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
         section: currentChapter.sections[currentSectionIndex + 1]
       };
     }
-    
-    // If we're at the end of the first chapter, go to the first section of the next chapter
+
+    // If we're at the end of the first chapter, go to the first career section
     if (currentChapterId === 'about-you') {
-      const nextChapter = chapters.find(c => c.id === 'career-suggestions');
-      if (nextChapter) {
-        return {
-          chapterId: 'career-suggestions',
-          section: nextChapter.sections[0]
-        };
-      }
+      return {
+        chapterId: 'career-suggestions',
+        section: { id: 'first-career', title: getCareerTitle('first-career') }
+      };
     }
-    
+
+    return null;
+  };
+
+  const getPreviousSection = (currentChapterId: string, currentSectionId: string) => {
+    const currentChapter = chapters.find(c => c.id === currentChapterId);
+    if (!currentChapter) return null;
+
+    const currentSectionIndex = currentChapter.sections.findIndex(s => s.id === currentSectionId);
+
+    // If there's a previous section in the same chapter
+    if (currentSectionIndex > 0) {
+      return {
+        chapterId: currentChapterId,
+        section: currentChapter.sections[currentSectionIndex - 1]
+      };
+    }
+
     return null;
   };
 
@@ -221,7 +256,9 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
           groupedSections={groupedSections}
           getSectionContent={getSectionContent}
           getNextSection={getNextSection}
+          getPreviousSection={getPreviousSection}
           getNextCareer={getNextCareer}
+          getPreviousCareer={getPreviousCareer}
           onSectionExpand={handleSectionExpand}
         />
       )}

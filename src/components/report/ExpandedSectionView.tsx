@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { X, ArrowRight } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ReportSection } from '@/hooks/useReportSections';
 
 interface GroupedSections {
@@ -14,7 +14,9 @@ interface ExpandedSectionViewProps {
   groupedSections: GroupedSections;
   getSectionContent: (chapterId: string, sectionId: string) => string;
   getNextSection: (chapterId: string, sectionId: string) => any;
+  getPreviousSection: (chapterId: string, sectionId: string) => any;
   getNextCareer: (careerId: string) => any;
+  getPreviousCareer: (careerId: string) => any;
   onSectionExpand: (sectionId: string | null) => void;
 }
 
@@ -24,7 +26,9 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
   groupedSections,
   getSectionContent,
   getNextSection,
+  getPreviousSection,
   getNextCareer,
+  getPreviousCareer,
   onSectionExpand
 }) => {
   const renderSectionContent = (content: string) => {
@@ -215,31 +219,28 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
             if (careerSectionIds.includes(section.id)) return null;
 
             const nextSection = getNextSection(chapter.id, section.id);
-            
+            const previousSection = getPreviousSection(chapter.id, section.id);
+
             return (
               <div key={section.id}>
-                <div className="relative h-64 bg-gradient-to-r from-atlas-blue to-atlas-navy">
-                  <img
-                    src={section.imageUrl}
-                    alt={section.title}
-                    className="w-full h-full object-cover opacity-80"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
-                    <div className="p-6 text-white w-full">
-                      <h3 className="text-2xl font-bold mb-2">{section.title}</h3>
-                      <p className="text-lg opacity-90">{section.description}</p>
-                    </div>
-                  </div>
+                {/* Close button - top right */}
+                <div className="flex justify-end p-4 border-b border-gray-100">
                   <button
                     onClick={() => onSectionExpand(null)}
-                    className="absolute bottom-4 right-4 w-10 h-10 bg-black bg-opacity-50 rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all"
+                    className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all"
                   >
-                    <X className="h-5 w-5 text-white" />
+                    <X className="h-5 w-5 text-gray-600" />
                   </button>
                 </div>
-                
+
                 <div className="p-6 md:p-8 lg:p-10">
                   <div className="max-w-prose mx-auto">
+                    {/* Title and description above content */}
+                    <div className="mb-8">
+                      <h2 className="text-2xl font-bold text-atlas-navy mb-2">{section.title}</h2>
+                      <p className="text-gray-600">{section.description}</p>
+                    </div>
+
                     <div
                       className="text-gray-700 leading-relaxed"
                       style={{
@@ -250,15 +251,30 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                       {renderSectionContent(getSectionContent(chapter.id, section.id))}
                     </div>
 
-                    {nextSection && (
-                      <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
-                        <button
-                          onClick={() => onSectionExpand(nextSection.section.id)}
-                          className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
-                        >
-                          Next: {nextSection.section.title}
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </button>
+                    {(previousSection || nextSection) && (
+                      <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+                        <div>
+                          {previousSection && (
+                            <button
+                              onClick={() => onSectionExpand(previousSection.section.id)}
+                              className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
+                            >
+                              <ArrowLeft className="h-4 w-4 mr-2" />
+                              Previous: {previousSection.section.title}
+                            </button>
+                          )}
+                        </div>
+                        <div>
+                          {nextSection && (
+                            <button
+                              onClick={() => onSectionExpand(nextSection.section.id)}
+                              className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
+                            >
+                              Next: {nextSection.section.title}
+                              <ArrowRight className="h-4 w-4 ml-2" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -323,15 +339,31 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
 
                 {(() => {
                   const nextCareer = getNextCareer(expandedSection);
-                  return nextCareer && (
-                    <div className="flex justify-end mt-8 pt-6 border-t border-gray-200">
-                      <button
-                        onClick={() => onSectionExpand(nextCareer.id)}
-                        className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
-                      >
-                        Next: {nextCareer.title}
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </button>
+                  const previousCareer = getPreviousCareer(expandedSection);
+                  return (previousCareer || nextCareer) && (
+                    <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
+                      <div>
+                        {previousCareer && (
+                          <button
+                            onClick={() => onSectionExpand(previousCareer.id)}
+                            className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
+                          >
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Previous: {previousCareer.title}
+                          </button>
+                        )}
+                      </div>
+                      <div>
+                        {nextCareer && (
+                          <button
+                            onClick={() => onSectionExpand(nextCareer.id)}
+                            className="flex items-center text-atlas-blue hover:text-atlas-navy transition-colors font-medium"
+                          >
+                            Next: {nextCareer.title}
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   );
                 })()}
