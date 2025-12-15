@@ -8,15 +8,15 @@ interface ReportHeaderProps {
 const ReportHeader: React.FC<ReportHeaderProps> = ({ latestReport }) => {
   return (
     <div className="mb-8">
-      {/* Assessment Type Badge */}
+      {/* Main Title */}
+      <h2 className="text-3xl font-bold text-atlas-navy mb-2">Your Personalized Career Report</h2>
+
+      {/* Assessment Type */}
       {latestReport && (
-        <p className="text-sm font-medium text-atlas-teal mb-2">
+        <p className="text-lg font-medium text-atlas-teal mb-3">
           Atlas Personality & Career Assessment 2025
         </p>
       )}
-
-      {/* Main Title */}
-      <h2 className="text-3xl font-bold text-atlas-navy mb-3">Your Personalized Career Report</h2>
 
       {/* Subtitle */}
       <p className="text-gray-600">

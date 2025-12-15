@@ -11,13 +11,13 @@ export const chapters = [
       {
         id: 'executive-summary',
         title: 'Executive Summary',
-        description: 'High-level view of who you are professionally and what drives your career direction.',
+        description: 'Who you are professionally and what drives your career.',
         imageUrl: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&h=300&fit=crop'
       },
       {
         id: 'personality-team',
         title: 'Your Approach',
-        description: 'How you work, lead, and navigate challenges in professional settings.',
+        description: 'How you work, lead, and navigate challenges.',
         imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=300&fit=crop'
       },
       {
@@ -51,7 +51,6 @@ export const chapters = [
         title: 'Top Career Suggestions',
         description: 'Three roles that best match your profile, skills, and goals.',
         imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop',
-        isCollapsible: true,
         careers: [
           { id: 'first-career', title: 'Primary Career Match' },
           { id: 'second-career', title: 'Second Career Match' },
@@ -67,13 +66,13 @@ export const chapters = [
       {
         id: 'outside-box',
         title: 'Outside-the-Box Careers',
-        description: 'Unconventional options that align with your unique interests and strengths.',
+        description: 'Unconventional options aligned with your interests and strengths.',
         imageUrl: 'https://images.unsplash.com/photo-1500673922987-e212871fec22?w=600&h=300&fit=crop'
       },
       {
         id: 'dream-jobs',
         title: 'Dream Job Analysis',
-        description: 'Reality check on your ideal career and what it would take to get there.',
+        description: 'Reality check on your ideal career and what it takes to get there.',
         imageUrl: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&h=300&fit=crop'
       }
     ]
