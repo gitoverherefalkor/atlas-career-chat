@@ -13,8 +13,6 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Test N8N integration function called');
-    
     // Mock survey responses for Sjoerd Geurts in the detailed format N8N expects
     const detailedSurveyData = [
       {
@@ -215,12 +213,19 @@ serve(async (req) => {
       }
     ];
 
-    console.log('Test survey data prepared (detailed format):', JSON.stringify(detailedSurveyData, null, 2));
+    // Get N8N webhook URL from environment variable
+    const n8nWebhookUrl = Deno.env.get("N8N_WEBHOOK_URL");
 
-    // Use the production N8N webhook URL you provided
-    const n8nWebhookUrl = "https://falkoratlas.app.n8n.cloud/webhook/dfe2a07c-8b6c-4c42-a6bc-e9bb14381778";
-    
-    console.log('Using production N8N webhook URL:', n8nWebhookUrl);
+    if (!n8nWebhookUrl) {
+      console.error('N8N_WEBHOOK_URL environment variable not set');
+      return new Response(JSON.stringify({
+        error: 'N8N webhook URL not configured',
+        hint: 'Set N8N_WEBHOOK_URL in Supabase Edge Function secrets'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
 
     // Test data to send to N8N in the format it expects
     const testData = {
@@ -234,8 +239,7 @@ serve(async (req) => {
       test_mode: true
     };
 
-    console.log('Sending test data to N8N webhook:', n8nWebhookUrl);
-    console.log('Test payload:', JSON.stringify(testData, null, 2));
+    // Sending test data to N8N webhook
 
     // POST to N8N webhook
     const resp = await fetch(n8nWebhookUrl, {
@@ -246,18 +250,14 @@ serve(async (req) => {
       body: JSON.stringify(testData),
     });
 
-    // Log detailed response information
-    console.log('N8N webhook status code:', resp.status);
-    console.log('N8N webhook status text:', resp.statusText);
-    console.log('N8N webhook headers:', Object.fromEntries(resp.headers.entries()));
+    // Response status logged in returned data
 
     if (!resp.ok) {
       const err = await resp.text();
       console.error("N8N webhook test error:", resp.status, err);
-      return new Response(JSON.stringify({ 
+      return new Response(JSON.stringify({
         error: `N8N webhook test failed: ${resp.status} ${resp.statusText}`,
-        details: err,
-        webhook_url: n8nWebhookUrl
+        details: err
       }), { 
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -267,15 +267,12 @@ serve(async (req) => {
     // Handle both JSON and text responses from N8N
     let result;
     const responseText = await resp.text();
-    console.log('N8N webhook raw response:', responseText);
-    
+
     try {
       // Try to parse as JSON first
       result = JSON.parse(responseText);
-      console.log('N8N webhook parsed JSON response:', result);
     } catch (parseError) {
       // If it's not JSON, treat it as a text response
-      console.log('N8N webhook returned text response (not JSON):', responseText);
       result = { 
         message: responseText,
         raw_response: responseText,
@@ -283,10 +280,9 @@ serve(async (req) => {
       };
     }
 
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       message: 'Test data sent to N8N workflow successfully',
-      webhook_url: n8nWebhookUrl,
       test_data: testData,
       n8n_response: result,
       response_type: typeof result === 'string' ? 'text' : 'json',
