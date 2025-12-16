@@ -57,9 +57,12 @@ const CareerSection: React.FC<CareerSectionProps> = ({
 
         {/* Career list - always visible */}
         {section.careers.map((career) => (
-          <div key={career.id} className="p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
+          <div key={career.id} className="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
             <div className="flex justify-between items-center">
-              <p className="text-gray-900">{getCareerTitle(career.id, career.title)}</p>
+              <div className="flex items-center space-x-3">
+                <span className="text-atlas-teal">•</span>
+                <p className="text-sm text-gray-600">{getCareerTitle(career.id, career.title)}</p>
+              </div>
               <button
                 onClick={() => onCareerExpand(career.id)}
                 className="ml-4 text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline whitespace-nowrap"

@@ -6,7 +6,7 @@ export const chapters = [
     id: 'about-you',
     title: 'About You',
     icon: User,
-    imageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=300&fit=crop',
+    imageUrl: '/images/about_you.png',
     sections: [
       {
         id: 'executive-summary',
@@ -44,7 +44,7 @@ export const chapters = [
     id: 'career-suggestions',
     title: 'Career Suggestions for You',
     icon: Briefcase,
-    imageUrl: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600&h=300&fit=crop',
+    imageUrl: '/images/career_suggestions.png',
     sections: [
       {
         id: 'top-careers',
