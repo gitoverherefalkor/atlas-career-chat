@@ -28,10 +28,10 @@ serve(async (req) => {
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Update report status to completed
+    // Update report status to pending_review (ready for user chat)
     const { data: updated, error: updateError } = await supabase
       .from('reports')
-      .update({ status: 'completed' })
+      .update({ status: 'pending_review' })
       .eq('id', reportId)
       .select('id, user_id, title')
       .single();
