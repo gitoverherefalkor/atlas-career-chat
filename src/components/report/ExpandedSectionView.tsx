@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ReportSection } from '@/hooks/useReportSections';
+import AILegend from './AILegend';
 
 interface GroupedSections {
   [uiSectionId: string]: ReportSection[];
@@ -31,7 +32,10 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
   getPreviousCareer,
   onSectionExpand
 }) => {
-  const renderSectionContent = (content: string) => {
+  // Career sections that should show AI Legend (all except dream-jobs)
+  const careerSectionsWithAILegend = ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box'];
+
+  const renderSectionContent = (content: string, showAILegend: boolean = false) => {
     const elements: React.ReactNode[] = [];
     let currentFeedback: React.ReactNode[] = [];
     let currentExplore: React.ReactNode[] = [];
@@ -39,9 +43,17 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
     let inExploreBlock = false;
     let feedbackBlockKey = 0;
     let exploreBlockKey = 0;
+    let aiLegendKey = 0;
+    let aiLegendShown = false;
 
     // Helper to flush accumulated feedback/explore blocks
     const flushBlocks = () => {
+      // Show AI Legend before feedback block (only once, if applicable)
+      if (showAILegend && !aiLegendShown && currentFeedback.length > 0) {
+        elements.push(<AILegend key={`ai-legend-${aiLegendKey++}`} />);
+        aiLegendShown = true;
+      }
+
       if (currentFeedback.length > 0) {
         elements.push(
           <div key={`feedback-${feedbackBlockKey++}`} className="mt-6 p-5 bg-amber-50 border border-amber-200 rounded-lg">
@@ -334,7 +346,7 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                     lineHeight: '1.8'
                   }}
                 >
-                  {renderSectionContent(getSectionContent('career-suggestions', expandedSection))}
+                  {renderSectionContent(getSectionContent('career-suggestions', expandedSection), careerSectionsWithAILegend.includes(expandedSection))}
                 </div>
 
                 {(() => {
