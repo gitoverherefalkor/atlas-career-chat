@@ -15,32 +15,22 @@ const AuthConfirm = () => {
 
   useEffect(() => {
     const handleAuthConfirm = async () => {
-      console.log('AuthConfirm: Starting auth confirmation');
-      console.log('AuthConfirm: URL params:', searchParams.toString());
-      console.log('AuthConfirm: URL hash:', window.location.hash);
-
       // First, exchange the code for a session if this is an OAuth callback
       // This handles both hash-based (#access_token) and code-based (?code=) flows
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const hasAccessToken = hashParams.has('access_token');
       const hasCode = searchParams.has('code');
 
-      console.log('AuthConfirm: OAuth indicators:', { hasAccessToken, hasCode });
-
       // If we have OAuth params, wait a moment for Supabase to process them
       if (hasAccessToken || hasCode) {
-        console.log('AuthConfirm: Waiting for Supabase to process OAuth callback...');
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       // Check if this is an OAuth callback (has code/token in hash or query)
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-      console.log('AuthConfirm: Session check result:', { session: !!session, error: sessionError });
-
       if (session?.user) {
         // OAuth callback successful - user is authenticated
-        console.log('OAuth successful, user authenticated:', session.user.email);
 
         // Check if profile exists, create if not
         const { data: existingProfile } = await supabase
@@ -83,8 +73,6 @@ const AuthConfirm = () => {
       const token = searchParams.get('token');
       const type = searchParams.get('type');
 
-      console.log('AuthConfirm params:', { token, type });
-
       if (!token || !type) {
         setStatus('error');
         setMessage('Invalid confirmation link. Please try signing up again.');
@@ -107,7 +95,6 @@ const AuthConfirm = () => {
         if (data.user) {
           // If this is a password reset (recovery), redirect to reset password page
           if (type === 'recovery') {
-            console.log('Password reset detected, redirecting to reset-password page');
             navigate('/reset-password');
             return;
           }

@@ -9,8 +9,6 @@ import { useAssessmentLogic } from '@/components/assessment/useAssessmentLogic';
 import { AssessmentSessionProvider } from '@/components/assessment/AssessmentSessionContext';
 
 const AssessmentPage = () => {
-  console.log('Assessment component rendered');
-  
   const {
     isCompleted,
     isVerified,
@@ -29,20 +27,8 @@ const AssessmentPage = () => {
   // Check if pre-survey upload is complete (either uploaded or skipped)
   const preSurveyUploadComplete = localStorage.getItem('pre_survey_upload_complete') === 'true';
 
-  console.log('Assessment state:', {
-    isCompleted,
-    isVerified,
-    showPreSurveyUpload,
-    sessionToken,
-    accessCodeData,
-    authLoading,
-    user: user ? { id: user.id, email: user.email } : null,
-    preSurveyUploadComplete
-  });
-
   // Show loading while checking auth
   if (authLoading) {
-    console.log('Showing auth loading');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -55,7 +41,6 @@ const AssessmentPage = () => {
 
   // Don't render anything if user is not authenticated
   if (!user) {
-    console.log('No user, returning null');
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -66,12 +51,10 @@ const AssessmentPage = () => {
   }
 
   if (isCompleted) {
-    console.log('Assessment completed, showing completion');
     return <AssessmentCompletion />;
   }
 
   if (!isVerified || !sessionToken) {
-    console.log('Not verified or no session token, showing assessment welcome');
     return (
       <AssessmentWelcome 
         onVerified={handleAccessCodeVerified}
@@ -81,14 +64,11 @@ const AssessmentPage = () => {
 
   // Always show pre-survey upload step after verification, unless explicitly completed
   if (!preSurveyUploadComplete) {
-    console.log('Showing pre-survey upload');
     return <PreSurveyUpload onContinue={handlePreSurveyUploadComplete} />;
   }
 
-  console.log('Showing survey form');
   const surveyId = getSurveyIdFromAccessCode(accessCodeData);
-  console.log('Survey ID:', surveyId);
-  
+
   if (!surveyId) {
     console.error('No survey ID found');
     return (

@@ -9,7 +9,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import PaymentSuccess from "./components/PaymentSuccess";
 import Assessment from "./pages/Assessment";
-import TestData from "./pages/TestData";
 import Auth from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -27,8 +26,6 @@ import Payment from "./pages/Payment";
 const queryClient = new QueryClient();
 
 const App = () => {
-  console.log("App component loaded");
-
   return (
     <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -46,7 +43,6 @@ const App = () => {
             <Route path="/profile" element={<Profile />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/assessment" element={<Assessment />} />
-            <Route path="/test-data" element={<TestData />} />
             <Route path="/chat" element={<Chat />} />
             <Route path="/report" element={<Report />} />
             <Route path="/report-processing" element={<ReportProcessing />} />

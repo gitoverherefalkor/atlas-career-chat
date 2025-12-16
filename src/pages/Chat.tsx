@@ -38,11 +38,6 @@ const Chat = () => {
 
   const sessionIsStale = hasExistingSession && isSessionStale();
 
-  // Only log once on initial mount (not every render)
-  if (typeof window !== 'undefined' && !(window as any).__chatSessionLogged) {
-    console.log('🔍 Session check:', { hasExistingSession, sessionIsStale });
-    (window as any).__chatSessionLogged = true;
-  }
 
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -72,10 +67,6 @@ const Chat = () => {
     if (chatInitRef.current || chatInitialized) return;
 
     if (reportData && !profileLoading && profile && hasExistingSession && !sessionIsStale) {
-      console.log('✅ Existing session detected, auto-initializing chat', {
-        firstName: profile?.first_name || 'N/A',
-        profileLoaded: !profileLoading
-      });
 
       // Update session timestamp
       localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
@@ -108,8 +99,6 @@ const Chat = () => {
     const isAtLastSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     if (!isAtLastSection) return;
 
-    console.log('📡 Starting status polling for completion...');
-
     const checkStatus = async () => {
       const { data, error } = await supabase
         .from('reports')
@@ -118,7 +107,6 @@ const Chat = () => {
         .single();
 
       if (!error && data?.status === 'completed') {
-        console.log('🏁 Session completion detected via polling');
         setIsSessionCompleted(true);
       }
     };
@@ -130,7 +118,6 @@ const Chat = () => {
     const interval = setInterval(checkStatus, 3000);
 
     return () => {
-      console.log('📡 Stopping status polling');
       clearInterval(interval);
     };
   }, [reportData?.id, currentSectionIndex, isSessionCompleted]);
@@ -138,7 +125,6 @@ const Chat = () => {
   const initializeChat = () => {
     // Prevent double initialization
     if (chatInitialized || chatInitRef.current) {
-      console.log('⚠️ Chat already initialized, skipping');
       return;
     }
 
@@ -160,12 +146,6 @@ const Chat = () => {
 
     // Mark as initializing immediately
     chatInitRef.current = true;
-
-    console.log('🚀 Initializing chat widget', {
-      reportId: reportData.id,
-      hasSession: hasExistingSession,
-      firstName: profile?.first_name || 'N/A'
-    });
 
     // Small delay to ensure DOM is ready
     setTimeout(() => {
@@ -197,27 +177,18 @@ const Chat = () => {
         enableStreaming: false,
       });
 
-      console.log('✅ Chat initialized, checking localStorage after init:', {
-        sessionId: localStorage.getItem('n8n-chat/sessionId')
-      });
-
       setChatInitialized(true);
     }, 100); // Reduced delay - just enough for DOM
   };
 
   const handleStartSession = () => {
     if (profileLoading || !profile) {
-      console.warn('Profile still loading, waiting...');
       toast({
         title: "Loading...",
         description: "Please wait a moment while we load your profile.",
       });
       return;
     }
-
-    console.log('🎯 Starting new session with profile:', {
-      firstName: profile?.first_name || 'N/A'
-    });
 
     // Update session timestamp
     localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
@@ -266,7 +237,6 @@ const Chat = () => {
 
     try {
       const messages = JSON.parse(stored);
-      console.log('📨 Loading previous messages:', messages.length);
       // Messages will be rendered by n8n widget through loadPreviousSession
       return messages;
     } catch (e) {
@@ -279,10 +249,8 @@ const Chat = () => {
   useEffect(() => {
     if (!chatInitialized) return;
 
-    console.log('🔍 Setting up chat section observer...');
     const chatContainer = document.querySelector('#n8n-chat-container');
     if (!chatContainer) {
-      console.log('Chat container not found');
       return;
     }
 
@@ -307,7 +275,6 @@ const Chat = () => {
       // Legacy: Check for session completion via text (fallback)
       // Primary method is now via Supabase realtime subscription on report status
       if (messageText.includes('SESSION_COMPLETE')) {
-        console.log('🏁 Session completion detected via text (legacy)');
         setShowClosing(true);
         return;
       }
@@ -321,7 +288,6 @@ const Chat = () => {
 
         const sectionIndex = findSectionIndex(title);
         if (sectionIndex >= 0) {
-          console.log(`📍 Section detected: "${title}" → index ${sectionIndex} (${ALL_SECTIONS[sectionIndex].title})`);
           setCurrentSectionIndex(prev => Math.max(prev, sectionIndex));
         }
       });
@@ -356,12 +322,9 @@ const Chat = () => {
       subtree: true,
     });
 
-    console.log('✅ Section observer attached');
-
     // Initial scan of existing messages
     setTimeout(() => {
       const existingMessages = chatContainer.querySelectorAll('.chat-message-from-bot, .chat-message-markdown');
-      console.log(`📖 Scanning ${existingMessages.length} existing messages for sections`);
       existingMessages.forEach(scanForSections);
     }, 1500);
 
@@ -371,8 +334,6 @@ const Chat = () => {
   // Disable chat input when session is completed
   useEffect(() => {
     if (!isSessionCompleted) return;
-
-    console.log('🔒 Session completed - disabling chat input');
 
     // Hide the chat footer/input
     const chatFooter = document.querySelector('.chat-footer');
@@ -393,8 +354,6 @@ const Chat = () => {
     const section = ALL_SECTIONS.find(s => s.id === sectionId);
     if (!section) return;
 
-    console.log('🔗 Clicking section:', section.title);
-
     // Build list of terms to search for
     const searchTerms = [
       section.title.toLowerCase(),
@@ -409,7 +368,6 @@ const Chat = () => {
 
       // Match against any of the search terms
       if (searchTerms.some(term => h3Text.includes(term))) {
-        console.log('✅ Found h3:', h3Text);
         h3.scrollIntoView({ behavior: 'smooth', block: 'start' });
         return;
       }
@@ -421,7 +379,6 @@ const Chat = () => {
       const text = message.textContent?.toLowerCase() || '';
 
       if (searchTerms.some(term => text.includes(term))) {
-        console.log('✅ Found in message text');
         message.scrollIntoView({ behavior: 'smooth', block: 'start' });
         break;
       }
