@@ -30,8 +30,6 @@ export const useSurveySubmission = ({
     if (!accessCodeData?.id) return;
 
     try {
-      console.log('Marking access code as used:', accessCodeData.id);
-      
       // First get the current usage count
       const { data: currentCode, error: fetchError } = await supabase
         .from('access_codes')
@@ -57,8 +55,6 @@ export const useSurveySubmission = ({
 
       if (error) {
         console.error('Error marking access code as used:', error);
-      } else {
-        console.log('Access code marked as used successfully');
       }
     } catch (error) {
       console.error('Error marking access code as used:', error);
@@ -67,15 +63,11 @@ export const useSurveySubmission = ({
 
   const handleSubmit = useCallback(async () => {
     if (!accessCodeData || !user) return;
-    
+
     setIsSubmitting(true);
     setSubmissionStatus('submitting');
 
     try {
-      console.log('Submitting survey responses:', responses);
-      console.log('Access code data:', accessCodeData);
-      console.log('User:', user);
-
       // Submit to database with access code reference
       const answerData: any = {
         survey_id: surveyId,
@@ -98,8 +90,6 @@ export const useSurveySubmission = ({
         });
         return;
       }
-
-      console.log('Survey submitted successfully:', submissionData);
 
       // Mark access code as used after successful submission
       await markAccessCodeAsUsed();

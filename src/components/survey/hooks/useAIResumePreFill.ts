@@ -22,13 +22,12 @@ export const useAIResumePreFill = ({
     }
 
     // Check if we have any existing responses (except empty objects)
-    const existingResponseKeys = Object.keys(responses).filter(key => 
-      responses[key] !== undefined && 
-      responses[key] !== null && 
+    const existingResponseKeys = Object.keys(responses).filter(key =>
+      responses[key] !== undefined &&
+      responses[key] !== null &&
       responses[key] !== ''
     );
     if (existingResponseKeys.length > 0) {
-      console.log('[Pre-fill] User has existing responses, skipping AI pre-fill');
       hasAttemptedPreFill.current = true;
       return;
     }
@@ -40,7 +39,6 @@ export const useAIResumePreFill = ({
     if (sessionData) {
       try {
         parsedData = JSON.parse(sessionData);
-        console.log('[Pre-fill] Found resume data in sessionStorage:', parsedData);
       } catch (e) {
         console.error('[Pre-fill] Failed to parse sessionStorage data:', e);
       }
@@ -51,33 +49,28 @@ export const useAIResumePreFill = ({
       if (localData) {
         try {
           parsedData = JSON.parse(localData);
-          console.log('[Pre-fill] Found resume data in localStorage:', parsedData);
         } catch (e) {
           console.error('[Pre-fill] Failed to parse localStorage data:', e);
         }
       }
     }
     if (!parsedData) {
-      console.log('[Pre-fill] No resume_parsed_data found.');
       hasAttemptedPreFill.current = true;
       return;
     }
-    console.log('[Pre-fill] Starting AI resume pre-fill with data:', parsedData);
     // The parsed data might be in different formats:
     // 1. Direct UUID mapping: { "11111111-1111-1111-1111-111111111112": "Sjoerd Geurts" }
     // 2. Field name mapping: { "name": "Sjoerd Geurts" }
     let preFillResponses: Record<string, any> = {};
     // Check if the data is already in UUID format (from surveyPreFillData)
-    const hasUUIDs = Object.keys(parsedData).some(key => 
+    const hasUUIDs = Object.keys(parsedData).some(key =>
       key.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
     );
     if (hasUUIDs) {
       // Data is already mapped to question IDs, use directly
-      console.log('[Pre-fill] Data contains UUID mappings, using directly');
       preFillResponses = { ...parsedData };
     } else {
       // Data needs to be mapped from field names to question IDs
-      console.log('[Pre-fill] Data needs field mapping');
       // Based on your survey question IDs from the logs:
       const fieldToQuestionIdMap: Record<string, string> = {
         // Personal Information
@@ -117,9 +110,6 @@ export const useAIResumePreFill = ({
         const questionId = fieldToQuestionIdMap[fieldName];
         if (questionId && value !== undefined && value !== null && value !== '') {
           preFillResponses[questionId] = value;
-          console.log(`[Pre-fill] Mapped ${fieldName} -> ${questionId}:`, value);
-        } else if (!questionId) {
-          console.log(`[Pre-fill] No mapping found for field: ${fieldName}`);
         }
       });
     }
@@ -137,19 +127,14 @@ export const useAIResumePreFill = ({
         preFillResponses[questionId] = value.join(', ');
       }
     });
-    // Log the final pre-fill data
-    console.log('[Pre-fill] Final pre-fill responses:', preFillResponses);
     // Update the responses with the pre-filled data
     if (Object.keys(preFillResponses).length > 0) {
       setResponses(prev => ({
         ...prev,
         ...preFillResponses
       }));
-      console.log('[Pre-fill] Successfully pre-filled', Object.keys(preFillResponses).length, 'fields');
       // Mark in storage that we've completed pre-fill
       sessionStorage.setItem('ai_prefill_completed', 'true');
-    } else {
-      console.log('[Pre-fill] No matching fields found to pre-fill');
     }
     hasAttemptedPreFill.current = true;
   }, [isSessionLoaded, responses, setResponses, surveyId]);
@@ -162,7 +147,6 @@ export const useAIResumePreFill = ({
       if (prefillCompleted === 'true') {
         sessionStorage.removeItem('resume_parsed_data');
         sessionStorage.removeItem('ai_prefill_completed');
-        console.log('[Pre-fill] Cleaned up resume data from session storage');
       }
     };
   }, []);

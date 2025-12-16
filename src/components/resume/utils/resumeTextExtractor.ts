@@ -1,22 +1,17 @@
 
 export const extractDataFromResumeText = (resumeText: string): Record<string, any> => {
   const preFillData: Record<string, any> = {};
-  
-  console.log('Extracting data from resume text...');
-  console.log('Resume text length:', resumeText.length);
-  
+
   // Try to extract email
   const emailMatch = resumeText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
   if (emailMatch) {
     preFillData['email'] = emailMatch[0];
-    console.log('Extracted email:', emailMatch[0]);
   }
-  
+
   // Try to extract phone number
   const phoneMatch = resumeText.match(/(\+?1?[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4}/);
   if (phoneMatch) {
     preFillData['phone'] = phoneMatch[0];
-    console.log('Extracted phone:', phoneMatch[0]);
   }
   
   // Look for common job titles
@@ -37,7 +32,6 @@ export const extractDataFromResumeText = (resumeText: string): Record<string, an
     const match = resumeText.match(pattern);
     if (match) {
       preFillData['current_job_title'] = match[0];
-      console.log('Extracted job title:', match[0]);
       break;
     }
   }
@@ -51,7 +45,6 @@ export const extractDataFromResumeText = (resumeText: string): Record<string, an
         preFillData['first_name'] = nameParts[0];
         preFillData['last_name'] = nameParts.slice(1).join(' ');
         preFillData['full_name'] = line;
-        console.log('Extracted name:', line);
         break;
       }
     }
@@ -67,11 +60,9 @@ export const extractDataFromResumeText = (resumeText: string): Record<string, an
     const matches = resumeText.match(pattern);
     if (matches && matches.length > 0) {
       preFillData['current_organization'] = matches[0];
-      console.log('Extracted company:', matches[0]);
       break;
     }
   }
-  
-  console.log('Final extracted data:', preFillData);
+
   return preFillData;
 };

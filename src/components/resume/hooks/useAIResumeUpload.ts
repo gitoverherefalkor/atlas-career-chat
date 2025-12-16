@@ -27,23 +27,15 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
     setIsProcessing(true);
 
     try {
-      console.log('Step 1: Processing file client-side:', file.name, file.type);
-      
       // Extract text client-side
       const extractedText = await extractTextFromFile(file);
-      
-      console.log('Step 2: Extracted text length:', extractedText.length);
-      console.log('First 200 characters:', extractedText.substring(0, 200));
-      
+
       if (!extractedText || extractedText.length < 100) {
         throw new Error('Document appears to be empty or text could not be extracted');
       }
-      
+
       // Parse with AI
-      console.log('Step 3: Parsing with AI...');
       const aiParsedData = await parseResumeWithAI(extractedText);
-      
-      console.log('Step 4: AI parsing complete, fields extracted:', Object.keys(aiParsedData).length);
 
       // Save both raw text and AI-parsed data to profile
       const { error: updateError } = await supabase
@@ -60,8 +52,6 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
         console.error('Failed to save resume data to profile:', updateError);
         throw new Error('Failed to save resume data');
       }
-
-      console.log('Step 5: Successfully saved to database');
 
       const result = {
         success: true,

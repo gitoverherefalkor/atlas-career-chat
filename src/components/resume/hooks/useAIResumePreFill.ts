@@ -25,7 +25,6 @@ export const useAIResumePreFill = ({ isSessionLoaded, responses, setResponses, s
     const preSurveyUploadComplete = localStorage.getItem('pre_survey_upload_complete') === 'true';
     // Prevent effect from running more than once per session or after pre-survey upload is complete
     if (hasRunRef.current || hasPrefilled || preSurveyUploadComplete) {
-      console.log('[Pre-fill] Skipping: already pre-filled or pre-survey upload complete for this user/session.');
       return;
     }
     if (isSessionLoaded && Object.keys(responses).length === 0 && !hasPrefilled && !preSurveyUploadComplete) {
@@ -81,23 +80,12 @@ export const useAIResumePreFill = ({ isSessionLoaded, responses, setResponses, s
                   title: 'AI Pre-fill Complete! 🎉',
                   description: `${Object.keys(validResponses).length} fields have been intelligently pre-filled from your resume using AI.`,
               });
-                console.log('[Pre-fill] Successfully pre-filled and set flag:', prefillFlagKey);
-              } else {
-                console.log('[Pre-fill] No valid responses to pre-fill.');
               }
-            } else {
-              console.log('[Pre-fill] No resume_parsed_data found.');
             }
           } catch (err) {
             console.error('Error in pre-fill effect:', err);
           }
         });
-    } else {
-      if (Object.keys(responses).length > 0) {
-        console.log('[Pre-fill] Skipping: responses already present.');
-      } else {
-        console.log('[Pre-fill] Skipping: session not loaded or missing user/survey.');
-      }
     }
   }, [isSessionLoaded, user?.id, survey, responses, setResponses, toast]);
 };
