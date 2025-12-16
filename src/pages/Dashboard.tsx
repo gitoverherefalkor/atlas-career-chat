@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, User, LogOut, Settings, Play, MessageSquare, Clock } from 'lucide-react';
+import { Loader2, LogOut, Settings, Play, MessageSquare, Clock, FileText, Download, Briefcase, Search, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -120,13 +120,7 @@ const Dashboard = () => {
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-atlas-navy">Atlas Assessment</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-700">
-                  {displayName}
-                </span>
-              </div>
+            <div className="flex items-center space-x-3">
               <Button variant="outline" onClick={() => navigate('/profile')}>
                 <Settings className="h-4 w-4 mr-2" />
                 Profile
@@ -142,71 +136,120 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Button
-          variant="destructive"
-          className="mb-6"
-          onClick={() => {
-            localStorage.removeItem('assessment_session');
-            localStorage.removeItem('pre_survey_upload_complete');
-            window.location.reload();
-          }}
-        >
-          Reset/Clear Progress
-        </Button>
         {/* Welcome Section - Only show when report section is not expanded */}
         {!isReportSectionExpanded && (
           <>
-            <div className="mb-8">
-              <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                {isReturningUser() ? 'Welcome back' : 'Welcome'}{profile?.first_name ? `, ${profile.first_name}` : ''}!
-              </h2>
-              <p className="text-gray-600">
-                Your secure space to manage career assessments and view personalized reports.
-              </p>
-            </div>
+            {/* Welcome Header */}
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              {isReturningUser() ? 'Welcome back' : 'Welcome'}{profile?.first_name ? `, ${profile.first_name}` : ''}
+            </h2>
 
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 gap-6 mb-8">
-              {/* Continue Assessment Card - Only show if there's meaningful progress */}
-              {hasMeaningfulProgress() && (
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
+            {/* Dashboard Grid - Report Status & Quick Actions */}
+            {latestReport && latestReport.status === 'completed' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                {/* Report Status Card */}
+                <Card>
                   <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-green-100 p-3 rounded-full">
-                        <Play className="h-6 w-6 text-green-600" />
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-atlas-teal/10 p-3 rounded-full">
+                        <FileText className="h-6 w-6 text-atlas-teal" />
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Continue Assessment</h3>
-                        <p className="text-sm text-gray-600">Resume where you left off: {getSectionProgress(savedSession)}</p>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 mb-1">Your Career Report</h3>
+                        <p className="text-sm text-atlas-teal font-medium mb-1">Atlas Personality & Career Assessment 2025</p>
+                        <p className="text-sm text-gray-500">
+                          Completed {latestReport.updated_at ? new Date(latestReport.updated_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : ''}
+                        </p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-              )}
 
-              {/* Only show purchase and access code options if user hasn't verified access yet */}
-              {!hasVerifiedAccess() && (
-                <>
-                  {/* Purchase Access Button */}
-                  <PurchaseAccessButton />
-
-                  {/* Manual Access Code Entry */}
-                  <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-4">
-                        <div className="bg-blue-100 p-3 rounded-full">
-                          <User className="h-6 w-6 text-blue-600" />
-                        </div>
+                {/* Quick Actions Card */}
+                <Card>
+                  <CardContent className="p-6">
+                    <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    <div className="space-y-3">
+                      {/* Download Summary - Active */}
+                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-400 cursor-not-allowed">
+                        <Download className="h-5 w-5" />
                         <div>
-                          <h3 className="font-semibold text-gray-900">Already have an access code?</h3>
-                          <p className="text-sm text-gray-600">Enter your access code to start the assessment</p>
+                          <span className="text-sm font-medium">Download Recruiter Summary</span>
+                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
                         </div>
+                      </button>
+
+                      {/* CV Optimizer - Coming Soon */}
+                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
+                        <Briefcase className="h-5 w-5" />
+                        <div>
+                          <span className="text-sm font-medium">CV Optimizer</span>
+                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
+                        </div>
+                      </button>
+
+                      {/* Job Openings - Coming Soon */}
+                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
+                        <Search className="h-5 w-5" />
+                        <div>
+                          <span className="text-sm font-medium">Check Job Openings</span>
+                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
+                        </div>
+                      </button>
+
+                      {/* More Assessments - Coming Soon */}
+                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
+                        <PlusCircle className="h-5 w-5" />
+                        <div>
+                          <span className="text-sm font-medium">More Assessments</span>
+                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
+                        </div>
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Continue Assessment Card - Only show if there's meaningful progress */}
+            {hasMeaningfulProgress() && (
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer mb-8" onClick={() => navigate('/assessment')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-green-100 p-3 rounded-full">
+                      <Play className="h-6 w-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Continue Assessment</h3>
+                      <p className="text-sm text-gray-600">Resume where you left off: {getSectionProgress(savedSession)}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Only show purchase and access code options if user hasn't verified access yet */}
+            {!hasVerifiedAccess() && (
+              <div className="grid grid-cols-1 gap-6 mb-8">
+                {/* Purchase Access Button */}
+                <PurchaseAccessButton />
+
+                {/* Manual Access Code Entry */}
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-blue-100 p-3 rounded-full">
+                        <Briefcase className="h-6 w-6 text-blue-600" />
                       </div>
-                    </CardContent>
-                  </Card>
-                </>
-              )}
-            </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Already have an access code?</h3>
+                        <p className="text-sm text-gray-600">Enter your access code to start the assessment</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </>
         )}
 
