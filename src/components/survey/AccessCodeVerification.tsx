@@ -40,8 +40,6 @@ export const AccessCodeVerification: React.FC<AccessCodeVerificationProps> = ({
     setNeedsPurchase(false);
 
     try {
-      console.log('Verifying access code:', code);
-      
       const { data, error: apiError } = await supabase.functions.invoke('verify-access-code', {
         body: { code: code.trim() }
       });
@@ -51,8 +49,6 @@ export const AccessCodeVerification: React.FC<AccessCodeVerificationProps> = ({
         setError('Failed to verify access code. Please try again.');
         return;
       }
-
-      console.log('Verification response:', data);
 
       if (data.valid) {
         onVerified(data.accessCode);

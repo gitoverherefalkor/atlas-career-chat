@@ -169,9 +169,8 @@ export function CheckoutForm() {
   async function onSubmit(values: CheckoutFormValues) {
     setIsLoading(true);
     setError(null);
-    
+
     try {
-      console.log("Submitting checkout form:", values);
       const { data, error: apiError } = await supabase.functions.invoke("create-checkout", {
         body: {
           firstName: values.firstName,
@@ -191,8 +190,6 @@ export function CheckoutForm() {
       if (!data) {
         throw new Error("No data returned from API");
       }
-
-      console.log("Checkout session created:", data);
 
       if (data?.url) {
         // Redirect to Stripe checkout

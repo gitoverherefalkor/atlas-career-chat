@@ -194,20 +194,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     };
   }, [handleKeyDown]);
 
-  // Log section questions when survey loads
-  useEffect(() => {
-    if (isSessionLoaded && survey) {
-      // Print all question IDs and labels for section 1 (index 0)
-      const section1 = survey.sections[0];
-      if (section1) {
-        console.log('Section 1 (Intake) Questions:');
-        section1.questions.forEach(q => {
-          console.log(`ID: ${q.id} | Label: ${q.label}`);
-        });
-      }
-    }
-  }, [isSessionLoaded, survey]);
-
   // NOW we can do conditional returns, AFTER all hooks have been called
   
   // Loading states

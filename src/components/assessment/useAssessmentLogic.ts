@@ -7,8 +7,6 @@ import { useSurveyCompletion } from './hooks/useSurveyCompletion';
 import { useAssessmentNavigation } from './hooks/useAssessmentNavigation';
 
 export const useAssessmentLogic = () => {
-  console.log('useAssessmentLogic hook initialized');
-  
   const { user, isLoading: authLoading } = useAuth();
   const { redirectToAuth } = useAssessmentNavigation();
   const { session, updateSession, clearSession } = useAssessmentSession();
@@ -18,21 +16,9 @@ export const useAssessmentLogic = () => {
   } = useSurveyCompletion();
   const { handleExitAssessment } = useAssessmentNavigation();
 
-  console.log('useAssessmentLogic state:', {
-    isCompleted,
-    isVerified: session.isVerified,
-    showPreSurveyUpload: session.showPreSurveyUpload,
-    accessCodeData: session.accessCodeData,
-    sessionToken: session.sessionToken,
-    authLoading,
-    user: user ? { id: user.id, email: user.email } : null
-  });
-
   useEffect(() => {
-    console.log('useAssessmentLogic useEffect triggered', { authLoading, user });
     // Don't redirect if still loading
     if (authLoading) {
-      console.log('Still loading auth, waiting...');
       return;
     }
     // Redirect to auth if not logged in

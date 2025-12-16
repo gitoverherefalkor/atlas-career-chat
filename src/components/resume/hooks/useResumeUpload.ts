@@ -28,8 +28,6 @@ export const useResumeUpload = ({ onSuccess, onError }: UseResumeUploadProps) =>
       const formData = new FormData();
       formData.append('file', file);
 
-      console.log('Uploading file to parse-resume function:', file.name);
-
       const { data, error } = await supabase.functions.invoke('parse-resume', {
         body: formData
       });
@@ -39,16 +37,13 @@ export const useResumeUpload = ({ onSuccess, onError }: UseResumeUploadProps) =>
         throw error;
       }
 
-      console.log('Parse resume response:', data);
       setProcessingResult(data);
 
       if (data?.success && data?.extractedText) {
         const wordCount = data.wordCount || 0;
         const charCount = data.contentLength || 0;
-        
+
         if (wordCount > 20 && charCount > 100) {
-          console.log('Saving resume data to profile...');
-          
           // Store the extracted data in the profile
           const { error: updateError } = await supabase
             .from('profiles')
@@ -61,8 +56,6 @@ export const useResumeUpload = ({ onSuccess, onError }: UseResumeUploadProps) =>
 
           if (updateError) {
             console.warn('Failed to save resume data to profile:', updateError);
-          } else {
-            console.log('Resume data saved successfully');
           }
 
           setHasProcessed(true);

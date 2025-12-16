@@ -34,8 +34,6 @@ const AccessCodeVerifier = ({ prefilledCode, onVerified }: AccessCodeVerifierPro
     setError('');
 
     try {
-      console.log('Verifying access code:', code);
-      
       const { data, error: verifyError } = await supabase.functions.invoke('verify-access-code', {
         body: { code: code.trim().toUpperCase() }
       });
@@ -50,8 +48,6 @@ const AccessCodeVerifier = ({ prefilledCode, onVerified }: AccessCodeVerifierPro
         return;
       }
 
-      console.log('Access code verified successfully:', data);
-      
       setIsVerified(true);
       toast({
         title: "Access Code Verified!",

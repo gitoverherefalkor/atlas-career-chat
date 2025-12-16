@@ -9,9 +9,8 @@ export const getSurveyIdFromAccessCode = (accessCodeData: any): string => {
     console.error('No access code data provided to getSurveyIdFromAccessCode');
     return SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
   }
-  
+
   const surveyType = accessCodeData?.survey_type || 'Office / Business Pro - 2025 v1 EN';
   const surveyId = SURVEY_TYPE_MAPPING[surveyType] || SURVEY_TYPE_MAPPING['Office / Business Pro - 2025 v1 EN'];
-  console.log('Survey ID for access code:', { surveyType, surveyId });
   return surveyId;
 };

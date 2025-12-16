@@ -46,7 +46,6 @@ export const AssessmentSessionProvider: React.FC<{ children: React.ReactNode }> 
           const parsed = JSON.parse(stored);
           setSession(parsed);
           lastSavedSession.current = stored;
-          console.log('Restored session from storage');
         } catch (e) {
           console.error('Failed to parse stored session:', e);
         }
@@ -62,7 +61,6 @@ export const AssessmentSessionProvider: React.FC<{ children: React.ReactNode }> 
       if (serialized !== lastSavedSession.current) {
         localStorage.setItem('assessment_session', serialized);
         lastSavedSession.current = serialized;
-        console.log('Saved session to storage');
       }
     }
   }, [session]);

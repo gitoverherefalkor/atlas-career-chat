@@ -40,7 +40,6 @@ export const useResumePreFill = (props: {
     });
     if (Object.keys(prefill).length > 0) {
       props.setResponses(prev => ({ ...prev, ...prefill }));
-      console.log('[Google/LinkedIn prefill] Set responses from user_metadata:', prefill);
     }
   }, [props.isSessionLoaded, props.responses, props.setResponses, user]);
 };

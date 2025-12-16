@@ -31,10 +31,8 @@ export const useSurveyState = (surveyId: string) => {
   // Load session on mount - ONLY ONCE
   useEffect(() => {
     if (survey && !isSessionLoaded) {
-      console.log('Loading session for the first time...');
       const storedSession = getStoredSession();
       if (storedSession) {
-        console.log('Restoring session:', storedSession);
         setResponses(storedSession.responses);
         setCurrentSectionIndex(storedSession.currentSectionIndex);
         setCurrentQuestionIndex(storedSession.currentQuestionIndex);
@@ -62,7 +60,6 @@ export const useSurveyState = (surveyId: string) => {
         completedSections,
         submissionStatus
       };
-      console.log('Saving session:', session);
       saveSession(session);
     }
   }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, submissionStatus, survey, saveSession, isSessionLoaded]);

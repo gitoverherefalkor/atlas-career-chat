@@ -15,8 +15,6 @@ export const useSurveyCompletion = () => {
     accessCodeData: any,
     onSessionClear: () => void
   ) => {
-    console.log('Survey completed with responses:', responses);
-
     if (!accessCodeData || !user) {
       console.error('Missing required data for survey completion:', { accessCodeData, user });
       toast({
@@ -31,7 +29,6 @@ export const useSurveyCompletion = () => {
 
     try {
       // Call forward-to-n8n edge function which creates the report and triggers n8n workflow
-      console.log('Sending survey data to n8n for processing...');
       const { data, error: edgeFunctionError } = await supabase.functions.invoke('forward-to-n8n', {
         body: {
           user_id: user.id,
@@ -51,8 +48,6 @@ export const useSurveyCompletion = () => {
         console.error('Error calling forward-to-n8n:', edgeFunctionError);
         throw edgeFunctionError;
       }
-
-      console.log('Report created and sent to n8n:', data);
 
       // Update access code usage count
       if (accessCodeData?.id && accessCodeData.id !== 'existing-session') {

@@ -43,8 +43,6 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
     setNeedsPurchase(false);
 
     try {
-      console.log('Verifying access code:', code);
-      
       const { data, error: apiError } = await supabase.functions.invoke('verify-access-code', {
         body: { code: code.trim() }
       });
@@ -55,10 +53,7 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
         return;
       }
 
-      console.log('Verification response:', data);
-
       if (data.valid) {
-        console.log('Calling onVerified with:', data.accessCode);
         onVerified(data.accessCode);
       } else {
         setError(data.error);

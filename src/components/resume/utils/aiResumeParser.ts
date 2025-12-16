@@ -148,8 +148,6 @@ Return only a valid JSON object. No explanations.
 `;
 
   try {
-    console.log('Calling AI resume parser with comprehensive prompt...');
-    
     const { data, error } = await supabase.functions.invoke('parse-resume-ai', {
       body: { 
         resumeText,
@@ -163,8 +161,7 @@ Return only a valid JSON object. No explanations.
     }
 
     const extractedData = data.extractedData as ExtractedResumeData;
-    console.log('AI extracted data:', extractedData);
-    
+
     // Convert to survey question format with validation
     const surveyData: Record<string, any> = {};
     
@@ -251,9 +248,6 @@ Return only a valid JSON object. No explanations.
       surveyData[QUESTION_MAPPINGS.specialized_skills] = extractedData.specialized_skills;
     }
 
-    console.log('Final mapped survey data:', surveyData);
-    console.log('Successfully mapped fields:', Object.keys(surveyData).length);
-    
     return surveyData;
     
   } catch (error) {

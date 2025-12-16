@@ -17,7 +17,6 @@ export const useAssessmentNavigation = () => {
   };
 
   const redirectToAuth = () => {
-    console.log('No user, redirecting to auth');
     toast({
       title: "Authentication Required",
       description: "Please sign in to take the assessment.",

@@ -28,8 +28,6 @@ const PaymentSuccess = () => {
       }
 
       try {
-        console.log('Processing payment for session:', sessionId);
-        
         const { data, error: paymentError } = await supabase.functions.invoke('payment-success', {
           body: { sessionId }
         });
@@ -43,7 +41,6 @@ const PaymentSuccess = () => {
           throw new Error(data?.error || 'Payment processing failed');
         }
 
-        console.log('Payment processed successfully:', data);
         setAccessCode(data.accessCode);
         
         toast({

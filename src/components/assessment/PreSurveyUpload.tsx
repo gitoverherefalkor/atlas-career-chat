@@ -14,18 +14,15 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
   const [hasUploadedResume, setHasUploadedResume] = React.useState(false);
 
   const handleProcessingComplete = (data: any) => {
-    console.log('AI Resume processing completed:', data);
     // Store the survey prefill data (with correct question IDs) if available
     if (data && data.surveyPreFillData) {
       sessionStorage.setItem('resume_parsed_data', JSON.stringify(data.surveyPreFillData));
-      console.log('[PreSurveyUpload] Stored survey prefill data in sessionStorage:', data.surveyPreFillData);
       localStorage.setItem('resume_parsed_data', JSON.stringify(data.surveyPreFillData));
       localStorage.setItem('resume_parsed_timestamp', new Date().toISOString());
       setHasUploadedResume(true);
     } else if (data && data.aiParsedData) {
       // Fallback to AI parsed data if surveyPreFillData not available
       sessionStorage.setItem('resume_parsed_data', JSON.stringify(data.aiParsedData));
-      console.log('[PreSurveyUpload] Stored AI parsed data in sessionStorage:', data.aiParsedData);
       localStorage.setItem('resume_parsed_data', JSON.stringify(data.aiParsedData));
       localStorage.setItem('resume_parsed_timestamp', new Date().toISOString());
       setHasUploadedResume(true);
