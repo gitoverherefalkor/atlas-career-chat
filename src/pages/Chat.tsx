@@ -149,12 +149,6 @@ const Chat = () => {
 
     // Small delay to ensure DOM is ready
     setTimeout(() => {
-      // Use report_id as sessionId so chat history can be recovered by report_id
-      const sessionId = reportData.id;
-
-      // Pre-set the session ID in localStorage before createChat runs
-      localStorage.setItem('n8n-chat/sessionId', sessionId);
-
       createChat({
         webhookUrl: chatWebhookUrl,
         mode: 'fullscreen',
