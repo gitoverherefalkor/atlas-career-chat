@@ -25,8 +25,8 @@ const Pricing = () => {
       // User is logged in, go to dashboard
       navigate('/dashboard');
     } else {
-      // User is not logged in, go to auth page with signup flow
-      navigate('/auth?flow=signup');
+      // User is not logged in, go to payment/checkout page
+      navigate('/payment');
     }
   };
 
