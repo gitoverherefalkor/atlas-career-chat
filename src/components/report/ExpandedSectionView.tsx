@@ -138,11 +138,11 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
       // Parse the paragraph - check for HTML tags first, then markdown
       let element: React.ReactNode;
 
-      // HTML tag patterns
-      const h3Match = paragraph.match(/^<h3>(.*?)<\/h3>$/);
-      const h4Match = paragraph.match(/^<h4>(.*?)<\/h4>$/);
-      const h5Match = paragraph.match(/^<h5>(.*?)<\/h5>$/);
-      const strongMatch = paragraph.match(/^<strong>(.*?)<\/strong>$/);
+      // HTML tag patterns - handle nested tags like <h3><strong>text</strong></h3>
+      const h3Match = paragraph.trim().match(/^<h3>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h3>$/);
+      const h4Match = paragraph.trim().match(/^<h4>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h4>$/);
+      const h5Match = paragraph.trim().match(/^<h5>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h5>$/);
+      const strongMatch = paragraph.trim().match(/^<strong>(.*?)<\/strong>$/);
 
       if (h3Match) {
         // HTML h3 tag
