@@ -265,9 +265,50 @@ button[data-test-id="send-button"]:disabled {
 }
 
 /* Section headers styling */
-#n8n-chat-container h3 {
+#n8n-chat-container h3,
+.chat-message-markdown h3 {
     color: var(--chat--color-dark);
     font-weight: 600;
+    font-size: 1.125rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* HTML heading styles in chat messages */
+.chat-message-markdown h4,
+#n8n-chat .chat-message-markdown h4 {
+    color: var(--chat--color-secondary);
+    font-weight: 600;
+    font-size: 1rem;
+    margin-top: 0.875rem;
+    margin-bottom: 0.375rem;
+}
+
+.chat-message-markdown h5,
+#n8n-chat .chat-message-markdown h5 {
+    color: #4b5563;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.chat-message-markdown h6,
+#n8n-chat .chat-message-markdown h6 {
+    color: #6b7280;
+    font-weight: 600;
+    font-size: 0.875rem;
     margin-top: 0.5rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Ensure HTML renders properly - allow all HTML in messages */
+.chat-message-bubble,
+#n8n-chat .chat-message-bubble,
+.chat-message-markdown {
+    white-space: normal !important;
+}
+
+.chat-message-markdown * {
+    white-space: normal !important;
 }
