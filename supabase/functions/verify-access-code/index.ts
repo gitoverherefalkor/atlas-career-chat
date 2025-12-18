@@ -45,8 +45,8 @@ serve(async (req) => {
 
     if (error || !accessCode) {
       console.log('Access code not found:', code);
-      return new Response(JSON.stringify({ 
-        valid: false, 
+      return new Response(JSON.stringify({
+        valid: false,
         error: 'Access code not found. Please check your code or purchase a new one.',
         needsPurchase: true
       }), {
@@ -54,11 +54,23 @@ serve(async (req) => {
       });
     }
 
-    // Check if expired
-    if (new Date(accessCode.expires_at) < new Date()) {
+    // Check if code is active
+    if (accessCode.is_active === false) {
+      console.log('Access code is inactive:', code);
+      return new Response(JSON.stringify({
+        valid: false,
+        error: 'This access code has been deactivated. Please contact support.',
+        needsPurchase: false
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Check if expired (only if expires_at is set)
+    if (accessCode.expires_at && new Date(accessCode.expires_at) < new Date()) {
       console.log('Access code expired:', code);
-      return new Response(JSON.stringify({ 
-        valid: false, 
+      return new Response(JSON.stringify({
+        valid: false,
         error: 'Access code has expired. Please purchase a new one.',
         needsPurchase: true
       }), {
