@@ -18,7 +18,6 @@ import Profile from "./pages/Profile";
 import Chat from "./pages/Chat";
 import Report from "./pages/Report";
 import ReportProcessing from "./pages/ReportProcessing";
-import N8nChat from "./pages/N8nChat";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import Payment from "./pages/Payment";
@@ -46,7 +45,6 @@ const App = () => {
             <Route path="/chat" element={<Chat />} />
             <Route path="/report" element={<Report />} />
             <Route path="/report-processing" element={<ReportProcessing />} />
-            <Route path="/n8n-chat" element={<N8nChat />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-conditions" element={<TermsOfService />} />
             <Route path="/payment" element={<Payment />} />
