@@ -135,20 +135,44 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
         paragraph.trim().toLowerCase() === `${pattern.toLowerCase()}:`
       );
 
-      // Parse the paragraph
+      // Parse the paragraph - check for HTML tags first, then markdown
       let element: React.ReactNode;
-      if (paragraph.startsWith('## ')) {
-        // New section header - flush blocks first
+
+      // HTML tag patterns
+      const h3Match = paragraph.match(/^<h3>(.*?)<\/h3>$/);
+      const h4Match = paragraph.match(/^<h4>(.*?)<\/h4>$/);
+      const h5Match = paragraph.match(/^<h5>(.*?)<\/h5>$/);
+      const strongMatch = paragraph.match(/^<strong>(.*?)<\/strong>$/);
+
+      if (h3Match) {
+        // HTML h3 tag
+        flushBlocks();
+        const title = h3Match[1];
+        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        element = <h3 key={index} id={id} className="text-xl font-bold mt-10 mb-4 text-atlas-navy first:mt-0 scroll-mt-24">{title}</h3>;
+      } else if (h4Match) {
+        // HTML h4 tag
+        element = <h4 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-blue">{h4Match[1]}</h4>;
+      } else if (h5Match) {
+        // HTML h5 tag
+        element = <h5 key={index} className="text-base font-semibold mt-6 mb-2 text-gray-800">{h5Match[1]}</h5>;
+      } else if (strongMatch) {
+        // HTML strong tag
+        element = <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{strongMatch[1]}</p>;
+      } else if (paragraph.startsWith('## ')) {
+        // Markdown h3 - flush blocks first
         flushBlocks();
         const title = paragraph.replace('## ', '');
         const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
         element = <h3 key={index} id={id} className="text-xl font-bold mt-10 mb-4 text-atlas-navy first:mt-0 scroll-mt-24">{title}</h3>;
       } else if (paragraph.startsWith('### ')) {
+        // Markdown h4
         element = <h4 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-blue">{paragraph.replace('### ', '')}</h4>;
       } else if (isSubheader) {
         // h5 subheader styling
         element = <h5 key={index} className="text-base font-semibold mt-6 mb-2 text-gray-800">{paragraph.trim()}</h5>;
       } else if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+        // Markdown bold
         element = <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{paragraph.replace(/\*\*/g, '')}</p>;
       } else if (paragraph.startsWith('•') || paragraph.startsWith('- ')) {
         const text = paragraph.startsWith('- ') ? paragraph.substring(2) : paragraph.substring(1);
@@ -156,7 +180,13 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
       } else if (paragraph.trim() === '') {
         element = <br key={index} />;
       } else {
-        element = <p key={index} className="mb-3">{paragraph}</p>;
+        // Default paragraph - also strip any remaining inline HTML tags
+        const cleanedParagraph = paragraph
+          .replace(/<\/?strong>/g, '')
+          .replace(/<\/?em>/g, '')
+          .replace(/<\/?b>/g, '')
+          .replace(/<\/?i>/g, '');
+        element = <p key={index} className="mb-3">{cleanedParagraph}</p>;
       }
 
       if (element) {
