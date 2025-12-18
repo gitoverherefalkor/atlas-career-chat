@@ -61,6 +61,66 @@ const Chat = () => {
     }
   }, [authLoading, user]);
 
+  // MutationObserver to convert escaped HTML tags in chat messages to actual HTML
+  useEffect(() => {
+    if (!chatInitialized) return;
+
+    const convertHtmlTags = (element: Element) => {
+      // Find all text nodes that might contain HTML-like patterns
+      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
+      const textNodes: Text[] = [];
+      let node;
+      while ((node = walker.nextNode())) {
+        if (node.textContent && /<[hH][3-6]>|<\/?strong>|<\/?em>/i.test(node.textContent)) {
+          textNodes.push(node as Text);
+        }
+      }
+
+      textNodes.forEach(textNode => {
+        const text = textNode.textContent || '';
+        // Convert HTML tag text to actual HTML
+        const converted = text
+          .replace(/<h3>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h3>/gi, '<h3 class="text-lg font-bold mt-4 mb-2 text-atlas-navy">$1</h3>')
+          .replace(/<h4>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h4>/gi, '<h4 class="text-base font-semibold mt-3 mb-1 text-atlas-blue">$1</h4>')
+          .replace(/<h5>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h5>/gi, '<h5 class="text-sm font-semibold mt-2 mb-1 text-gray-700">$1</h5>')
+          .replace(/<strong>(.*?)<\/strong>/gi, '<strong class="font-semibold">$1</strong>')
+          .replace(/<em>(.*?)<\/em>/gi, '<em>$1</em>');
+
+        if (converted !== text) {
+          const wrapper = document.createElement('span');
+          wrapper.innerHTML = converted;
+          textNode.parentNode?.replaceChild(wrapper, textNode);
+        }
+      });
+    };
+
+    const chatContainer = document.getElementById('n8n-chat-container');
+    if (!chatContainer) return;
+
+    // Process existing messages
+    chatContainer.querySelectorAll('.chat-message-markdown').forEach(convertHtmlTags);
+
+    // Watch for new messages
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node instanceof Element) {
+            const messages = node.querySelectorAll('.chat-message-markdown');
+            if (messages.length > 0) {
+              messages.forEach(convertHtmlTags);
+            } else if (node.classList?.contains('chat-message-markdown')) {
+              convertHtmlTags(node);
+            }
+          }
+        });
+      });
+    });
+
+    observer.observe(chatContainer, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [chatInitialized]);
+
   // Auto-initialize chat when returning with existing session (only if not stale)
   useEffect(() => {
     // Use ref to prevent multiple initializations (ref updates immediately, state doesn't)
