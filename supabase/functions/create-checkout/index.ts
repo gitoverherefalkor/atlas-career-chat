@@ -51,54 +51,16 @@ serve(async (req) => {
     }
 
     console.log("Creating checkout session for:", email, "Country:", country);
-    
-    // Define payment methods based on country
-    const paymentMethods = ["card"];
-    
-    // Add iDEAL for Netherlands
-    if (country === "Netherlands") {
-      paymentMethods.push("ideal");
-    }
-    
-    // Add European payment methods
-    if (["Germany", "Belgium"].includes(country)) {
-      paymentMethods.push("ideal");
-    }
-    
-    // Add Klarna for supported countries
-    if (["Germany", "Austria", "Finland", "Netherlands", "Belgium", "Sweden", "United Kingdom"].includes(country)) {
-      paymentMethods.push("klarna");
-    }
-    
-    // Add SEPA Direct Debit for EU countries
-    const euCountries = [
-      "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", 
-      "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", 
-      "Hungary", "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", 
-      "Malta", "Netherlands", "Poland", "Portugal", "Romania", "Slovakia", 
-      "Slovenia", "Spain", "Sweden"
-    ];
-    if (euCountries.includes(country)) {
-      paymentMethods.push("sepa_debit");
-    }
-    
-    // Add other country-specific payment methods
-    if (country === "Belgium") {
-      paymentMethods.push("bancontact");
-    }
-    
-    if (country === "Austria") {
-      paymentMethods.push("eps");
-    }
-    
-    if (country === "Germany") {
-      paymentMethods.push("giropay");
-    }
-    
-    if (country === "Poland") {
-      paymentMethods.push("p24");
-    }
-    
+
+    // For now, only use card payments
+    // TODO: Enable additional payment methods in Stripe dashboard, then uncomment below
+    const paymentMethods: string[] = ["card"];
+
+    // Add iDEAL for Netherlands (enable in Stripe dashboard first)
+    // if (country === "Netherlands") {
+    //   paymentMethods.push("ideal");
+    // }
+
     console.log("Available payment methods:", paymentMethods);
     
     // Get the origin from request headers or use the live domain
@@ -122,6 +84,7 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
+      allow_promotion_codes: true, // Enable promo code field
       success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
       customer_email: email,
