@@ -18,16 +18,40 @@ const AuthConfirm = () => {
       // First, exchange the code for a session if this is an OAuth callback
       // This handles both hash-based (#access_token) and code-based (?code=) flows
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const hasAccessToken = hashParams.has('access_token');
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
       const hasCode = searchParams.has('code');
 
-      // If we have OAuth params, wait a moment for Supabase to process them
-      if (hasAccessToken || hasCode) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
+      let session = null;
 
-      // Check if this is an OAuth callback (has code/token in hash or query)
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Handle hash-based OAuth callback (implicit flow)
+      if (accessToken && refreshToken) {
+        console.log('Found OAuth tokens in hash, setting session...');
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
+
+        if (error) {
+          console.error('Error setting session from hash:', error);
+          setStatus('error');
+          setMessage('Failed to complete sign in. Please try again.');
+          return;
+        }
+        session = data.session;
+
+        // Clear the hash from URL for cleaner display
+        window.history.replaceState(null, '', window.location.pathname);
+      } else if (hasCode) {
+        // Handle PKCE flow (code-based)
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { data: { session: codeSession } } = await supabase.auth.getSession();
+        session = codeSession;
+      } else {
+        // No OAuth params, check for existing session
+        const { data: { session: existingSession } } = await supabase.auth.getSession();
+        session = existingSession;
+      }
 
       if (session?.user) {
         // OAuth callback successful - user is authenticated
