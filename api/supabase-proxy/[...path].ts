@@ -32,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(204).end();
   }
 
-  // Get the path to proxy (everything after /api/supabase-proxy)
+  // Get the path to proxy from the catch-all route
   const { path } = req.query;
   const supabasePath = Array.isArray(path) ? path.join('/') : path || '';
 
