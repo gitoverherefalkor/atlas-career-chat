@@ -7,6 +7,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
 const AuthConfirm = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -15,81 +17,62 @@ const AuthConfirm = () => {
 
   useEffect(() => {
     const handleAuthConfirm = async () => {
-      // First, exchange the code for a session if this is an OAuth callback
-      // This handles both hash-based (#access_token) and code-based (?code=) flows
+      // Check for error in query params (from Edge Function)
+      const errorParam = searchParams.get('error');
+      if (errorParam) {
+        setStatus('error');
+        setMessage(errorParam);
+        return;
+      }
+
+      // Check for tokens in hash (from Edge Function OAuth callback)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
-      const hasCode = searchParams.has('code');
+      const expiresIn = hashParams.get('expires_in');
 
-      let session = null;
-
-      // Handle hash-based OAuth callback (implicit flow)
       if (accessToken && refreshToken) {
-        console.log('Found OAuth tokens in hash, setting session...');
-        const { data, error } = await supabase.auth.setSession({
+        console.log('Found OAuth tokens in hash from Edge Function');
+
+        // Store tokens directly in localStorage (Supabase format)
+        // This avoids the CORS issue by not calling setSession() which hits the API
+        const storageKey = `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
+
+        const expiresAt = Math.floor(Date.now() / 1000) + (parseInt(expiresIn || '3600'));
+
+        const sessionData = {
           access_token: accessToken,
           refresh_token: refreshToken,
-        });
+          expires_at: expiresAt,
+          expires_in: parseInt(expiresIn || '3600'),
+          token_type: 'bearer',
+        };
 
-        if (error) {
-          console.error('Error setting session from hash:', error);
-          setStatus('error');
-          setMessage('Failed to complete sign in. Please try again.');
-          return;
-        }
-        session = data.session;
+        localStorage.setItem(storageKey, JSON.stringify(sessionData));
+        console.log('Session stored in localStorage');
 
-        // Clear the hash from URL for cleaner display
+        // Clear the hash from URL
         window.history.replaceState(null, '', window.location.pathname);
-      } else if (hasCode) {
-        // Handle PKCE flow (code-based)
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const { data: { session: codeSession } } = await supabase.auth.getSession();
-        session = codeSession;
-      } else {
-        // No OAuth params, check for existing session
-        const { data: { session: existingSession } } = await supabase.auth.getSession();
-        session = existingSession;
-      }
-
-      if (session?.user) {
-        // OAuth callback successful - user is authenticated
-
-        // Check if profile exists, create if not
-        const { data: existingProfile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-
-        if (!existingProfile) {
-          // Get auth provider from session
-          const provider = session.user.app_metadata?.provider || 'email';
-
-          // Create profile from OAuth data
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert({
-              id: session.user.id,
-              email: session.user.email!,
-              first_name: session.user.user_metadata?.full_name?.split(' ')[0] || '',
-              last_name: session.user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || '',
-              auth_provider: provider,
-            });
-
-          if (profileError) {
-            console.error('Error creating profile:', profileError);
-          }
-        }
 
         setStatus('success');
         setMessage('Successfully signed in!');
 
         // Redirect to dashboard
         setTimeout(() => {
-          navigate('/dashboard');
-        }, 1500);
+          // Force a page reload to ensure Supabase client picks up the new session
+          window.location.href = '/dashboard';
+        }, 1000);
+        return;
+      }
+
+      // Handle PKCE code flow (if coming directly from Supabase, not Edge Function)
+      const hasCode = searchParams.has('code');
+      if (hasCode) {
+        // This path shouldn't happen with the Edge Function approach
+        // but keep as fallback
+        console.log('Code param detected - redirecting through edge function');
+        setStatus('error');
+        setMessage('Please use social login buttons to sign in.');
         return;
       }
 
@@ -98,6 +81,13 @@ const AuthConfirm = () => {
       const type = searchParams.get('type');
 
       if (!token || !type) {
+        // Check if user is already logged in
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          navigate('/dashboard');
+          return;
+        }
+
         setStatus('error');
         setMessage('Invalid confirmation link. Please try signing up again.');
         return;

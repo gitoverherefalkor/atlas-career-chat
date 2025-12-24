@@ -5,6 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Loader2, Linkedin } from 'lucide-react';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+// Edge Function URL for OAuth callback (handles token exchange server-side to avoid CORS)
+const AUTH_CALLBACK_URL = `${SUPABASE_URL}/functions/v1/auth-callback`;
+
 interface SocialAuthButtonsProps {
   disabled?: boolean;
   onError: (error: string) => void;
@@ -23,7 +28,12 @@ const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/confirm`
+          // Redirect to Edge Function which exchanges code server-side (no CORS)
+          redirectTo: AUTH_CALLBACK_URL,
+          queryParams: {
+            // Ensure we get a code, not implicit tokens
+            response_type: 'code',
+          }
         }
       });
 
@@ -49,7 +59,12 @@ const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
-          redirectTo: `${window.location.origin}/auth/confirm`
+          // Redirect to Edge Function which exchanges code server-side (no CORS)
+          redirectTo: AUTH_CALLBACK_URL,
+          queryParams: {
+            // Ensure we get a code, not implicit tokens
+            response_type: 'code',
+          }
         }
       });
 
