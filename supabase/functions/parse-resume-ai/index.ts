@@ -103,13 +103,43 @@ IMPORTANT: You must respond with ONLY a valid JSON object. No markdown, no code 
         }
       }
 
-      console.log('Attempting to parse JSON (first 200 chars):', jsonString.substring(0, 200));
-      extractedData = JSON.parse(jsonString.trim());
+      // Clean up common JSON issues
+      jsonString = jsonString.trim();
+
+      // Fix unescaped newlines inside strings (common Gemini issue)
+      // Replace actual newlines with escaped newlines, but only inside string values
+      jsonString = jsonString.replace(/[\r\n]+/g, ' ');
+
+      // Fix unescaped quotes inside strings - replace smart quotes with regular quotes
+      jsonString = jsonString.replace(/[\u201C\u201D]/g, '"');
+      jsonString = jsonString.replace(/[\u2018\u2019]/g, "'");
+
+      console.log('Attempting to parse JSON (first 300 chars):', jsonString.substring(0, 300));
+      extractedData = JSON.parse(jsonString);
       console.log('JSON parsed successfully. Keys:', Object.keys(extractedData));
     } catch (parseError) {
-      console.error('JSON parse failed. Raw response:', aiResponse);
+      console.error('JSON parse failed. Raw response (first 500 chars):', aiResponse.substring(0, 500));
       console.error('Parse error:', parseError.message);
-      throw new Error('AI returned invalid JSON: ' + parseError.message);
+
+      // Try one more time with aggressive cleaning
+      try {
+        let cleanJson = aiResponse
+          .replace(/```(?:json)?/g, '')
+          .replace(/```/g, '')
+          .replace(/[\r\n\t]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        const match = cleanJson.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
+        if (match) {
+          extractedData = JSON.parse(match[0]);
+          console.log('JSON parsed on second attempt. Keys:', Object.keys(extractedData));
+        } else {
+          throw parseError;
+        }
+      } catch (secondError) {
+        throw new Error('AI returned invalid JSON: ' + parseError.message);
+      }
     }
 
     return new Response(
