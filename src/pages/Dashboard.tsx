@@ -72,15 +72,19 @@ const Dashboard = () => {
     return reports && reports.length > 0;
   };
 
-  // Check if there's meaningful assessment progress (not just at question 1)
+  // Check if there's meaningful assessment progress or a started session
   const hasMeaningfulProgress = () => {
     if (!savedSession) return false;
-    
-    // Only show continue if they're beyond the first question OR have actual responses
+
+    // Show continue if:
+    // 1. They're beyond the first question
+    // 2. They have any responses saved
+    // 3. They have verified access (entered access code)
     const beyondFirstQuestion = savedSession.currentSectionIndex > 0 || savedSession.currentQuestionIndex > 0;
     const hasResponses = savedSession.responses && Object.keys(savedSession.responses).length > 0;
-    
-    return beyondFirstQuestion || hasResponses;
+    const hasVerified = savedSession.isVerified || savedSession.accessCodeData;
+
+    return beyondFirstQuestion || hasResponses || hasVerified;
   };
 
   // Check if user has already verified access code (meaning they don't need purchase/access code options)
