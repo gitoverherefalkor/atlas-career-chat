@@ -66,23 +66,36 @@ serve(async (req) => {
 
     console.log('AI raw response:', aiResponse);
 
-    // Parse the JSON response - handle markdown code blocks that Gemini sometimes returns
+    // Parse the JSON response - handle various formats Gemini might return
     let extractedData;
     try {
       let jsonString = aiResponse.trim();
-      // Remove markdown code blocks if present
-      if (jsonString.startsWith('```json')) {
-        jsonString = jsonString.slice(7);
-      } else if (jsonString.startsWith('```')) {
-        jsonString = jsonString.slice(3);
+
+      // Remove markdown code blocks if present (various formats)
+      // Handle ```json\n...\n```
+      const jsonBlockMatch = jsonString.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonBlockMatch) {
+        jsonString = jsonBlockMatch[1];
+      } else {
+        // Handle ```\n...\n```
+        const codeBlockMatch = jsonString.match(/```\s*([\s\S]*?)\s*```/);
+        if (codeBlockMatch) {
+          jsonString = codeBlockMatch[1];
+        } else {
+          // Try to extract JSON object directly { ... }
+          const jsonObjectMatch = jsonString.match(/\{[\s\S]*\}/);
+          if (jsonObjectMatch) {
+            jsonString = jsonObjectMatch[0];
+          }
+        }
       }
-      if (jsonString.endsWith('```')) {
-        jsonString = jsonString.slice(0, -3);
-      }
+
+      console.log('Cleaned JSON string:', jsonString.substring(0, 200));
       extractedData = JSON.parse(jsonString.trim());
     } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', aiResponse);
-      throw new Error('AI returned invalid JSON');
+      console.error('Failed to parse AI response as JSON. Raw response:', aiResponse);
+      console.error('Parse error:', parseError.message);
+      throw new Error('AI returned invalid JSON: ' + parseError.message);
     }
 
     console.log('AI parsed data:', extractedData);
