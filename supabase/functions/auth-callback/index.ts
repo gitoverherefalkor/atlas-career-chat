@@ -97,25 +97,23 @@ serve(async (req) => {
       console.log("Created new profile for user");
     }
 
-    // Redirect to frontend with tokens in hash
-    // The frontend will store these directly without needing to call the API (avoiding CORS)
-    const accessToken = data.session.access_token;
-    const refreshToken = data.session.refresh_token;
-    const expiresIn = data.session.expires_in;
-    const tokenType = data.session.token_type || 'bearer';
+    // Build the complete session object that Supabase JS client expects
+    const sessionData = {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_at: data.session.expires_at,
+      expires_in: data.session.expires_in,
+      token_type: data.session.token_type || 'bearer',
+      user: data.user,
+    };
 
-    // Build the redirect URL with tokens in hash (same format Supabase uses)
-    const hashParams = new URLSearchParams({
-      access_token: accessToken,
-      refresh_token: refreshToken,
-      expires_in: String(expiresIn),
-      token_type: tokenType,
-      type: 'signup', // or 'login' - this tells the frontend it's an auth callback
-    });
+    // Base64 encode the session to pass it safely in URL
+    const sessionBase64 = btoa(JSON.stringify(sessionData));
 
-    const redirectUrl = `${FRONTEND_URL}/auth/confirm#${hashParams.toString()}`;
+    // Build the redirect URL with session data
+    const redirectUrl = `${FRONTEND_URL}/auth/confirm?session=${encodeURIComponent(sessionBase64)}`;
 
-    console.log("Redirecting to frontend with tokens in hash");
+    console.log("Redirecting to frontend with full session");
     return Response.redirect(redirectUrl, 302);
 
   } catch (err) {

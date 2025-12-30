@@ -25,44 +25,39 @@ const AuthConfirm = () => {
         return;
       }
 
-      // Check for tokens in hash (from Edge Function OAuth callback)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
-      const expiresIn = hashParams.get('expires_in');
+      // Check for session data from Edge Function (base64 encoded in query param)
+      const sessionParam = searchParams.get('session');
+      if (sessionParam) {
+        try {
+          console.log('Found session from Edge Function');
 
-      if (accessToken && refreshToken) {
-        console.log('Found OAuth tokens in hash from Edge Function');
+          // Decode the base64 session data
+          const sessionData = JSON.parse(atob(decodeURIComponent(sessionParam)));
+          console.log('Session decoded for user:', sessionData.user?.email);
 
-        // Store tokens directly in localStorage (Supabase format)
-        // This avoids the CORS issue by not calling setSession() which hits the API
-        const storageKey = `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
+          // Store the complete session in localStorage (Supabase format)
+          const storageKey = `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
+          localStorage.setItem(storageKey, JSON.stringify(sessionData));
+          console.log('Full session stored in localStorage');
 
-        const expiresAt = Math.floor(Date.now() / 1000) + (parseInt(expiresIn || '3600'));
+          // Clear the URL params for cleaner display
+          window.history.replaceState(null, '', window.location.pathname);
 
-        const sessionData = {
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          expires_at: expiresAt,
-          expires_in: parseInt(expiresIn || '3600'),
-          token_type: 'bearer',
-        };
+          setStatus('success');
+          setMessage('Successfully signed in!');
 
-        localStorage.setItem(storageKey, JSON.stringify(sessionData));
-        console.log('Session stored in localStorage');
-
-        // Clear the hash from URL
-        window.history.replaceState(null, '', window.location.pathname);
-
-        setStatus('success');
-        setMessage('Successfully signed in!');
-
-        // Redirect to dashboard
-        setTimeout(() => {
-          // Force a page reload to ensure Supabase client picks up the new session
-          window.location.href = '/dashboard';
-        }, 1000);
-        return;
+          // Redirect to dashboard
+          setTimeout(() => {
+            // Force a page reload to ensure Supabase client picks up the new session
+            window.location.href = '/dashboard';
+          }, 1000);
+          return;
+        } catch (err) {
+          console.error('Error parsing session:', err);
+          setStatus('error');
+          setMessage('Failed to process sign in. Please try again.');
+          return;
+        }
       }
 
       // Handle PKCE code flow (if coming directly from Supabase, not Edge Function)
