@@ -48,12 +48,73 @@ const AuthConfirm = () => {
 
           // Redirect to dashboard
           setTimeout(() => {
-            // Force a page reload to ensure Supabase client picks up the new session
             window.location.href = '/dashboard';
           }, 1000);
           return;
         } catch (err) {
           console.error('Error parsing session:', err);
+          setStatus('error');
+          setMessage('Failed to process sign in. Please try again.');
+          return;
+        }
+      }
+
+      // Handle implicit OAuth flow (tokens in URL hash) - this is what Supabase returns
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      const expiresAt = hashParams.get('expires_at');
+      const expiresIn = hashParams.get('expires_in');
+
+      if (accessToken && refreshToken) {
+        try {
+          console.log('Found OAuth tokens in hash (implicit flow)');
+
+          // Decode the JWT to get user data (no API call needed!)
+          const payload = JSON.parse(atob(accessToken.split('.')[1]));
+          console.log('JWT decoded for user:', payload.email);
+
+          // Build user object from JWT payload
+          const user = {
+            id: payload.sub,
+            email: payload.email,
+            phone: payload.phone || '',
+            app_metadata: payload.app_metadata || {},
+            user_metadata: payload.user_metadata || {},
+            aud: payload.aud,
+            role: payload.role,
+            created_at: '',
+            updated_at: '',
+          };
+
+          // Build complete session
+          const sessionData = {
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            expires_at: parseInt(expiresAt || '0') || Math.floor(Date.now() / 1000) + parseInt(expiresIn || '3600'),
+            expires_in: parseInt(expiresIn || '3600'),
+            token_type: 'bearer',
+            user: user,
+          };
+
+          // Store in localStorage
+          const storageKey = `sb-${new URL(SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
+          localStorage.setItem(storageKey, JSON.stringify(sessionData));
+          console.log('Full session stored in localStorage');
+
+          // Clear the hash from URL
+          window.history.replaceState(null, '', window.location.pathname);
+
+          setStatus('success');
+          setMessage('Successfully signed in!');
+
+          // Redirect to dashboard
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 1000);
+          return;
+        } catch (err) {
+          console.error('Error processing OAuth tokens:', err);
           setStatus('error');
           setMessage('Failed to process sign in. Please try again.');
           return;
