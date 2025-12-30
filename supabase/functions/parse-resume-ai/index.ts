@@ -27,7 +27,7 @@ serve(async (req) => {
     console.log('Processing resume with Gemini, text length:', resumeText.length);
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${geminiApiKey}`,
       {
         method: 'POST',
         headers: {
