@@ -6,8 +6,33 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+// Extract JSON from text, stripping markdown code blocks
+function extractJson(text: string): string {
+  let s = text.trim();
+
+  // Strip markdown code blocks - handle ```json and ```
+  s = s.replace(/^```json\s*/i, '');
+  s = s.replace(/^```\s*/i, '');
+  s = s.replace(/\s*```$/i, '');
+
+  // Find JSON object boundaries
+  const start = s.indexOf('{');
+  const end = s.lastIndexOf('}');
+
+  if (start !== -1 && end !== -1 && end > start) {
+    s = s.substring(start, end + 1);
+  }
+
+  // Clean problematic characters
+  s = s.replace(/[\u201C\u201D]/g, '"');  // smart double quotes
+  s = s.replace(/[\u2018\u2019]/g, "'");  // smart single quotes
+  s = s.replace(/[\r\n\t]+/g, ' ');       // newlines/tabs to spaces
+  s = s.replace(/\s+/g, ' ');             // collapse whitespace
+
+  return s.trim();
+}
+
 serve(async (req) => {
-  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -26,38 +51,25 @@ serve(async (req) => {
 
     console.log('Processing resume with Gemini 2.5 Flash');
     console.log('Resume text length:', resumeText.length);
-    console.log('Prompt length:', prompt?.length || 0);
-
-    // Build the full prompt - include both the system instruction and the user prompt
-    const fullPrompt = `${prompt}
-
-IMPORTANT: You must respond with ONLY a valid JSON object. No markdown, no code blocks, no explanations. Just the raw JSON starting with { and ending with }`;
 
     const requestBody = {
-      contents: [
-        {
-          parts: [
-            {
-              text: fullPrompt
-            }
-          ]
-        }
-      ],
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
       generationConfig: {
         temperature: 0.1,
         maxOutputTokens: 2000,
+        responseMimeType: "application/json"  // Force JSON output mode
       }
     };
 
-    console.log('Sending request to Gemini...');
+    console.log('Sending request to Gemini with JSON mode...');
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       }
     );
@@ -69,104 +81,43 @@ IMPORTANT: You must respond with ONLY a valid JSON object. No markdown, no code 
     }
 
     const data = await response.json();
-    console.log('Gemini response received');
 
-    // Check for safety blocks or other issues
     if (data.candidates?.[0]?.finishReason === 'SAFETY') {
-      console.error('Response blocked by safety filters');
       throw new Error('Response blocked by safety filters');
     }
 
     const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!aiResponse) {
-      console.error('No text in response. Candidates:', JSON.stringify(data.candidates));
+      console.error('No text in response:', JSON.stringify(data.candidates));
       throw new Error('No response from Gemini');
     }
 
-    console.log('AI raw response (first 500 chars):', aiResponse.substring(0, 500));
+    console.log('AI response (first 500 chars):', aiResponse.substring(0, 500));
 
-    // Parse the JSON response - handle various formats
+    // Parse JSON - with JSON mode this should be clean, but handle edge cases
     let extractedData;
     try {
-      let jsonString = aiResponse.trim();
-
-      // Remove markdown code blocks if present
-      const jsonBlockMatch = jsonString.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-      if (jsonBlockMatch) {
-        jsonString = jsonBlockMatch[1];
-      } else {
-        // Try to extract JSON object directly { ... }
-        const jsonObjectMatch = jsonString.match(/\{[\s\S]*\}/);
-        if (jsonObjectMatch) {
-          jsonString = jsonObjectMatch[0];
-        }
-      }
-
-      // Clean up common JSON issues
-      jsonString = jsonString.trim();
-
-      // Fix unescaped newlines inside strings (common Gemini issue)
-      // Replace actual newlines with escaped newlines, but only inside string values
-      jsonString = jsonString.replace(/[\r\n]+/g, ' ');
-
-      // Fix unescaped quotes inside strings - replace smart quotes with regular quotes
-      jsonString = jsonString.replace(/[\u201C\u201D]/g, '"');
-      jsonString = jsonString.replace(/[\u2018\u2019]/g, "'");
-
-      console.log('Attempting to parse JSON (first 300 chars):', jsonString.substring(0, 300));
-      extractedData = JSON.parse(jsonString);
-      console.log('JSON parsed successfully. Keys:', Object.keys(extractedData));
-    } catch (parseError) {
-      console.error('JSON parse failed. Raw response (first 500 chars):', aiResponse.substring(0, 500));
-      console.error('Parse error:', parseError.message);
-
-      // Try one more time with aggressive cleaning
-      try {
-        let cleanJson = aiResponse
-          .replace(/```(?:json)?/g, '')
-          .replace(/```/g, '')
-          .replace(/[\r\n\t]/g, ' ')
-          .replace(/\s+/g, ' ')
-          .trim();
-
-        const match = cleanJson.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/);
-        if (match) {
-          extractedData = JSON.parse(match[0]);
-          console.log('JSON parsed on second attempt. Keys:', Object.keys(extractedData));
-        } else {
-          throw parseError;
-        }
-      } catch (secondError) {
-        throw new Error('AI returned invalid JSON: ' + parseError.message);
-      }
+      extractedData = JSON.parse(aiResponse);
+    } catch (e1) {
+      console.log('Direct parse failed, extracting JSON...');
+      const cleaned = extractJson(aiResponse);
+      console.log('Cleaned JSON (first 300 chars):', cleaned.substring(0, 300));
+      extractedData = JSON.parse(cleaned);
     }
 
+    console.log('Parsed successfully. Keys:', Object.keys(extractedData));
+
     return new Response(
-      JSON.stringify({
-        success: true,
-        extractedData,
-        timestamp: new Date().toISOString()
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200
-      }
+      JSON.stringify({ success: true, extractedData, timestamp: new Date().toISOString() }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error) {
-    console.error('Error in parse-resume-ai function:', error.message);
-
+    console.error('Error:', error.message);
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      }),
-      {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ success: false, error: error.message, timestamp: new Date().toISOString() }),
+      { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

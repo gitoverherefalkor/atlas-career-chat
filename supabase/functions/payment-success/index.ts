@@ -180,6 +180,33 @@ serve(async (req) => {
 
     console.log("Purchase recorded successfully");
 
+    // Try to update the profile if user exists with this email
+    if (customerEmail) {
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("email", customerEmail)
+        .maybeSingle();
+
+      if (existingProfile) {
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .update({
+            first_name: firstName,
+            last_name: lastName,
+            country: country,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", existingProfile.id);
+
+        if (profileError) {
+          console.warn("Could not update profile:", profileError);
+        } else {
+          console.log("Profile updated with payment info for user:", existingProfile.id);
+        }
+      }
+    }
+
     // Send the access code via email
     if (customerEmail) {
       const emailSent = await sendAccessCodeEmail(customerEmail, firstName, lastName, accessCode);
