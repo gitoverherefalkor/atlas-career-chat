@@ -224,7 +224,7 @@ const Dashboard = () => {
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">Continue Assessment</h3>
-                      <p className="text-sm text-gray-600">Resume where you left off: {getSectionProgress(savedSession)}</p>
+                      <p className="text-sm text-gray-600">Resume where you left off</p>
                     </div>
                   </div>
                 </CardContent>
