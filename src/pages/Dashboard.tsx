@@ -11,7 +11,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
 import ReportDisplay from '@/components/ReportDisplay';
-import PurchaseAccessButton from '@/components/dashboard/PurchaseAccessButton';
 
 // Helper to get assessment session from localStorage
 const getAssessmentSession = () => {
@@ -228,27 +227,22 @@ const Dashboard = () => {
               </Card>
             )}
 
-            {/* Only show purchase and access code options if user hasn't verified access yet */}
+            {/* Show access code entry if user hasn't verified access yet */}
             {!hasVerifiedAccess() && (
-              <div className="grid grid-cols-1 gap-6 mb-8">
-                {/* Purchase Access Button */}
-                <PurchaseAccessButton />
-
-                {/* Manual Access Code Entry */}
-                <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => navigate('/assessment')}>
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="bg-blue-100 p-3 rounded-full">
-                        <Briefcase className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">Already have an access code?</h3>
-                        <p className="text-sm text-gray-600">Enter your access code to start the assessment</p>
-                      </div>
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer mb-8" onClick={() => navigate('/assessment')}>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="bg-blue-100 p-3 rounded-full">
+                      <Briefcase className="h-6 w-6 text-blue-600" />
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Enter your access code</h3>
+                      <p className="text-sm text-gray-600">Start your assessment by entering your access code</p>
+                      <p className="text-xs text-gray-400 mt-1">Purchased? Check your email for the code.</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </>
         )}
