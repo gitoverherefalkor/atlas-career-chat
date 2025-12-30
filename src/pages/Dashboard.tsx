@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
 import ReportDisplay from '@/components/ReportDisplay';
+import ReportPreview from '@/components/report/ReportPreview';
 
 // Helper to get assessment session from localStorage
 const getAssessmentSession = () => {
@@ -251,8 +252,8 @@ const Dashboard = () => {
           </>
         )}
 
-        {/* Report Display */}
-        {latestReport && (
+        {/* Report Display or Preview */}
+        {latestReport ? (
           <>
             {/* Show pending review message if report is not completed */}
             {latestReport.status === 'pending_review' && (() => {
@@ -317,6 +318,9 @@ const Dashboard = () => {
               />
             )}
           </>
+        ) : (
+          /* Show report preview when no report exists yet */
+          <ReportPreview onStartAssessment={() => navigate('/assessment')} />
         )}
       </div>
     </div>
