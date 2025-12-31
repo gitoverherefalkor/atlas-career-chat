@@ -13,14 +13,28 @@ interface EmailPasswordFormProps {
   disabled?: boolean;
 }
 
+// Helper to get purchase data from localStorage (set after payment)
+const getPurchaseData = () => {
+  try {
+    const stored = localStorage.getItem('purchase_data');
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
 const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  // Check for prefill data from payment flow
+  const purchaseData = getPurchaseData();
+
   const [formData, setFormData] = useState({
-    email: '',
+    email: (!isLogin && purchaseData?.email) || '',
     password: '',
-    firstName: '',
-    lastName: ''
+    firstName: (!isLogin && purchaseData?.firstName) || '',
+    lastName: (!isLogin && purchaseData?.lastName) || ''
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -59,9 +73,9 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
           navigate('/dashboard');
         }
       } else {
-        // Check if user has an access code from URL params
+        // Check if user has an access code from URL params or purchase data
         const urlParams = new URLSearchParams(window.location.search);
-        const accessCode = urlParams.get('code');
+        const accessCode = urlParams.get('code') || purchaseData?.accessCode;
 
         // If no access code, prevent signup
         if (!accessCode) {

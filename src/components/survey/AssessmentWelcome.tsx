@@ -9,26 +9,42 @@ import { Loader2, ShoppingCart, CheckCircle2, ArrowRight, Smartphone, Monitor } 
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+// Helper to get purchase data from localStorage (set after payment)
+const getPurchaseData = () => {
+  try {
+    const stored = localStorage.getItem('purchase_data');
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    return null;
+  }
+};
+
 interface AssessmentWelcomeProps {
   onVerified: (accessCodeData: any) => void;
   prefilledCode?: string;
 }
 
-export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({ 
-  onVerified, 
-  prefilledCode 
+export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
+  onVerified,
+  prefilledCode
 }) => {
-  const [code, setCode] = useState('');
+  // Check for access code from purchase data in localStorage
+  const purchaseData = getPurchaseData();
+  const initialCode = prefilledCode || purchaseData?.accessCode || '';
+
+  const [code, setCode] = useState(initialCode);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
   const [needsPurchase, setNeedsPurchase] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Set the prefilled code when component mounts
+  // Set the prefilled code when component mounts or prefilledCode changes
   useEffect(() => {
     if (prefilledCode) {
       setCode(prefilledCode);
+    } else if (purchaseData?.accessCode && !code) {
+      setCode(purchaseData.accessCode);
     }
   }, [prefilledCode]);
 

@@ -42,7 +42,17 @@ const PaymentSuccess = () => {
         }
 
         setAccessCode(data.accessCode);
-        
+
+        // Store purchase data in localStorage for the sign-up flow
+        if (data.purchaseData) {
+          localStorage.setItem('purchase_data', JSON.stringify({
+            email: data.purchaseData.email,
+            firstName: data.purchaseData.firstName,
+            lastName: data.purchaseData.lastName,
+            accessCode: data.accessCode
+          }));
+        }
+
         toast({
           title: "Payment Successful!",
           description: "Your access code has been generated. Check your email for the invoice.",
