@@ -13,6 +13,21 @@ interface QuestionRendererProps {
   question: Question;
   value: any;
   onChange: (value: any) => void;
+  allResponses?: Record<string, any>; // For cross-question access (e.g., career_happiness needs career_history)
+}
+
+// Career history entry type
+interface CareerHistoryEntry {
+  title: string;
+  companyType: string;
+  sector: string;
+}
+
+// Career happiness entry type
+interface CareerHappinessEntry {
+  title: string;
+  happiness: number;
+  reason: string;
 }
 
 // Responsive Ranking Component
@@ -270,6 +285,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   question,
   value,
   onChange,
+  allResponses,
 }) => {
   const [otherValue, setOtherValue] = useState('');
   const [showOther, setShowOther] = useState(false);
@@ -740,10 +756,211 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         </div>
       );
 
+    case 'career_history':
+      // Career history - up to 3 roles with title, company type, sector
+      const careerHistoryValue: CareerHistoryEntry[] = value || [
+        { title: '', companyType: '', sector: '' }
+      ];
+
+      const updateCareerHistory = (index: number, field: keyof CareerHistoryEntry, fieldValue: string) => {
+        const newHistory = [...careerHistoryValue];
+        newHistory[index] = { ...newHistory[index], [field]: fieldValue };
+        onChange(newHistory);
+      };
+
+      const addCareerRow = () => {
+        if (careerHistoryValue.length < 3) {
+          onChange([...careerHistoryValue, { title: '', companyType: '', sector: '' }]);
+        }
+      };
+
+      const removeCareerRow = (index: number) => {
+        if (careerHistoryValue.length > 1) {
+          const newHistory = careerHistoryValue.filter((_, i) => i !== index);
+          onChange(newHistory);
+        }
+      };
+
+      const getRoleLabel = (index: number) => {
+        if (index === 0) return 'Role 1 (most recent)';
+        return `Role ${index + 1}`;
+      };
+
+      return (
+        <div>
+          <div
+            className="text-lg font-light mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
+          {renderDescription()}
+
+          <div className="space-y-4">
+            {careerHistoryValue.map((entry, index) => (
+              <div key={index} className="p-4 border rounded-lg bg-gray-50">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-sm font-medium text-gray-700">{getRoleLabel(index)}</span>
+                  {careerHistoryValue.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeCareerRow(index)}
+                      className="text-sm text-red-500 hover:text-red-700"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Job Title</label>
+                    <Input
+                      value={entry.title}
+                      onChange={(e) => updateCareerHistory(index, 'title', e.target.value)}
+                      placeholder="e.g., Operations Director"
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Company Type</label>
+                    <Input
+                      value={entry.companyType}
+                      onChange={(e) => updateCareerHistory(index, 'companyType', e.target.value)}
+                      placeholder="e.g., Startup, Corporate"
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Sector</label>
+                    <Input
+                      value={entry.sector}
+                      onChange={(e) => updateCareerHistory(index, 'sector', e.target.value)}
+                      placeholder="e.g., Technology, Finance"
+                      className="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {careerHistoryValue.length < 3 && (
+              <button
+                type="button"
+                onClick={addCareerRow}
+                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-atlas-teal hover:text-atlas-teal transition-colors"
+              >
+                + Add another role
+              </button>
+            )}
+
+            <p className="text-xs text-gray-500 mt-2">
+              Add up to 3 of your most recent serious roles (most recent first). You can skip roles if you're early in your career.
+            </p>
+          </div>
+        </div>
+      );
+
+    case 'career_happiness':
+      // Career happiness - shows roles from career_history question with happiness slider + optional reason
+      const linkedQuestionId = question.config?.linkedQuestionId || '11111111-1111-1111-1111-111111111110';
+      const careerHistoryData: CareerHistoryEntry[] = allResponses?.[linkedQuestionId] || [];
+
+      // Filter to only show roles that have a title
+      const validCareers = careerHistoryData.filter(c => c.title && c.title.trim() !== '');
+
+      // Initialize happiness values if not set
+      const happinessValue: CareerHappinessEntry[] = value || validCareers.map(c => ({
+        title: c.title,
+        happiness: 5,
+        reason: ''
+      }));
+
+      // Sync happiness entries with career history (in case careers were added/removed)
+      const syncedHappiness: CareerHappinessEntry[] = validCareers.map(career => {
+        const existing = happinessValue.find(h => h.title === career.title);
+        return existing || { title: career.title, happiness: 5, reason: '' };
+      });
+
+      const updateHappiness = (index: number, field: 'happiness' | 'reason', fieldValue: number | string) => {
+        const newHappiness = [...syncedHappiness];
+        newHappiness[index] = { ...newHappiness[index], [field]: fieldValue };
+        onChange(newHappiness);
+      };
+
+      if (validCareers.length === 0) {
+        return (
+          <div>
+            <div
+              className="text-lg font-light mb-2"
+              dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+            />
+            {renderDescription()}
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-800">
+              Please fill in your career history in the previous question first.
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <div
+            className="text-lg font-light mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
+          {renderDescription()}
+
+          <div className="space-y-6">
+            {syncedHappiness.map((entry, index) => (
+              <div key={index} className="p-4 border rounded-lg bg-gray-50">
+                <div className="mb-3">
+                  <span className="text-sm font-medium text-gray-700">
+                    {index === 0 ? 'Role 1 (most recent): ' : `Role ${index + 1}: `}
+                  </span>
+                  <span className="text-sm text-atlas-navy font-semibold">{entry.title}</span>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs text-gray-500">Happiness (1-10)</label>
+                      <span className="text-lg font-semibold text-atlas-navy">{entry.happiness}</span>
+                    </div>
+                    <Slider
+                      value={[entry.happiness]}
+                      onValueChange={(newValue) => updateHappiness(index, 'happiness', newValue[0])}
+                      min={1}
+                      max={10}
+                      step={1}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-400 mt-1">
+                      <span>1 (unhappy)</span>
+                      <span>10 (very happy)</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">
+                      Why this score? (optional)
+                    </label>
+                    <Input
+                      value={entry.reason}
+                      onChange={(e) => updateHappiness(index, 'reason', e.target.value)}
+                      placeholder="e.g., Great autonomy, too many direct reports, unclear expectations..."
+                      className="w-full text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
     default:
       return (
         <div>
-          <div 
+          <div
             className="text-lg font-light mb-2"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />

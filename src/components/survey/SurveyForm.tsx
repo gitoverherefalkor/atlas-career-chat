@@ -412,6 +412,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
                   question={currentQuestion}
                   value={responses[currentQuestion.id]}
                   onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+                  allResponses={responses}
                 />
               </div>
             </CardContent>

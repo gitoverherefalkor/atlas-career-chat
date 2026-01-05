@@ -77,6 +77,12 @@ const SURVEY_OPTIONS = {
   ]
 } as const;
 
+interface CareerHistoryEntry {
+  title: string;
+  companyType: string;
+  sector: string;
+}
+
 interface ExtractedResumeData {
   name?: string;
   pronoun?: string;
@@ -87,7 +93,8 @@ interface ExtractedResumeData {
   study_subject?: string;
   years_experience?: number;
   career_situation?: string;
-  job_title?: string;
+  job_title?: string;  // Legacy - single job
+  career_history?: CareerHistoryEntry[];  // New - up to 3 jobs
   employer_size?: string;
   industry?: string;
   achievement?: string;
@@ -136,9 +143,13 @@ Extract these fields (use null if not found):
   "name": "Full name",
   "education": "MUST be one of: No formal education | High school diploma or equivalent | Associate's degree (e.g., technical college or vocational training) | Bachelor's degree | Master's degree | Doctorate or professional degree (e.g., PhD, MD, JD)",
   "study_subject": "Field of study",
-  "years_experience": number (calculate from earliest job year to 2025),
+  "years_experience": number (calculate from earliest job year to 2026),
   "region": "MUST be one of: Northern and Western Europe | Southern and Eastern Europe | United Kingdom (London) | United Kingdom (Other) | United States (High-Cost Regions) | United States (Average-Cost Regions) | United States (Lower-Cost Regions) | Canada | Australia and New Zealand | Switzerland",
-  "job_title": "Current role and company",
+  "career_history": [
+    { "title": "Most recent job title", "companyType": "Startup/SME/Corporate/Government/Non-profit", "sector": "Industry sector" },
+    { "title": "Second most recent job title", "companyType": "...", "sector": "..." },
+    { "title": "Third most recent job title (if exists)", "companyType": "...", "sector": "..." }
+  ],
   "career_situation": "MUST be one of: Non-leadership or individual contributor role (no direct reports) | Managerial or leadership role (Managing 1-4 direct reports, focusing on team coordination and supervision) | Senior managerial role (Managing 5 or more direct reports, involved in strategic decision-making and broader team oversight) | Executive function (VP to C-suite roles or equivalent senior leadership positions with comprehensive organizational responsibilities) | Entrepreneur seeking an employed role | Currently on a career break or transition | Looking to re-enter the workforce",
   "industry": "Primary industry (e.g. Technology, Healthcare, Finance, Consulting)",
   "specialized_skills": "Key skills comma-separated",
@@ -148,6 +159,9 @@ Extract these fields (use null if not found):
 RULES:
 - Netherlands/Germany/France/Belgium = Northern and Western Europe
 - Founder/CEO/COO/CTO = Executive function
+- career_history should have 1-3 entries, most recent first
+- companyType examples: Startup, SME, Corporate, Enterprise, Government, Non-profit, Consultancy, Agency
+- sector examples: Technology, Finance, Healthcare, Consulting, Retail, Manufacturing, Media
 - Return ONLY valid JSON, no markdown, no explanation`;
 
   try {
@@ -250,9 +264,28 @@ RULES:
       }
     }
 
-    // Job title (text field)
-    if (extractedData.job_title) {
-      surveyData[QUESTION_MAPPINGS.job_title] = extractedData.job_title;
+    // Career history (new format - array of objects)
+    if (extractedData.career_history && Array.isArray(extractedData.career_history)) {
+      // Filter to valid entries only and take up to 3
+      const validHistory = extractedData.career_history
+        .filter(entry => entry && entry.title)
+        .slice(0, 3)
+        .map(entry => ({
+          title: entry.title || '',
+          companyType: entry.companyType || '',
+          sector: entry.sector || ''
+        }));
+
+      if (validHistory.length > 0) {
+        surveyData[QUESTION_MAPPINGS.job_title] = validHistory;
+      }
+    } else if (extractedData.job_title) {
+      // Legacy fallback - single job title (convert to new format)
+      surveyData[QUESTION_MAPPINGS.job_title] = [{
+        title: extractedData.job_title,
+        companyType: '',
+        sector: extractedData.industry || ''
+      }];
     }
 
     // Industry (text field)
