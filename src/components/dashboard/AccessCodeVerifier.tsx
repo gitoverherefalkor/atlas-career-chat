@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,7 @@ import { Loader2, Key, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 interface AccessCodeVerifierProps {
   prefilledCode?: string;
@@ -21,6 +22,7 @@ const AccessCodeVerifier = ({ prefilledCode, onVerified }: AccessCodeVerifierPro
   const [isVerified, setIsVerified] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const handleVerify = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -49,17 +51,28 @@ const AccessCodeVerifier = ({ prefilledCode, onVerified }: AccessCodeVerifierPro
       }
 
       setIsVerified(true);
-      toast({
-        title: "Access Code Verified!",
-        description: "Your access code is valid. Redirecting to assessment...",
-      });
 
       if (onVerified) {
         onVerified();
       }
 
-      // Navigate to assessment immediately
-      navigate('/assessment');
+      // Check if user is authenticated
+      if (user) {
+        // User is logged in - go directly to assessment
+        toast({
+          title: "Access Code Verified!",
+          description: "Your access code is valid. Redirecting to assessment...",
+        });
+        navigate('/assessment');
+      } else {
+        // User is NOT logged in - send to auth page to create account
+        // Pass the access code in URL so it's available after signup
+        toast({
+          title: "Access Code Verified!",
+          description: "Please create an account to start your assessment.",
+        });
+        navigate(`/auth?code=${code.trim().toUpperCase()}`);
+      }
 
     } catch (error) {
       console.error('Access code verification failed:', error);
@@ -86,7 +99,9 @@ const AccessCodeVerifier = ({ prefilledCode, onVerified }: AccessCodeVerifierPro
             </div>
             <div>
               <h3 className="font-semibold text-green-900">Access Code Verified!</h3>
-              <p className="text-sm text-green-700">Redirecting you to the assessment...</p>
+              <p className="text-sm text-green-700">
+                {user ? 'Redirecting you to the assessment...' : 'Redirecting you to create an account...'}
+              </p>
             </div>
           </div>
         </CardContent>
