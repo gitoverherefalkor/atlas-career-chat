@@ -85,7 +85,7 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/30"
         onClick={onClose}
       />
 
@@ -104,15 +104,15 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
             <span className="text-lg font-semibold text-atlas-navy">Ready to Begin</span>
           </div>
           <p className="text-gray-600">
-            Enter your access code below to start your personalized career assessment
+            Your access code is ready. Click below to start your personalized career assessment.
           </p>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Access Code Input */}
+          {/* Access Code Display */}
           <div className="space-y-2">
             <label htmlFor="access-code" className="text-sm font-medium text-gray-700">
-              Access Code
+              Your Access Code
             </label>
             <Input
               id="access-code"
@@ -121,13 +121,9 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
               value={code}
               onChange={handleCodeChange}
               onKeyPress={handleKeyPress}
-              className="text-center font-mono text-lg tracking-wider py-3"
+              className="text-center font-mono text-lg tracking-wider py-3 bg-gray-50"
               maxLength={50}
-              autoFocus
             />
-            <p className="text-xs text-gray-500 text-center">
-              Enter the access code you received after your purchase
-            </p>
           </div>
 
           {/* Error Display */}
@@ -147,11 +143,11 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
             {isVerifying ? (
               <>
                 <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Verifying...
+                Starting...
               </>
             ) : (
               <>
-                Verify Code & Start Assessment
+                Start Assessment
                 <ArrowRight className="h-5 w-5 ml-2" />
               </>
             )}
@@ -160,12 +156,12 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
           {/* Help Section */}
           <div className="text-center pt-4 border-t">
             <p className="text-xs text-gray-500">
-              Having trouble? Contact support or{' '}
+              Having trouble?{' '}
               <button
                 onClick={onClose}
                 className="text-atlas-blue hover:underline font-medium"
               >
-                return to homepage
+                Contact support
               </button>
             </p>
           </div>
