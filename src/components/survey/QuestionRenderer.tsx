@@ -16,19 +16,40 @@ interface QuestionRendererProps {
   allResponses?: Record<string, any>; // For cross-question access (e.g., career_happiness needs career_history)
 }
 
-// Career history entry type
+// Career history entry type - comprehensive (satisfaction is separate question)
 interface CareerHistoryEntry {
   title: string;
-  companyType: string;
+  companyName: string;
+  companySize: string;
+  companyCulture: string;
   sector: string;
+  yearsInRole: number | '';
 }
 
-// Career happiness entry type
+// Career happiness entry type (separate question)
 interface CareerHappinessEntry {
   title: string;
   happiness: number;
   reason: string;
 }
+
+// Company size and culture options
+const COMPANY_SIZE_OPTIONS = [
+  { value: 'Own Company', label: 'Own Company' },
+  { value: 'Micro (1-10)', label: 'Micro (1-10 employees)' },
+  { value: 'Small (11-50)', label: 'Small (11-50 employees)' },
+  { value: 'Medium (51-200)', label: 'Medium (51-200 employees)' },
+  { value: 'Large (201-1000)', label: 'Large (201-1000 employees)' },
+  { value: 'Enterprise (1000+)', label: 'Enterprise (1000+ employees)' },
+];
+
+const COMPANY_CULTURE_OPTIONS = [
+  { value: 'Startup', label: 'Startup', description: 'Fast-paced, minimal structure, high growth potential' },
+  { value: 'Corporate', label: 'Corporate', description: 'Established processes, structured hierarchy, stable' },
+  { value: 'Boutique', label: 'Boutique', description: 'Specialized firm, niche focus, direct client impact' },
+  { value: 'Nonprofit', label: 'Nonprofit', description: 'Mission-driven, collaborative, purpose-focused' },
+  { value: 'Government', label: 'Government', description: 'Public sector, formal procedures, regulatory compliance' },
+];
 
 // Responsive Ranking Component
 const ResponsiveRanking: React.FC<{
@@ -757,12 +778,19 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       );
 
     case 'career_history':
-      // Career history - up to 3 roles with title, company type, sector
-      const careerHistoryValue: CareerHistoryEntry[] = value || [
-        { title: '', companyType: '', sector: '' }
-      ];
+      // Career history - comprehensive fields (satisfaction is separate question)
+      const emptyEntry: CareerHistoryEntry = {
+        title: '',
+        companyName: '',
+        companySize: '',
+        companyCulture: '',
+        sector: '',
+        yearsInRole: ''
+      };
 
-      const updateCareerHistory = (index: number, field: keyof CareerHistoryEntry, fieldValue: string) => {
+      const careerHistoryValue: CareerHistoryEntry[] = value || [{ ...emptyEntry }];
+
+      const updateCareerHistory = (index: number, field: keyof CareerHistoryEntry, fieldValue: string | number) => {
         const newHistory = [...careerHistoryValue];
         newHistory[index] = { ...newHistory[index], [field]: fieldValue };
         onChange(newHistory);
@@ -770,7 +798,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
       const addCareerRow = () => {
         if (careerHistoryValue.length < 3) {
-          onChange([...careerHistoryValue, { title: '', companyType: '', sector: '' }]);
+          onChange([...careerHistoryValue, { ...emptyEntry }]);
         }
       };
 
@@ -782,7 +810,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       };
 
       const getRoleLabel = (index: number) => {
-        if (index === 0) return 'Role 1 (most recent)';
+        if (index === 0) return 'Role 1 (Most Recent)';
         return `Role ${index + 1}`;
       };
 
@@ -794,47 +822,108 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           />
           {renderDescription()}
 
-          <div className="space-y-4">
+          <div className="space-y-6">
             {careerHistoryValue.map((entry, index) => (
-              <div key={index} className="p-4 border rounded-lg bg-gray-50">
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-medium text-gray-700">{getRoleLabel(index)}</span>
+              <div key={index} className="p-5 border-2 rounded-xl bg-white shadow-sm">
+                {/* Role header */}
+                <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+                  <span className="text-base font-semibold text-atlas-navy">{getRoleLabel(index)}</span>
                   {careerHistoryValue.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeCareerRow(index)}
-                      className="text-sm text-red-500 hover:text-red-700"
+                      className="text-sm text-red-500 hover:text-red-700 font-medium"
                     >
                       Remove
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {/* Row 1: Job Title + Company Name */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Job Title</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
                     <Input
                       value={entry.title}
                       onChange={(e) => updateCareerHistory(index, 'title', e.target.value)}
-                      placeholder="e.g., Operations Director"
+                      placeholder="e.g., Director of Marketing"
                       className="w-full"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Company Type</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
                     <Input
-                      value={entry.companyType}
-                      onChange={(e) => updateCareerHistory(index, 'companyType', e.target.value)}
-                      placeholder="e.g., Startup, Corporate"
+                      value={entry.companyName}
+                      onChange={(e) => updateCareerHistory(index, 'companyName', e.target.value)}
+                      placeholder="e.g., Acme Legal AI"
                       className="w-full"
                     />
                   </div>
+                </div>
+
+                {/* Row 2: Company Size + Company Culture */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">Sector</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Company Size</label>
+                    <Select
+                      value={entry.companySize || ''}
+                      onValueChange={(val) => updateCareerHistory(index, 'companySize', val)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select size..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COMPANY_SIZE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Company Culture</label>
+                    <Select
+                      value={entry.companyCulture || ''}
+                      onValueChange={(val) => updateCareerHistory(index, 'companyCulture', val)}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select culture..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {COMPANY_CULTURE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            <div className="flex flex-col">
+                              <span>{opt.label}</span>
+                              <span className="text-xs text-gray-500">{opt.description}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Row 3: Sector + Years in Role */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Industry / Sector</label>
                     <Input
                       value={entry.sector}
                       onChange={(e) => updateCareerHistory(index, 'sector', e.target.value)}
-                      placeholder="e.g., Technology, Finance"
+                      placeholder="e.g., Legal Tech, FinTech, Healthcare"
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Years in Role</label>
+                    <Input
+                      type="number"
+                      min="0"
+                      max="50"
+                      value={entry.yearsInRole}
+                      onChange={(e) => updateCareerHistory(index, 'yearsInRole', e.target.value ? parseInt(e.target.value) : '')}
+                      placeholder="e.g., 3"
                       className="w-full"
                     />
                   </div>
@@ -846,14 +935,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               <button
                 type="button"
                 onClick={addCareerRow}
-                className="w-full py-2 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-atlas-teal hover:text-atlas-teal transition-colors"
+                className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-atlas-teal hover:text-atlas-teal transition-colors font-medium"
               >
-                + Add another role
+                + Add another role (up to 3)
               </button>
             )}
 
-            <p className="text-xs text-gray-500 mt-2">
-              Add up to 3 of your most recent serious roles (most recent first). You can skip roles if you're early in your career.
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              Add up to 3 of your most recent professional roles, starting with the most recent.
             </p>
           </div>
         </div>

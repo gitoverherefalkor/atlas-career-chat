@@ -79,8 +79,11 @@ const SURVEY_OPTIONS = {
 
 interface CareerHistoryEntry {
   title: string;
-  companyType: string;
+  companyName: string;
+  companySize: string;
+  companyCulture: string;
   sector: string;
+  yearsInRole: number | '';
 }
 
 interface ExtractedResumeData {
@@ -146,9 +149,9 @@ Extract these fields (use null if not found):
   "years_experience": number (calculate from earliest job year to 2026),
   "region": "MUST be one of: Northern and Western Europe | Southern and Eastern Europe | United Kingdom (London) | United Kingdom (Other) | United States (High-Cost Regions) | United States (Average-Cost Regions) | United States (Lower-Cost Regions) | Canada | Australia and New Zealand | Switzerland",
   "career_history": [
-    { "title": "Most recent job title", "companyType": "Startup/SME/Corporate/Government/Non-profit", "sector": "Industry sector" },
-    { "title": "Second most recent job title", "companyType": "...", "sector": "..." },
-    { "title": "Third most recent job title (if exists)", "companyType": "...", "sector": "..." }
+    { "title": "Job title", "companyName": "Company name", "sector": "Industry sector", "yearsInRole": number },
+    { "title": "...", "companyName": "...", "sector": "...", "yearsInRole": number },
+    { "title": "...", "companyName": "...", "sector": "...", "yearsInRole": number }
   ],
   "career_situation": "MUST be one of: Non-leadership or individual contributor role (no direct reports) | Managerial or leadership role (Managing 1-4 direct reports, focusing on team coordination and supervision) | Senior managerial role (Managing 5 or more direct reports, involved in strategic decision-making and broader team oversight) | Executive function (VP to C-suite roles or equivalent senior leadership positions with comprehensive organizational responsibilities) | Entrepreneur seeking an employed role | Currently on a career break or transition | Looking to re-enter the workforce",
   "industry": "Primary industry (e.g. Technology, Healthcare, Finance, Consulting)",
@@ -160,8 +163,9 @@ RULES:
 - Netherlands/Germany/France/Belgium = Northern and Western Europe
 - Founder/CEO/COO/CTO = Executive function
 - career_history should have 1-3 entries, most recent first
-- companyType examples: Startup, SME, Corporate, Enterprise, Government, Non-profit, Consultancy, Agency
-- sector examples: Technology, Finance, Healthcare, Consulting, Retail, Manufacturing, Media
+- Extract actual company names (e.g., "Google", "Stripe", "Acme Corp")
+- sector examples: Technology, Legal Tech, FinTech, Healthcare, Consulting, Retail, Manufacturing, Media, SaaS
+- yearsInRole should be calculated from job dates if available (e.g., 2020-2023 = 3 years)
 - Return ONLY valid JSON, no markdown, no explanation`;
 
   try {
@@ -264,7 +268,7 @@ RULES:
       }
     }
 
-    // Career history (new format - array of objects)
+    // Career history (new format - array of objects with company details)
     if (extractedData.career_history && Array.isArray(extractedData.career_history)) {
       // Filter to valid entries only and take up to 3
       const validHistory = extractedData.career_history
@@ -272,8 +276,11 @@ RULES:
         .slice(0, 3)
         .map(entry => ({
           title: entry.title || '',
-          companyType: entry.companyType || '',
-          sector: entry.sector || ''
+          companyName: entry.companyName || '',
+          companySize: '', // User must select - not inferred from resume
+          companyCulture: '', // User must select - not inferred from resume
+          sector: entry.sector || '',
+          yearsInRole: entry.yearsInRole || ''
         }));
 
       if (validHistory.length > 0) {
@@ -283,8 +290,11 @@ RULES:
       // Legacy fallback - single job title (convert to new format)
       surveyData[QUESTION_MAPPINGS.job_title] = [{
         title: extractedData.job_title,
-        companyType: '',
-        sector: extractedData.industry || ''
+        companyName: '',
+        companySize: '',
+        companyCulture: '',
+        sector: extractedData.industry || '',
+        yearsInRole: ''
       }];
     }
 
