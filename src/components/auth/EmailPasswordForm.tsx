@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -53,12 +53,24 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
   const purchaseData = getPurchaseData();
 
   const [formData, setFormData] = useState({
-    email: (!isLogin && purchaseData?.email) || '',
+    email: '',
     password: '',
-    firstName: (!isLogin && purchaseData?.firstName) || '',
-    lastName: (!isLogin && purchaseData?.lastName) || ''
+    firstName: '',
+    lastName: ''
   });
   const [error, setError] = useState('');
+
+  // Prefill form when in signup mode with purchase data
+  useEffect(() => {
+    if (!isLogin && purchaseData) {
+      setFormData(prev => ({
+        ...prev,
+        email: purchaseData.email || prev.email,
+        firstName: purchaseData.firstName || prev.firstName,
+        lastName: purchaseData.lastName || prev.lastName
+      }));
+    }
+  }, [isLogin]);
   const navigate = useNavigate();
   const { toast } = useToast();
 
