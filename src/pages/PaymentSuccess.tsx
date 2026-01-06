@@ -44,13 +44,20 @@ const PaymentSuccess = () => {
         setAccessCode(data.accessCode);
 
         // Store purchase data in localStorage for the sign-up flow
+        console.log('Payment success data received:', data);
+        console.log('Purchase data:', data.purchaseData);
+
         if (data.purchaseData) {
-          localStorage.setItem('purchase_data', JSON.stringify({
+          const purchaseDataToStore = {
             email: data.purchaseData.email,
             firstName: data.purchaseData.firstName,
             lastName: data.purchaseData.lastName,
             accessCode: data.accessCode
-          }));
+          };
+          console.log('Storing purchase_data in localStorage:', purchaseDataToStore);
+          localStorage.setItem('purchase_data', JSON.stringify(purchaseDataToStore));
+        } else {
+          console.warn('No purchaseData in response - form will not be prefilled');
         }
 
         toast({

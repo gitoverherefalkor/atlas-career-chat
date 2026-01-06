@@ -17,8 +17,12 @@ interface EmailPasswordFormProps {
 const getPurchaseData = () => {
   try {
     const stored = localStorage.getItem('purchase_data');
-    return stored ? JSON.parse(stored) : null;
-  } catch {
+    console.log('EmailPasswordForm: Raw localStorage purchase_data:', stored);
+    const parsed = stored ? JSON.parse(stored) : null;
+    console.log('EmailPasswordForm: Parsed purchase_data:', parsed);
+    return parsed;
+  } catch (e) {
+    console.error('EmailPasswordForm: Error parsing purchase_data:', e);
     return null;
   }
 };
