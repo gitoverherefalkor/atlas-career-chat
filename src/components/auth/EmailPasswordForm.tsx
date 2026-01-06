@@ -49,6 +49,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     firstName: '',
     lastName: ''
   });
@@ -101,6 +102,12 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
           navigate('/dashboard');
         }
       } else {
+        // Verify passwords match
+        if (formData.password !== formData.confirmPassword) {
+          setError('Passwords do not match.');
+          return;
+        }
+
         // Check if user has an access code from URL params or purchase data
         const urlParams = new URLSearchParams(window.location.search);
         const accessCode = urlParams.get('code') || purchaseData?.accessCode;
@@ -252,6 +259,28 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
           </p>
         )}
       </div>
+
+      {!isLogin && (
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+            Confirm Password
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showPassword ? "text" : "password"}
+              required
+              value={formData.confirmPassword}
+              onChange={handleInputChange}
+              className="pl-10"
+              placeholder="Repeat your password"
+              minLength={8}
+            />
+          </div>
+        </div>
+      )}
 
       {error && (
         <Alert variant={error.includes('verification') ? "default" : "destructive"}>
