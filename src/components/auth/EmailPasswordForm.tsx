@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -24,7 +23,6 @@ const getPurchaseData = () => {
     const urlAccessCode = urlParams.get('code');
 
     if (urlEmail || urlFirstName || urlLastName) {
-      console.log('EmailPasswordForm: Found data in URL params');
       return {
         email: urlEmail || '',
         firstName: urlFirstName || '',
@@ -35,30 +33,28 @@ const getPurchaseData = () => {
 
     // Fallback to localStorage (set after payment on PaymentSuccess page)
     const stored = localStorage.getItem('purchase_data');
-    console.log('EmailPasswordForm: Raw localStorage purchase_data:', stored);
-    const parsed = stored ? JSON.parse(stored) : null;
-    console.log('EmailPasswordForm: Parsed purchase_data:', parsed);
-    return parsed;
-  } catch (e) {
-    console.error('EmailPasswordForm: Error parsing purchase_data:', e);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
     return null;
   }
 };
 
 const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  // Check for prefill data from payment flow
-  const purchaseData = getPurchaseData();
-
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     firstName: '',
     lastName: ''
   });
-  const [error, setError] = useState('');
+
+  // Memoize purchase data - only read from URL/localStorage once
+  const purchaseData = useMemo(() => getPurchaseData(), []);
 
   // Prefill form when in signup mode with purchase data
   useEffect(() => {
@@ -70,9 +66,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
         lastName: purchaseData.lastName || prev.lastName
       }));
     }
-  }, [isLogin]);
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  }, [isLogin, purchaseData]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
