@@ -1,0 +1,176 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
+import { Loader2, CheckCircle2, ArrowRight, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+interface AccessCodeModalProps {
+  accessCode: string;
+  onClose: () => void;
+}
+
+export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
+  accessCode: initialCode,
+  onClose
+}) => {
+  const [code, setCode] = useState(initialCode);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleVerify = async () => {
+    if (!code.trim()) {
+      setError('Please enter your access code');
+      return;
+    }
+
+    setIsVerifying(true);
+    setError('');
+
+    try {
+      const { data, error: apiError } = await supabase.functions.invoke('verify-access-code', {
+        body: { code: code.trim() }
+      });
+
+      if (apiError) {
+        console.error('API error:', apiError);
+        setError('Failed to verify access code. Please try again.');
+        return;
+      }
+
+      if (data.valid) {
+        // Store verification in localStorage for the assessment page
+        const session = {
+          isVerified: true,
+          accessCodeData: data.accessCode,
+          sessionToken: data.accessCode.id,
+          currentSectionIndex: 0,
+          currentQuestionIndex: 0,
+          responses: {}
+        };
+        localStorage.setItem('assessment_session', JSON.stringify(session));
+        navigate('/assessment');
+      } else {
+        setError(data.error || 'Invalid access code');
+      }
+    } catch (error) {
+      console.error('Error verifying access code:', error);
+      setError('Failed to verify access code. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleVerify();
+    }
+  };
+
+  const formatCode = (value: string) => {
+    const cleaned = value.replace(/[^a-zA-Z0-9-]/g, '');
+    return cleaned.toUpperCase();
+  };
+
+  const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCode(e.target.value);
+    setCode(formatted);
+    setError('');
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Modal */}
+      <Card className="relative z-10 w-full max-w-lg mx-4 shadow-2xl">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <X className="h-5 w-5" />
+        </button>
+
+        <CardHeader className="text-center pb-4 pt-8">
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <CheckCircle2 className="h-6 w-6 text-atlas-teal" />
+            <span className="text-lg font-semibold text-atlas-navy">Ready to Begin</span>
+          </div>
+          <p className="text-gray-600">
+            Enter your access code below to start your personalized career assessment
+          </p>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {/* Access Code Input */}
+          <div className="space-y-2">
+            <label htmlFor="access-code" className="text-sm font-medium text-gray-700">
+              Access Code
+            </label>
+            <Input
+              id="access-code"
+              type="text"
+              placeholder="XXXX-XXXX-XXXX-XXXX"
+              value={code}
+              onChange={handleCodeChange}
+              onKeyPress={handleKeyPress}
+              className="text-center font-mono text-lg tracking-wider py-3"
+              maxLength={50}
+              autoFocus
+            />
+            <p className="text-xs text-gray-500 text-center">
+              Enter the access code you received after your purchase
+            </p>
+          </div>
+
+          {/* Error Display */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Main Action Button */}
+          <Button
+            onClick={handleVerify}
+            disabled={isVerifying || !code.trim()}
+            className="w-full py-3 text-lg font-semibold"
+            size="lg"
+          >
+            {isVerifying ? (
+              <>
+                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                Verifying...
+              </>
+            ) : (
+              <>
+                Verify Code & Start Assessment
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </>
+            )}
+          </Button>
+
+          {/* Help Section */}
+          <div className="text-center pt-4 border-t">
+            <p className="text-xs text-gray-500">
+              Having trouble? Contact support or{' '}
+              <button
+                onClick={onClose}
+                className="text-atlas-blue hover:underline font-medium"
+              >
+                return to homepage
+              </button>
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};

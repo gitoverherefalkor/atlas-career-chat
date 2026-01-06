@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
 import ReportDisplay from '@/components/ReportDisplay';
 import ReportPreview from '@/components/report/ReportPreview';
+import { AccessCodeModal } from '@/components/dashboard/AccessCodeModal';
 
 // Helper to get assessment session from localStorage
 const getAssessmentSession = () => {
@@ -28,12 +29,32 @@ const Dashboard = () => {
   const { profile, isLoading: profileLoading } = useProfile();
   const { reports, isLoading: reportsLoading } = useReports();
   const [isReportSectionExpanded, setIsReportSectionExpanded] = useState(false);
+  const [showAccessCodeModal, setShowAccessCodeModal] = useState(false);
+  const [userAccessCode, setUserAccessCode] = useState<string | null>(null);
 
   const navigate = useNavigate();
   const { toast } = useToast();
 
   // Check for saved assessment progress
   const savedSession = getAssessmentSession();
+
+  // Check if user has an access code in metadata and should see the modal
+  useEffect(() => {
+    if (user && !authLoading && !profileLoading && !reportsLoading) {
+      const accessCode = user.user_metadata?.access_code;
+      if (accessCode) {
+        setUserAccessCode(accessCode);
+        // Only show modal if user hasn't verified/started assessment yet
+        const hasStarted = savedSession?.isVerified || savedSession?.accessCodeData ||
+          (savedSession?.responses && Object.keys(savedSession.responses).length > 0);
+        const hasReport = reports && reports.length > 0;
+
+        if (!hasStarted && !hasReport) {
+          setShowAccessCodeModal(true);
+        }
+      }
+    }
+  }, [user, authLoading, profileLoading, reportsLoading, reports]);
 
   const handleSignOut = async () => {
     try {
@@ -232,18 +253,20 @@ const Dashboard = () => {
               </Card>
             )}
 
-            {/* Show access code entry if user hasn't verified access yet */}
+            {/* Show assessment start card if user hasn't verified access yet */}
             {!hasVerifiedAccess() && (
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer mb-8" onClick={() => navigate('/assessment')}>
+              <Card
+                className="hover:shadow-lg transition-shadow cursor-pointer mb-8"
+                onClick={() => userAccessCode ? setShowAccessCodeModal(true) : navigate('/assessment')}
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
-                    <div className="bg-blue-100 p-3 rounded-full">
-                      <Briefcase className="h-6 w-6 text-blue-600" />
+                    <div className="bg-gray-100 p-3 rounded-full">
+                      <Briefcase className="h-6 w-6 text-gray-500" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-900">Enter your access code</h3>
-                      <p className="text-sm text-gray-600">Start your assessment by entering your access code</p>
-                      <p className="text-xs text-gray-400 mt-1">Purchased? Check your email for the code.</p>
+                      <h3 className="font-semibold text-gray-900">Start Your Assessment</h3>
+                      <p className="text-sm text-gray-500">Assessment not started</p>
                     </div>
                   </div>
                 </CardContent>
@@ -320,9 +343,17 @@ const Dashboard = () => {
           </>
         ) : (
           /* Show report preview when no report exists yet */
-          <ReportPreview onStartAssessment={() => navigate('/assessment')} />
+          <ReportPreview onStartAssessment={() => userAccessCode ? setShowAccessCodeModal(true) : navigate('/assessment')} />
         )}
       </div>
+
+      {/* Access Code Modal */}
+      {showAccessCodeModal && userAccessCode && (
+        <AccessCodeModal
+          accessCode={userAccessCode}
+          onClose={() => setShowAccessCodeModal(false)}
+        />
+      )}
     </div>
   );
 };
