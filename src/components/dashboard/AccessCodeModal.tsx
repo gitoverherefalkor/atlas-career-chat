@@ -104,7 +104,7 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
             <span className="text-lg font-semibold text-atlas-navy">Ready to Begin</span>
           </div>
           <p className="text-gray-600">
-            Your access code is ready. Click below to start your personalized career assessment.
+            Click below to verify your access code and start your personalized career assessment.
           </p>
         </CardHeader>
 
