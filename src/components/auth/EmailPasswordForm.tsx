@@ -13,9 +13,27 @@ interface EmailPasswordFormProps {
   disabled?: boolean;
 }
 
-// Helper to get purchase data from localStorage (set after payment)
+// Helper to get purchase data from URL params OR localStorage
 const getPurchaseData = () => {
   try {
+    // First check URL params (from AccessCodeVerifier redirect)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlEmail = urlParams.get('email');
+    const urlFirstName = urlParams.get('firstName');
+    const urlLastName = urlParams.get('lastName');
+    const urlAccessCode = urlParams.get('code');
+
+    if (urlEmail || urlFirstName || urlLastName) {
+      console.log('EmailPasswordForm: Found data in URL params');
+      return {
+        email: urlEmail || '',
+        firstName: urlFirstName || '',
+        lastName: urlLastName || '',
+        accessCode: urlAccessCode || ''
+      };
+    }
+
+    // Fallback to localStorage (set after payment on PaymentSuccess page)
     const stored = localStorage.getItem('purchase_data');
     console.log('EmailPasswordForm: Raw localStorage purchase_data:', stored);
     const parsed = stored ? JSON.parse(stored) : null;
