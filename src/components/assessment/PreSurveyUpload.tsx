@@ -14,19 +14,18 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
   const [hasUploadedResume, setHasUploadedResume] = React.useState(false);
 
   const handleProcessingComplete = (data: any) => {
-    // Store the survey prefill data (with correct question IDs) if available
     if (data && data.surveyPreFillData) {
       sessionStorage.setItem('resume_parsed_data', JSON.stringify(data.surveyPreFillData));
       localStorage.setItem('resume_parsed_data', JSON.stringify(data.surveyPreFillData));
       localStorage.setItem('resume_parsed_timestamp', new Date().toISOString());
       setHasUploadedResume(true);
     } else if (data && data.aiParsedData) {
-      // Fallback to AI parsed data if surveyPreFillData not available
       sessionStorage.setItem('resume_parsed_data', JSON.stringify(data.aiParsedData));
       localStorage.setItem('resume_parsed_data', JSON.stringify(data.aiParsedData));
       localStorage.setItem('resume_parsed_timestamp', new Date().toISOString());
       setHasUploadedResume(true);
     }
+    setIsProcessing(false);
   };
 
   const handleSkip = () => {
@@ -38,8 +37,6 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
     localStorage.setItem('pre_survey_upload_complete', 'true');
     onContinue();
   };
-
-  const isContinueDisabled = isProcessing;
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -64,14 +61,13 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             </AlertDescription>
           </Alert>
 
-          {/* Upload Component */}
+          {/* Upload Component - using original working component */}
           <div className="mb-6">
             <AIResumeUploadCard
-              simplified={true}
-              showSuccessMessage={false}
+              title="Upload LinkedIn Export"
+              description="Select your LinkedIn PDF export file"
+              showSuccessMessage={true}
               onProcessingComplete={handleProcessingComplete}
-              onProcessingStart={() => setIsProcessing(true)}
-              onProcessingEnd={() => setIsProcessing(false)}
             />
           </div>
 
@@ -106,13 +102,13 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             <Button
               variant="ghost"
               onClick={handleSkip}
-              disabled={isContinueDisabled}
+              disabled={isProcessing}
             >
               Skip (no LinkedIn or not up to date)
             </Button>
             <Button
               onClick={handleContinue}
-              disabled={isContinueDisabled}
+              disabled={isProcessing}
               size="lg"
             >
               {isProcessing ? (

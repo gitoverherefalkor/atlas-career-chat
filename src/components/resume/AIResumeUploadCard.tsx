@@ -8,22 +8,16 @@ import { useAIResumeUpload } from './hooks/useAIResumeUpload';
 
 interface AIResumeUploadCardProps {
   onProcessingComplete?: (data: any) => void;
-  onProcessingStart?: () => void;
-  onProcessingEnd?: () => void;
   title?: string;
   description?: string;
   showSuccessMessage?: boolean;
-  simplified?: boolean;
 }
 
 export const AIResumeUploadCard: React.FC<AIResumeUploadCardProps> = ({
   onProcessingComplete,
-  onProcessingStart,
-  onProcessingEnd,
   title = "AI-Powered Resume Upload",
   description = "Upload your resume and let AI intelligently extract information to pre-fill your assessment.",
-  showSuccessMessage = true,
-  simplified = false
+  showSuccessMessage = true
 }) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -39,22 +33,20 @@ export const AIResumeUploadCard: React.FC<AIResumeUploadCardProps> = ({
     resetState
   } = useAIResumeUpload({
     onSuccess: (data) => {
-      if (showSuccessMessage && !simplified) {
+      if (showSuccessMessage) {
         toast({
-          title: "Processing Complete",
-          description: `Extracted ${data.fieldsExtracted} fields from your LinkedIn export.`,
+          title: "AI Processing Complete! 🎉",
+          description: `Extracted ${data.fieldsExtracted} fields from your ${uploadedFile?.name} using AI. Ready to pre-fill your assessment!`,
         });
       }
       onProcessingComplete?.(data);
-      onProcessingEnd?.();
     },
     onError: (error) => {
       toast({
-        title: "Processing failed",
-        description: error || "Failed to process your file. You can continue manually.",
+        title: "AI Processing failed",
+        description: error || "Failed to process your resume with AI. You can continue manually.",
         variant: "destructive",
       });
-      onProcessingEnd?.();
     }
   });
 
@@ -91,7 +83,6 @@ export const AIResumeUploadCard: React.FC<AIResumeUploadCardProps> = ({
 
     setUploadedFile(file);
     resetState();
-    onProcessingStart?.();
     uploadAndProcess(file);
   };
 
@@ -103,78 +94,6 @@ export const AIResumeUploadCard: React.FC<AIResumeUploadCardProps> = ({
     }
   };
 
-  // Simplified version for pre-survey page
-  if (simplified) {
-    return (
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 bg-white">
-        {uploadedFile ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {hasProcessed ? (
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                ) : (
-                  <FileText className="h-8 w-8 text-blue-600" />
-                )}
-                <div>
-                  <p className="font-medium">{uploadedFile.name}</p>
-                  <p className="text-sm text-gray-500">
-                    {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB
-                    {hasProcessed && " • Processed"}
-                    {isProcessing && " • Processing..."}
-                  </p>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleRemoveFile}
-                disabled={isUploading}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {isProcessing && (
-              <div className="flex items-center justify-center space-x-2 text-sm text-blue-600">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Extracting information...</span>
-              </div>
-            )}
-
-            {hasProcessed && processingResult && (
-              <div className="bg-green-50 border border-green-200 rounded p-3 text-sm text-green-800">
-                ✓ Extracted {processingResult.fieldsExtracted || 0} fields from your LinkedIn profile
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-center space-y-4">
-            <Upload className="h-12 w-12 text-gray-400 mx-auto" />
-            <div>
-              <p className="font-medium text-gray-700">Upload your LinkedIn PDF export</p>
-              <p className="text-sm text-gray-500">PDF, Word, or text files up to 10MB</p>
-            </div>
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              variant="outline"
-            >
-              Select File
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              accept=".pdf,.doc,.docx,.txt"
-              onChange={handleFileSelect}
-            />
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  // Full version for profile page
   return (
     <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
       <CardHeader>
