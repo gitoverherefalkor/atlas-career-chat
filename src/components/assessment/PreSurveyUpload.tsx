@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Loader2 } from 'lucide-react';
-import { LinkedInGuide } from '@/components/profile/LinkedInGuide';
+import { Card, CardContent } from '@/components/ui/card';
+import { ArrowRight, Loader2, Info } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AIResumeUploadCard } from '../resume/AIResumeUploadCard';
 
 interface PreSurveyUploadProps {
@@ -43,60 +43,93 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-atlas-navy mb-4">
-            AI-Powered Assessment Pre-fill
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Upload your resume and let our AI intelligently extract information to automatically populate your assessment.
-          </p>
-          {hasUploadedResume && (
-            <p className="text-green-600 mt-2">
-              ✓ Resume processed successfully! Your information will be pre-filled in the assessment.
+      <Card className="w-full max-w-2xl">
+        <CardContent className="p-8">
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold text-atlas-navy mb-2">
+              Save Time with LinkedIn Import
+            </h1>
+            <p className="text-gray-600">
+              Upload your LinkedIn profile export to pre-fill work history and education
             </p>
-          )}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          <LinkedInGuide />
-          <AIResumeUploadCard 
-            title="AI Resume Processing"
-            description="Our AI will intelligently analyze your resume and extract relevant information to pre-fill your assessment."
-            showSuccessMessage={true}
-            onProcessingComplete={handleProcessingComplete}
-            onProcessingStart={() => setIsProcessing(true)}
-            onProcessingEnd={() => setIsProcessing(false)}
-          />
-        </div>
-        <div className="flex justify-center space-x-4">
-          <Button 
-            variant="outline" 
-            onClick={handleSkip}
-            size="lg"
-            disabled={isContinueDisabled}
-          >
-            Skip for Now
-          </Button>
-          <Button 
-            onClick={handleContinue}
-            size="lg"
-            className="flex items-center"
-            disabled={isContinueDisabled}
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              <>
-                Continue to Assessment
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
+          </div>
+
+          {/* Info Alert */}
+          <Alert className="mb-6 bg-blue-50 border-blue-200">
+            <Info className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-sm text-gray-700">
+              <strong>Important:</strong> This only works with LinkedIn PDF exports (not your own resume).
+              Any pre-filled information can be edited or overwritten during the assessment.
+            </AlertDescription>
+          </Alert>
+
+          {/* Upload Component */}
+          <div className="mb-6">
+            <AIResumeUploadCard
+              simplified={true}
+              showSuccessMessage={false}
+              onProcessingComplete={handleProcessingComplete}
+              onProcessingStart={() => setIsProcessing(true)}
+              onProcessingEnd={() => setIsProcessing(false)}
+            />
+          </div>
+
+          {/* LinkedIn Export Instructions */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-gray-900 mb-3">How to export from LinkedIn:</h3>
+            <div className="space-y-2 text-sm text-gray-600">
+              <div className="flex items-start space-x-2">
+                <span className="font-medium text-gray-900">1.</span>
+                <span>Go to your LinkedIn profile</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <span className="font-medium text-gray-900">2.</span>
+                <span>Click "Resources" → "Save to PDF"</span>
+              </div>
+              <div className="flex items-start space-x-2">
+                <span className="font-medium text-gray-900">3.</span>
+                <span>Upload the PDF file above</span>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <img
+                src="/lovable-uploads/ad38b517-4c3f-47bd-b4f4-546e532e34cf.png"
+                alt="LinkedIn Resources menu"
+                className="w-48 mx-auto rounded shadow-sm"
+              />
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-between items-center">
+            <Button
+              variant="ghost"
+              onClick={handleSkip}
+              disabled={isContinueDisabled}
+            >
+              Skip (no LinkedIn or not up to date)
+            </Button>
+            <Button
+              onClick={handleContinue}
+              disabled={isContinueDisabled}
+              size="lg"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Continue to Assessment
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
