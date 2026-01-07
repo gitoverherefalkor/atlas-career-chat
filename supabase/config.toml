@@ -28,6 +28,9 @@ verify_jwt = false
 [functions.analysis-completed]
 verify_jwt = false
 
+[functions.parse-resume-ai]
+verify_jwt = false
+
 [auth]
 site_url = "https://atlas-assessments.com"
 additional_redirect_urls = ["https://atlas-career-chat.lovable.app", "http://localhost:3000"]
