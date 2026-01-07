@@ -64,8 +64,8 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
           {/* Upload Component - using original working component */}
           <div className="mb-6">
             <AIResumeUploadCard
-              title="Upload LinkedIn Export"
-              description="Select your LinkedIn PDF export file"
+              title="Upload File"
+              description="Select your LinkedIn PDF export"
               showSuccessMessage={true}
               onProcessingComplete={handleProcessingComplete}
             />
