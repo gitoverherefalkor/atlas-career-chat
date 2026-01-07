@@ -58,8 +58,8 @@ serve(async (req) => {
       }],
       generationConfig: {
         temperature: 0.1,
-        maxOutputTokens: 2000,
-        responseMimeType: "application/json"  // Force JSON output mode
+        maxOutputTokens: 4000,
+        responseMimeType: "application/json"
       }
     };
 
