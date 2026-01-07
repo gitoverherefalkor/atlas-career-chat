@@ -788,8 +788,17 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         yearsInRole: ''
       };
 
-      // Ensure value is always an array (handle string prefill from AI)
-      const careerHistoryValue: CareerHistoryEntry[] = Array.isArray(value) ? value : [{ ...emptyEntry }];
+      // Ensure value is always an array with 3 entries (handle string prefill from AI)
+      const ensureThreeEntries = (arr: CareerHistoryEntry[]): CareerHistoryEntry[] => {
+        const result = [...arr];
+        while (result.length < 3) {
+          result.push({ ...emptyEntry });
+        }
+        return result.slice(0, 3);
+      };
+      const careerHistoryValue: CareerHistoryEntry[] = Array.isArray(value)
+        ? ensureThreeEntries(value)
+        : [{ ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }];
 
       const updateCareerHistory = (index: number, field: keyof CareerHistoryEntry, fieldValue: string | number) => {
         const newHistory = [...careerHistoryValue];
@@ -804,10 +813,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       };
 
       const removeCareerRow = (index: number) => {
-        if (careerHistoryValue.length > 1) {
-          const newHistory = careerHistoryValue.filter((_, i) => i !== index);
-          onChange(newHistory);
-        }
+        // Clear the entry instead of removing (keep 3 slots)
+        const newHistory = [...careerHistoryValue];
+        newHistory[index] = { ...emptyEntry };
+        onChange(newHistory);
       };
 
       const getRoleLabel = (index: number) => {
@@ -829,15 +838,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 {/* Role header */}
                 <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
                   <span className="text-base font-semibold text-atlas-navy">{getRoleLabel(index)}</span>
-                  {careerHistoryValue.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => removeCareerRow(index)}
-                      className="text-sm text-red-500 hover:text-red-700 font-medium"
-                    >
-                      Remove
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeCareerRow(index)}
+                    className="text-sm text-gray-400 hover:text-red-500 font-medium transition-colors"
+                  >
+                    Clear
+                  </button>
                 </div>
 
                 {/* Row 1: Job Title + Company Name */}
@@ -932,18 +939,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               </div>
             ))}
 
-            {careerHistoryValue.length < 3 && (
-              <button
-                type="button"
-                onClick={addCareerRow}
-                className="w-full py-3 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 hover:border-atlas-teal hover:text-atlas-teal transition-colors font-medium"
-              >
-                + Add another role (up to 3)
-              </button>
-            )}
-
             <p className="text-xs text-gray-500 mt-2 text-center">
-              Add up to 3 of your most recent professional roles, starting with the most recent.
+              Fill in up to 3 of your most recent professional roles. If you don't want a role included in the analysis, click "Clear" to remove it.
             </p>
           </div>
         </div>

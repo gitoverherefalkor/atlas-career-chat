@@ -269,6 +269,16 @@ RULES:
     }
 
     // Career history (new format - array of objects with company details)
+    // Always create 3 entries to match the UI expectation
+    const emptyCareerEntry = {
+      title: '',
+      companyName: '',
+      companySize: '',
+      companyCulture: '',
+      sector: '',
+      yearsInRole: ''
+    };
+
     if (extractedData.career_history && Array.isArray(extractedData.career_history)) {
       // Filter to valid entries only and take up to 3
       const validHistory = extractedData.career_history
@@ -283,19 +293,26 @@ RULES:
           yearsInRole: entry.yearsInRole || ''
         }));
 
-      if (validHistory.length > 0) {
-        surveyData[QUESTION_MAPPINGS.job_title] = validHistory;
+      // Pad to 3 entries
+      while (validHistory.length < 3) {
+        validHistory.push({ ...emptyCareerEntry });
       }
+
+      surveyData[QUESTION_MAPPINGS.job_title] = validHistory;
     } else if (extractedData.job_title) {
       // Legacy fallback - single job title (convert to new format)
-      surveyData[QUESTION_MAPPINGS.job_title] = [{
-        title: extractedData.job_title,
-        companyName: '',
-        companySize: '',
-        companyCulture: '',
-        sector: extractedData.industry || '',
-        yearsInRole: ''
-      }];
+      surveyData[QUESTION_MAPPINGS.job_title] = [
+        {
+          title: extractedData.job_title,
+          companyName: '',
+          companySize: '',
+          companyCulture: '',
+          sector: extractedData.industry || '',
+          yearsInRole: ''
+        },
+        { ...emptyCareerEntry },
+        { ...emptyCareerEntry }
+      ];
     }
 
     // Industry (text field)
