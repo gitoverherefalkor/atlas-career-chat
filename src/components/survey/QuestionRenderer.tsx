@@ -788,7 +788,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         yearsInRole: ''
       };
 
-      const careerHistoryValue: CareerHistoryEntry[] = value || [{ ...emptyEntry }];
+      // Ensure value is always an array (handle string prefill from AI)
+      const careerHistoryValue: CareerHistoryEntry[] = Array.isArray(value) ? value : [{ ...emptyEntry }];
 
       const updateCareerHistory = (index: number, field: keyof CareerHistoryEntry, fieldValue: string | number) => {
         const newHistory = [...careerHistoryValue];
@@ -951,13 +952,15 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     case 'career_happiness':
       // Career happiness - shows roles from career_history question with happiness slider + optional reason
       const linkedQuestionId = question.config?.linkedQuestionId || '11111111-1111-1111-1111-111111111110';
-      const careerHistoryData: CareerHistoryEntry[] = allResponses?.[linkedQuestionId] || [];
+      // Ensure careerHistoryData is always an array
+      const rawCareerData = allResponses?.[linkedQuestionId];
+      const careerHistoryData: CareerHistoryEntry[] = Array.isArray(rawCareerData) ? rawCareerData : [];
 
       // Filter to only show roles that have a title
       const validCareers = careerHistoryData.filter(c => c.title && c.title.trim() !== '');
 
-      // Initialize happiness values if not set
-      const happinessValue: CareerHappinessEntry[] = value || validCareers.map(c => ({
+      // Initialize happiness values if not set (ensure array)
+      const happinessValue: CareerHappinessEntry[] = Array.isArray(value) ? value : validCareers.map(c => ({
         title: c.title,
         happiness: 5,
         reason: ''
