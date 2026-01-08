@@ -123,7 +123,8 @@ export const useAIResumePreFill = ({
         }
       }
       // Handle array fields (convert to string if needed)
-      if (Array.isArray(value)) {
+      // EXCEPT for career_history which needs to stay as an array of objects
+      if (Array.isArray(value) && questionId !== '11111111-1111-1111-1111-111111111110') {
         preFillResponses[questionId] = value.join(', ');
       }
     });
