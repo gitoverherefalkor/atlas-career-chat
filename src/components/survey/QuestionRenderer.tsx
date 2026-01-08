@@ -24,6 +24,9 @@ interface CareerHistoryEntry {
   companyCulture: string;
   sector: string;
   yearsInRole: number | '';
+  startYear: number | '';
+  endYear: number | '';
+  isCurrent: boolean;
 }
 
 // Career happiness entry type (separate question)
@@ -785,44 +788,86 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         companySize: '',
         companyCulture: '',
         sector: '',
-        yearsInRole: ''
+        yearsInRole: '',
+        startYear: '',
+        endYear: '',
+        isCurrent: false
       };
 
-      // Ensure value is always an array with 3 entries (handle string prefill from AI)
-      const ensureThreeEntries = (arr: CareerHistoryEntry[]): CareerHistoryEntry[] => {
+      // Ensure value is always an array with 5 entries (handle string prefill from AI)
+      const ensureFiveEntries = (arr: CareerHistoryEntry[]): CareerHistoryEntry[] => {
         const result = [...arr];
-        while (result.length < 3) {
+        while (result.length < 5) {
           result.push({ ...emptyEntry });
         }
-        return result.slice(0, 3);
+        return result.slice(0, 5);
       };
       const careerHistoryValue: CareerHistoryEntry[] = Array.isArray(value)
-        ? ensureThreeEntries(value)
-        : [{ ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }];
+        ? ensureFiveEntries(value)
+        : [{ ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }];
 
-      const updateCareerHistory = (index: number, field: keyof CareerHistoryEntry, fieldValue: string | number) => {
+      // Auto-sort by recency: current roles first, then by end year (desc), then start year (desc)
+      const sortByRecency = (entries: CareerHistoryEntry[]): CareerHistoryEntry[] => {
+        return [...entries].sort((a, b) => {
+          // Empty entries go to the end
+          const aEmpty = !a.title;
+          const bEmpty = !b.title;
+          if (aEmpty && !bEmpty) return 1;
+          if (!aEmpty && bEmpty) return -1;
+          if (aEmpty && bEmpty) return 0;
+
+          // Current roles come first
+          if (a.isCurrent && !b.isCurrent) return -1;
+          if (!a.isCurrent && b.isCurrent) return 1;
+
+          // Sort by end year (most recent first)
+          const aEnd = a.endYear || a.startYear || 0;
+          const bEnd = b.endYear || b.startYear || 0;
+          if (aEnd !== bEnd) return Number(bEnd) - Number(aEnd);
+
+          // Then by start year
+          return Number(b.startYear || 0) - Number(a.startYear || 0);
+        });
+      };
+
+      const updateCareerHistory = (index: number, field: keyof CareerHistoryEntry, fieldValue: string | number | boolean) => {
         const newHistory = [...careerHistoryValue];
         newHistory[index] = { ...newHistory[index], [field]: fieldValue };
+
+        // If marking as current, clear end year
+        if (field === 'isCurrent' && fieldValue === true) {
+          newHistory[index].endYear = '';
+        }
+
         onChange(newHistory);
       };
 
       const addCareerRow = () => {
-        if (careerHistoryValue.length < 3) {
+        if (careerHistoryValue.length < 5) {
           onChange([...careerHistoryValue, { ...emptyEntry }]);
         }
       };
 
       const removeCareerRow = (index: number) => {
-        // Clear the entry instead of removing (keep 3 slots)
+        // Clear the entry and collapse gaps (move remaining entries up)
         const newHistory = [...careerHistoryValue];
-        newHistory[index] = { ...emptyEntry };
+        newHistory.splice(index, 1);
+        // Always keep 5 slots
+        while (newHistory.length < 5) {
+          newHistory.push({ ...emptyEntry });
+        }
         onChange(newHistory);
       };
 
-      const getRoleLabel = (index: number) => {
+      const getRoleLabel = (index: number, entry: CareerHistoryEntry) => {
+        if (entry.isCurrent) return `Role ${index + 1} (Current)`;
         if (index === 0) return 'Role 1 (Most Recent)';
         return `Role ${index + 1}`;
       };
+
+      // Generate year options (current year back to 50 years ago)
+      const currentYear = new Date().getFullYear();
+      const yearOptions = Array.from({ length: 51 }, (_, i) => currentYear - i);
 
       return (
         <div>
@@ -837,7 +882,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               <div key={index} className="p-5 border-2 rounded-xl bg-white shadow-sm">
                 {/* Role header */}
                 <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
-                  <span className="text-base font-semibold text-atlas-navy">{getRoleLabel(index)}</span>
+                  <span className="text-base font-semibold text-atlas-navy">{getRoleLabel(index, entry)}</span>
                   <button
                     type="button"
                     onClick={() => removeCareerRow(index)}
@@ -912,8 +957,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                   </div>
                 </div>
 
-                {/* Row 3: Sector + Years in Role */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Row 3: Sector + Start Year */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Industry / Sector</label>
                     <Input
@@ -924,23 +969,66 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Years in Role</label>
-                    <Input
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={entry.yearsInRole}
-                      onChange={(e) => updateCareerHistory(index, 'yearsInRole', e.target.value ? parseInt(e.target.value) : '')}
-                      placeholder="e.g., 3"
-                      className="w-full"
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Year</label>
+                    <Select
+                      value={entry.startYear?.toString() || ''}
+                      onValueChange={(val) => updateCareerHistory(index, 'startYear', val ? parseInt(val) : '')}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select year..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {yearOptions.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Row 4: End Year / Current Role */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-3 pt-6">
+                    <Checkbox
+                      id={`current-role-${index}`}
+                      checked={entry.isCurrent || false}
+                      onCheckedChange={(checked) => updateCareerHistory(index, 'isCurrent', checked as boolean)}
+                      className="h-5 w-5"
                     />
+                    <Label
+                      htmlFor={`current-role-${index}`}
+                      className="text-sm font-medium text-gray-700 cursor-pointer"
+                    >
+                      I currently work here
+                    </Label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">End Year</label>
+                    <Select
+                      value={entry.endYear?.toString() || ''}
+                      onValueChange={(val) => updateCareerHistory(index, 'endYear', val ? parseInt(val) : '')}
+                      disabled={entry.isCurrent}
+                    >
+                      <SelectTrigger className={`w-full ${entry.isCurrent ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                        <SelectValue placeholder={entry.isCurrent ? 'Present' : 'Select year...'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {yearOptions.map((year) => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
             ))}
 
             <p className="text-xs text-gray-500 mt-2 text-center">
-              Fill in up to 3 of your most recent professional roles. If you don't want a role included in the analysis, click "Clear" to remove it.
+              Fill in up to 5 of your most recent or parallel professional roles. Click "Clear" to remove roles you don't want included.
             </p>
           </div>
         </div>

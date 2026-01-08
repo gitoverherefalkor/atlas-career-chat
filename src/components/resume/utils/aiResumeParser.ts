@@ -84,6 +84,9 @@ interface CareerHistoryEntry {
   companyCulture: string;
   sector: string;
   yearsInRole: number | '';
+  startYear: number | '';
+  endYear: number | '';
+  isCurrent: boolean;
 }
 
 interface ExtractedResumeData {
@@ -149,9 +152,9 @@ Extract these fields (use null if not found):
   "years_experience": number (calculate from earliest job year to 2026),
   "region": "MUST be one of: Northern and Western Europe | Southern and Eastern Europe | United Kingdom (London) | United Kingdom (Other) | United States (High-Cost Regions) | United States (Average-Cost Regions) | United States (Lower-Cost Regions) | Canada | Australia and New Zealand | Switzerland",
   "career_history": [
-    { "title": "Job title", "companyName": "Company name", "sector": "Industry sector", "yearsInRole": number },
-    { "title": "...", "companyName": "...", "sector": "...", "yearsInRole": number },
-    { "title": "...", "companyName": "...", "sector": "...", "yearsInRole": number }
+    { "title": "Job title", "companyName": "Company name", "sector": "Industry sector", "startYear": 2020, "endYear": null, "isCurrent": true },
+    { "title": "...", "companyName": "...", "sector": "...", "startYear": 2018, "endYear": 2020, "isCurrent": false },
+    { "title": "...", "companyName": "...", "sector": "...", "startYear": 2015, "endYear": 2018, "isCurrent": false }
   ],
   "career_situation": "MUST be one of: Non-leadership or individual contributor role (no direct reports) | Managerial or leadership role (Managing 1-4 direct reports, focusing on team coordination and supervision) | Senior managerial role (Managing 5 or more direct reports, involved in strategic decision-making and broader team oversight) | Executive function (VP to C-suite roles or equivalent senior leadership positions with comprehensive organizational responsibilities) | Entrepreneur seeking an employed role | Currently on a career break or transition | Looking to re-enter the workforce",
   "industry": "Primary industry (e.g. Technology, Healthcare, Finance, Consulting)",
@@ -162,10 +165,12 @@ Extract these fields (use null if not found):
 RULES:
 - Netherlands/Germany/France/Belgium = Northern and Western Europe
 - Founder/CEO/COO/CTO = Executive function
-- career_history should have 1-3 entries, most recent first
+- career_history should have 1-5 entries, most recent first (current role first)
 - Extract actual company names (e.g., "Google", "Stripe", "Acme Corp")
 - sector examples: Technology, Legal Tech, FinTech, Healthcare, Consulting, Retail, Manufacturing, Media, SaaS
-- yearsInRole should be calculated from job dates if available (e.g., 2020-2023 = 3 years)
+- startYear/endYear: Extract the YEAR from job dates (e.g., "Jan 2020 - Present" → startYear: 2020, endYear: null, isCurrent: true)
+- isCurrent: true if job says "Present" or is the current/most recent role, false otherwise
+- If endYear is null or missing, isCurrent should be true
 - Return ONLY valid JSON, no markdown, no explanation`;
 
   try {
@@ -268,7 +273,7 @@ RULES:
       }
     }
 
-    // Career history (new format - array of objects with company details)
+    // Career history (new format - array of objects with company details and dates)
     // Always create 3 entries to match the UI expectation
     const emptyCareerEntry = {
       title: '',
@@ -276,25 +281,31 @@ RULES:
       companySize: '',
       companyCulture: '',
       sector: '',
-      yearsInRole: ''
+      yearsInRole: '',
+      startYear: '',
+      endYear: '',
+      isCurrent: false
     };
 
     if (extractedData.career_history && Array.isArray(extractedData.career_history)) {
-      // Filter to valid entries only and take up to 3
+      // Filter to valid entries only and take up to 5
       const validHistory = extractedData.career_history
         .filter(entry => entry && entry.title)
-        .slice(0, 3)
+        .slice(0, 5)
         .map(entry => ({
           title: entry.title || '',
           companyName: entry.companyName || '',
           companySize: '', // User must select - not inferred from resume
           companyCulture: '', // User must select - not inferred from resume
           sector: entry.sector || '',
-          yearsInRole: entry.yearsInRole || ''
+          yearsInRole: entry.yearsInRole || '',
+          startYear: entry.startYear || '',
+          endYear: entry.isCurrent ? '' : (entry.endYear || ''),
+          isCurrent: entry.isCurrent || false
         }));
 
-      // Pad to 3 entries
-      while (validHistory.length < 3) {
+      // Pad to 5 entries
+      while (validHistory.length < 5) {
         validHistory.push({ ...emptyCareerEntry });
       }
 
@@ -308,8 +319,13 @@ RULES:
           companySize: '',
           companyCulture: '',
           sector: extractedData.industry || '',
-          yearsInRole: ''
+          yearsInRole: '',
+          startYear: '',
+          endYear: '',
+          isCurrent: true  // Assume current if only one job
         },
+        { ...emptyCareerEntry },
+        { ...emptyCareerEntry },
         { ...emptyCareerEntry },
         { ...emptyCareerEntry }
       ];
