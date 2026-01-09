@@ -941,6 +941,11 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       const currentYear = new Date().getFullYear();
       const yearOptions = Array.from({ length: 51 }, (_, i) => currentYear - i);
 
+      // Check if entry is active (has at least a title)
+      const isActiveEntry = (entry: CareerHistoryEntry): boolean => {
+        return !!(entry.title && entry.title.trim());
+      };
+
       return (
         <div>
           <div
@@ -950,38 +955,59 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           {renderDescription()}
 
           <div className="space-y-6">
-            {careerHistoryValue.map((entry, index) => (
-              <div key={index} className="p-5 border-2 rounded-xl bg-white shadow-sm">
-                {/* Role header */}
-                <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
-                  <span className="text-base font-semibold text-atlas-navy">{getRoleLabel(index, entry)}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeCareerRow(index)}
-                    className="text-sm text-gray-400 hover:text-red-500 font-medium transition-colors"
-                  >
-                    Clear
-                  </button>
-                </div>
+            {careerHistoryValue.map((entry, index) => {
+              const isActive = isActiveEntry(entry);
+
+              return (
+                <div
+                  key={index}
+                  className={`p-5 border-2 rounded-xl shadow-sm transition-all duration-200 ${
+                    isActive
+                      ? 'bg-white border-atlas-teal/30'
+                      : 'bg-gray-50 border-gray-200 opacity-60'
+                  }`}
+                >
+                  {/* Role header */}
+                  <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-base font-semibold ${isActive ? 'text-atlas-navy' : 'text-gray-400'}`}>
+                        {getRoleLabel(index, entry)}
+                      </span>
+                      {isActive && (
+                        <div className="text-green-600">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeCareerRow(index)}
+                      className="text-sm text-gray-400 hover:text-red-500 font-medium transition-colors"
+                    >
+                      Clear
+                    </button>
+                  </div>
 
                 {/* Row 1: Job Title + Company Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Job Title</label>
                     <Input
                       value={entry.title}
                       onChange={(e) => updateCareerHistory(index, 'title', e.target.value)}
                       placeholder="e.g., Director of Marketing"
-                      className="w-full"
+                      className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Company Name</label>
                     <Input
                       value={entry.companyName}
                       onChange={(e) => updateCareerHistory(index, 'companyName', e.target.value)}
                       placeholder="e.g., Acme Legal AI"
-                      className="w-full"
+                      className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''}`}
                     />
                   </div>
                 </div>
@@ -989,12 +1015,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 {/* Row 2: Company Size + Company Culture */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Company Size</label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Company Size</label>
                     <Select
                       value={entry.companySize || ''}
                       onValueChange={(val) => updateCareerHistory(index, 'companySize', val)}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className={`w-full ${!isActive ? 'text-gray-400' : ''}`}>
                         <SelectValue placeholder="Select size..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -1007,12 +1033,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     </Select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Company Culture</label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Company Culture</label>
                     <Select
                       value={entry.companyCulture || ''}
                       onValueChange={(val) => updateCareerHistory(index, 'companyCulture', val)}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className={`w-full ${!isActive ? 'text-gray-400' : ''}`}>
                         <SelectValue placeholder="Select culture..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -1031,25 +1057,25 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
                 {/* Row 3: Sector */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Industry / Sector</label>
+                  <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Industry / Sector</label>
                   <Input
                     value={entry.sector}
                     onChange={(e) => updateCareerHistory(index, 'sector', e.target.value)}
                     placeholder="e.g., Legal Tech, FinTech, Healthcare"
-                    className="w-full"
+                    className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''}`}
                   />
                 </div>
 
                 {/* Row 4: Start (Month + Year) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start</label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Start</label>
                     <div className="flex gap-2">
                       <Select
                         value={entry.startMonth || ''}
                         onValueChange={(val) => updateCareerHistory(index, 'startMonth', val)}
                       >
-                        <SelectTrigger className="w-24">
+                        <SelectTrigger className={`w-24 ${!isActive ? 'text-gray-400' : ''}`}>
                           <SelectValue placeholder="Mon" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1064,7 +1090,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         value={entry.startYear?.toString() || ''}
                         onValueChange={(val) => updateCareerHistory(index, 'startYear', val ? parseInt(val) : '')}
                       >
-                        <SelectTrigger className="flex-1">
+                        <SelectTrigger className={`flex-1 ${!isActive ? 'text-gray-400' : ''}`}>
                           <SelectValue placeholder="Year" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1078,14 +1104,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End</label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>End</label>
                     <div className="flex gap-2">
                       <Select
                         value={entry.endMonth || ''}
                         onValueChange={(val) => updateCareerHistory(index, 'endMonth', val)}
                         disabled={entry.isCurrent}
                       >
-                        <SelectTrigger className={`w-24 ${entry.isCurrent ? 'opacity-50' : ''}`}>
+                        <SelectTrigger className={`w-24 ${entry.isCurrent ? 'opacity-50' : ''} ${!isActive ? 'text-gray-400' : ''}`}>
                           <SelectValue placeholder={entry.isCurrent ? 'Present' : 'Mon'} />
                         </SelectTrigger>
                         <SelectContent>
@@ -1101,7 +1127,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         onValueChange={(val) => updateCareerHistory(index, 'endYear', val ? parseInt(val) : '')}
                         disabled={entry.isCurrent}
                       >
-                        <SelectTrigger className={`flex-1 ${entry.isCurrent ? 'opacity-50' : ''}`}>
+                        <SelectTrigger className={`flex-1 ${entry.isCurrent ? 'opacity-50' : ''} ${!isActive ? 'text-gray-400' : ''}`}>
                           <SelectValue placeholder={entry.isCurrent ? '' : 'Year'} />
                         </SelectTrigger>
                         <SelectContent>
@@ -1127,19 +1153,20 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     />
                     <Label
                       htmlFor={`current-role-${index}`}
-                      className="text-sm font-medium text-gray-700 cursor-pointer"
+                      className={`text-sm font-medium cursor-pointer ${isActive ? 'text-gray-700' : 'text-gray-400'}`}
                     >
                       I currently work here
                     </Label>
                   </div>
                   {calculateDuration(entry) && (
-                    <span className="text-sm text-gray-500 italic">
+                    <span className={`text-sm italic ${isActive ? 'text-gray-500' : 'text-gray-400'}`}>
                       {calculateDuration(entry)}
                     </span>
                   )}
                 </div>
               </div>
-            ))}
+              );
+            })}
 
             <p className="text-xs text-gray-500 mt-2 text-center">
               Fill in up to 5 of your most recent or parallel professional roles. Click "Clear" to remove roles you don't want included.

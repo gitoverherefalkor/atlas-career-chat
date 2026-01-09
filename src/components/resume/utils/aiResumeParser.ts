@@ -12,8 +12,6 @@ const QUESTION_MAPPINGS = {
   years_experience: '11111111-1111-1111-1111-111111111118',
   career_situation: '11111111-1111-1111-1111-111111111119',
   job_title: '11111111-1111-1111-1111-111111111110',
-  employer_size: '11111111-1111-1111-1111-11111111111c',
-  industry: '11111111-1111-1111-1111-11111111111e',
   achievement: '11111111-1111-1111-1111-11111111111f',
   interests: '11111111-1111-1111-1111-111111111120',
   specialized_skills: '44444444-4444-4444-4444-444444444444',
@@ -63,17 +61,6 @@ const SURVEY_OPTIONS = {
     'Entrepreneur seeking an employed role',
     'Currently on a career break or transition',
     'Looking to re-enter the workforce'
-  ],
-
-  employer_size: [
-    '1-10',
-    '11-50',
-    '51-200',
-    '201-500',
-    '501-1,000',
-    '1,001-5,000',
-    '5,001-10,000',
-    'More than 10,000'
   ]
 } as const;
 
@@ -102,9 +89,7 @@ interface ExtractedResumeData {
   years_experience?: number;
   career_situation?: string;
   job_title?: string;  // Legacy - single job
-  career_history?: CareerHistoryEntry[];  // New - up to 3 jobs
-  employer_size?: string;
-  industry?: string;
+  career_history?: CareerHistoryEntry[];  // New - up to 5 jobs
   achievement?: string;
   interests?: string;
   specialized_skills?: string;
@@ -159,7 +144,6 @@ Extract these fields (use null if not found):
     { "title": "...", "companyName": "...", "sector": "...", "startMonth": "Jun", "startYear": 2015, "endMonth": "Feb", "endYear": 2018, "isCurrent": false }
   ],
   "career_situation": "MUST be one of: Non-leadership or individual contributor role (no direct reports) | Managerial or leadership role (Managing 1-4 direct reports, focusing on team coordination and supervision) | Senior managerial role (Managing 5 or more direct reports, involved in strategic decision-making and broader team oversight) | Executive function (VP to C-suite roles or equivalent senior leadership positions with comprehensive organizational responsibilities) | Entrepreneur seeking an employed role | Currently on a career break or transition | Looking to re-enter the workforce",
-  "industry": "Primary industry (e.g. Technology, Healthcare, Finance, Consulting)",
   "specialized_skills": "Key skills comma-separated",
   "achievement": "Most notable achievement (max 200 chars)"
 }
@@ -170,6 +154,7 @@ RULES:
 - career_history should have 1-5 entries, most recent first (current role first)
 - Extract actual company names (e.g., "Google", "Stripe", "Acme Corp")
 - sector examples: Technology, Legal Tech, FinTech, Healthcare, Consulting, Retail, Manufacturing, Media, SaaS
+- sectors are captured per role in career_history, not as a separate field
 - startMonth/startYear/endMonth/endYear: Extract from job dates (e.g., "Jan 2020 - Present" → startMonth: "Jan", startYear: 2020, endMonth: null, endYear: null, isCurrent: true)
 - Month format MUST be 3-letter abbreviation: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
 - isCurrent: true if job says "Present" or is the current/most recent role, false otherwise
@@ -325,7 +310,7 @@ RULES:
           companyName: '',
           companySize: '',
           companyCulture: '',
-          sector: extractedData.industry || '',
+          sector: '',
           yearsInRole: '',
           startMonth: '',
           startYear: '',
@@ -338,11 +323,6 @@ RULES:
         { ...emptyCareerEntry },
         { ...emptyCareerEntry }
       ];
-    }
-
-    // Industry (text field)
-    if (extractedData.industry) {
-      surveyData[QUESTION_MAPPINGS.industry] = extractedData.industry;
     }
 
     // Achievement (text field, max 420 chars)
