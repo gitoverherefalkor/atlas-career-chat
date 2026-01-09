@@ -84,7 +84,9 @@ interface CareerHistoryEntry {
   companyCulture: string;
   sector: string;
   yearsInRole: number | '';
+  startMonth: string;
   startYear: number | '';
+  endMonth: string;
   endYear: number | '';
   isCurrent: boolean;
 }
@@ -152,9 +154,9 @@ Extract these fields (use null if not found):
   "years_experience": number (calculate from earliest job year to 2026),
   "region": "MUST be one of: Northern and Western Europe | Southern and Eastern Europe | United Kingdom (London) | United Kingdom (Other) | United States (High-Cost Regions) | United States (Average-Cost Regions) | United States (Lower-Cost Regions) | Canada | Australia and New Zealand | Switzerland",
   "career_history": [
-    { "title": "Job title", "companyName": "Company name", "sector": "Industry sector", "startYear": 2020, "endYear": null, "isCurrent": true },
-    { "title": "...", "companyName": "...", "sector": "...", "startYear": 2018, "endYear": 2020, "isCurrent": false },
-    { "title": "...", "companyName": "...", "sector": "...", "startYear": 2015, "endYear": 2018, "isCurrent": false }
+    { "title": "Job title", "companyName": "Company name", "sector": "Industry sector", "startMonth": "Jan", "startYear": 2020, "endMonth": null, "endYear": null, "isCurrent": true },
+    { "title": "...", "companyName": "...", "sector": "...", "startMonth": "Mar", "startYear": 2018, "endMonth": "Dec", "endYear": 2019, "isCurrent": false },
+    { "title": "...", "companyName": "...", "sector": "...", "startMonth": "Jun", "startYear": 2015, "endMonth": "Feb", "endYear": 2018, "isCurrent": false }
   ],
   "career_situation": "MUST be one of: Non-leadership or individual contributor role (no direct reports) | Managerial or leadership role (Managing 1-4 direct reports, focusing on team coordination and supervision) | Senior managerial role (Managing 5 or more direct reports, involved in strategic decision-making and broader team oversight) | Executive function (VP to C-suite roles or equivalent senior leadership positions with comprehensive organizational responsibilities) | Entrepreneur seeking an employed role | Currently on a career break or transition | Looking to re-enter the workforce",
   "industry": "Primary industry (e.g. Technology, Healthcare, Finance, Consulting)",
@@ -168,9 +170,10 @@ RULES:
 - career_history should have 1-5 entries, most recent first (current role first)
 - Extract actual company names (e.g., "Google", "Stripe", "Acme Corp")
 - sector examples: Technology, Legal Tech, FinTech, Healthcare, Consulting, Retail, Manufacturing, Media, SaaS
-- startYear/endYear: Extract the YEAR from job dates (e.g., "Jan 2020 - Present" → startYear: 2020, endYear: null, isCurrent: true)
+- startMonth/startYear/endMonth/endYear: Extract from job dates (e.g., "Jan 2020 - Present" → startMonth: "Jan", startYear: 2020, endMonth: null, endYear: null, isCurrent: true)
+- Month format MUST be 3-letter abbreviation: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
 - isCurrent: true if job says "Present" or is the current/most recent role, false otherwise
-- If endYear is null or missing, isCurrent should be true
+- If endMonth/endYear are null or missing, isCurrent should be true
 - Return ONLY valid JSON, no markdown, no explanation`;
 
   try {
@@ -274,7 +277,7 @@ RULES:
     }
 
     // Career history (new format - array of objects with company details and dates)
-    // Always create 3 entries to match the UI expectation
+    // Always create 5 entries to match the UI expectation
     const emptyCareerEntry = {
       title: '',
       companyName: '',
@@ -282,7 +285,9 @@ RULES:
       companyCulture: '',
       sector: '',
       yearsInRole: '',
+      startMonth: '',
       startYear: '',
+      endMonth: '',
       endYear: '',
       isCurrent: false
     };
@@ -299,7 +304,9 @@ RULES:
           companyCulture: '', // User must select - not inferred from resume
           sector: entry.sector || '',
           yearsInRole: entry.yearsInRole || '',
+          startMonth: entry.startMonth || '',
           startYear: entry.startYear || '',
+          endMonth: entry.isCurrent ? '' : (entry.endMonth || ''),
           endYear: entry.isCurrent ? '' : (entry.endYear || ''),
           isCurrent: entry.isCurrent || false
         }));
@@ -320,7 +327,9 @@ RULES:
           companyCulture: '',
           sector: extractedData.industry || '',
           yearsInRole: '',
+          startMonth: '',
           startYear: '',
+          endMonth: '',
           endYear: '',
           isCurrent: true  // Assume current if only one job
         },

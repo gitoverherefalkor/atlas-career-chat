@@ -24,7 +24,9 @@ interface CareerHistoryEntry {
   companyCulture: string;
   sector: string;
   yearsInRole: number | '';
+  startMonth: string;
   startYear: number | '';
+  endMonth: string;
   endYear: number | '';
   isCurrent: boolean;
 }
@@ -789,9 +791,61 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         companyCulture: '',
         sector: '',
         yearsInRole: '',
+        startMonth: '',
         startYear: '',
+        endMonth: '',
         endYear: '',
         isCurrent: false
+      };
+
+      // Month options
+      const MONTHS = [
+        { value: 'Jan', label: 'Jan' },
+        { value: 'Feb', label: 'Feb' },
+        { value: 'Mar', label: 'Mar' },
+        { value: 'Apr', label: 'Apr' },
+        { value: 'May', label: 'May' },
+        { value: 'Jun', label: 'Jun' },
+        { value: 'Jul', label: 'Jul' },
+        { value: 'Aug', label: 'Aug' },
+        { value: 'Sep', label: 'Sep' },
+        { value: 'Oct', label: 'Oct' },
+        { value: 'Nov', label: 'Nov' },
+        { value: 'Dec', label: 'Dec' },
+      ];
+
+      // Calculate duration between dates
+      const calculateDuration = (entry: CareerHistoryEntry): string => {
+        if (!entry.startMonth || !entry.startYear) return '';
+
+        const monthToNum: Record<string, number> = {
+          'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+          'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        };
+
+        const startDate = new Date(Number(entry.startYear), monthToNum[entry.startMonth] || 0);
+        let endDate: Date;
+
+        if (entry.isCurrent) {
+          endDate = new Date();
+        } else if (entry.endMonth && entry.endYear) {
+          endDate = new Date(Number(entry.endYear), monthToNum[entry.endMonth] || 0);
+        } else {
+          return '';
+        }
+
+        const totalMonths = (endDate.getFullYear() - startDate.getFullYear()) * 12 +
+                           (endDate.getMonth() - startDate.getMonth());
+
+        if (totalMonths < 0) return '';
+
+        const years = Math.floor(totalMonths / 12);
+        const months = totalMonths % 12;
+
+        if (years === 0 && months === 0) return 'Less than a month';
+        if (years === 0) return `${months} month${months !== 1 ? 's' : ''}`;
+        if (months === 0) return `${years} year${years !== 1 ? 's' : ''}`;
+        return `${years} year${years !== 1 ? 's' : ''}, ${months} month${months !== 1 ? 's' : ''}`;
       };
 
       // Ensure value is always an array with 5 entries (handle string prefill from AI)
@@ -806,7 +860,16 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         ? ensureFiveEntries(value)
         : [{ ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }];
 
-      // Auto-sort by recency: current roles first, then by end year (desc), then start year (desc)
+      // Helper to convert month name to number for sorting
+      const monthToNumber = (month: string): number => {
+        const months: Record<string, number> = {
+          'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
+          'Jul': 7, 'Aug': 8, 'Sep': 9, 'Oct': 10, 'Nov': 11, 'Dec': 12
+        };
+        return months[month] || 0;
+      };
+
+      // Auto-sort by recency: current roles first, then by end date (desc), then start date (desc)
       const sortByRecency = (entries: CareerHistoryEntry[]): CareerHistoryEntry[] => {
         return [...entries].sort((a, b) => {
           // Empty entries go to the end
@@ -820,13 +883,21 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           if (a.isCurrent && !b.isCurrent) return -1;
           if (!a.isCurrent && b.isCurrent) return 1;
 
-          // Sort by end year (most recent first)
-          const aEnd = a.endYear || a.startYear || 0;
-          const bEnd = b.endYear || b.startYear || 0;
-          if (aEnd !== bEnd) return Number(bEnd) - Number(aEnd);
+          // Sort by end date (most recent first)
+          const aEndYear = Number(a.endYear || a.startYear || 0);
+          const bEndYear = Number(b.endYear || b.startYear || 0);
+          if (aEndYear !== bEndYear) return bEndYear - aEndYear;
 
-          // Then by start year
-          return Number(b.startYear || 0) - Number(a.startYear || 0);
+          const aEndMonth = monthToNumber(a.endMonth || a.startMonth || '');
+          const bEndMonth = monthToNumber(b.endMonth || b.startMonth || '');
+          if (aEndMonth !== bEndMonth) return bEndMonth - aEndMonth;
+
+          // Then by start date
+          const aStartYear = Number(a.startYear || 0);
+          const bStartYear = Number(b.startYear || 0);
+          if (aStartYear !== bStartYear) return bStartYear - aStartYear;
+
+          return monthToNumber(b.startMonth || '') - monthToNumber(a.startMonth || '');
         });
       };
 
@@ -834,8 +905,9 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         const newHistory = [...careerHistoryValue];
         newHistory[index] = { ...newHistory[index], [field]: fieldValue };
 
-        // If marking as current, clear end year
+        // If marking as current, clear end month and year
         if (field === 'isCurrent' && fieldValue === true) {
+          newHistory[index].endMonth = '';
           newHistory[index].endYear = '';
         }
 
@@ -957,40 +1029,96 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                   </div>
                 </div>
 
-                {/* Row 3: Sector + Start Year */}
+                {/* Row 3: Sector */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Industry / Sector</label>
+                  <Input
+                    value={entry.sector}
+                    onChange={(e) => updateCareerHistory(index, 'sector', e.target.value)}
+                    placeholder="e.g., Legal Tech, FinTech, Healthcare"
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Row 4: Start (Month + Year) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Industry / Sector</label>
-                    <Input
-                      value={entry.sector}
-                      onChange={(e) => updateCareerHistory(index, 'sector', e.target.value)}
-                      placeholder="e.g., Legal Tech, FinTech, Healthcare"
-                      className="w-full"
-                    />
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start</label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={entry.startMonth || ''}
+                        onValueChange={(val) => updateCareerHistory(index, 'startMonth', val)}
+                      >
+                        <SelectTrigger className="w-24">
+                          <SelectValue placeholder="Mon" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MONTHS.map((month) => (
+                            <SelectItem key={month.value} value={month.value}>
+                              {month.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={entry.startYear?.toString() || ''}
+                        onValueChange={(val) => updateCareerHistory(index, 'startYear', val ? parseInt(val) : '')}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Year" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {yearOptions.map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Year</label>
-                    <Select
-                      value={entry.startYear?.toString() || ''}
-                      onValueChange={(val) => updateCareerHistory(index, 'startYear', val ? parseInt(val) : '')}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select year..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {yearOptions.map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">End</label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={entry.endMonth || ''}
+                        onValueChange={(val) => updateCareerHistory(index, 'endMonth', val)}
+                        disabled={entry.isCurrent}
+                      >
+                        <SelectTrigger className={`w-24 ${entry.isCurrent ? 'opacity-50' : ''}`}>
+                          <SelectValue placeholder={entry.isCurrent ? 'Present' : 'Mon'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MONTHS.map((month) => (
+                            <SelectItem key={month.value} value={month.value}>
+                              {month.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={entry.endYear?.toString() || ''}
+                        onValueChange={(val) => updateCareerHistory(index, 'endYear', val ? parseInt(val) : '')}
+                        disabled={entry.isCurrent}
+                      >
+                        <SelectTrigger className={`flex-1 ${entry.isCurrent ? 'opacity-50' : ''}`}>
+                          <SelectValue placeholder={entry.isCurrent ? '' : 'Year'} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {yearOptions.map((year) => (
+                            <SelectItem key={year} value={year.toString()}>
+                              {year}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 
-                {/* Row 4: End Year / Current Role */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-3 pt-6">
+                {/* Row 5: Current role checkbox + Duration */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
                     <Checkbox
                       id={`current-role-${index}`}
                       checked={entry.isCurrent || false}
@@ -1004,25 +1132,11 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       I currently work here
                     </Label>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">End Year</label>
-                    <Select
-                      value={entry.endYear?.toString() || ''}
-                      onValueChange={(val) => updateCareerHistory(index, 'endYear', val ? parseInt(val) : '')}
-                      disabled={entry.isCurrent}
-                    >
-                      <SelectTrigger className={`w-full ${entry.isCurrent ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                        <SelectValue placeholder={entry.isCurrent ? 'Present' : 'Select year...'} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {yearOptions.map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {calculateDuration(entry) && (
+                    <span className="text-sm text-gray-500 italic">
+                      {calculateDuration(entry)}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
