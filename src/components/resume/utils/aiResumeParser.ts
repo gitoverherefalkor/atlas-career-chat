@@ -90,7 +90,10 @@ interface ExtractedResumeData {
   career_situation?: string;
   job_title?: string;  // Legacy - single job
   career_history?: CareerHistoryEntry[];  // New - up to 5 jobs
-  achievement?: string;
+  achievement?: string;  // Legacy - single achievement text
+  top_skills?: string[];  // New - up to 3 skills from LinkedIn's Top Skills
+  certifications?: string[];  // New - up to 3 certifications
+  achievements?: { text: string; company?: string; year?: number | string }[];  // New - achievements with context
   interests?: string;
   specialized_skills?: string;
 }
@@ -140,12 +143,14 @@ Extract these fields (use null if not found):
   "region": "MUST be one of: Northern and Western Europe | Southern and Eastern Europe | United Kingdom (London) | United Kingdom (Other) | United States (High-Cost Regions) | United States (Average-Cost Regions) | United States (Lower-Cost Regions) | Canada | Australia and New Zealand | Switzerland",
   "career_history": [
     { "title": "Job title", "companyName": "Company name", "sector": "Industry sector", "startMonth": "Jan", "startYear": 2020, "endMonth": null, "endYear": null, "isCurrent": true },
-    { "title": "...", "companyName": "...", "sector": "...", "startMonth": "Mar", "startYear": 2018, "endMonth": "Dec", "endYear": 2019, "isCurrent": false },
-    { "title": "...", "companyName": "...", "sector": "...", "startMonth": "Jun", "startYear": 2015, "endMonth": "Feb", "endYear": 2018, "isCurrent": false }
+    { "title": "...", "companyName": "...", "sector": "...", "startMonth": "Mar", "startYear": 2018, "endMonth": "Dec", "endYear": 2019, "isCurrent": false }
   ],
   "career_situation": "MUST be one of: Non-leadership or individual contributor role (no direct reports) | Managerial or leadership role (Managing 1-4 direct reports, focusing on team coordination and supervision) | Senior managerial role (Managing 5 or more direct reports, involved in strategic decision-making and broader team oversight) | Executive function (VP to C-suite roles or equivalent senior leadership positions with comprehensive organizational responsibilities) | Entrepreneur seeking an employed role | Currently on a career break or transition | Looking to re-enter the workforce",
-  "specialized_skills": "Key skills comma-separated",
-  "achievement": "Most notable achievement (max 200 chars)"
+  "top_skills": ["Skill 1", "Skill 2", "Skill 3"],
+  "certifications": ["Certification 1", "Certification 2"],
+  "achievements": [
+    { "text": "Achievement description summarized in 1-2 sentences", "company": "Company Name", "year": 2022 }
+  ]
 }
 
 RULES:
@@ -154,11 +159,12 @@ RULES:
 - career_history should have 1-5 entries, most recent first (current role first)
 - Extract actual company names (e.g., "Google", "Stripe", "Acme Corp")
 - sector examples: Technology, Legal Tech, FinTech, Healthcare, Consulting, Retail, Manufacturing, Media, SaaS
-- sectors are captured per role in career_history, not as a separate field
 - startMonth/startYear/endMonth/endYear: Extract from job dates (e.g., "Jan 2020 - Present" → startMonth: "Jan", startYear: 2020, endMonth: null, endYear: null, isCurrent: true)
 - Month format MUST be 3-letter abbreviation: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
 - isCurrent: true if job says "Present" or is the current/most recent role, false otherwise
-- If endMonth/endYear are null or missing, isCurrent should be true
+- top_skills: Extract from LinkedIn's "Top Skills" section or infer top 3 professional skills. Max 3 skills.
+- certifications: Extract from certifications/licenses section. Max 3 certifications.
+- achievements: Extract notable accomplishments from job descriptions, intro summary, or achievements section. Include company name and year when available. Focus on concrete results (founded company, led team, achieved X%, etc).
 - Return ONLY valid JSON, no markdown, no explanation`;
 
   try {
@@ -325,15 +331,65 @@ RULES:
       ];
     }
 
-    // Achievement (text field, max 420 chars)
-    if (extractedData.achievement) {
-      const truncatedAchievement = extractedData.achievement.length > 420
-        ? extractedData.achievement.substring(0, 417) + '...'
-        : extractedData.achievement;
-      surveyData[QUESTION_MAPPINGS.achievement] = truncatedAchievement;
+    // Skills & Achievements (new combined question type)
+    // Build the skills_achievements object with top_skills, certifications, and formatted achievements
+    const skillsAchievementsData: {
+      topSkills: string[];
+      certifications: string[];
+      achievements: string;
+    } = {
+      topSkills: ['', '', ''],
+      certifications: ['', '', ''],
+      achievements: ''
+    };
+
+    // Top skills - take up to 3
+    if (extractedData.top_skills && Array.isArray(extractedData.top_skills)) {
+      const skills = extractedData.top_skills.slice(0, 3);
+      skills.forEach((skill, index) => {
+        if (skill && index < 3) {
+          skillsAchievementsData.topSkills[index] = skill;
+        }
+      });
     }
 
-    // Specialized skills (text field)
+    // Certifications - take up to 3
+    if (extractedData.certifications && Array.isArray(extractedData.certifications)) {
+      const certs = extractedData.certifications.slice(0, 3);
+      certs.forEach((cert, index) => {
+        if (cert && index < 3) {
+          skillsAchievementsData.certifications[index] = cert;
+        }
+      });
+    }
+
+    // Achievements - format with company and year
+    if (extractedData.achievements && Array.isArray(extractedData.achievements)) {
+      const formattedAchievements = extractedData.achievements
+        .filter(a => a && a.text)
+        .map(a => {
+          let text = a.text;
+          if (a.company || a.year) {
+            const context = [a.company, a.year].filter(Boolean).join(' ');
+            text += `\nAt ${context}`;
+          }
+          return text;
+        })
+        .join('\n\n');
+      skillsAchievementsData.achievements = formattedAchievements;
+    } else if (extractedData.achievement) {
+      // Legacy fallback - single achievement text
+      skillsAchievementsData.achievements = extractedData.achievement;
+    }
+
+    // Only add if we have any data
+    if (skillsAchievementsData.topSkills.some(s => s) ||
+        skillsAchievementsData.certifications.some(c => c) ||
+        skillsAchievementsData.achievements) {
+      surveyData[QUESTION_MAPPINGS.achievement] = skillsAchievementsData;
+    }
+
+    // Specialized skills (text field) - legacy, keep for backwards compatibility
     if (extractedData.specialized_skills) {
       surveyData[QUESTION_MAPPINGS.specialized_skills] = extractedData.specialized_skills;
     }

@@ -122,9 +122,14 @@ export const useAIResumePreFill = ({
       }
       // Handle array fields (convert to string if needed)
       // EXCEPT for career_history which needs to stay as an array of objects
-      if (Array.isArray(value) && questionId !== '11111111-1111-1111-1111-111111111110') {
+      // EXCEPT for skills_achievements which needs to stay as an object
+      if (Array.isArray(value) &&
+          questionId !== '11111111-1111-1111-1111-111111111110' &&
+          questionId !== '11111111-1111-1111-1111-11111111111f') {
         preFillResponses[questionId] = value.join(', ');
       }
+      // skills_achievements (11111111-1111-1111-1111-11111111111f) should stay as object
+      // with topSkills, certifications, and achievements properties
     });
     // Update the responses with the pre-filled data
     if (Object.keys(preFillResponses).length > 0) {

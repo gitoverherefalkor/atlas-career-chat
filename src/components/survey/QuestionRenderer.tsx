@@ -38,6 +38,13 @@ interface CareerHappinessEntry {
   reason: string;
 }
 
+// Skills & Achievements entry type
+interface SkillsAchievementsEntry {
+  topSkills: string[];
+  certifications: string[];
+  achievements: string;
+}
+
 // Company size and culture options
 const COMPANY_SIZE_OPTIONS = [
   { value: 'Own Company', label: 'Own Company' },
@@ -1271,6 +1278,98 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      );
+
+    case 'skills_achievements':
+      // Skills, certifications, and achievements - extracted from LinkedIn/resume
+      const emptySkillsAchievements: SkillsAchievementsEntry = {
+        topSkills: ['', '', ''],
+        certifications: ['', '', ''],
+        achievements: ''
+      };
+
+      // Parse value - could be object or needs initialization
+      const skillsValue: SkillsAchievementsEntry = value && typeof value === 'object'
+        ? {
+            topSkills: Array.isArray(value.topSkills) ? [...value.topSkills, '', '', ''].slice(0, 3) : ['', '', ''],
+            certifications: Array.isArray(value.certifications) ? [...value.certifications, '', '', ''].slice(0, 3) : ['', '', ''],
+            achievements: value.achievements || ''
+          }
+        : { ...emptySkillsAchievements };
+
+      const updateSkillsField = (field: 'topSkills' | 'certifications', index: number, newValue: string) => {
+        const updated = { ...skillsValue };
+        updated[field] = [...updated[field]];
+        updated[field][index] = newValue;
+        onChange(updated);
+      };
+
+      const updateAchievements = (newValue: string) => {
+        onChange({ ...skillsValue, achievements: newValue });
+      };
+
+      return (
+        <div>
+          <div
+            className="text-lg font-light mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
+          {renderDescription()}
+
+          <div className="space-y-8">
+            {/* Top Skills & Certifications Section */}
+            <div className="p-5 border-2 rounded-xl bg-white shadow-sm">
+              <h3 className="text-base font-semibold text-atlas-navy mb-4">Top Skills & Certifications</h3>
+
+              {/* Top Skills - 3 fixed fields */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Your 3 Top Skills</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[0, 1, 2].map((index) => (
+                    <Input
+                      key={`skill-${index}`}
+                      value={skillsValue.topSkills[index] || ''}
+                      onChange={(e) => updateSkillsField('topSkills', index, e.target.value)}
+                      placeholder={index === 0 ? 'e.g., Context Engineering' : index === 1 ? 'e.g., AI Course Development' : 'e.g., Strategic Planning'}
+                      className="w-full"
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* Certifications - 3 fixed fields */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Certifications (optional)</label>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {[0, 1, 2].map((index) => (
+                    <Input
+                      key={`cert-${index}`}
+                      value={skillsValue.certifications[index] || ''}
+                      onChange={(e) => updateSkillsField('certifications', index, e.target.value)}
+                      placeholder={index === 0 ? 'e.g., AI for Business' : index === 1 ? 'e.g., PMP Certified' : ''}
+                      className="w-full"
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Achievements Section */}
+            <div className="p-5 border-2 rounded-xl bg-white shadow-sm">
+              <h3 className="text-base font-semibold text-atlas-navy mb-2">Achievements</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Why are you proud of it and how did it influence your career or organization?
+              </p>
+              <textarea
+                value={skillsValue.achievements}
+                onChange={(e) => updateAchievements(e.target.value)}
+                placeholder="Describe your key professional achievements. Include the company and year where relevant.&#10;&#10;Example:&#10;Co-founded Good Shepherd Entertainment in 2012. GSE is a publisher for high-quality video games...&#10;At Good Shepherd Entertainment (2012-2022)"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-base leading-relaxed resize-y min-h-[200px]"
+                rows={8}
+              />
+            </div>
           </div>
         </div>
       );
