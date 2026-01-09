@@ -1332,7 +1332,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       key={`skill-${index}`}
                       value={skillsValue.topSkills[index] || ''}
                       onChange={(e) => updateSkillsField('topSkills', index, e.target.value)}
-                      placeholder={index === 0 ? 'e.g., Context Engineering' : index === 1 ? 'e.g., AI Course Development' : 'e.g., Strategic Planning'}
+                      placeholder={index === 0 ? 'e.g., Strategic Planning' : index === 1 ? 'e.g., Stakeholder Management' : 'e.g., Budget Administration'}
                       className="w-full"
                     />
                   ))}
@@ -1348,7 +1348,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       key={`cert-${index}`}
                       value={skillsValue.certifications[index] || ''}
                       onChange={(e) => updateSkillsField('certifications', index, e.target.value)}
-                      placeholder={index === 0 ? 'e.g., AI for Business' : index === 1 ? 'e.g., PMP Certified' : ''}
+                      placeholder={index === 0 ? 'e.g., Six Sigma Green Belt' : index === 1 ? 'e.g., Salesforce Certified' : ''}
                       className="w-full"
                     />
                   ))}
@@ -1360,12 +1360,11 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             <div className="p-5 border-2 rounded-xl bg-white shadow-sm">
               <h3 className="text-base font-semibold text-atlas-navy mb-2">Achievements</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Why are you proud of it and how did it influence your career or organization?
+                Highlight key wins like revenue growth, cost savings, or successful team expansions. Include the company and year.
               </p>
               <textarea
                 value={skillsValue.achievements}
                 onChange={(e) => updateAchievements(e.target.value)}
-                placeholder="Describe your key professional achievements. Include the company and year where relevant.&#10;&#10;Example:&#10;Co-founded Good Shepherd Entertainment in 2012. GSE is a publisher for high-quality video games...&#10;At Good Shepherd Entertainment (2012-2022)"
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-base leading-relaxed resize-y min-h-[200px]"
                 rows={8}
               />
