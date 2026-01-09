@@ -394,6 +394,24 @@ RULES:
       surveyData[QUESTION_MAPPINGS.specialized_skills] = extractedData.specialized_skills;
     }
 
+    // Interests/Hobbies - convert to new format with 3 fields
+    if (extractedData.interests) {
+      let interestsArray: string[] = [];
+      if (typeof extractedData.interests === 'string') {
+        // Parse comma-separated string
+        interestsArray = extractedData.interests
+          .split(',')
+          .map(s => s.trim())
+          .filter(s => s)
+          .slice(0, 3);
+      }
+      // Pad to 3 entries
+      while (interestsArray.length < 3) {
+        interestsArray.push('');
+      }
+      surveyData[QUESTION_MAPPINGS.interests] = { interests: interestsArray };
+    }
+
     console.log('Mapped survey data:', surveyData);
     return surveyData;
 

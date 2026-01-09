@@ -45,6 +45,11 @@ interface SkillsAchievementsEntry {
   achievements: string;
 }
 
+// Interests/Hobbies entry type
+interface InterestsEntry {
+  interests: string[];
+}
+
 // Company size and culture options
 const COMPANY_SIZE_OPTIONS = [
   { value: 'Own Company', label: 'Own Company' },
@@ -52,15 +57,18 @@ const COMPANY_SIZE_OPTIONS = [
   { value: 'Small (11-50)', label: 'Small (11-50 employees)' },
   { value: 'Medium (51-200)', label: 'Medium (51-200 employees)' },
   { value: 'Large (201-1000)', label: 'Large (201-1000 employees)' },
-  { value: 'Enterprise (1000+)', label: 'Enterprise (1000+ employees)' },
+  { value: 'Enterprise (1000-5000)', label: 'Enterprise (1000-5000 employees)' },
+  { value: 'Multi National (5000+)', label: 'Multi National (5000+ employees)' },
 ];
 
 const COMPANY_CULTURE_OPTIONS = [
-  { value: 'Startup', label: 'Startup', description: 'Fast-paced, minimal structure, high growth potential' },
-  { value: 'Corporate', label: 'Corporate', description: 'Established processes, structured hierarchy, stable' },
-  { value: 'Boutique', label: 'Boutique', description: 'Specialized firm, niche focus, direct client impact' },
-  { value: 'Nonprofit', label: 'Nonprofit', description: 'Mission-driven, collaborative, purpose-focused' },
-  { value: 'Government', label: 'Government', description: 'Public sector, formal procedures, regulatory compliance' },
+  { value: 'Startup / Scale-up', label: 'Startup / Scale-up', description: 'High growth, fast-paced, evolving structure' },
+  { value: 'Corporate', label: 'Corporate', description: 'Established, structured hierarchy, stable' },
+  { value: 'Mid-Market', label: 'Mid-Market', description: 'Balanced growth, professionalized, cross-functional' },
+  { value: 'Agency / Consultancy', label: 'Agency / Consultancy', description: 'Client-centric, project-based, high variety' },
+  { value: 'Boutique / Niche', label: 'Boutique / Niche', description: 'Specialized firm, small team, direct impact' },
+  { value: 'Nonprofit / Social Impact', label: 'Nonprofit / Social Impact', description: 'Mission-driven, purpose-focused, collaborative' },
+  { value: 'Public Sector / Gov', label: 'Public Sector / Gov', description: 'Formal procedures, regulatory, public service' },
 ];
 
 // Responsive Ranking Component
@@ -1022,10 +1030,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 {/* Row 2: Company Size + Company Culture */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Company Size</label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>
+                      Company Size <span className="text-red-500">*</span>
+                    </label>
                     <Select
                       value={entry.companySize || ''}
                       onValueChange={(val) => updateCareerHistory(index, 'companySize', val)}
+                      required
                     >
                       <SelectTrigger className={`w-full ${!isActive ? 'text-gray-400' : ''}`}>
                         <SelectValue placeholder="Select size..." />
@@ -1040,10 +1051,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     </Select>
                   </div>
                   <div>
-                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Company Culture</label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>
+                      Company Culture <span className="text-red-500">*</span>
+                    </label>
                     <Select
                       value={entry.companyCulture || ''}
                       onValueChange={(val) => updateCareerHistory(index, 'companyCulture', val)}
+                      required
                     >
                       <SelectTrigger className={`w-full ${!isActive ? 'text-gray-400' : ''}`}>
                         <SelectValue placeholder="Select culture..." />
@@ -1369,6 +1383,59 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 rows={8}
               />
             </div>
+          </div>
+        </div>
+      );
+
+    case 'interests_hobbies':
+      // Interests/Hobbies - 3 separate input fields with 50 character max
+      const emptyInterests: InterestsEntry = {
+        interests: ['', '', '']
+      };
+
+      // Parse value - could be array, object, or string (legacy)
+      let interestsValue: InterestsEntry;
+      if (Array.isArray(value)) {
+        interestsValue = { interests: [...value, '', '', ''].slice(0, 3) };
+      } else if (value && typeof value === 'object' && value.interests) {
+        interestsValue = { interests: [...value.interests, '', '', ''].slice(0, 3) };
+      } else if (typeof value === 'string' && value) {
+        // Legacy: convert comma-separated string to array
+        const parsed = value.split(',').map(s => s.trim()).filter(s => s);
+        interestsValue = { interests: [...parsed, '', '', ''].slice(0, 3) };
+      } else {
+        interestsValue = { ...emptyInterests };
+      }
+
+      const updateInterest = (index: number, newValue: string) => {
+        const updated = [...interestsValue.interests];
+        updated[index] = newValue.slice(0, 50); // Enforce 50 char limit
+        onChange({ interests: updated });
+      };
+
+      return (
+        <div>
+          <div
+            className="text-lg font-light mb-2"
+            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+          />
+          {renderDescription()}
+
+          <div className="space-y-3">
+            {[0, 1, 2].map((index) => (
+              <div key={`interest-${index}`}>
+                <Input
+                  value={interestsValue.interests[index] || ''}
+                  onChange={(e) => updateInterest(index, e.target.value)}
+                  placeholder={index === 0 ? 'e.g., Gardening' : index === 1 ? 'e.g., Creative writing' : 'e.g., Lego'}
+                  maxLength={50}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-400 mt-1 text-right">
+                  {(interestsValue.interests[index] || '').length}/50
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       );
