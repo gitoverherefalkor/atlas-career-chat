@@ -20,7 +20,7 @@ const PaymentSuccess = () => {
   useEffect(() => {
     const processPayment = async () => {
       const sessionId = searchParams.get('session_id');
-      
+
       if (!sessionId) {
         setError('Invalid payment session. Please try again.');
         setIsLoading(false);
@@ -58,6 +58,25 @@ const PaymentSuccess = () => {
           localStorage.setItem('purchase_data', JSON.stringify(purchaseDataToStore));
         } else {
           console.warn('No purchaseData in response - form will not be prefilled');
+        }
+
+        // Update profile with country if user is already logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        const paymentCountry = localStorage.getItem('payment_country');
+
+        if (user && paymentCountry) {
+          try {
+            await supabase
+              .from('profiles')
+              .update({ country: paymentCountry })
+              .eq('id', user.id);
+            console.log('Profile updated with country:', paymentCountry);
+            // Clean up after storing
+            localStorage.removeItem('payment_country');
+          } catch (error) {
+            console.error('Error updating profile with country:', error);
+            // Don't fail the payment flow if this fails
+          }
         }
 
         toast({

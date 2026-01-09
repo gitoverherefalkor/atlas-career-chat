@@ -171,6 +171,9 @@ export function CheckoutForm() {
     setError(null);
 
     try {
+      // Store country in localStorage for profile update after payment/signup
+      localStorage.setItem('payment_country', values.country);
+
       const { data, error: apiError } = await supabase.functions.invoke("create-checkout", {
         body: {
           firstName: values.firstName,

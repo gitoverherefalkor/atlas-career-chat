@@ -18,6 +18,7 @@ const Profile = () => {
     first_name: profile?.first_name || '',
     last_name: profile?.last_name || '',
     country: profile?.country || '',
+    region: profile?.region || '',
     pronouns: profile?.pronouns || '',
     age_range: profile?.age_range || '',
   });
@@ -28,6 +29,7 @@ const Profile = () => {
         first_name: profile.first_name || '',
         last_name: profile.last_name || '',
         country: profile.country || '',
+        region: profile.region || '',
         pronouns: profile.pronouns || '',
         age_range: profile.age_range || '',
       });
@@ -207,16 +209,36 @@ const Profile = () => {
                 </p>
               </div>
 
-              <div>
-                <label htmlFor="country" className="block text-sm font-medium mb-2">
-                  Country
-                </label>
-                <Input
-                  id="country"
-                  value={formData.country}
-                  onChange={(e) => handleInputChange('country', e.target.value)}
-                  placeholder="Enter your country"
-                />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="country" className="block text-sm font-medium mb-2">
+                    Country
+                  </label>
+                  <Input
+                    id="country"
+                    value={formData.country}
+                    onChange={(e) => handleInputChange('country', e.target.value)}
+                    placeholder="Enter your country"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    From payment form
+                  </p>
+                </div>
+                <div>
+                  <label htmlFor="region" className="block text-sm font-medium mb-2">
+                    Region
+                  </label>
+                  <Input
+                    id="region"
+                    value={formData.region}
+                    disabled
+                    className="bg-gray-50"
+                    placeholder="No region set"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    From survey Section 1
+                  </p>
+                </div>
               </div>
 
               <div>

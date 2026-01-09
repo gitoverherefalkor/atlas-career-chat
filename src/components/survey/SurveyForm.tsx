@@ -100,12 +100,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const checkIfCurrentQuestionComplete = useCallback((question: any) => {
     if (!question || !question.required) return true;
     const response = responses[question.id];
-    
+
     // Special handling for different question types
     if (question.type === 'multiple_choice' && question.allow_multiple) {
       const minSelections = question.min_selections;
       const maxSelections = question.max_selections;
-      
+
       if (Array.isArray(response)) {
         // Check minimum selections requirement
         if (minSelections && response.length < minSelections) return false;
@@ -115,28 +115,47 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         if (maxSelections && response.length > maxSelections) return false;
         return true;
       }
-      
+
       // If no response but minimum required
       if (minSelections && minSelections > 0) return false;
       return response !== undefined && response !== null && response !== '';
     }
-    
+
     if (question.type === 'ranking') {
       // For ranking questions, ensure all items are ranked
       const choices = question.config?.choices || [];
-      
+
       // Check if response is an object with rankings
       if (!response || typeof response !== 'object') return false;
-      
+
       // Check if all items have been ranked
-      const rankedItems = Object.keys(response).filter(key => 
+      const rankedItems = Object.keys(response).filter(key =>
         response[key] !== null && response[key] !== undefined
       );
-      
+
       // All choices must be ranked
       return rankedItems.length === choices.length;
     }
-    
+
+    if (question.type === 'career_history') {
+      // For career history, validate that all active entries have companySize and companyCulture
+      if (!Array.isArray(response)) return false;
+
+      // Check each entry that has a title (active entries)
+      for (const entry of response) {
+        // If entry has a title, it's considered active and must have size and culture
+        if (entry.title && entry.title.trim()) {
+          if (!entry.companySize || !entry.companyCulture) {
+            return false; // Active entry missing required fields
+          }
+        }
+      }
+
+      // At least one entry must be active
+      const hasActiveEntry = response.some(entry => entry.title && entry.title.trim());
+      return hasActiveEntry;
+    }
+
     return response !== undefined && response !== null && response !== '';
   }, [responses]);
 

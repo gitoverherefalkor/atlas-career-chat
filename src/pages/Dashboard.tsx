@@ -53,8 +53,24 @@ const Dashboard = () => {
           setShowAccessCodeModal(true);
         }
       }
+
+      // Update profile with country from localStorage if available (from payment form)
+      const paymentCountry = localStorage.getItem('payment_country');
+      if (paymentCountry && profile && !profile.country) {
+        supabase
+          .from('profiles')
+          .update({ country: paymentCountry })
+          .eq('id', user.id)
+          .then(() => {
+            console.log('Profile updated with country from payment:', paymentCountry);
+            localStorage.removeItem('payment_country');
+          })
+          .catch((error) => {
+            console.error('Error updating profile with country:', error);
+          });
+      }
     }
-  }, [user, authLoading, profileLoading, reportsLoading, reports]);
+  }, [user, authLoading, profileLoading, reportsLoading, reports, profile]);
 
   const handleSignOut = async () => {
     try {

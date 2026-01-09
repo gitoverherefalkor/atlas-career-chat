@@ -94,6 +94,21 @@ export const useSurveySubmission = ({
       // Mark access code as used after successful submission
       await markAccessCodeAsUsed();
 
+      // Update profile with region from survey (question ID: 11111111-1111-1111-1111-111111111114)
+      const regionAnswer = responses['11111111-1111-1111-1111-111111111114'];
+      if (regionAnswer && user) {
+        try {
+          await supabase
+            .from('profiles')
+            .update({ region: regionAnswer })
+            .eq('id', user.id);
+          console.log('Profile updated with region:', regionAnswer);
+        } catch (error) {
+          console.error('Error updating profile with region:', error);
+          // Don't fail submission if profile update fails
+        }
+      }
+
       setSubmissionStatus('submitted');
 
       toast({
