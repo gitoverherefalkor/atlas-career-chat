@@ -1054,7 +1054,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       onValueChange={(val) => updateCareerHistory(index, 'companySize', val)}
                       required
                     >
-                      <SelectTrigger className={`w-full ${!isActive ? 'text-gray-400' : ''}`}>
+                      <SelectTrigger className={`w-full ${!isActive ? 'text-gray-400' : ''} ${isActive && !entry.companySize ? 'border-red-300 focus:border-red-400' : ''}`}>
                         <SelectValue placeholder="Select size..." />
                       </SelectTrigger>
                       <SelectContent>
@@ -1075,7 +1075,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       onValueChange={(val) => updateCareerHistory(index, 'companyCulture', val)}
                       required
                     >
-                      <SelectTrigger className={`w-full ${!isActive ? 'text-gray-400' : ''}`}>
+                      <SelectTrigger className={`w-full ${!isActive ? 'text-gray-400' : ''} ${isActive && !entry.companyCulture ? 'border-red-300 focus:border-red-400' : ''}`}>
                         <SelectValue placeholder="Select culture..." />
                       </SelectTrigger>
                       <SelectContent>

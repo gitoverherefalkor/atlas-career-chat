@@ -226,6 +226,9 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                 alt="LinkedIn Resources menu"
                 className="w-48 mx-auto rounded shadow-sm"
               />
+              <p className="text-xs text-gray-500 mt-3 text-center">
+                Since LinkedIn limits what data they share with other apps, this quick upload is the best way to ensure your full experience and skills are imported accurately.
+              </p>
             </div>
           </div>
 
