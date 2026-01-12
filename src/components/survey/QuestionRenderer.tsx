@@ -331,6 +331,21 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   const [otherValue, setOtherValue] = useState('');
   const [showOther, setShowOther] = useState(false);
 
+  // Initialize "Other" value from stored response
+  React.useEffect(() => {
+    if (typeof value === 'string' && value.startsWith('Other: ')) {
+      const extractedValue = value.replace('Other: ', '');
+      setOtherValue(extractedValue);
+    } else if (Array.isArray(value)) {
+      const otherResponse = value.find((v: string) => typeof v === 'string' && v.startsWith('Other: '));
+      if (otherResponse) {
+        const extractedValue = otherResponse.replace('Other: ', '');
+        setOtherValue(extractedValue);
+        setShowOther(true);
+      }
+    }
+  }, [value]);
+
   const handleMultipleChoiceChange = (optionValue: string, checked: boolean) => {
     const currentValues = Array.isArray(value) ? value : [];
     const maxSelections = question.max_selections;
@@ -349,11 +364,11 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   const handleOtherChange = (otherText: string) => {
     setOtherValue(otherText);
     const currentValues = Array.isArray(value) ? value : [];
-    
-    if (otherText.trim()) {
-      // Add or update the "Other" response
+
+    if (otherText) {
+      // Add or update the "Other" response (don't trim during typing)
       const filteredValues = currentValues.filter((v: string) => !v.startsWith('Other: '));
-      onChange([...filteredValues, `Other: ${otherText.trim()}`]);
+      onChange([...filteredValues, `Other: ${otherText}`]);
     } else {
       // Remove "Other" response if text is empty
       onChange(currentValues.filter((v: string) => !v.startsWith('Other: ')));
@@ -594,8 +609,9 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 <Input
                   value={otherValue}
                   onChange={(e) => {
-                    setOtherValue(e.target.value);
-                    onChange(`Other: ${e.target.value}`);
+                    const newValue = e.target.value;
+                    setOtherValue(newValue);
+                    onChange(newValue ? `Other: ${newValue}` : 'other');
                   }}
                   placeholder="Please specify..."
                   className="w-full bg-gray-50 border-0 focus:ring-0 focus:outline-none px-4 py-3 rounded-md mt-2"
