@@ -246,7 +246,6 @@ const Index = () => {
     { name: "Problem", href: "#problem" },
     { name: "Solution", href: "#solution" },
     { name: "Process", href: "#how-it-works" },
-    { name: "Outcome", href: "#what-you-get" },
     { name: "Pricing", href: "#pricing" },
     { name: "About", href: "#About" }
   ];
@@ -432,9 +431,9 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
              {[
                { title: "Built for business professionals", desc: "Office and knowledge workers in corporate, tech, finance, and service industries. (Assessments for other professions in development.)", icon: Globe },
-               { title: "Honest and specific", desc: "You get 10+ career recommendations ranked by fit, complete with why they match, what you'd actually do day-to-day, salary ranges, AI impact ratings, and honest reality checks about challenges.", icon: Target },
+               { title: "Honest and specific", desc: "You get 10+ career recommendations ranked by fit, complete with why they match, this role's day-to-day, salary ranges, AI impact ratings, and honest reality checks.", icon: Target },
                { title: "Interactive coaching", desc: "An AI coach walks you through your results, answers questions, and digs deeper into specific careers. No static PDF that you read once and forget.", icon: MessageSquare },
-               { title: "AI impact ratings", desc: "Each career includes an assessment of how AI will transform that role by 2027-2028, so you're not blindsided by automation.", icon: BrainCircuit }
+               { title: "AI impact ratings", desc: "Each career includes a detailed AI impact assessment showing how automation will reshape that role by 2027-2028. You'll understand which skills become more valuable, what gets automated, and how to position yourself.", icon: BrainCircuit }
              ].map((item, i) => (
                <div key={i} className="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 flex gap-6 hover:shadow-xl transition-all">
                  <div className="w-14 h-14 bg-[#27A1A1]/10 rounded-2xl flex items-center justify-center text-[#27A1A1] shrink-0">
@@ -524,69 +523,15 @@ const Index = () => {
         </div>
       </section>
 
-      {/* WHAT YOU GET */}
-      <section id="what-you-get" className="py-32 bg-[#012F64] text-white scroll-mt-24">
-        <div className="container mx-auto px-6">
-          <h2 className="text-4xl md:text-5xl font-black mb-16 text-white text-center">What You Get</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
-            <div className="space-y-12">
-               <div>
-                 <h3 className="text-2xl font-bold text-[#27A1A1] mb-6 flex items-center gap-3"><Target className="w-6 h-6" /> Your personality profile:</h3>
-                 <ul className="space-y-4 font-medium text-blue-100/80">
-                   <li className="flex gap-4 items-start"><div className="w-1.5 h-1.5 rounded-full bg-[#27A1A1] mt-2.5 shrink-0"/> <span>Executive summary of your professional drivers</span></li>
-                   <li className="flex gap-4 items-start"><div className="w-1.5 h-1.5 rounded-full bg-[#27A1A1] mt-2.5 shrink-0"/> <span>How you work best and what environments fit you</span></li>
-                   <li className="flex gap-4 items-start"><div className="w-1.5 h-1.5 rounded-full bg-[#27A1A1] mt-2.5 shrink-0"/> <span>Core strengths and growth areas</span></li>
-                   <li className="flex gap-4 items-start"><div className="w-1.5 h-1.5 rounded-full bg-[#27A1A1] mt-2.5 shrink-0"/> <span>Career values and what they mean for fit</span></li>
-                 </ul>
-               </div>
-               <div>
-                 <h3 className="text-2xl font-bold text-[#27A1A1] mb-6 flex items-center gap-3"><Layers className="w-6 h-6" /> Range of career recommendations:</h3>
-                 <ul className="space-y-4 font-medium text-blue-100/80">
-                   <li className="flex gap-4 items-start text-white"><div className="w-1.5 h-1.5 rounded-full bg-[#27A1A1] mt-2.5 shrink-0"/> <span>Top 3 best matches (detailed analysis)</span></li>
-                   <li className="flex gap-4 items-start"><div className="w-1.5 h-1.5 rounded-full bg-[#27A1A1] mt-2.5 shrink-0"/> <span>6 strong runner-ups</span></li>
-                   <li className="flex gap-4 items-start"><div className="w-1.5 h-1.5 rounded-full bg-[#27A1A1] mt-2.5 shrink-0"/> <span>3 outside-the-box options you probably haven't considered</span></li>
-                   <li className="flex gap-4 items-start"><div className="w-1.5 h-1.5 rounded-full bg-[#27A1A1] mt-2.5 shrink-0"/> <span>Bonus: Reality check on your stated dream job</span></li>
-                 </ul>
-               </div>
-            </div>
-            <GlassCard className="p-10 md:p-14 border-white/5 flex flex-col justify-center">
-               <h3 className="text-2xl font-bold text-white mb-10">For each top career:</h3>
-               <div className="space-y-6">
-                 {[
-                   "Why it fits your profile (honest assessment)",
-                   "What you'd actually do day-to-day",
-                   "Salary ranges for your region",
-                   "Company size and culture that works best",
-                   "Reality check: pros and cons",
-                   "AI impact rating (how automation will affect this role)",
-                   "Growth trajectory"
-                 ].map((item, i) => (
-                   <div key={i} className="flex items-center gap-4">
-                     <CheckCircle2 className="w-5 h-5 text-[#27A1A1] shrink-0" />
-                     <span className="text-blue-100 font-medium leading-tight">{item}</span>
-                   </div>
-                 ))}
-               </div>
-            </GlassCard>
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="py-32 bg-white scroll-mt-24">
+      {/* COMBINED PRICING & WHAT YOU GET */}
+      <section id="pricing" className="py-32 bg-[#012F64] text-white scroll-mt-24">
          <div className="container mx-auto px-6">
-           <div className="max-w-3xl mx-auto bg-white rounded-[3.5rem] shadow-[0_32px_64px_-16px_rgba(1,47,100,0.15)] border border-gray-100 overflow-hidden transform hover:scale-[1.01] transition-all duration-500">
-              <div className="bg-[#012F64] p-12 text-center text-white relative">
-                 <div className="absolute top-8 right-8 px-5 py-2 bg-[#D4A024] rounded-full text-xs font-black uppercase tracking-[0.2em] animate-pulse">Beta Access</div>
-                 <h2 className="text-4xl font-black mb-6 tracking-tighter uppercase">Beta Access - €39</h2>
-                 <div className="flex items-center justify-center gap-6 mb-4">
-                   <span className="text-white/30 line-through text-3xl font-bold">€79</span>
-                   <span className="text-7xl font-black text-[#27A1A1] tracking-tighter">€39</span>
-                 </div>
-                 <p className="text-blue-100/60 font-bold uppercase tracking-widest text-[10px]">Limited time introductory price</p>
-              </div>
-              <div className="p-12 md:p-16">
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 mb-16">
+           <div className="max-w-5xl mx-auto bg-white rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
+              {/* Value Side */}
+              <div className="p-10 md:p-16 flex-1 text-[#012F64]">
+                 <div className="text-[#27A1A1] font-black uppercase tracking-[0.2em] text-[10px] mb-4">The Package</div>
+                 <h2 className="text-3xl md:text-4xl font-black mb-10 tracking-tighter">Everything You Need for Your Next Move</h2>
+                 <div className="space-y-5">
                    {[
                      "Complete personality and career assessment",
                      "AI analysis tailored to your goals",
@@ -595,19 +540,29 @@ const Index = () => {
                      "Role details and Localized salary ranges",
                      "AI impact ratings on all suggested roles",
                      "Dream job feasibility assessment",
-                     "Full report incl. feedback from the chat",
-                     "Features to act on recommendations in development!",
+                     "Full report incl. feedback from the chat"
                    ].map((item, i) => (
-                     <div key={i} className="flex items-start gap-4 text-[#012F64] font-bold">
+                     <div key={i} className="flex items-start gap-4 font-bold text-gray-700">
                        <CheckCircle2 className="w-5 h-5 text-[#27A1A1] shrink-0 mt-0.5" />
-                       <span className="text-sm leading-snug">{item}</span>
+                       <span className="text-sm leading-tight">{item}</span>
                      </div>
                    ))}
+                   <div className="flex items-start gap-4 font-black text-[#D4A024] pt-4">
+                     <Sparkles className="w-5 h-5 shrink-0 mt-0.5" />
+                     <span className="text-sm leading-tight">Features to act on recommendations in development!</span>
+                   </div>
                  </div>
-                 <Button className="w-full py-7 text-2xl tracking-tighter mb-8 shadow-2xl" onClick={handleGetStarted}>Get Beta Access</Button>
-                 <p className="text-gray-500 text-sm text-center leading-relaxed font-medium max-w-lg mx-auto italic">
-                   Your journey starts immediately. After purchase, you'll access the carefully crafted survey. After completion, the AI takes about 10 minutes to analyse your answers. When it is done you can start your interactive AI coaching session and at the end you'll find your final report in your dashboard. Including any further feedback provided to your AI coach!
-                 </p>
+              </div>
+
+              {/* Action Side */}
+              <div className="bg-slate-50 p-10 md:p-16 md:w-[380px] flex flex-col justify-center items-center text-center border-t md:border-t-0 md:border-l border-gray-100">
+                 <div className="bg-[#D4A024] text-[#012F64] px-5 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-8">Beta Access</div>
+                 <div className="flex items-center justify-center gap-4 mb-4">
+                   <span className="text-gray-300 line-through text-2xl font-bold">€79</span>
+                   <span className="text-6xl font-black text-[#012F64] tracking-tighter">€39</span>
+                 </div>
+                 <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-10">Introductory Price</p>
+                 <Button className="w-full py-6 text-xl tracking-tight shadow-xl" onClick={handleGetStarted}>Get Beta Access</Button>
               </div>
            </div>
          </div>
