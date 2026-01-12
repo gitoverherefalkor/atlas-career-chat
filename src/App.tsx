@@ -20,6 +20,8 @@ import Report from "./pages/Report";
 import ReportProcessing from "./pages/ReportProcessing";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
+import CookiePolicy from "./pages/CookiePolicy";
+import Support from "./pages/Support";
 import Payment from "./pages/Payment";
 
 const queryClient = new QueryClient();
@@ -47,6 +49,8 @@ const App = () => {
             <Route path="/report-processing" element={<ReportProcessing />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/terms-conditions" element={<TermsOfService />} />
+            <Route path="/cookie-policy" element={<CookiePolicy />} />
+            <Route path="/support" element={<Support />} />
             <Route path="/payment" element={<Payment />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
