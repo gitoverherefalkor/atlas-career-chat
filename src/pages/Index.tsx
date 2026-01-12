@@ -530,7 +530,7 @@ const Index = () => {
               {/* Value Side */}
               <div className="p-10 md:p-16 flex-1 text-[#012F64]">
                  <div className="text-[#27A1A1] font-black uppercase tracking-[0.2em] text-[10px] mb-4">The Package</div>
-                 <h2 className="text-3xl md:text-4xl font-black mb-10 tracking-tighter">Everything You Need for Your Next Move</h2>
+                 <h2 className="text-3xl md:text-4xl font-black mb-10 tracking-tighter">Everything you need for your next move</h2>
                  <div className="space-y-5">
                    {[
                      "Complete personality and career assessment",
@@ -571,7 +571,7 @@ const Index = () => {
       {/* WHY TRADITIONAL ASSESSMENTS FAIL */}
       <section id="why-atlas" className="py-32 bg-gray-50 scroll-mt-24">
         <div className="container mx-auto px-6">
-          <SectionHeading title="Beyond Generic Career Tests" subtitle="Traditional career assessments leave you with overwhelming static reports full of personality types and vague suggestions. Our assessments are different:" center />
+          <SectionHeading title="Beyond generic career tests" subtitle="Traditional career assessments leave you with overwhelming static reports full of personality types and vague suggestions. Our assessments are different:" center />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {[
               { title: "Interactive, not static", desc: "Ask follow-up questions, explore specific careers in depth, discuss concerns about recommendations. Your AI coach adapts to what you need.", icon: MessageSquare },
@@ -589,7 +589,7 @@ const Index = () => {
             ))}
           </div>
           <div className="mt-16 bg-[#D4A024]/5 border border-[#D4A024]/20 p-10 rounded-3xl max-w-4xl mx-auto text-center">
-             <h4 className="text-[#012F64] font-black text-xl mb-2">Practical, Not Just Psychological</h4>
+             <h4 className="text-[#012F64] font-black text-xl mb-2">Practical, not just Psychological</h4>
              <p className="text-gray-600 font-medium">Atlas isn't just another psychometric test - it's a practical assessment designed to explore new career paths or gain leverage in your current role through actionable market data</p>
           </div>
         </div>

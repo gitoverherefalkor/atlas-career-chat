@@ -52,13 +52,13 @@ interface InterestsEntry {
 
 // Company size and culture options
 const COMPANY_SIZE_OPTIONS = [
-  { value: 'Own Company', label: 'Own Company' },
-  { value: 'Micro (1-10)', label: 'Micro (1-10 employees)' },
-  { value: 'Small (11-50)', label: 'Small (11-50 employees)' },
-  { value: 'Medium (51-200)', label: 'Medium (51-200 employees)' },
-  { value: 'Large (201-1000)', label: 'Large (201-1000 employees)' },
-  { value: 'Enterprise (1000-5000)', label: 'Enterprise (1000-5000 employees)' },
-  { value: 'Multi National (5000+)', label: 'Multi National (5000+ employees)' },
+  { value: 'Micro (1-10)', label: 'Micro (1-10 employees)', description: '' },
+  { value: 'Small (11-50)', label: 'Small (11-50 employees)', description: '' },
+  { value: 'Medium (51-200)', label: 'Medium (51-200 employees)', description: '' },
+  { value: 'Large (201-1000)', label: 'Large (201-1000 employees)', description: '' },
+  { value: 'Enterprise (1000-5000)', label: 'Enterprise (1000-5000 employees)', description: '' },
+  { value: 'Multi National (5000+)', label: 'Multi National (5000+ employees)', description: '' },
+  { value: 'Own Company', label: 'Own Company', description: 'Freelance, consulting, or own business' },
 ];
 
 const COMPANY_CULTURE_OPTIONS = [
@@ -1029,7 +1029,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       value={entry.title}
                       onChange={(e) => updateCareerHistory(index, 'title', e.target.value)}
                       placeholder="e.g., Director of Marketing"
-                      className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''}`}
+                      className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''} ${isActive && !entry.title?.trim() ? 'border-red-300 focus:border-red-400' : ''}`}
                     />
                   </div>
                   <div>
@@ -1038,7 +1038,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       value={entry.companyName}
                       onChange={(e) => updateCareerHistory(index, 'companyName', e.target.value)}
                       placeholder="e.g., Acme Legal AI"
-                      className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''}`}
+                      className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''} ${isActive && !entry.companyName?.trim() ? 'border-red-300 focus:border-red-400' : ''}`}
                     />
                   </div>
                 </div>
@@ -1046,9 +1046,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 {/* Row 2: Company Size + Company Culture */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>
-                      Company Size <span className="text-red-500">*</span>
-                    </label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Company Size</label>
                     <Select
                       value={entry.companySize || ''}
                       onValueChange={(val) => updateCareerHistory(index, 'companySize', val)}
@@ -1060,16 +1058,17 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       <SelectContent>
                         {COMPANY_SIZE_OPTIONS.map((opt) => (
                           <SelectItem key={opt.value} value={opt.value}>
-                            {opt.label}
+                            <div className="flex flex-col">
+                              <span>{opt.label}</span>
+                              {opt.description && <span className="text-xs text-gray-500">{opt.description}</span>}
+                            </div>
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>
-                      Company Culture <span className="text-red-500">*</span>
-                    </label>
+                    <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Company Culture</label>
                     <Select
                       value={entry.companyCulture || ''}
                       onValueChange={(val) => updateCareerHistory(index, 'companyCulture', val)}
@@ -1099,7 +1098,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     value={entry.sector}
                     onChange={(e) => updateCareerHistory(index, 'sector', e.target.value)}
                     placeholder="e.g., Legal Tech, FinTech, Healthcare"
-                    className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''}`}
+                    className={`w-full ${!isActive ? 'placeholder:text-gray-300' : ''} ${isActive && !entry.sector?.trim() ? 'border-red-300 focus:border-red-400' : ''}`}
                   />
                 </div>
 
