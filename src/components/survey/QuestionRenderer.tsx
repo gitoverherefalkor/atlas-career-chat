@@ -62,13 +62,15 @@ const COMPANY_SIZE_OPTIONS = [
 ];
 
 const COMPANY_CULTURE_OPTIONS = [
-  { value: 'Startup / Scale-up', label: 'Startup / Scale-up', description: 'High growth, fast-paced, evolving structure' },
+  { value: 'Startup / Scale-up', label: 'Startup / Scale-up', description: 'Investor backed company, focus on growth, evolving structure' },
   { value: 'Corporate', label: 'Corporate', description: 'Established, structured hierarchy, stable' },
   { value: 'Mid-Market', label: 'Mid-Market', description: 'Balanced growth, professionalized, cross-functional' },
   { value: 'Agency / Consultancy', label: 'Agency / Consultancy', description: 'Client-centric, project-based, high variety' },
   { value: 'Boutique / Niche', label: 'Boutique / Niche', description: 'Specialized firm, small team, direct impact' },
   { value: 'Nonprofit / Social Impact', label: 'Nonprofit / Social Impact', description: 'Mission-driven, purpose-focused, collaborative' },
   { value: 'Public Sector / Gov', label: 'Public Sector / Gov', description: 'Formal procedures, regulatory, public service' },
+  { value: 'Solo / Freelance', label: 'Solo / Freelance', description: 'Working independently, serving clients, no co-workers' },
+  { value: 'Small Business Owner (up to 5 FTE)', label: 'Small Business Owner (up to 5 FTE)', description: 'Running my own company with employees or contractors' },
 ];
 
 // Responsive Ranking Component
