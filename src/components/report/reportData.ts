@@ -6,7 +6,7 @@ export const chapters = [
     id: 'about-you',
     title: 'About You',
     icon: User,
-    imageUrl: '/images/about_you.png',
+    imageUrl: '/images/about_you.webp',
     sections: [
       {
         id: 'executive-summary',
@@ -44,7 +44,7 @@ export const chapters = [
     id: 'career-suggestions',
     title: 'Career Suggestions for You',
     icon: Briefcase,
-    imageUrl: '/images/career_suggestions.png',
+    imageUrl: '/images/career_suggestions.webp',
     sections: [
       {
         id: 'top-careers',

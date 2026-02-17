@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import DOMPurify from 'dompurify';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -88,7 +89,10 @@ const Chat = () => {
 
         if (converted !== text) {
           const wrapper = document.createElement('span');
-          wrapper.innerHTML = converted;
+          wrapper.innerHTML = DOMPurify.sanitize(converted, {
+            ALLOWED_TAGS: ['h3', 'h4', 'h5', 'strong', 'em', 'span'],
+            ALLOWED_ATTR: ['class']
+          });
           textNode.parentNode?.replaceChild(wrapper, textNode);
         }
       });

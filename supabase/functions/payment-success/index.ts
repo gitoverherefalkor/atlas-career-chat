@@ -15,17 +15,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Function to generate a random access code
+// Function to generate a cryptographically secure access code
 function generateAccessCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Removed similar looking characters
+  const totalChars = 16; // 4 groups of 4
+  const randomBytes = new Uint8Array(totalChars);
+  crypto.getRandomValues(randomBytes);
+
   let code = "";
-  
-  // Generate 4 groups of 4 characters
-  for (let group = 0; group < 4; group++) {
-    if (group > 0) code += "-";
-    for (let i = 0; i < 4; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
+  for (let i = 0; i < totalChars; i++) {
+    if (i > 0 && i % 4 === 0) code += "-";
+    code += chars.charAt(randomBytes[i] % chars.length);
   }
   return code;
 }
@@ -33,7 +33,7 @@ function generateAccessCode(): string {
 // Function to send the access code email
 async function sendAccessCodeEmail(email: string, firstName: string, lastName: string, accessCode: string) {
   try {
-    console.log("Attempting to send email to:", email);
+    // Send access code email
     const { data, error } = await resend.emails.send({
       from: "Atlas Assessment <no-reply@atlas-assessments.com>",
       to: [email],
@@ -73,7 +73,7 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
       console.error("Email sending error:", error);
       return false;
     }
-    console.log("Email sent successfully:", data);
+    // Email sent
     return true;
   } catch (error) {
     console.error("Email sending error:", error);
@@ -97,11 +97,8 @@ serve(async (req) => {
       );
     }
 
-    console.log("Processing payment for session:", sessionId);
-    
     // Retrieve session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId);
-    console.log("Session status:", session.payment_status);
 
     if (session.payment_status !== "paid") {
       return new Response(
@@ -123,7 +120,7 @@ serve(async (req) => {
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-    console.log("Creating access code:", accessCode);
+    // Store access code in database
 
     // Extract pricing information from session
     const amountTotal = session.amount_total ? session.amount_total / 100 : 39; // Convert from cents
@@ -156,7 +153,7 @@ serve(async (req) => {
     const lastName = session.metadata?.lastName || "";
     const country = session.metadata?.country || "Unknown";
 
-    console.log("Customer details:", { customerEmail, firstName, lastName, country });
+    // Record purchase
 
     // Store the purchase details
     const { error: purchaseError } = await supabase
@@ -178,7 +175,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("Purchase recorded successfully");
+    // Update profile if user exists
 
     // Try to update the profile if user exists with this email
     if (customerEmail) {

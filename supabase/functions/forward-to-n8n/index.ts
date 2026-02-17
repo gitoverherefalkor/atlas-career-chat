@@ -15,14 +15,12 @@ serve(async (req) => {
 
   try {
     console.log('Forward to N8N function called');
-    
+
     // Get the request body
     const requestBody = await req.json();
-    console.log('Full request body:', JSON.stringify(requestBody, null, 2));
-    
+
     // Extract the payload from the request body - preserve exact order
     const surveyData = requestBody.payload || requestBody;
-    console.log('Survey data to send (preserving order):', JSON.stringify(surveyData, null, 2));
 
     if (!surveyData) {
       console.error('No survey data found in request');
@@ -32,9 +30,7 @@ serve(async (req) => {
       });
     }
 
-    // Debug log to confirm which key is being used
-    console.log("Using key:", Deno.env.get("NEW_N8N_SERVICE_ROLE_KEY")?.slice(0, 10));
-    // Initialize Supabase client with the new key only
+    // Initialize Supabase client
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
@@ -61,7 +57,7 @@ serve(async (req) => {
     }
 
     // Step 1: Create a report record first
-    console.log('Creating report record for user:', userId);
+    // Step 1: Create a report record first
     const { data: reportData, error: reportError } = await supabase.from('reports').insert({
       user_id: userId,
       title: 'Career Assessment Report (N8N)',
@@ -77,8 +73,6 @@ serve(async (req) => {
       });
     }
 
-    console.log('Report created with ID:', reportData.id);
-
     // Step 2: Build the N8N request body - format as JSON items
     const n8nData = {
       // Main item with all the data
@@ -90,10 +84,6 @@ serve(async (req) => {
       created_at: new Date().toISOString(),
       processing_status: 'started'
     };
-
-    console.log('Sending to N8N webhook');
-    console.log('Report ID being sent:', reportData.id);
-    console.log('N8N payload (preserving survey response order):', JSON.stringify(n8nData, null, 2));
 
     // Get N8N webhook URL from environment
     const n8nWebhookUrl = Deno.env.get("N8N_WEBHOOK_URL");
@@ -139,7 +129,6 @@ serve(async (req) => {
     }
 
     const result = await resp.json();
-    console.log('N8N webhook response:', result);
 
     // Note: We don't update status to completed here
     // The N8N workflow should call back to update the report when processing is done

@@ -10,8 +10,6 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log("Function called with method:", req.method);
-  
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -22,8 +20,7 @@ serve(async (req) => {
 
   try {
     const payload = await req.text();
-    console.log("Received payload:", payload);
-    
+
     // Parse the payload - it could be from the webhook or direct call
     let webhookData;
     try {
@@ -55,8 +52,6 @@ serve(async (req) => {
       return new Response("No user email found", { status: 400, headers: corsHeaders });
     }
 
-    console.log("Processing email for user:", user.email);
-
     const firstName = user.user_metadata?.first_name || user.raw_user_meta_data?.first_name || "there";
 
     // Build confirmation URL - handle different possible token formats
@@ -81,10 +76,6 @@ serve(async (req) => {
       // Fallback URL
       confirmationUrl = "https://atlas-assessments.com/auth";
     }
-
-    console.log("Sending confirmation email to:", user.email);
-    console.log("Email action type:", emailActionType);
-    console.log("Using confirmation URL:", confirmationUrl);
 
     // Check if this is a password reset email
     const isPasswordReset = emailActionType === 'recovery';
@@ -204,8 +195,6 @@ serve(async (req) => {
       );
     }
 
-    console.log("Confirmation email sent successfully:", data);
-    
     return new Response(
       JSON.stringify({ success: true, message: "Confirmation email sent successfully" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }

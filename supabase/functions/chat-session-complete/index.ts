@@ -20,8 +20,6 @@ serve(async (req) => {
       reportId = reportId.answer;
     }
 
-    console.log('Chat session complete called for report:', reportId);
-
     if (!reportId) {
       return new Response(JSON.stringify({ error: 'report_id is required' }), {
         status: 400,
@@ -52,8 +50,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    console.log('Report marked as completed:', updated);
 
     return new Response(JSON.stringify({
       success: true,

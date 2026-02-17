@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { Question } from '@/hooks/useSurvey';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -377,13 +378,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     }
   };
 
-  // Function to format text with emphasis and line breaks
+  // Function to format text with emphasis and line breaks (sanitized against XSS)
   const formatTextWithEmphasis = (text: string) => {
-    // Replace **text** with <strong>text</strong> and \n with <br>
     const formattedText = text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\\n/g, '<br>');
-    return { __html: formattedText };
+    return { __html: DOMPurify.sanitize(formattedText, { ALLOWED_TAGS: ['strong', 'br', 'em'] }) };
   };
 
   const renderDescription = () => {
