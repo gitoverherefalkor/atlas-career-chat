@@ -1,15 +1,19 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { verifySharedSecret, errorResponse } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// n8n-called function — no browser CORS needed
+const serverHeaders = { 'Content-Type': 'application/json' };
 
 serve(async (req) => {
+  // No CORS preflight needed — this is server-to-server only
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { status: 204 });
   }
+
+  // Verify shared secret from n8n
+  const authError = verifySharedSecret(req);
+  if (authError) return authError;
 
   try {
     const body = await req.json().catch(() => ({}));
@@ -21,10 +25,7 @@ serve(async (req) => {
     }
 
     if (!reportId) {
-      return new Response(JSON.stringify({ error: 'report_id is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse('report_id is required', 400, serverHeaders);
     }
 
     const supabase = createClient(
@@ -45,10 +46,7 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('Failed to update report status:', updateError);
-      return new Response(JSON.stringify({ error: 'Failed to update report status' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse('Failed to update report status', 500, serverHeaders);
     }
 
     return new Response(JSON.stringify({
@@ -56,13 +54,10 @@ serve(async (req) => {
       report_id: reportId,
       status: 'completed'
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: serverHeaders,
     });
   } catch (error) {
     console.error('Error in chat-session-complete:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return errorResponse('Internal server error', 500, serverHeaders);
   }
 });

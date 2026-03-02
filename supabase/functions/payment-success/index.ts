@@ -3,17 +3,13 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import Stripe from "https://esm.sh/stripe@14.21.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 import { Resend } from "https://esm.sh/resend@2.0.0";
+import { getCorsHeaders, handleCorsPreFlight, errorResponse } from "../_shared/cors.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
   apiVersion: "2023-10-16",
 });
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
 
 // Function to generate a cryptographically secure access code
 function generateAccessCode(): string {
@@ -33,7 +29,6 @@ function generateAccessCode(): string {
 // Function to send the access code email
 async function sendAccessCodeEmail(email: string, firstName: string, lastName: string, accessCode: string) {
   try {
-    // Send access code email
     const { data, error } = await resend.emails.send({
       from: "Atlas Assessment <no-reply@atlas-assessments.com>",
       to: [email],
@@ -63,7 +58,7 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
             <p>If you have any questions, please contact our support team.</p>
           </div>
           <div style="text-align: center; margin-top: 20px; color: #888; font-size: 12px;">
-            <p>© 2025 Atlas Assessment. All rights reserved.</p>
+            <p>&copy; 2025 Atlas Assessment. All rights reserved.</p>
           </div>
         </div>
       `,
@@ -73,7 +68,6 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
       console.error("Email sending error:", error);
       return false;
     }
-    // Email sent
     return true;
   } catch (error) {
     console.error("Email sending error:", error);
@@ -83,28 +77,48 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const preflight = handleCorsPreFlight(req);
+  if (preflight) return preflight;
+
+  const corsHeaders = getCorsHeaders(req);
 
   try {
-    const { sessionId } = await req.json();
+    // --- Stripe webhook signature verification ---
+    const stripeWebhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET");
 
-    if (!sessionId) {
-      return new Response(
-        JSON.stringify({ error: "Session ID is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    let session: Stripe.Checkout.Session;
+
+    if (stripeWebhookSecret && req.headers.get("stripe-signature")) {
+      // Webhook mode: verify signature from Stripe
+      const body = await req.text();
+      const sig = req.headers.get("stripe-signature")!;
+
+      try {
+        const event = stripe.webhooks.constructEvent(body, sig, stripeWebhookSecret);
+        if (event.type !== "checkout.session.completed") {
+          return new Response(JSON.stringify({ received: true }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        session = event.data.object as Stripe.Checkout.Session;
+      } catch (err) {
+        console.error("Stripe webhook signature verification failed:", err);
+        return errorResponse("Invalid webhook signature", 400, corsHeaders);
+      }
+    } else {
+      // Fallback: frontend calls with sessionId (existing flow)
+      const { sessionId } = await req.json();
+
+      if (!sessionId) {
+        return errorResponse("Session ID is required", 400, corsHeaders);
+      }
+
+      // Retrieve session from Stripe
+      session = await stripe.checkout.sessions.retrieve(sessionId);
     }
 
-    // Retrieve session from Stripe
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-
     if (session.payment_status !== "paid") {
-      return new Response(
-        JSON.stringify({ error: "Payment is not complete" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return errorResponse("Payment is not complete", 400, corsHeaders);
     }
 
     // Create a Supabase client (using service role key to bypass RLS)
@@ -115,15 +129,13 @@ serve(async (req) => {
 
     // Generate a new access code
     const accessCode = generateAccessCode();
-    
+
     // Calculate expiration date (1 year from now)
     const expiresAt = new Date();
     expiresAt.setFullYear(expiresAt.getFullYear() + 1);
 
-    // Store access code in database
-
     // Extract pricing information from session
-    const amountTotal = session.amount_total ? session.amount_total / 100 : 39; // Convert from cents
+    const amountTotal = session.amount_total ? session.amount_total / 100 : 39;
     const currency = session.currency?.toUpperCase() || 'EUR';
 
     // Store the access code in the database with pricing info
@@ -141,10 +153,7 @@ serve(async (req) => {
 
     if (codeError) {
       console.error("Error creating access code:", codeError);
-      return new Response(
-        JSON.stringify({ error: "Failed to create access code" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return errorResponse("Failed to process payment. Please contact support.", 500, corsHeaders);
     }
 
     // Extract customer information from session metadata
@@ -152,8 +161,6 @@ serve(async (req) => {
     const firstName = session.metadata?.firstName || "Customer";
     const lastName = session.metadata?.lastName || "";
     const country = session.metadata?.country || "Unknown";
-
-    // Record purchase
 
     // Store the purchase details
     const { error: purchaseError } = await supabase
@@ -169,13 +176,8 @@ serve(async (req) => {
 
     if (purchaseError) {
       console.error("Error recording purchase:", purchaseError);
-      return new Response(
-        JSON.stringify({ error: "Failed to record purchase" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return errorResponse("Failed to record purchase. Please contact support.", 500, corsHeaders);
     }
-
-    // Update profile if user exists
 
     // Try to update the profile if user exists with this email
     if (customerEmail) {
@@ -198,8 +200,6 @@ serve(async (req) => {
 
         if (profileError) {
           console.warn("Could not update profile:", profileError);
-        } else {
-          console.log("Profile updated with payment info for user:", existingProfile.id);
         }
       }
     }
@@ -212,30 +212,19 @@ serve(async (req) => {
       }
     }
 
+    // Don't return the access code in the response — it's sent via email only
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        accessCode: accessCode,
-        purchaseData: {
-          email: customerEmail,
-          firstName: firstName,
-          lastName: lastName
-        },
-        message: "Payment processed successfully" 
+      JSON.stringify({
+        success: true,
+        message: "Payment processed successfully. Check your email for the access code."
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
       }
     );
   } catch (error) {
     console.error("Error processing payment:", error);
-    return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      }
-    );
+    return errorResponse("An error occurred processing your payment. Please contact support.", 500, corsHeaders);
   }
 });

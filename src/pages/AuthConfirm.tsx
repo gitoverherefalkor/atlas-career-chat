@@ -25,8 +25,13 @@ const AuthConfirm = () => {
         return;
       }
 
-      // Check for session data from Edge Function (base64 encoded in query param)
-      const sessionParam = searchParams.get('session');
+      // Read hash fragment params (used for both Edge Function session and OAuth implicit flow)
+      // SECURITY: Session data is passed in the hash fragment, not query string.
+      // Hash fragments are never sent to servers or in referrer headers.
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+
+      // Check for session data from Edge Function (base64 encoded in hash fragment)
+      const sessionParam = hashParams.get('session');
       if (sessionParam) {
         try {
           console.log('Found session from Edge Function');
@@ -40,7 +45,7 @@ const AuthConfirm = () => {
           localStorage.setItem(storageKey, JSON.stringify(sessionData));
           console.log('Full session stored in localStorage');
 
-          // Clear the URL params for cleaner display
+          // Clear the hash from URL
           window.history.replaceState(null, '', window.location.pathname);
 
           setStatus('success');
@@ -60,7 +65,6 @@ const AuthConfirm = () => {
       }
 
       // Handle implicit OAuth flow (tokens in URL hash) - this is what Supabase returns
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
       const expiresAt = hashParams.get('expires_at');

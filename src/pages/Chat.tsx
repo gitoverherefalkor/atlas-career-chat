@@ -154,16 +154,18 @@ const Chat = () => {
     }
   }, [reportData, profileLoading, chatInitialized, hasExistingSession]);
 
-  // Poll report status when we reach the last section (more reliable than realtime)
+  // Subscribe to report status changes via Supabase Realtime (replaces 3s polling)
+  // NOTE: Requires Realtime to be enabled on the 'reports' table in Supabase dashboard.
   useEffect(() => {
     if (!reportData?.id) return;
-    if (isSessionCompleted) return; // Already completed
+    if (isSessionCompleted) return;
 
-    // Only start polling when we're at or past the last section
+    // Only subscribe when at or past the last section
     const isAtLastSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     if (!isAtLastSection) return;
 
-    const checkStatus = async () => {
+    // One-time check in case status changed before we subscribed
+    const checkOnce = async () => {
       const { data, error } = await supabase
         .from('reports')
         .select('status')
@@ -174,15 +176,29 @@ const Chat = () => {
         setIsSessionCompleted(true);
       }
     };
+    checkOnce();
 
-    // Check immediately
-    checkStatus();
-
-    // Then poll every 3 seconds
-    const interval = setInterval(checkStatus, 3000);
+    // Subscribe to realtime updates on this specific report
+    const channel = supabase
+      .channel(`report-status-${reportData.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'reports',
+          filter: `id=eq.${reportData.id}`,
+        },
+        (payload) => {
+          if ((payload.new as any).status === 'completed') {
+            setIsSessionCompleted(true);
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
-      clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, [reportData?.id, currentSectionIndex, isSessionCompleted]);
 

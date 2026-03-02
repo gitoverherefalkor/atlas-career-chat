@@ -1,34 +1,34 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, handleCorsPreFlight, errorResponse, checkRateLimit } from "../_shared/cors.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const preflight = handleCorsPreFlight(req);
+  if (preflight) return preflight;
+
+  const corsHeaders = getCorsHeaders(req);
+
+  // Rate limit: 10 attempts per minute per IP (prevent brute-force code guessing)
+  const rateLimited = checkRateLimit(req, 10, corsHeaders);
+  if (rateLimited) return rateLimited;
 
   try {
-    console.log('Verify access code function called');
-    
     const { code } = await req.json();
-    
+
     if (!code) {
-      return new Response(JSON.stringify({ 
-        valid: false, 
-        error: 'Access code is required' 
+      return new Response(JSON.stringify({
+        valid: false,
+        error: 'Access code is required'
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Verifying access code:', code);
+    // Don't log the actual access code — just that a verification was attempted
+    console.log('Access code verification requested');
 
     // Initialize Supabase client
     const supabase = createClient(
@@ -44,7 +44,6 @@ serve(async (req) => {
       .single();
 
     if (error || !accessCode) {
-      console.log('Access code not found:', code);
       return new Response(JSON.stringify({
         valid: false,
         error: 'Access code not found. Please check your code or purchase a new one.',
@@ -56,7 +55,6 @@ serve(async (req) => {
 
     // Check if code is active
     if (accessCode.is_active === false) {
-      console.log('Access code is inactive:', code);
       return new Response(JSON.stringify({
         valid: false,
         error: 'This access code has been deactivated. Please contact support.',
@@ -68,7 +66,6 @@ serve(async (req) => {
 
     // Check if expired (only if expires_at is set)
     if (accessCode.expires_at && new Date(accessCode.expires_at) < new Date()) {
-      console.log('Access code expired:', code);
       return new Response(JSON.stringify({
         valid: false,
         error: 'Access code has expired. Please purchase a new one.',
@@ -80,9 +77,8 @@ serve(async (req) => {
 
     // Check if already used (usage_count >= max_usage)
     if (accessCode.usage_count >= accessCode.max_usage) {
-      console.log('Access code already used:', code);
-      return new Response(JSON.stringify({ 
-        valid: false, 
+      return new Response(JSON.stringify({
+        valid: false,
         error: 'Access code has already been used. Please purchase a new one.',
         needsPurchase: true
       }), {
@@ -90,9 +86,8 @@ serve(async (req) => {
       });
     }
 
-    console.log('Access code valid:', code);
-    return new Response(JSON.stringify({ 
-      valid: true, 
+    return new Response(JSON.stringify({
+      valid: true,
       accessCode: {
         id: accessCode.id,
         code: accessCode.code,
@@ -105,9 +100,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error verifying access code:', error);
-    return new Response(JSON.stringify({ 
-      valid: false, 
-      error: 'Failed to verify access code. Please try again.' 
+    return new Response(JSON.stringify({
+      valid: false,
+      error: 'Failed to verify access code. Please try again.'
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

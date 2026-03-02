@@ -13,22 +13,22 @@ serve(async (req) => {
   const error = url.searchParams.get("error");
   const errorDescription = url.searchParams.get("error_description");
 
-  console.log("Auth callback received. Code present:", !!code, "Error:", error);
+  console.log("Auth callback received. Code present:", !!code, "Error:", !!error);
 
-  // Handle OAuth errors
+  // Handle OAuth errors — don't leak raw error descriptions to the URL
   if (error) {
     console.error("OAuth error:", error, errorDescription);
     return Response.redirect(
-      `${FRONTEND_URL}/auth?error=${encodeURIComponent(errorDescription || error)}`,
+      `${FRONTEND_URL}/auth?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
       302
     );
   }
 
-  // If no code, redirect back with error
+  // If no code, redirect back with generic error
   if (!code) {
     console.error("No authorization code received");
     return Response.redirect(
-      `${FRONTEND_URL}/auth?error=${encodeURIComponent("No authorization code received")}`,
+      `${FRONTEND_URL}/auth?error=${encodeURIComponent("Authentication failed. Please try again.")}`,
       302
     );
   }
@@ -42,8 +42,7 @@ serve(async (req) => {
       },
     });
 
-    // Exchange the code for a session
-    // We need to use the anon key client for this as it's the auth flow
+    // Exchange the code for a session using anon key (auth flow)
     // Note: Using SB_ANON_KEY because SUPABASE_ prefix is reserved
     const supabaseAnonKey = Deno.env.get("SB_ANON_KEY")!;
     const supabaseAuth = createClient(SUPABASE_URL, supabaseAnonKey, {
@@ -60,7 +59,7 @@ serve(async (req) => {
     if (exchangeError) {
       console.error("Error exchanging code for session:", exchangeError);
       return Response.redirect(
-        `${FRONTEND_URL}/auth?error=${encodeURIComponent(exchangeError.message)}`,
+        `${FRONTEND_URL}/auth?error=${encodeURIComponent("Sign in failed. Please try again.")}`,
         302
       );
     }
@@ -68,7 +67,7 @@ serve(async (req) => {
     if (!data.session) {
       console.error("No session returned from code exchange");
       return Response.redirect(
-        `${FRONTEND_URL}/auth?error=${encodeURIComponent("Failed to create session")}`,
+        `${FRONTEND_URL}/auth?error=${encodeURIComponent("Sign in failed. Please try again.")}`,
         302
       );
     }
@@ -107,19 +106,21 @@ serve(async (req) => {
       user: data.user,
     };
 
-    // Base64 encode the session to pass it safely in URL
+    // Base64 encode the session
     const sessionBase64 = btoa(JSON.stringify(sessionData));
 
-    // Build the redirect URL with session data
-    const redirectUrl = `${FRONTEND_URL}/auth/confirm?session=${encodeURIComponent(sessionBase64)}`;
+    // SECURITY: Pass session in URL hash fragment (#), NOT query string (?).
+    // Hash fragments are never sent to servers in HTTP requests or referrer headers,
+    // keeping tokens out of logs and third-party visibility.
+    const redirectUrl = `${FRONTEND_URL}/auth/confirm#session=${encodeURIComponent(sessionBase64)}`;
 
-    console.log("Redirecting to frontend with full session");
+    console.log("Redirecting to frontend with session in hash fragment");
     return Response.redirect(redirectUrl, 302);
 
   } catch (err) {
     console.error("Unexpected error in auth callback:", err);
     return Response.redirect(
-      `${FRONTEND_URL}/auth?error=${encodeURIComponent("An unexpected error occurred")}`,
+      `${FRONTEND_URL}/auth?error=${encodeURIComponent("An unexpected error occurred. Please try again.")}`,
       302
     );
   }

@@ -1,21 +1,16 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, handleCorsPreFlight, errorResponse } from "../_shared/cors.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  const preflight = handleCorsPreFlight(req);
+  if (preflight) return preflight;
+
+  const corsHeaders = getCorsHeaders(req);
 
   try {
-    console.log('Forward to N8N function called');
-
     // Get the request body
     const requestBody = await req.json();
 
@@ -23,11 +18,7 @@ serve(async (req) => {
     const surveyData = requestBody.payload || requestBody;
 
     if (!surveyData) {
-      console.error('No survey data found in request');
-      return new Response(JSON.stringify({ error: 'No survey data provided' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse('No survey data provided', 400, corsHeaders);
     }
 
     // Initialize Supabase client
@@ -50,13 +41,9 @@ serve(async (req) => {
     }
 
     if (!userId) {
-      return new Response(JSON.stringify({ error: 'user_id or user_email required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse('user_id or user_email required', 400, corsHeaders);
     }
 
-    // Step 1: Create a report record first
     // Step 1: Create a report record first
     const { data: reportData, error: reportError } = await supabase.from('reports').insert({
       user_id: userId,
@@ -67,40 +54,46 @@ serve(async (req) => {
 
     if (reportError) {
       console.error('Error creating report:', reportError);
-      return new Response(JSON.stringify({ error: 'Failed to create report record', details: reportError }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse('Failed to create report record', 500, corsHeaders);
     }
 
-    // Step 2: Build the N8N request body - format as JSON items
+    // Step 2: Build the N8N request body
     const n8nData = {
-      // Main item with all the data
       user_id: userId,
       report_id: reportData.id,
-      // Survey data preserving order - this is the key part
       survey_responses: surveyData,
-      // Additional metadata
       created_at: new Date().toISOString(),
       processing_status: 'started'
     };
 
-    // Get N8N webhook URL from environment
+    // Get N8N webhook URL from environment and validate it
     const n8nWebhookUrl = Deno.env.get("N8N_WEBHOOK_URL");
-    
+
     if (!n8nWebhookUrl) {
       console.error('N8N_WEBHOOK_URL environment variable not set');
-      
+
       // Update report status to failed
       await supabase
         .from('reports')
         .update({ status: 'failed' })
         .eq('id', reportData.id);
-      
-      return new Response(JSON.stringify({ error: 'N8N webhook URL not configured' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+
+      return errorResponse('Assessment processing is temporarily unavailable. Please try again later.', 500, corsHeaders);
+    }
+
+    // Validate webhook URL at runtime
+    try {
+      const parsed = new URL(n8nWebhookUrl);
+      if (!['https:', 'http:'].includes(parsed.protocol)) {
+        throw new Error('Invalid protocol');
+      }
+    } catch {
+      console.error('N8N_WEBHOOK_URL is not a valid URL:', n8nWebhookUrl);
+      await supabase
+        .from('reports')
+        .update({ status: 'failed' })
+        .eq('id', reportData.id);
+      return errorResponse('Assessment processing is temporarily unavailable.', 500, corsHeaders);
     }
 
     // POST to N8N webhook
@@ -115,37 +108,27 @@ serve(async (req) => {
     if (!resp.ok) {
       const err = await resp.text();
       console.error("N8N webhook error:", resp.status, err);
-      
+
       // Update report status to failed
       await supabase
         .from('reports')
         .update({ status: 'failed' })
         .eq('id', reportData.id);
-      
-      return new Response(`N8N webhook error: ${resp.status} ${err}`, { 
-        status: 502,
-        headers: corsHeaders 
-      });
+
+      return errorResponse('Assessment processing failed. Please try again later.', 502, corsHeaders);
     }
 
     const result = await resp.json();
 
-    // Note: We don't update status to completed here
-    // The N8N workflow should call back to update the report when processing is done
-
-    return new Response(JSON.stringify({ 
-      success: true, 
-      result,
+    return new Response(JSON.stringify({
+      success: true,
       report_id: reportData.id,
-      message: 'Data sent to N8N workflow successfully'
+      message: 'Assessment submitted successfully'
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error in forward-to-n8n function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return errorResponse('An error occurred submitting your assessment. Please try again.', 500, corsHeaders);
   }
 });
