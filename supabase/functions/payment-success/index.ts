@@ -212,11 +212,18 @@ serve(async (req) => {
       }
     }
 
-    // Don't return the access code in the response — it's sent via email only
+    // Return access code and purchase data to the frontend for display and auth pre-fill.
+    // This is the same HTTPS session that processed the payment — the user owns this data.
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Payment processed successfully. Check your email for the access code."
+        accessCode: accessCode,
+        purchaseData: {
+          email: customerEmail,
+          firstName: firstName,
+          lastName: lastName
+        },
+        message: "Payment processed successfully"
       }),
       {
         status: 200,

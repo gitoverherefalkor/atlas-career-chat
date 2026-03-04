@@ -1,27 +1,58 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { ChevronDown } from 'lucide-react';
 import SocialAuthButtons from './SocialAuthButtons';
-import AuthFormDivider from './AuthFormDivider';
 import EmailPasswordForm from './EmailPasswordForm';
 
 interface AuthFormProps {
   isLogin: boolean;
 }
 
+// Check if purchase data exists (from payment flow)
+const hasPurchaseData = () => {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('email') || urlParams.get('firstName')) return true;
+    const stored = localStorage.getItem('purchase_data');
+    return !!stored;
+  } catch {
+    return false;
+  }
+};
+
 const AuthForm = ({ isLogin }: AuthFormProps) => {
   const [error, setError] = useState('');
+  const hasPaymentData = useMemo(() => hasPurchaseData(), []);
+
+  // Auto-expand email form if user has purchase data (show them their pre-filled info)
+  const [showEmailForm, setShowEmailForm] = useState(hasPaymentData);
 
   return (
     <div className="space-y-4">
-      <SocialAuthButtons 
+      {/* Social sign-on — always prominent */}
+      <SocialAuthButtons
         onError={setError}
       />
 
-      <AuthFormDivider />
+      {/* Collapsible email/password section */}
+      <button
+        type="button"
+        onClick={() => setShowEmailForm(!showEmailForm)}
+        className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <div className="flex-1 border-t" />
+        <span className="px-2 flex items-center gap-1 whitespace-nowrap">
+          {isLogin ? 'Or sign in with email' : 'Or continue with email'}
+          <ChevronDown
+            className={`h-4 w-4 transition-transform duration-200 ${showEmailForm ? 'rotate-180' : ''}`}
+          />
+        </span>
+        <div className="flex-1 border-t" />
+      </button>
 
-      <EmailPasswordForm 
-        isLogin={isLogin}
-      />
+      {showEmailForm && (
+        <EmailPasswordForm isLogin={isLogin} />
+      )}
     </div>
   );
 };
