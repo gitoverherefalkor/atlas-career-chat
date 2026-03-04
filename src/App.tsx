@@ -29,6 +29,7 @@ const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const Support = lazy(() => import("./pages/Support"));
 const Payment = lazy(() => import("./pages/Payment"));
+const ColorTest = lazy(() => import("./pages/ColorTest"));
 
 // Loading fallback shown while lazy chunks are downloading
 const PageLoader = () => (
@@ -66,6 +67,7 @@ const App = () => {
               <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route path="/support" element={<Support />} />
               <Route path="/payment" element={<Payment />} />
+              <Route path="/color-test" element={<ColorTest />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
