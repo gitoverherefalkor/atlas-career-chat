@@ -1095,7 +1095,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
                 {/* Row 3: Sector */}
                 <div className="mb-4">
-                  <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Industry / Sector</label>
+                  <label className={`block text-sm font-medium mb-1 ${isActive ? 'text-gray-700' : 'text-gray-400'}`}>Industry / Sector / Focus</label>
                   <Input
                     value={entry.sector}
                     onChange={(e) => updateCareerHistory(index, 'sector', e.target.value)}
