@@ -63,7 +63,7 @@ const COMPANY_SIZE_OPTIONS = [
 ];
 
 const COMPANY_CULTURE_OPTIONS = [
-  { value: 'Startup / Scale-up', label: 'Startup / Scale-up', description: 'Investor backed company, focus on growth, evolving structure' },
+  { value: 'Startup / Scale-up', label: 'Startup / Scale-up', description: 'Investor backed, focus on growth, evolving structure' },
   { value: 'Corporate', label: 'Corporate', description: 'Established, structured hierarchy, stable' },
   { value: 'Mid-Market', label: 'Mid-Market', description: 'Balanced growth, professionalized, cross-functional' },
   { value: 'Agency / Consultancy', label: 'Agency / Consultancy', description: 'Client-centric, project-based, high variety' },
@@ -1059,8 +1059,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       </SelectTrigger>
                       <SelectContent>
                         {COMPANY_SIZE_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            <div className="flex flex-col">
+                          <SelectItem key={opt.value} value={opt.value} textValue={opt.label}>
+                            <div className="flex flex-col text-left">
                               <span>{opt.label}</span>
                               {opt.description && <span className="text-xs text-gray-500">{opt.description}</span>}
                             </div>
@@ -1081,8 +1081,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       </SelectTrigger>
                       <SelectContent>
                         {COMPANY_CULTURE_OPTIONS.map((opt) => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            <div className="flex flex-col">
+                          <SelectItem key={opt.value} value={opt.value} textValue={opt.label}>
+                            <div className="flex flex-col text-left">
                               <span>{opt.label}</span>
                               <span className="text-xs text-gray-500">{opt.description}</span>
                             </div>
