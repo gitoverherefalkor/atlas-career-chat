@@ -606,17 +606,17 @@ const Index = () => {
         {/* Mobile Sidebar */}
         <div className={`fixed inset-0 bg-[#012F64] z-[101] transition-transform duration-500 transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} lg:hidden`}>
           <div className="p-8 h-full flex flex-col">
-            <div className="flex justify-between items-center mb-16">
+            <div className="flex justify-between items-center mb-10">
               <span className="text-white text-2xl font-black tracking-tighter">ATLAS</span>
               <X className="text-white w-8 h-8 cursor-pointer" onClick={() => setMobileMenuOpen(false)} />
             </div>
-            <div className="flex flex-col gap-10">
+            <div className="flex flex-col gap-6">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  className="text-white text-5xl font-black tracking-tighter hover:text-[#27A1A1] transition-colors"
+                  className="text-white text-2xl font-bold tracking-tight hover:text-[#27A1A1] transition-colors"
                 >
                   {link.name}
                 </a>
@@ -624,12 +624,12 @@ const Index = () => {
               {!user && (
                 <button
                   onClick={() => { setMobileMenuOpen(false); navigate('/auth'); }}
-                  className="text-white text-5xl font-black tracking-tighter hover:text-[#27A1A1] transition-colors"
+                  className="text-white text-2xl font-bold tracking-tight hover:text-[#27A1A1] transition-colors text-left"
                 >
                   Log In
                 </button>
               )}
-              <Button className="w-full text-xl py-6 mt-4" onClick={handleGetStarted}>
+              <Button className="w-full text-base py-4 mt-4" onClick={handleGetStarted}>
                 {user ? 'Dashboard' : 'Get Started'}
               </Button>
             </div>
