@@ -106,12 +106,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setIsLoading(false);
 
-        // Clear user data on sign-out
-        if (event === 'SIGNED_OUT') {
-          clearUserStorage();
-        }
-
-        // Ensure profile exists when user signs in, and detect user switch
+        // On sign-in, detect if a different user is logging in and clear stale data
+        // (We do NOT clear on sign-out — same user signing back in should keep their progress)
         if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
           handleUserSwitch(session.user.id);
           // Use setTimeout to avoid Supabase auth deadlock
