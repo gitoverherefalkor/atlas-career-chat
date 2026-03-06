@@ -23,6 +23,40 @@ export const useAuth = () => {
   return context;
 };
 
+// Keys that store user-specific data and must be cleared between sessions
+const USER_STORAGE_KEYS = [
+  'assessment_session',
+  'resume_parsed_data',
+  'resume_parsed_timestamp',
+  'pre_survey_upload_complete',
+  'n8n-chat/sessionId',
+  'n8n-chat/sessionTimestamp',
+  'purchase_data',
+  'payment_country',
+];
+
+// Clear all user-specific localStorage when signing out or switching users
+function clearUserStorage() {
+  USER_STORAGE_KEYS.forEach(key => localStorage.removeItem(key));
+  // Also clear dynamic keys (chat messages, section indices)
+  const allKeys = Object.keys(localStorage);
+  allKeys.forEach(key => {
+    if (key.startsWith('n8n-chat/') || key.startsWith('chat_section_index_') || key.startsWith('resume_prefilled_')) {
+      localStorage.removeItem(key);
+    }
+  });
+}
+
+// Check if localStorage data belongs to a different user and clear if so
+function handleUserSwitch(userId: string) {
+  const storedUserId = localStorage.getItem('atlas_current_user');
+  if (storedUserId && storedUserId !== userId) {
+    // Different user signed in — wipe the previous user's data
+    clearUserStorage();
+  }
+  localStorage.setItem('atlas_current_user', userId);
+}
+
 // Ensure profile exists for authenticated user
 async function ensureProfile(user: User) {
   const { data: existingProfile } = await supabase
@@ -72,8 +106,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(session?.user ?? null);
         setIsLoading(false);
 
-        // Ensure profile exists when user signs in
+        // Clear user data on sign-out
+        if (event === 'SIGNED_OUT') {
+          clearUserStorage();
+        }
+
+        // Ensure profile exists when user signs in, and detect user switch
         if (session?.user && (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED')) {
+          handleUserSwitch(session.user.id);
           // Use setTimeout to avoid Supabase auth deadlock
           setTimeout(() => ensureProfile(session.user), 0);
         }

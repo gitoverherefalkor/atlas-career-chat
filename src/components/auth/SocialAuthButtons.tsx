@@ -11,9 +11,10 @@ import { Loader2, Linkedin } from 'lucide-react';
 interface SocialAuthButtonsProps {
   disabled?: boolean;
   onError: (error: string) => void;
+  highlightMethod?: string | null;
 }
 
-const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
+const SocialAuthButtons = ({ disabled, onError, highlightMethod }: SocialAuthButtonsProps) => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isLinkedInLoading, setIsLinkedInLoading] = useState(false);
   const navigate = useNavigate();
@@ -23,6 +24,9 @@ const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
     onError('');
 
     try {
+      // Remember auth method before redirect
+      localStorage.setItem('atlas_auth_method', 'google');
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -50,6 +54,9 @@ const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
     onError('');
 
     try {
+      // Remember auth method before redirect
+      localStorage.setItem('atlas_auth_method', 'linkedin');
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'linkedin_oidc',
         options: {
@@ -79,7 +86,7 @@ const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
         variant="outline"
         onClick={handleGoogleSignIn}
         disabled={isGoogleLoading || disabled || isLinkedInLoading}
-        className="w-full"
+        className={`w-full ${highlightMethod === 'google' ? 'ring-2 ring-atlas-blue ring-offset-1' : ''}`}
       >
         {isGoogleLoading ? (
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -111,7 +118,7 @@ const SocialAuthButtons = ({ disabled, onError }: SocialAuthButtonsProps) => {
         variant="outline"
         onClick={handleLinkedInSignIn}
         disabled={isLinkedInLoading || disabled || isGoogleLoading}
-        className="w-full"
+        className={`w-full ${highlightMethod === 'linkedin' ? 'ring-2 ring-atlas-blue ring-offset-1' : ''}`}
       >
         {isLinkedInLoading ? (
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />

@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Mail, Lock, User, Eye, EyeOff, CheckCircle, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface EmailPasswordFormProps {
@@ -46,6 +46,9 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+  const [sentToEmail, setSentToEmail] = useState('');
+  const [isResending, setIsResending] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -95,6 +98,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
         }
 
         if (data.user) {
+          localStorage.setItem('atlas_auth_method', 'email');
           toast({
             title: "Welcome back!",
             description: "You've been logged in successfully.",
@@ -139,12 +143,9 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
         }
 
         if (data.user) {
-          toast({
-            title: "Account created!",
-            description: "Please check your email to verify your account before proceeding.",
-          });
-
-          setError('Please check your email and click the verification link to activate your account. Once verified, you can sign in below.');
+          localStorage.setItem('atlas_auth_method', 'email');
+          setSentToEmail(formData.email);
+          setEmailSent(true);
         }
       }
     } catch (error) {
@@ -154,6 +155,69 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
       setIsLoading(false);
     }
   };
+
+  const handleResendEmail = async () => {
+    setIsResending(true);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: sentToEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        }
+      });
+      if (error) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Email sent", description: "A new verification email has been sent." });
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to resend. Please try again.", variant: "destructive" });
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  // Show confirmation screen after successful signup
+  if (emailSent) {
+    return (
+      <div className="text-center space-y-4 py-2">
+        <div className="flex justify-center">
+          <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+            <CheckCircle className="h-6 w-6 text-green-600" />
+          </div>
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-atlas-navy">Check your email</h3>
+          <p className="text-sm text-gray-600 mt-1">
+            We sent a verification link to
+          </p>
+          <p className="text-sm font-medium text-atlas-navy mt-1">{sentToEmail}</p>
+        </div>
+        <p className="text-xs text-gray-500">
+          Click the link in the email to activate your account. You'll be signed in automatically.
+        </p>
+        <div className="pt-2 space-y-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleResendEmail}
+            disabled={isResending}
+            className="w-full"
+          >
+            {isResending ? (
+              <><Loader2 className="h-3 w-3 mr-2 animate-spin" /> Sending...</>
+            ) : (
+              <><RefreshCw className="h-3 w-3 mr-2" /> Resend verification email</>
+            )}
+          </Button>
+          <p className="text-xs text-gray-400">
+            Didn't receive it? Check your spam folder.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
