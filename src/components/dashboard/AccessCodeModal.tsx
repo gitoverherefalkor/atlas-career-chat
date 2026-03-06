@@ -104,27 +104,13 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
             <span className="text-lg font-semibold text-atlas-navy">Ready to Begin</span>
           </div>
           <p className="text-gray-600">
-            Click below to verify your access code and start your personalized career assessment.
+            Your access code has been verified. Click below to start your personalized career assessment.
           </p>
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Access Code Display */}
-          <div className="space-y-2">
-            <label htmlFor="access-code" className="text-sm font-medium text-gray-700">
-              Your Access Code
-            </label>
-            <Input
-              id="access-code"
-              type="text"
-              placeholder="XXXX-XXXX-XXXX-XXXX"
-              value={code}
-              onChange={handleCodeChange}
-              onKeyPress={handleKeyPress}
-              className="text-center font-mono text-lg tracking-wider py-3 bg-gray-50"
-              maxLength={50}
-            />
-          </div>
+          {/* Access code is pre-filled and hidden — no need to show it */}
+          <input type="hidden" value={code} />
 
           {/* Error Display */}
           {error && (
