@@ -335,7 +335,7 @@ export function CheckoutForm() {
           {isLoading ? "Processing..." : "Proceed to Checkout"}
         </Button>
           <p className="text-xs text-center text-muted-foreground mt-2">
-          This will redirect you to our secure payment processor
+          You'll be securely redirected to <span className="font-medium">Stripe</span> to complete your payment
         </p>
       </form>
     </Form>
