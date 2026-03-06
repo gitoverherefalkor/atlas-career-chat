@@ -69,14 +69,39 @@ serve(async (req) => {
     const firstName = profile.first_name || 'there';
     const subject = 'Your Atlas career report is ready';
     const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-        <h2 style="color: #4361ee;">Your report is ready, ${firstName}!</h2>
-        <p>Your career report${updated.title ? ` "${updated.title}"` : ''} is now available.</p>
-        <p>Log in to view your personalized career assessment and chat with your AI career coach:</p>
-        <p>
-          <a href="${chatUrl}" style="background:#4361ee;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block">Chat with your career coach</a>
-        </p>
-        <p style="color:#888;font-size:12px;margin-top:24px;">If you did not request this, you can ignore this email.</p>
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+        <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Atlas Assessment</h1>
+          <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
+        </div>
+
+        <div style="padding: 40px; color: #333333;">
+          <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Your report is ready, ${firstName}!</h2>
+
+          <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
+            Your career report${updated.title ? ` "${updated.title}"` : ''} is now available.
+          </p>
+
+          <p style="font-size: 16px; line-height: 1.6; margin-bottom: 28px; color: #444;">
+            Log in to view your personalized career assessment and chat with your AI career coach:
+          </p>
+
+          <div style="text-align: center; margin: 32px 0;">
+            <a href="${chatUrl}"
+               style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
+              Chat with Your Career Coach
+            </a>
+          </div>
+        </div>
+
+        <div style="text-align: center; padding: 24px 40px; border-top: 1px solid #e8e8e8; background-color: #f8f9fa;">
+          <p style="color: #999; font-size: 12px; margin: 4px 0;">
+            If you did not request this, you can ignore this email.
+          </p>
+          <p style="color: #999; font-size: 12px; margin: 16px 0 0 0;">
+            &copy; 2026 Atlas Assessment. All rights reserved.
+          </p>
+        </div>
       </div>
     `;
 

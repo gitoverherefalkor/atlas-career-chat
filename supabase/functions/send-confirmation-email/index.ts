@@ -77,102 +77,102 @@ serve(async (req) => {
       to: [user.email],
       subject: isPasswordReset ? "Reset Your Atlas Assessment Password" : "Confirm Your Atlas Assessment Account",
       html: isPasswordReset ? `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #4361ee; margin: 0; font-size: 28px;">Atlas Assessment</h1>
-            <p style="color: #666; margin: 10px 0 0 0; font-size: 16px;">Career Discovery Platform</p>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Atlas Assessment</h1>
+            <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
           </div>
 
-          <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; border-left: 4px solid #4361ee;">
-            <h2 style="color: #4361ee; margin-bottom: 20px; font-size: 24px;">Password Reset Request</h2>
+          <div style="padding: 40px; color: #333333;">
+            <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Password Reset Request</h2>
 
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
               Hi ${firstName},
             </p>
 
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 28px; color: #444;">
               We received a request to reset your Atlas Assessment password. Click the button below to create a new password:
             </p>
 
-            <div style="text-align: center; margin: 30px 0;">
+            <div style="text-align: center; margin: 32px 0;">
               <a href="${confirmationUrl}"
-                 style="background-color: #4361ee; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px; transition: background-color 0.3s;">
+                 style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
                 Reset Your Password
               </a>
             </div>
 
-            <p style="font-size: 14px; color: #666; margin-top: 25px;">
-              If the button doesn't work, you can copy and paste this link into your browser:
+            <p style="font-size: 13px; color: #888; margin-top: 28px;">
+              If the button doesn't work, copy and paste this link into your browser:
             </p>
-            <p style="font-size: 14px; color: #4361ee; word-break: break-all; background-color: #edf2ff; padding: 10px; border-radius: 4px;">
+            <p style="font-size: 13px; color: #3989AF; word-break: break-all; background-color: #f0f7fa; padding: 12px; border-radius: 4px;">
               ${confirmationUrl}
             </p>
           </div>
 
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p style="color: #888; font-size: 12px; margin: 5px 0;">
+          <div style="text-align: center; padding: 24px 40px; border-top: 1px solid #e8e8e8; background-color: #f8f9fa;">
+            <p style="color: #999; font-size: 12px; margin: 4px 0;">
               This password reset link will expire in 24 hours for security reasons.
             </p>
-            <p style="color: #888; font-size: 12px; margin: 5px 0;">
-              If you didn't request a password reset, you can safely ignore this email. Your password will not be changed.
+            <p style="color: #999; font-size: 12px; margin: 4px 0;">
+              If you didn't request a password reset, you can safely ignore this email.
             </p>
-            <p style="color: #888; font-size: 12px; margin: 15px 0 0 0;">
-              &copy; 2025 Atlas Assessment. All rights reserved.
+            <p style="color: #999; font-size: 12px; margin: 16px 0 0 0;">
+              &copy; 2026 Atlas Assessment. All rights reserved.
             </p>
           </div>
         </div>
       ` : `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #4361ee; margin: 0; font-size: 28px;">Atlas Assessment</h1>
-            <p style="color: #666; margin: 10px 0 0 0; font-size: 16px;">Career Discovery Platform</p>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Atlas Assessment</h1>
+            <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
           </div>
 
-          <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; border-left: 4px solid #4361ee;">
-            <h2 style="color: #4361ee; margin-bottom: 20px; font-size: 24px;">Welcome to Atlas Assessment, ${firstName}!</h2>
+          <div style="padding: 40px; color: #333333;">
+            <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Welcome to Atlas Assessment, ${firstName}!</h2>
 
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-              Thank you for creating your Atlas Assessment account. You're just one step away from starting your personalized career discovery journey.
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
+              Thank you for creating your account. You're just one step away from starting your personalized career discovery journey.
             </p>
 
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 28px; color: #444;">
               Please confirm your email address by clicking the button below:
             </p>
 
-            <div style="text-align: center; margin: 30px 0;">
+            <div style="text-align: center; margin: 32px 0;">
               <a href="${confirmationUrl}"
-                 style="background-color: #4361ee; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold; font-size: 16px; transition: background-color 0.3s;">
+                 style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
                 Confirm Your Email Address
               </a>
             </div>
 
-            <p style="font-size: 14px; color: #666; margin-top: 25px;">
-              If the button doesn't work, you can copy and paste this link into your browser:
+            <p style="font-size: 13px; color: #888; margin-top: 28px;">
+              If the button doesn't work, copy and paste this link into your browser:
             </p>
-            <p style="font-size: 14px; color: #4361ee; word-break: break-all; background-color: #edf2ff; padding: 10px; border-radius: 4px;">
+            <p style="font-size: 13px; color: #3989AF; word-break: break-all; background-color: #f0f7fa; padding: 12px; border-radius: 4px;">
               ${confirmationUrl}
             </p>
           </div>
 
-          <div style="margin-top: 30px; padding: 20px; background-color: #edf2ff; border-radius: 8px;">
-            <h3 style="color: #4361ee; margin-bottom: 15px; font-size: 18px;">What's Next?</h3>
-            <ul style="color: #666; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 20px;">
+          <div style="padding: 24px 40px; background-color: #f0f7fa; border-left: 4px solid #27A1A1;">
+            <h3 style="color: #012F64; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">What's Next?</h3>
+            <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
               <li>Confirm your email address</li>
               <li>Complete your personalized career assessment</li>
               <li>Receive your detailed career insights report</li>
-              <li>Discover new career opportunities aligned with your strengths</li>
+              <li>Discover career opportunities aligned with your strengths</li>
             </ul>
           </div>
 
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p style="color: #888; font-size: 12px; margin: 5px 0;">
+          <div style="text-align: center; padding: 24px 40px; border-top: 1px solid #e8e8e8; background-color: #f8f9fa;">
+            <p style="color: #999; font-size: 12px; margin: 4px 0;">
               This confirmation link will expire in 24 hours for security reasons.
             </p>
-            <p style="color: #888; font-size: 12px; margin: 5px 0;">
+            <p style="color: #999; font-size: 12px; margin: 4px 0;">
               If you didn't create an Atlas Assessment account, you can safely ignore this email.
             </p>
-            <p style="color: #888; font-size: 12px; margin: 15px 0 0 0;">
-              &copy; 2025 Atlas Assessment. All rights reserved.
+            <p style="color: #999; font-size: 12px; margin: 16px 0 0 0;">
+              &copy; 2026 Atlas Assessment. All rights reserved.
             </p>
           </div>
         </div>

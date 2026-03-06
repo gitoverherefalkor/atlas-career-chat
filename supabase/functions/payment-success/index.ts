@@ -34,31 +34,52 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
       to: [email],
       subject: "Your Atlas Assessment Access Code",
       html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; color: #333;">
-          <div style="text-align: center; margin-bottom: 20px;">
-            <h1 style="color: #4361ee;">Atlas Assessment</h1>
+        <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
+          <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Atlas Assessment</h1>
+            <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
           </div>
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #4361ee; margin-bottom: 20px;">Your Purchase was Successful!</h2>
-            <p>Hello ${firstName} ${lastName},</p>
-            <p>Thank you for purchasing the Atlas Assessment. Your access code is:</p>
-            <div style="background-color: #edf2ff; padding: 15px; border-radius: 5px; text-align: center; margin: 20px 0; font-size: 24px; font-weight: bold; letter-spacing: 1px;">
-              ${accessCode}
+
+          <div style="padding: 40px; color: #333333;">
+            <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Your Purchase was Successful!</h2>
+
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
+              Hello ${firstName} ${lastName},
+            </p>
+
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px; color: #444;">
+              Thank you for purchasing the Atlas Assessment. Your access code is:
+            </p>
+
+            <div style="background-color: #012F64; padding: 20px; border-radius: 8px; text-align: center; margin: 24px 0;">
+              <span style="color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 2px; font-family: 'Courier New', monospace;">
+                ${accessCode}
+              </span>
             </div>
-            <p>To use your access code:</p>
-            <ol>
-              <li>Visit <a href="https://atlas-assessments.com/assessment" style="color: #4361ee; text-decoration: none;">atlas-assessments.com/assessment</a></li>
+
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 8px; color: #444;">To use your access code:</p>
+            <ol style="color: #555; font-size: 15px; line-height: 1.8; padding-left: 20px; margin: 0 0 24px 0;">
+              <li>Visit <a href="https://atlas-assessments.com/assessment" style="color: #3989AF; text-decoration: none; font-weight: 500;">atlas-assessments.com/assessment</a></li>
               <li>Enter your access code when prompted</li>
               <li>Complete your personalized career assessment</li>
             </ol>
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="https://atlas-assessments.com/assessment" style="background-color: #4361ee; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">Start Assessment Now</a>
+
+            <div style="text-align: center; margin: 32px 0;">
+              <a href="https://atlas-assessments.com/assessment"
+                 style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
+                Start Assessment Now
+              </a>
             </div>
-            <p>Your access code is valid for one year from today.</p>
-            <p>If you have any questions, please contact our support team.</p>
+
+            <p style="font-size: 14px; color: #888; margin-top: 24px;">
+              Your access code is valid for one year from today. If you have any questions, please contact our support team.
+            </p>
           </div>
-          <div style="text-align: center; margin-top: 20px; color: #888; font-size: 12px;">
-            <p>&copy; 2025 Atlas Assessment. All rights reserved.</p>
+
+          <div style="text-align: center; padding: 24px 40px; border-top: 1px solid #e8e8e8; background-color: #f8f9fa;">
+            <p style="color: #999; font-size: 12px; margin: 0;">
+              &copy; 2026 Atlas Assessment. All rights reserved.
+            </p>
           </div>
         </div>
       `,
