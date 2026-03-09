@@ -85,17 +85,18 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
       const n8nResult = await webhookResponse.json();
       console.log('[ResumeUpload] n8n response:', n8nResult);
 
-      // Step 4: Dig through n8n response wrappers to find parsed_raw
-      // n8n can wrap responses in arrays and/or {success, data} objects
+      // Step 4: Extract survey data from n8n response
+      // The webhook returns: {success, message, data: {resume_parsed_data: {uuid: {value: ...}}}}
+      // Or sometimes arrays/direct formats — handle all cases
       let payload = n8nResult;
 
-      // Unwrap arrays: [[{...}]] → [{...}] → {...}
+      // Unwrap arrays if present
       while (Array.isArray(payload)) {
         payload = payload[0];
       }
 
       // Unwrap {data: ...} wrapper from Respond to Webhook node
-      if (payload?.data && !payload?.parsed_raw) {
+      if (payload?.data && typeof payload.data === 'object' && !Array.isArray(payload.data)) {
         payload = payload.data;
       }
 
@@ -106,21 +107,30 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
 
       console.log('[ResumeUpload] Final payload keys:', Object.keys(payload || {}));
 
-      const rawAiData = payload?.parsed_raw;
-      if (!rawAiData) {
-        console.error('[ResumeUpload] Could not find parsed_raw. Full response:', JSON.stringify(n8nResult).slice(0, 500));
+      let surveyPreFillData: Record<string, any>;
+
+      if (payload?.parsed_raw) {
+        // Option A: parsed_raw exists — use frontend mapper
+        console.log('[ResumeUpload] Using parsed_raw with frontend mapper');
+        surveyPreFillData = mapExtractedDataToSurvey(payload.parsed_raw);
+      } else if (payload?.resume_parsed_data) {
+        // Option B: n8n already mapped to UUIDs — unwrap {value: ...} wrappers
+        console.log('[ResumeUpload] Using pre-mapped resume_parsed_data from n8n');
+        surveyPreFillData = {};
+        for (const [questionId, wrapper] of Object.entries(payload.resume_parsed_data)) {
+          surveyPreFillData[questionId] = (wrapper as any)?.value ?? wrapper;
+        }
+      } else {
+        console.error('[ResumeUpload] No parsed_raw or resume_parsed_data found. Keys:', Object.keys(payload || {}));
         throw new Error('Resume processing returned unexpected data format.');
       }
-
-      // Use the frontend mapping function for proper survey formatting
-      const surveyPreFillData = mapExtractedDataToSurvey(rawAiData);
 
       const result = {
         success: true,
         aiParsedData: surveyPreFillData,
         surveyPreFillData: surveyPreFillData,
         fieldsExtracted: Object.keys(surveyPreFillData).length,
-        rawData: rawAiData
+        rawData: payload?.parsed_raw || payload
       };
 
       setProcessingResult(result);
