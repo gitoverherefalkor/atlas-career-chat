@@ -85,9 +85,16 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
       const n8nResult = await webhookResponse.json();
       console.log('[ResumeUpload] n8n response:', n8nResult);
 
-      // Step 4: Map the raw AI output to survey question IDs
+      // Step 4: Unwrap the n8n response — it may come as nested arrays [[{...}]]
+      let resultData = n8nResult;
+      while (Array.isArray(resultData)) {
+        resultData = resultData[0];
+      }
+      console.log('[ResumeUpload] Unwrapped result:', resultData);
+
+      // Map the raw AI output to survey question IDs
       // The n8n response contains parsed_raw (raw AI JSON with field names)
-      const rawAiData = n8nResult.parsed_raw;
+      const rawAiData = resultData?.parsed_raw;
       if (!rawAiData) {
         console.error('[ResumeUpload] No parsed_raw in n8n response:', n8nResult);
         throw new Error('Resume processing returned unexpected data format.');
