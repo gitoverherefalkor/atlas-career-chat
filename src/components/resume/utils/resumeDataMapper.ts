@@ -219,17 +219,15 @@ export const mapExtractedDataToSurvey = (extractedData: Record<string, any>): Re
     });
   }
 
-  // Achievements - format with company and year context
+  // Achievements - format with @company year prefix (matches the UI @ mention convention)
   if (extractedData.achievements && Array.isArray(extractedData.achievements)) {
     const formattedAchievements = extractedData.achievements
       .filter((a: any) => a && a.text)
       .map((a: any) => {
-        let text = a.text;
-        if (a.company || a.year) {
-          const context = [a.company, a.year].filter(Boolean).join(' ');
-          text += `\nAt ${context}`;
-        }
-        return text;
+        const prefix = (a.company || a.year)
+          ? `@${[a.company, a.year].filter(Boolean).join(' ')}\n`
+          : '';
+        return `${prefix}${a.text}`;
       })
       .join('\n\n');
     skillsAchievementsData.achievements = formattedAchievements;

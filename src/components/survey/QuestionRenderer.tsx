@@ -1391,13 +1391,90 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             <div className="p-5 border-2 rounded-xl bg-white shadow-sm">
               <h3 className="text-base font-semibold text-atlas-navy mb-2">Achievements</h3>
               <p className="text-sm text-gray-600 mb-4">
-                Highlight key wins like revenue growth, cost savings, or successful team expansions. Include the company and year.
+                Highlight key wins like revenue growth, cost savings, or successful team expansions.
               </p>
+
+              {/* Company quick-tag chips from career history (Q10) */}
+              {(() => {
+                const careerQuestionId = '11111111-1111-1111-1111-111111111110';
+                const rawCareers = allResponses?.[careerQuestionId];
+                const careers: CareerHistoryEntry[] = Array.isArray(rawCareers) ? rawCareers : [];
+                const filledCareers = careers.filter(c => c.companyName && c.companyName.trim() !== '');
+
+                if (filledCareers.length === 0) {
+                  return (
+                    <p className="text-xs text-gray-400 italic mb-3">
+                      Tip: fill in your career history first to quickly tag achievements to a company.
+                    </p>
+                  );
+                }
+
+                const handleChipClick = (career: CareerHistoryEntry) => {
+                  // Build the @company year tag
+                  const yearRange = career.startYear
+                    ? career.isCurrent
+                      ? `${career.startYear}`
+                      : career.endYear
+                        ? `${career.startYear}-${career.endYear}`
+                        : `${career.startYear}`
+                    : '';
+                  const tag = yearRange ? `@${career.companyName} ${yearRange}` : `@${career.companyName}`;
+
+                  // Append to existing text with proper spacing
+                  const current = skillsValue.achievements.trimEnd();
+                  const separator = current ? '\n\n' : '';
+                  const newText = `${current}${separator}${tag}\n`;
+                  updateAchievements(newText);
+
+                  // Focus the textarea and put cursor at end
+                  const textarea = document.querySelector<HTMLTextAreaElement>('[data-achievements-textarea]');
+                  if (textarea) {
+                    setTimeout(() => {
+                      textarea.focus();
+                      textarea.selectionStart = textarea.selectionEnd = newText.length;
+                    }, 0);
+                  }
+                };
+
+                return (
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-500 mb-2">Add achievement for:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {filledCareers.map((career, idx) => {
+                        const yearRange = career.startYear
+                          ? career.isCurrent
+                            ? `${career.startYear}–Present`
+                            : career.endYear
+                              ? `${career.startYear}–${career.endYear}`
+                              : `${career.startYear}`
+                          : '';
+                        const label = yearRange
+                          ? `${career.companyName} (${yearRange})`
+                          : career.companyName;
+
+                        return (
+                          <button
+                            key={`achievement-chip-${idx}`}
+                            type="button"
+                            onClick={() => handleChipClick(career)}
+                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                          >
+                            <span className="text-blue-400">+</span> {label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })()}
+
               <textarea
+                data-achievements-textarea
                 value={skillsValue.achievements}
                 onChange={(e) => updateAchievements(e.target.value)}
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-base leading-relaxed resize-y min-h-[200px]"
                 rows={8}
+                placeholder="@Company Year&#10;Describe your achievement..."
               />
             </div>
           </div>
