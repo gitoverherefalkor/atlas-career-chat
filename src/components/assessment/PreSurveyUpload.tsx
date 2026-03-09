@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowRight, Loader2, Upload, FileText, CheckCircle, X, Info } from 'lucide-react';
+import { ArrowRight, Loader2, Upload, FileText, CheckCircle, X, Info, ChevronDown } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAIResumeUpload } from '../resume/hooks/useAIResumeUpload';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +14,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
   const [isProcessing, setIsProcessing] = React.useState(false);
   const [hasUploadedResume, setHasUploadedResume] = React.useState(false);
   const [uploadedFile, setUploadedFile] = React.useState<File | null>(null);
+  const [showLinkedInTip, setShowLinkedInTip] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -33,7 +34,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
         setHasUploadedResume(true);
         toast({
           title: "Processing Complete",
-          description: `Extracted ${data.fieldsExtracted} fields from your LinkedIn export.`,
+          description: `Extracted ${data.fieldsExtracted} fields from your resume.`,
         });
       } else if (data && data.aiParsedData) {
         sessionStorage.setItem('resume_parsed_data', JSON.stringify(data.aiParsedData));
@@ -120,10 +121,10 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
           {/* Header */}
           <div className="text-center mb-6">
             <h1 className="text-2xl font-bold text-atlas-navy mb-2">
-              Save Time with LinkedIn Import
+              Save Time with a Resume Upload
             </h1>
             <p className="text-gray-600">
-              Upload your LinkedIn profile export to pre-fill work history and education
+              Upload your resume or CV to pre-fill work history, education, and skills
             </p>
           </div>
 
@@ -131,7 +132,6 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
           <Alert className="mb-6 bg-blue-50 border-blue-200">
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-sm text-gray-700">
-              <strong>Important:</strong> This only works with LinkedIn PDF exports (not your own resume).
               Any pre-filled information can be edited or overwritten during the assessment.
             </AlertDescription>
           </Alert>
@@ -175,7 +175,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
 
                 {hasProcessed && processingResult && (
                   <div className="bg-green-50 border border-green-200 rounded p-3 text-sm text-green-800">
-                    ✓ Extracted {processingResult.fieldsExtracted || 0} fields from your LinkedIn profile
+                    ✓ Extracted {processingResult.fieldsExtracted || 0} fields from your resume
                   </div>
                 )}
               </div>
@@ -183,7 +183,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
               <div className="text-center space-y-4">
                 <Upload className="h-12 w-12 text-gray-400 mx-auto" />
                 <div>
-                  <p className="font-medium text-gray-700">Upload your LinkedIn PDF export</p>
+                  <p className="font-medium text-gray-700">Upload your resume or CV</p>
                   <p className="text-sm text-gray-500">PDF, Word, or text files up to 10MB</p>
                 </div>
                 <Button
@@ -203,33 +203,49 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             )}
           </div>
 
-          {/* LinkedIn Export Instructions */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-gray-900 mb-3">How to export from LinkedIn:</h3>
-            <div className="space-y-2 text-sm text-gray-600">
-              <div className="flex items-start space-x-2">
-                <span className="font-medium text-gray-900">1.</span>
-                <span>Go to your LinkedIn profile</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <span className="font-medium text-gray-900">2.</span>
-                <span>Click "Resources" → "Save to PDF"</span>
-              </div>
-              <div className="flex items-start space-x-2">
-                <span className="font-medium text-gray-900">3.</span>
-                <span>Upload the PDF file here</span>
-              </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <img
-                src="/lovable-uploads/ad38b517-4c3f-47bd-b4f4-546e532e34cf.png"
-                alt="LinkedIn Resources menu"
-                className="w-48 mx-auto rounded shadow-sm"
+          {/* LinkedIn Export Tip - Collapsible */}
+          <div className="bg-gray-50 border border-gray-200 rounded-lg mb-6">
+            <button
+              type="button"
+              onClick={() => setShowLinkedInTip(!showLinkedInTip)}
+              className="w-full flex items-center justify-between p-4 text-left"
+            >
+              <span className="text-sm font-medium text-gray-700">
+                No resume handy? Use your LinkedIn profile export instead
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 text-gray-500 transition-transform ${showLinkedInTip ? 'rotate-180' : ''}`}
               />
-              <p className="text-xs text-gray-500 mt-3 text-center">
-                Since LinkedIn limits what data they share with other apps, this quick upload is the best way to ensure your full experience and skills are imported accurately.
-              </p>
-            </div>
+            </button>
+
+            {showLinkedInTip && (
+              <div className="px-4 pb-4 pt-0">
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex items-start space-x-2">
+                    <span className="font-medium text-gray-900">1.</span>
+                    <span>Go to your LinkedIn profile</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="font-medium text-gray-900">2.</span>
+                    <span>Click "Resources" → "Save to PDF"</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <span className="font-medium text-gray-900">3.</span>
+                    <span>Upload the downloaded PDF here</span>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <img
+                    src="/lovable-uploads/ad38b517-4c3f-47bd-b4f4-546e532e34cf.png"
+                    alt="LinkedIn Resources menu showing Save to PDF option"
+                    className="w-48 mx-auto rounded shadow-sm"
+                  />
+                  <p className="text-xs text-gray-500 mt-3 text-center">
+                    A LinkedIn export often has the most up-to-date version of your work history.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -239,7 +255,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
               onClick={handleSkip}
               disabled={isContinueDisabled}
             >
-              Skip (no LinkedIn or not up to date)
+              Skip this step
             </Button>
             <Button
               onClick={handleContinue}
