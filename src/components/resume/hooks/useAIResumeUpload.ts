@@ -93,8 +93,8 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
       console.log('[ResumeUpload] Unwrapped result:', resultData);
 
       // Map the raw AI output to survey question IDs
-      // The n8n response contains parsed_raw (raw AI JSON with field names)
-      const rawAiData = resultData?.parsed_raw;
+      // Handle both direct format ({parsed_raw: ...}) and wrapped format ({data: {parsed_raw: ...}})
+      const rawAiData = resultData?.parsed_raw || resultData?.data?.parsed_raw;
       if (!rawAiData) {
         console.error('[ResumeUpload] No parsed_raw in n8n response:', n8nResult);
         throw new Error('Resume processing returned unexpected data format.');
