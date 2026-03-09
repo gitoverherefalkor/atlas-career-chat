@@ -85,18 +85,30 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
       const n8nResult = await webhookResponse.json();
       console.log('[ResumeUpload] n8n response:', n8nResult);
 
-      // Step 4: Unwrap the n8n response — it may come as nested arrays [[{...}]]
-      let resultData = n8nResult;
-      while (Array.isArray(resultData)) {
-        resultData = resultData[0];
-      }
-      console.log('[ResumeUpload] Unwrapped result:', resultData);
+      // Step 4: Dig through n8n response wrappers to find parsed_raw
+      // n8n can wrap responses in arrays and/or {success, data} objects
+      let payload = n8nResult;
 
-      // Map the raw AI output to survey question IDs
-      // Handle both direct format ({parsed_raw: ...}) and wrapped format ({data: {parsed_raw: ...}})
-      const rawAiData = resultData?.parsed_raw || resultData?.data?.parsed_raw;
+      // Unwrap arrays: [[{...}]] → [{...}] → {...}
+      while (Array.isArray(payload)) {
+        payload = payload[0];
+      }
+
+      // Unwrap {data: ...} wrapper from Respond to Webhook node
+      if (payload?.data && !payload?.parsed_raw) {
+        payload = payload.data;
+      }
+
+      // Unwrap arrays inside data too
+      while (Array.isArray(payload)) {
+        payload = payload[0];
+      }
+
+      console.log('[ResumeUpload] Final payload keys:', Object.keys(payload || {}));
+
+      const rawAiData = payload?.parsed_raw;
       if (!rawAiData) {
-        console.error('[ResumeUpload] No parsed_raw in n8n response:', n8nResult);
+        console.error('[ResumeUpload] Could not find parsed_raw. Full response:', JSON.stringify(n8nResult).slice(0, 500));
         throw new Error('Resume processing returned unexpected data format.');
       }
 
