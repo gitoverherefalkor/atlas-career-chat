@@ -23,53 +23,20 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({ onReady, isLoading = f
 
         <CardContent className="space-y-5">
           <p className="text-gray-700 leading-relaxed">
-            Hi, and great to have you here! Welcome to your career insights session. My goal is to walk you through your personality profile and career recommendations in a way that's clear, engaging, and actionable.
+            Welcome! I'll walk you through your personality profile and career recommendations — starting with who you are professionally, then exploring the career paths that best match your goals and strengths.
           </p>
 
           <p className="text-gray-700 leading-relaxed">
-            This conversation is designed to help you understand your professional strengths, potential blind spots, and the career paths that best align with your goals.
+            Feel free to ask questions, push back, or explore any career further along the way.
           </p>
 
-          <div className="bg-blue-50 border-l-4 border-atlas-blue p-5 rounded-r-lg">
-            <p className="text-atlas-navy mb-3 font-medium">Here's how this will work:</p>
-            <ol className="space-y-2 text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-atlas-navy mt-0.5">1.</span>
-                <span>We'll start with a quick Executive Summary.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-atlas-navy mt-0.5">2.</span>
-                <span>Then do a deeper dive into your Personality Insights, exploring what drives you, how you work best, and key takeaways that shape your career direction.</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-atlas-navy mt-0.5">3.</span>
-                <div>
-                  <span>Then, we'll move on to your Career matches:</span>
-                  <ul className="ml-4 mt-1 space-y-1">
-                    <li>• Top 3 best fits</li>
-                    <li>• Suitable Runner-up suggestions</li>
-                    <li>• Some Outside-the-box careers you might not have considered</li>
-                    <li>• And an assessment on your Dream job(s) you provided</li>
-                  </ul>
-                </div>
-              </li>
-            </ol>
-          </div>
-
-          <p className="text-gray-700 leading-relaxed">
-            Feel free to ask anything along the way, whether it's clarification, exploring a career further, or sharing feedback on your results.
-          </p>
-
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-2">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="h-5 w-5 text-atlas-blue mt-0.5 flex-shrink-0" />
-              <p className="text-gray-700">
-                No need to take notes — you'll receive a full report with all the details and your feedback at the end of this session in your dashboard.
+              <p className="text-sm text-gray-600">
+                No need to take notes — everything lands in a full report on your dashboard. Responses may take a moment as multiple AI tools work in the background.
               </p>
             </div>
-            <p className="text-gray-600 pl-8">
-              I'm doing a lot of 'thinking' and directing different AI tools in the background so sometimes I might take a little longer to get back to you. Thanks for your patience!
-            </p>
           </div>
 
           <div className="pt-4 flex justify-center">
