@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
+import atlasFigure from '@/Atlas_figure_AA_live.png';
 
 interface WelcomeCardProps {
   onReady: () => void;
@@ -13,9 +14,7 @@ export const WelcomeCard: React.FC<WelcomeCardProps> = ({ onReady, isLoading = f
     <div className="max-w-3xl mx-auto px-4 py-8">
       <Card className="border-2 border-atlas-blue/20 shadow-lg">
         <CardHeader className="text-center pb-4">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-atlas-blue to-atlas-teal rounded-full flex items-center justify-center">
-            <Sparkles className="h-8 w-8 text-white" />
-          </div>
+          <img src={atlasFigure} alt="Atlas" className="mx-auto mb-4 h-24 w-auto" />
           <CardTitle className="text-2xl font-bold text-atlas-navy">
             Welcome to Your Career Insights Session
           </CardTitle>
