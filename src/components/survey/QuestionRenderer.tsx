@@ -41,11 +41,18 @@ interface CareerHappinessEntry {
   reason: string;
 }
 
+// Per-company achievement entry
+interface CompanyAchievement {
+  company: string;
+  yearRange: string;
+  text: string;
+}
+
 // Skills & Achievements entry type
 interface SkillsAchievementsEntry {
   topSkills: string[];
   certifications: string[];
-  achievements: string;
+  achievements: CompanyAchievement[];
 }
 
 // Interests/Hobbies entry type
@@ -1326,7 +1333,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       const emptySkillsAchievements: SkillsAchievementsEntry = {
         topSkills: ['', '', ''],
         certifications: ['', '', ''],
-        achievements: ''
+        achievements: []
       };
 
       // Parse value - could be object or needs initialization
@@ -1335,28 +1342,39 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       const rawCerts = value?.certifications;
       const rawAchievements = value?.achievements;
 
-      // Format achievements: could be a string (from frontend mapper) or array of objects (from n8n)
-      let formattedAchievements = '';
-      if (typeof rawAchievements === 'string') {
-        formattedAchievements = rawAchievements;
-      } else if (Array.isArray(rawAchievements)) {
-        // Convert [{text, company, year}] to "@Company Year\nDescription" format
-        formattedAchievements = rawAchievements
-          .filter((a: any) => a && a.text)
-          .map((a: any) => {
-            const prefix = (a.company || a.year)
-              ? `@${[a.company, a.year].filter(Boolean).join(' ')}\n`
-              : '';
-            return `${prefix}${a.text}`;
-          })
-          .join('\n\n');
+      // Normalize achievements to CompanyAchievement[] format
+      // Handles: CompanyAchievement[] (new format), [{text,company,year}] (n8n raw), string (legacy)
+      let parsedAchievements: CompanyAchievement[] = [];
+      if (Array.isArray(rawAchievements)) {
+        if (rawAchievements.length > 0 && typeof rawAchievements[0] === 'object') {
+          if ('yearRange' in rawAchievements[0]) {
+            // Already in CompanyAchievement[] format (from previous save)
+            parsedAchievements = rawAchievements;
+          } else {
+            // Raw n8n format: [{text, company, year}] — group by company name
+            const grouped: Record<string, string[]> = {};
+            rawAchievements.filter((a: any) => a?.text).forEach((a: any) => {
+              const key = a.company || 'Other';
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(a.text);
+            });
+            parsedAchievements = Object.entries(grouped).map(([company, texts]) => ({
+              company,
+              yearRange: '',
+              text: texts.join('\n')
+            }));
+          }
+        }
+      } else if (typeof rawAchievements === 'string' && rawAchievements.trim()) {
+        // Legacy single-string format — place in "Other"
+        parsedAchievements = [{ company: 'Other', yearRange: '', text: rawAchievements }];
       }
 
       const skillsValue: SkillsAchievementsEntry = value && typeof value === 'object'
         ? {
             topSkills: Array.isArray(rawSkills) ? [...rawSkills, '', '', ''].slice(0, 3) : ['', '', ''],
             certifications: Array.isArray(rawCerts) ? [...rawCerts, '', '', ''].slice(0, 3) : ['', '', ''],
-            achievements: formattedAchievements
+            achievements: parsedAchievements
           }
         : { ...emptySkillsAchievements };
 
@@ -1367,8 +1385,16 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         onChange(updated);
       };
 
-      const updateAchievements = (newValue: string) => {
-        onChange({ ...skillsValue, achievements: newValue });
+      // Update achievement text for a specific company box
+      const updateCompanyAchievement = (companyName: string, yearRange: string, newText: string) => {
+        const updatedAchievements = [...skillsValue.achievements];
+        const existingIdx = updatedAchievements.findIndex(a => a.company === companyName);
+        if (existingIdx >= 0) {
+          updatedAchievements[existingIdx] = { ...updatedAchievements[existingIdx], text: newText };
+        } else {
+          updatedAchievements.push({ company: companyName, yearRange, text: newText });
+        }
+        onChange({ ...skillsValue, achievements: updatedAchievements });
       };
 
       return (
@@ -1417,14 +1443,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               </div>
             </div>
 
-            {/* Achievements Section */}
+            {/* Achievements Section — per-company textareas from career history */}
             <div className="p-5 border-2 rounded-xl bg-white shadow-sm">
               <h3 className="text-base font-semibold text-atlas-navy mb-2">Achievements</h3>
               <p className="text-sm text-gray-600 mb-4">
                 Highlight key wins like revenue growth, cost savings, or successful team expansions.
               </p>
 
-              {/* Company quick-tag chips from career history (Q10) */}
               {(() => {
                 const careerQuestionId = '11111111-1111-1111-1111-111111111110';
                 const rawCareers = allResponses?.[careerQuestionId];
@@ -1432,80 +1457,81 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 const filledCareers = careers.filter(c => c.companyName && c.companyName.trim() !== '');
 
                 if (filledCareers.length === 0) {
+                  // No career history yet — show a single general textarea
+                  const generalText = skillsValue.achievements.find(a => a.company === 'Other')?.text ||
+                                       skillsValue.achievements[0]?.text || '';
                   return (
-                    <p className="text-xs text-gray-400 italic mb-3">
-                      Tip: fill in your career history first to quickly tag achievements to a company.
-                    </p>
+                    <div>
+                      <p className="text-xs text-gray-400 italic mb-3">
+                        Tip: fill in your career history first to get separate achievement fields per company.
+                      </p>
+                      <textarea
+                        value={generalText}
+                        onChange={(e) => updateCompanyAchievement('Other', '', e.target.value)}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm leading-relaxed resize-y min-h-[120px]"
+                        rows={4}
+                        placeholder="Describe your key achievements..."
+                      />
+                    </div>
                   );
                 }
 
-                const handleChipClick = (career: CareerHistoryEntry) => {
-                  // Build the @company year tag
-                  const yearRange = career.startYear
-                    ? career.isCurrent
-                      ? `${career.startYear}`
-                      : career.endYear
-                        ? `${career.startYear}-${career.endYear}`
-                        : `${career.startYear}`
-                    : '';
-                  const tag = yearRange ? `@${career.companyName} ${yearRange}` : `@${career.companyName}`;
-
-                  // Append to existing text with proper spacing
-                  const current = skillsValue.achievements.trimEnd();
-                  const separator = current ? '\n\n' : '';
-                  const newText = `${current}${separator}${tag}\n`;
-                  updateAchievements(newText);
-
-                  // Focus the textarea and put cursor at end
-                  const textarea = document.querySelector<HTMLTextAreaElement>('[data-achievements-textarea]');
-                  if (textarea) {
-                    setTimeout(() => {
-                      textarea.focus();
-                      textarea.selectionStart = textarea.selectionEnd = newText.length;
-                    }, 0);
-                  }
-                };
-
+                // Per-company achievement textareas
                 return (
-                  <div className="mb-3">
-                    <p className="text-xs text-gray-500 mb-2">Add achievement for:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {filledCareers.map((career, idx) => {
-                        const yearRange = career.startYear
-                          ? career.isCurrent
-                            ? `${career.startYear}–Present`
-                            : career.endYear
-                              ? `${career.startYear}–${career.endYear}`
-                              : `${career.startYear}`
-                          : '';
-                        const label = yearRange
-                          ? `${career.companyName} (${yearRange})`
-                          : career.companyName;
+                  <div className="space-y-4">
+                    {filledCareers.map((career, idx) => {
+                      const yearRange = career.startYear
+                        ? career.isCurrent
+                          ? `${career.startYear}–Present`
+                          : career.endYear
+                            ? `${career.startYear}–${career.endYear}`
+                            : `${career.startYear}`
+                        : '';
+                      const label = yearRange
+                        ? `${career.companyName} (${yearRange})`
+                        : career.companyName;
 
-                        return (
-                          <button
-                            key={`achievement-chip-${idx}`}
-                            type="button"
-                            onClick={() => handleChipClick(career)}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-full border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
-                          >
-                            <span className="text-blue-400">+</span> {label}
-                          </button>
-                        );
-                      })}
+                      // Find matching achievement — try exact match, then case-insensitive
+                      const match = skillsValue.achievements.find(a =>
+                        a.company === career.companyName
+                      ) || skillsValue.achievements.find(a =>
+                        a.company.toLowerCase() === career.companyName.toLowerCase()
+                      );
+
+                      return (
+                        <div key={`achievement-${career.companyName}-${idx}`}>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <div className="w-1 h-4 bg-blue-400 rounded-full" />
+                            <label className="text-sm font-medium text-gray-700">{label}</label>
+                          </div>
+                          <textarea
+                            value={match?.text || ''}
+                            onChange={(e) => updateCompanyAchievement(career.companyName, yearRange, e.target.value)}
+                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm leading-relaxed resize-y min-h-[80px]"
+                            rows={3}
+                            placeholder={`Key achievements at ${career.companyName}...`}
+                          />
+                        </div>
+                      );
+                    })}
+
+                    {/* Other / General achievements */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <div className="w-1 h-4 bg-gray-300 rounded-full" />
+                        <label className="text-sm font-medium text-gray-500">Other Achievements (optional)</label>
+                      </div>
+                      <textarea
+                        value={skillsValue.achievements.find(a => a.company === 'Other')?.text || ''}
+                        onChange={(e) => updateCompanyAchievement('Other', '', e.target.value)}
+                        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm leading-relaxed resize-y min-h-[60px]"
+                        rows={2}
+                        placeholder="Any other achievements not tied to a specific company..."
+                      />
                     </div>
                   </div>
                 );
               })()}
-
-              <textarea
-                data-achievements-textarea
-                value={skillsValue.achievements}
-                onChange={(e) => updateAchievements(e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-base leading-relaxed resize-y min-h-[200px]"
-                rows={8}
-                placeholder="@Company Year&#10;Describe your achievement..."
-              />
             </div>
           </div>
         </div>

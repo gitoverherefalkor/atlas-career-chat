@@ -194,11 +194,11 @@ export const mapExtractedDataToSurvey = (extractedData: Record<string, any>): Re
   const skillsAchievementsData: {
     topSkills: string[];
     certifications: string[];
-    achievements: string;
+    achievements: Array<{ company: string; yearRange: string; text: string }>;
   } = {
     topSkills: ['', '', ''],
     certifications: ['', '', ''],
-    achievements: ''
+    achievements: []
   };
 
   // Top skills - take up to 3
@@ -219,24 +219,27 @@ export const mapExtractedDataToSurvey = (extractedData: Record<string, any>): Re
     });
   }
 
-  // Achievements - format with @company year prefix (matches the UI @ mention convention)
+  // Achievements - group by company into per-company objects for the per-company textarea UI
   if (extractedData.achievements && Array.isArray(extractedData.achievements)) {
-    const formattedAchievements = extractedData.achievements
+    const grouped: Record<string, { texts: string[]; year?: string }> = {};
+    extractedData.achievements
       .filter((a: any) => a && a.text)
-      .map((a: any) => {
-        const prefix = (a.company || a.year)
-          ? `@${[a.company, a.year].filter(Boolean).join(' ')}\n`
-          : '';
-        return `${prefix}${a.text}`;
-      })
-      .join('\n\n');
-    skillsAchievementsData.achievements = formattedAchievements;
+      .forEach((a: any) => {
+        const company = a.company || 'Other';
+        if (!grouped[company]) grouped[company] = { texts: [], year: a.year };
+        grouped[company].texts.push(a.text);
+      });
+    skillsAchievementsData.achievements = Object.entries(grouped).map(([company, data]) => ({
+      company,
+      yearRange: data.year || '',
+      text: data.texts.join('\n')
+    }));
   }
 
   // Only add skills/achievements if we have any data
   if (skillsAchievementsData.topSkills.some(s => s) ||
       skillsAchievementsData.certifications.some(c => c) ||
-      skillsAchievementsData.achievements) {
+      skillsAchievementsData.achievements.length > 0) {
     surveyData[QUESTION_MAPPINGS.achievement] = skillsAchievementsData;
   }
 
