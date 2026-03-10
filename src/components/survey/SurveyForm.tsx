@@ -111,7 +111,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         if (minSelections && response.length < minSelections) return false;
         // For required questions, need at least one selection if no minimum is set
         if (!minSelections && response.length === 0) return false;
-        // Check maximum selections (should be handled in UI but double-check)
+        // Check maximum selections (all selections count, including Other)
         if (maxSelections && response.length > maxSelections) return false;
         return true;
       }

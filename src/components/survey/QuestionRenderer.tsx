@@ -322,14 +322,6 @@ const ResponsiveRanking: React.FC<{
         </div>
       )}
       
-      {/* Progress */}
-      <div className="mt-4 p-3 bg-green-50 rounded-lg">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-green-800">
-            <strong>Ranking Complete:</strong> All {currentOrder.length} items are ordered by importance
-          </span>
-        </div>
-      </div>
     </div>
   );
 };
@@ -358,14 +350,26 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     }
   }, [value]);
 
+  // Clean stale values that no longer match current choices (e.g. after choice labels are renamed)
+  useEffect(() => {
+    if (question.type === 'multiple_choice' && question.allow_multiple && Array.isArray(value) && value.length > 0) {
+      const validChoices = question.config?.choices || [];
+      const cleaned = value.filter((v: string) =>
+        v.startsWith('Other: ') || validChoices.includes(v)
+      );
+      if (cleaned.length !== value.length) {
+        onChange(cleaned);
+      }
+    }
+  }, [question.config?.choices]);
+
   const handleMultipleChoiceChange = (optionValue: string, checked: boolean) => {
     const currentValues = Array.isArray(value) ? value : [];
     const maxSelections = question.max_selections;
-    
+
     if (checked) {
-      // Check if we're at the selection limit
       if (maxSelections && currentValues.length >= maxSelections) {
-        return; // Don't allow more selections
+        return;
       }
       onChange([...currentValues, optionValue]);
     } else {
@@ -376,13 +380,17 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   const handleOtherChange = (otherText: string) => {
     setOtherValue(otherText);
     const currentValues = Array.isArray(value) ? value : [];
+    const maxSelections = question.max_selections;
+    const hasExistingOther = currentValues.some((v: string) => v.startsWith('Other: '));
 
     if (otherText) {
-      // Add or update the "Other" response (don't trim during typing)
       const filteredValues = currentValues.filter((v: string) => !v.startsWith('Other: '));
+      // If adding new Other (not updating existing), check the limit
+      if (!hasExistingOther && maxSelections && filteredValues.length >= maxSelections) {
+        return; // At limit, can't add Other
+      }
       onChange([...filteredValues, `Other: ${otherText}`]);
     } else {
-      // Remove "Other" response if text is empty
       onChange(currentValues.filter((v: string) => !v.startsWith('Other: ')));
     }
   };
@@ -701,7 +709,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       e.preventDefault();
                       const hasOtherResponse = currentValues.some((v: string) => v.startsWith('Other: '));
                       if (!showOther && !hasOtherResponse) {
-                        // Show the input field and check the checkbox
+                        // Block opening Other if selection limit is already reached
+                        if (isSelectionLimitReached()) return;
                         setShowOther(true);
                       } else if (hasOtherResponse) {
                         // Remove the "Other" response
