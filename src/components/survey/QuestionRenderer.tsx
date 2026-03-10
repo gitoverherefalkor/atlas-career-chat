@@ -33,8 +33,10 @@ interface CareerHistoryEntry {
 }
 
 // Career happiness entry type (separate question)
+// Uses title + companyName as unique key so duplicate titles (e.g. two "Product Manager" roles) stay independent
 interface CareerHappinessEntry {
   title: string;
+  companyName: string;
   happiness: number;
   reason: string;
 }
@@ -1226,14 +1228,18 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       // Initialize happiness values if not set (ensure array)
       const happinessValue: CareerHappinessEntry[] = Array.isArray(value) ? value : validCareers.map(c => ({
         title: c.title,
+        companyName: c.companyName || '',
         happiness: 5,
         reason: ''
       }));
 
       // Sync happiness entries with career history (in case careers were added/removed)
+      // Match by title + companyName so duplicate titles (e.g. "Product Manager" at two companies) stay independent
       const syncedHappiness: CareerHappinessEntry[] = validCareers.map(career => {
-        const existing = happinessValue.find(h => h.title === career.title);
-        return existing || { title: career.title, happiness: 5, reason: '' };
+        const existing = happinessValue.find(h =>
+          h.title === career.title && (h.companyName || '') === (career.companyName || '')
+        );
+        return existing || { title: career.title, companyName: career.companyName || '', happiness: 5, reason: '' };
       });
 
       const updateHappiness = (index: number, field: 'happiness' | 'reason', fieldValue: number | string) => {
@@ -1272,7 +1278,9 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                   <span className="text-sm font-medium text-gray-700">
                     {index === 0 ? 'Role 1 (most recent): ' : `Role ${index + 1}: `}
                   </span>
-                  <span className="text-sm text-atlas-navy font-semibold">{entry.title}</span>
+                  <span className="text-sm text-atlas-navy font-semibold">
+                    {entry.title}{entry.companyName ? ` at ${entry.companyName}` : ''}
+                  </span>
                 </div>
 
                 <div className="space-y-3">
