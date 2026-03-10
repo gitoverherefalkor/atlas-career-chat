@@ -171,7 +171,7 @@ export const mapExtractedDataToSurvey = (extractedData: Record<string, any>): Re
       .map((entry: any) => ({
         title: entry.title || '',
         companyName: entry.companyName || '',
-        companySize: '',  // User must select manually
+        companySize: entry.companySize || '',  // AI-estimated, user can override
         companyCulture: '',  // User must select manually
         sector: entry.sector || '',
         yearsInRole: entry.yearsInRole || '',
