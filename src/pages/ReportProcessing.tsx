@@ -45,14 +45,14 @@ const ReportProcessing = () => {
         .from('reports')
         .select('id, status, title')
         .eq('user_id', user.id)
-        .eq('status', 'completed')
+        .in('status', ['completed', 'pending_review'])
         .order('created_at', { ascending: false })
         .limit(1);
 
       if (error) throw error;
 
       if (reports && reports.length > 0) {
-        // Report is complete!
+        // Report is ready for review or complete — redirect to chat
         toast({
           title: "Report Ready!",
           description: "Your career analysis is complete. Redirecting to chat...",
