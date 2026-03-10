@@ -1330,11 +1330,33 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       };
 
       // Parse value - could be object or needs initialization
+      // Handle both camelCase (frontend mapper) and snake_case (n8n direct) field names
+      const rawSkills = value?.topSkills || value?.top_skills;
+      const rawCerts = value?.certifications;
+      const rawAchievements = value?.achievements;
+
+      // Format achievements: could be a string (from frontend mapper) or array of objects (from n8n)
+      let formattedAchievements = '';
+      if (typeof rawAchievements === 'string') {
+        formattedAchievements = rawAchievements;
+      } else if (Array.isArray(rawAchievements)) {
+        // Convert [{text, company, year}] to "@Company Year\nDescription" format
+        formattedAchievements = rawAchievements
+          .filter((a: any) => a && a.text)
+          .map((a: any) => {
+            const prefix = (a.company || a.year)
+              ? `@${[a.company, a.year].filter(Boolean).join(' ')}\n`
+              : '';
+            return `${prefix}${a.text}`;
+          })
+          .join('\n\n');
+      }
+
       const skillsValue: SkillsAchievementsEntry = value && typeof value === 'object'
         ? {
-            topSkills: Array.isArray(value.topSkills) ? [...value.topSkills, '', '', ''].slice(0, 3) : ['', '', ''],
-            certifications: Array.isArray(value.certifications) ? [...value.certifications, '', '', ''].slice(0, 3) : ['', '', ''],
-            achievements: value.achievements || ''
+            topSkills: Array.isArray(rawSkills) ? [...rawSkills, '', '', ''].slice(0, 3) : ['', '', ''],
+            certifications: Array.isArray(rawCerts) ? [...rawCerts, '', '', ''].slice(0, 3) : ['', '', ''],
+            achievements: formattedAchievements
           }
         : { ...emptySkillsAchievements };
 
