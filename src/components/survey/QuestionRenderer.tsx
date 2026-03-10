@@ -1361,7 +1361,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             parsedAchievements = Object.entries(grouped).map(([company, texts]) => ({
               company,
               yearRange: '',
-              text: texts.join('\n')
+              // Add bullet points when multiple achievements per company
+              text: texts.length > 1
+                ? texts.map(t => `• ${t}`).join('\n')
+                : texts[0] || ''
             }));
           }
         }

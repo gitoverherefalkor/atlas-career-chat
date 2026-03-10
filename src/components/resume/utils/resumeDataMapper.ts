@@ -232,7 +232,10 @@ export const mapExtractedDataToSurvey = (extractedData: Record<string, any>): Re
     skillsAchievementsData.achievements = Object.entries(grouped).map(([company, data]) => ({
       company,
       yearRange: data.year || '',
-      text: data.texts.join('\n')
+      // Add bullet points when multiple achievements per company
+      text: data.texts.length > 1
+        ? data.texts.map(t => `• ${t}`).join('\n')
+        : data.texts[0] || ''
     }));
   }
 
