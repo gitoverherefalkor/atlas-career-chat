@@ -89,39 +89,29 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       });
     }, [isLoading, hasMessages, messages]);
 
-    // Boilerplate phrases the agent always uses when introducing each section.
-    // Matched against the full message content (case-insensitive) as a fallback
-    // when heading-based detection misses (e.g. career sections with dynamic titles).
+    // Boilerplate phrases the agent uses when introducing each section.
+    // ONLY used as fallback when heading-based detection misses.
+    // Phrases must be long/unique enough to avoid false positives — the bot
+    // could casually say "dream job" or "core values" in any section, so
+    // short generic phrases are deliberately excluded here.
+    // Heading detection (Strategy 1) already handles most sections via
+    // SOP headers like "### Career 1:", "### Runner up:", etc.
     const BOILERPLATE_PHRASES: { phrase: string; sectionIndex: number }[] = [
-      // About You
-      { phrase: 'executive summary', sectionIndex: 0 },
-      { phrase: 'personality profile', sectionIndex: 1 },
-      { phrase: 'dive into your personality', sectionIndex: 1 },
-      { phrase: 'understanding your approach', sectionIndex: 1 },
+      // About You — heading detection handles these well, but keep unique intros as backup
+      { phrase: 'dive into your personality profile', sectionIndex: 1 },
       { phrase: "let's talk about your strengths", sectionIndex: 2 },
-      { phrase: 'your core strengths', sectionIndex: 2 },
-      { phrase: 'growth opportunities', sectionIndex: 3 },
-      { phrase: 'areas for development', sectionIndex: 3 },
-      { phrase: 'development areas', sectionIndex: 3 },
-      { phrase: 'core values', sectionIndex: 4 },
-      { phrase: 'career values', sectionIndex: 4 },
       { phrase: "let's look at your core values", sectionIndex: 4 },
-      // Career Suggestions
+      // Career Suggestions — heading detection handles Career 1-3 and Runner-ups
       { phrase: 'most suitable jobs for you', sectionIndex: 5 },
-      { phrase: 'top career match', sectionIndex: 5 },
-      { phrase: 'first career suggestion', sectionIndex: 5 },
-      { phrase: 'one of the most suitable', sectionIndex: 5 },
-      { phrase: 'second career', sectionIndex: 6 },
-      { phrase: 'another great fit', sectionIndex: 6 },
-      { phrase: 'third career', sectionIndex: 7 },
-      { phrase: 'runner-up career', sectionIndex: 8 },
-      { phrase: 'runner up career', sectionIndex: 8 },
-      { phrase: 'honorable mention', sectionIndex: 8 },
-      { phrase: 'outside-the-box career', sectionIndex: 9 },
-      { phrase: 'outside the box career', sectionIndex: 9 },
-      { phrase: 'unconventional career', sectionIndex: 9 },
-      { phrase: 'dream job', sectionIndex: 10 },
-      { phrase: 'dream career', sectionIndex: 10 },
+      // Outside-the-box + Dream jobs: SOP uses bare "### [career title]" headers
+      // with no section prefix, so heading detection can't identify them.
+      // These NEED boilerplate detection — use the longest unique phrases possible.
+      { phrase: 'outside-the-box career options', sectionIndex: 9 },
+      { phrase: 'outside the box career options', sectionIndex: 9 },
+      { phrase: 'unconventional career options', sectionIndex: 9 },
+      { phrase: "let's analyze your dream job", sectionIndex: 10 },
+      { phrase: 'dream job assessment', sectionIndex: 10 },
+      { phrase: 'dream job analysis', sectionIndex: 10 },
     ];
 
     // Scan bot message content for section headings and boilerplate phrases
