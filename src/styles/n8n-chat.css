@@ -254,8 +254,16 @@ button[data-test-id="send-button"]:disabled {
 }
 
 /* Typing indicator - hide default n8n dots, replaced by custom status indicator */
-#n8n-chat .chat-message-typing {
+#n8n-chat .chat-message-typing,
+.chat-message-typing,
+[class*="chat-message-typing"],
+#n8n-chat .chat-message-typing *,
+.chat-message-typing * {
     display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
 /* Custom Atlas typing indicator */
