@@ -19,6 +19,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 }) => {
   const [text, setText] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const isListeningRef = useRef(false); // Mirror of isListening for closure access
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
   const finalTranscriptRef = useRef('');
@@ -62,17 +63,28 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   // Voice input setup
   const toggleListening = () => {
-    if (!SpeechRecognition) return;
+    console.log('[Mic] toggleListening called');
+    console.log('[Mic] SpeechRecognition available:', !!SpeechRecognition);
+    console.log('[Mic] isListening:', isListening);
+    console.log('[Mic] disabled prop:', disabled);
+
+    if (!SpeechRecognition) {
+      console.warn('[Mic] SpeechRecognition not available — exiting');
+      return;
+    }
 
     if (isListening) {
       // Stop
+      console.log('[Mic] Stopping recognition');
       recognitionRef.current?.stop();
       setIsListening(false);
+      isListeningRef.current = false;
       finalTranscriptRef.current = '';
       return;
     }
 
     // Start
+    console.log('[Mic] Creating new SpeechRecognition instance');
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
@@ -81,6 +93,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     finalTranscriptRef.current = text ? text + ' ' : '';
 
     recognition.onresult = (event: any) => {
+      console.log('[Mic] onresult fired');
       let interim = '';
       for (let i = event.resultIndex; i < event.results.length; i++) {
         if (event.results[i].isFinal) {
@@ -92,30 +105,53 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       setText(finalTranscriptRef.current + interim);
     };
 
+    recognition.onstart = () => {
+      console.log('[Mic] onstart fired — recognition is active');
+    };
+
+    recognition.onaudiostart = () => {
+      console.log('[Mic] onaudiostart — microphone is capturing');
+    };
+
     recognition.onend = () => {
+      console.log('[Mic] onend fired, isListeningRef:', isListeningRef.current);
       // Auto-restart if still listening (recognition can timeout)
-      if (isListening) {
+      if (isListeningRef.current) {
         try {
           recognition.start();
-        } catch { /* ignore */ }
+        } catch (e) {
+          console.error('[Mic] Failed to auto-restart:', e);
+        }
       }
     };
 
     recognition.onerror = (event: any) => {
+      console.error('[Mic] onerror:', event.error, event.message);
       if (event.error === 'not-allowed' || event.error === 'aborted') {
         setIsListening(false);
+        isListeningRef.current = false;
       }
     };
 
     recognitionRef.current = recognition;
     setIsListening(true);
-    recognition.start();
+    isListeningRef.current = true;
+
+    try {
+      recognition.start();
+      console.log('[Mic] recognition.start() called successfully');
+    } catch (e) {
+      console.error('[Mic] recognition.start() threw:', e);
+      setIsListening(false);
+      isListeningRef.current = false;
+    }
   };
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       recognitionRef.current?.stop();
+      isListeningRef.current = false;
     };
   }, []);
 
