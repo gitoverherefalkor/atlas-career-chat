@@ -61,12 +61,12 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  // Voice input setup
-  const toggleListening = () => {
+  // Voice input — request mic permission via getUserMedia first, then use SpeechRecognition
+  // getUserMedia reliably triggers the browser permission popup; SpeechRecognition.start() often doesn't
+  const toggleListening = async () => {
     console.log('[Mic] toggleListening called');
     console.log('[Mic] SpeechRecognition available:', !!SpeechRecognition);
     console.log('[Mic] isListening:', isListening);
-    console.log('[Mic] disabled prop:', disabled);
 
     if (!SpeechRecognition) {
       console.warn('[Mic] SpeechRecognition not available — exiting');
@@ -83,7 +83,20 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       return;
     }
 
-    // Start
+    // Step 1: Request mic permission explicitly via getUserMedia
+    // This reliably triggers the browser permission prompt
+    try {
+      console.log('[Mic] Requesting mic permission via getUserMedia...');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // Release the stream immediately — we just needed the permission grant
+      stream.getTracks().forEach((track) => track.stop());
+      console.log('[Mic] Mic permission granted');
+    } catch (err) {
+      console.error('[Mic] Mic permission denied or error:', err);
+      return; // User denied mic access, don't proceed
+    }
+
+    // Step 2: Start SpeechRecognition (now that we have mic permission)
     console.log('[Mic] Creating new SpeechRecognition instance');
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
