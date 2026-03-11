@@ -6,16 +6,16 @@ import { Button } from '@/components/ui/button';
 // Each section has: id, title (display), altTitles (what agent might output)
 export const ALL_SECTIONS = [
   { id: 'executive-summary', title: 'Executive Summary', altTitles: ['executive summary'], chapter: 'about-you' },
-  { id: 'personality-team', title: 'Your Approach', altTitles: ['your approach', 'personality', 'team dynamics'], chapter: 'about-you' },
-  { id: 'strengths', title: 'Your Strengths', altTitles: ['your strengths', 'strengths'], chapter: 'about-you' },
-  { id: 'growth', title: 'Development Areas', altTitles: ['development areas', 'areas for development', 'growth', 'growth opportunities'], chapter: 'about-you' },
-  { id: 'values', title: 'Career Values', altTitles: ['career values', 'values', 'your values'], chapter: 'about-you' },
-  { id: 'first-career', title: 'Primary Career Match', altTitles: ['primary career', 'first career', 'career match', 'career 1:', 'career 1'], chapter: 'career-suggestions' },
-  { id: 'second-career', title: 'Second Career Match', altTitles: ['second career', 'secondary career', 'career 2:', 'career 2'], chapter: 'career-suggestions' },
-  { id: 'third-career', title: 'Third Career Match', altTitles: ['third career', 'career 3:', 'career 3'], chapter: 'career-suggestions' },
-  { id: 'runner-up', title: 'Runner-up Careers', altTitles: ['runner-up', 'runner up', 'honorable mention', 'honorable mentions'], chapter: 'career-suggestions' },
-  { id: 'outside-box', title: 'Outside the Box', altTitles: ['outside the box', 'unconventional', 'wildcard'], chapter: 'career-suggestions' },
-  { id: 'dream-jobs', title: 'Dream Job Assessment', altTitles: ['dream job', 'dream jobs', 'dream career'], chapter: 'career-suggestions' },
+  { id: 'personality-team', title: 'Your Approach', altTitles: ['your approach', 'understanding your approach', 'personality', 'team dynamics'], chapter: 'about-you' },
+  { id: 'strengths', title: 'Your Strengths', altTitles: ['your strengths', 'your core strengths', 'core strengths', 'strengths'], chapter: 'about-you' },
+  { id: 'growth', title: 'Development Areas', altTitles: ['development areas', 'areas for development', 'areas of development', 'growth', 'growth opportunities'], chapter: 'about-you' },
+  { id: 'values', title: 'Career Values', altTitles: ['career values', 'your core values', 'core values', 'values', 'your values'], chapter: 'about-you' },
+  { id: 'first-career', title: 'Primary Career Match', altTitles: ['primary career', 'first career', 'career match', 'career 1:', 'career 1', '#1 career'], chapter: 'career-suggestions' },
+  { id: 'second-career', title: 'Second Career Match', altTitles: ['second career', 'secondary career', 'career 2:', 'career 2', '#2 career'], chapter: 'career-suggestions' },
+  { id: 'third-career', title: 'Third Career Match', altTitles: ['third career', 'career 3:', 'career 3', '#3 career'], chapter: 'career-suggestions' },
+  { id: 'runner-up', title: 'Runner-up Careers', altTitles: ['runner-up', 'runner up', 'runners-up', 'runners up', 'honorable mention', 'honorable mentions', 'career 4:', 'career 4', '#4 career'], chapter: 'career-suggestions' },
+  { id: 'outside-box', title: 'Outside the Box', altTitles: ['outside the box', 'outside-the-box', 'unconventional', 'wildcard', 'career 5:', 'career 5', '#5 career'], chapter: 'career-suggestions' },
+  { id: 'dream-jobs', title: 'Dream Job Assessment', altTitles: ['dream job', 'dream jobs', 'dream career', 'dream role', 'career 6:', 'career 6', '#6 career'], chapter: 'career-suggestions' },
 ] as const;
 
 export type SectionId = typeof ALL_SECTIONS[number]['id'];

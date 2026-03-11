@@ -43,6 +43,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
 
     // Track whether we've attempted to load previous session from n8n
     const migrationAttemptedRef = useRef(false);
+    const sectionScanDoneRef = useRef(false);
 
     // On mount: if no messages in Supabase, try loading from n8n (migration path)
     useEffect(() => {
@@ -62,16 +63,31 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           seedFromHistory(history);
 
           // Scan history for section headers
+          console.log('[Section] Scanning', history.length, 'messages from n8n migration');
           history.forEach((msg) => {
             if (msg.sender === 'bot') {
               scanForSections(msg.content);
             }
           });
+          sectionScanDoneRef.current = true;
         }
       };
 
       tryLoadPrevious();
     }, [isLoading, hasMessages, sessionId, reportId, firstName, country, loadPreviousSession, seedFromHistory]);
+
+    // Backup: scan messages loaded from Supabase for sections (runs once after load)
+    useEffect(() => {
+      if (isLoading || !hasMessages || sectionScanDoneRef.current) return;
+      sectionScanDoneRef.current = true;
+
+      console.log('[Section] Scanning', messages.length, 'messages from Supabase');
+      messages.forEach((msg) => {
+        if (msg.sender === 'bot') {
+          scanForSections(msg.content);
+        }
+      });
+    }, [isLoading, hasMessages, messages]);
 
     // Scan bot message content for section headings
     const scanForSections = (content: string) => {
@@ -81,6 +97,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       while ((match = headingRegex.exec(content)) !== null) {
         const headingText = (match[1] || match[2] || '').trim();
         if (headingText) {
+          console.log('[Section] Regex found heading:', headingText);
           const normalized = headingText.toLowerCase();
           const idx = ALL_SECTIONS.findIndex((section: any) => {
             if (normalized.includes(section.title.toLowerCase())) return true;
@@ -88,6 +105,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
             if (normalized.includes(section.id.replace(/-/g, ' '))) return true;
             return false;
           });
+          console.log('[Section] Match result:', idx, idx >= 0 ? `(${ALL_SECTIONS[idx].title})` : '(no match)');
           if (idx >= 0) {
             onSectionDetected(idx);
           }

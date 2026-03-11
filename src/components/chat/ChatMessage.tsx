@@ -95,9 +95,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     if (sender !== 'bot' || !onSectionDetected || !messageRef.current) return;
 
     const headings = messageRef.current.querySelectorAll('h3');
+    console.log('[Section] DOM scan: found', headings.length, 'h3 elements');
     headings.forEach((h3) => {
       const text = h3.textContent || '';
+      console.log('[Section] h3 text:', text);
       const idx = findSectionIndex(text);
+      console.log('[Section] findSectionIndex result:', idx, idx >= 0 ? `(${ALL_SECTIONS[idx].title})` : '(no match)');
       if (idx >= 0) {
         onSectionDetected(idx);
         // Add a data attribute so sidebar can scroll to it
