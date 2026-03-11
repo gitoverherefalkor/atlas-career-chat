@@ -89,11 +89,49 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       });
     }, [isLoading, hasMessages, messages]);
 
-    // Scan bot message content for section headings
+    // Boilerplate phrases the agent always uses when introducing each section.
+    // Matched against the full message content (case-insensitive) as a fallback
+    // when heading-based detection misses (e.g. career sections with dynamic titles).
+    const BOILERPLATE_PHRASES: { phrase: string; sectionIndex: number }[] = [
+      // About You
+      { phrase: 'executive summary', sectionIndex: 0 },
+      { phrase: 'personality profile', sectionIndex: 1 },
+      { phrase: 'dive into your personality', sectionIndex: 1 },
+      { phrase: 'understanding your approach', sectionIndex: 1 },
+      { phrase: "let's talk about your strengths", sectionIndex: 2 },
+      { phrase: 'your core strengths', sectionIndex: 2 },
+      { phrase: 'growth opportunities', sectionIndex: 3 },
+      { phrase: 'areas for development', sectionIndex: 3 },
+      { phrase: 'development areas', sectionIndex: 3 },
+      { phrase: 'core values', sectionIndex: 4 },
+      { phrase: 'career values', sectionIndex: 4 },
+      { phrase: "let's look at your core values", sectionIndex: 4 },
+      // Career Suggestions
+      { phrase: 'most suitable jobs for you', sectionIndex: 5 },
+      { phrase: 'top career match', sectionIndex: 5 },
+      { phrase: 'first career suggestion', sectionIndex: 5 },
+      { phrase: 'one of the most suitable', sectionIndex: 5 },
+      { phrase: 'second career', sectionIndex: 6 },
+      { phrase: 'another great fit', sectionIndex: 6 },
+      { phrase: 'third career', sectionIndex: 7 },
+      { phrase: 'runner-up career', sectionIndex: 8 },
+      { phrase: 'runner up career', sectionIndex: 8 },
+      { phrase: 'honorable mention', sectionIndex: 8 },
+      { phrase: 'outside-the-box career', sectionIndex: 9 },
+      { phrase: 'outside the box career', sectionIndex: 9 },
+      { phrase: 'unconventional career', sectionIndex: 9 },
+      { phrase: 'dream job', sectionIndex: 10 },
+      { phrase: 'dream career', sectionIndex: 10 },
+    ];
+
+    // Scan bot message content for section headings and boilerplate phrases
     const scanForSections = (content: string) => {
-      // Look for markdown headings (### Title) or HTML headings (<h3>Title</h3>)
+      const lower = content.toLowerCase();
+
+      // Strategy 1: Look for markdown headings (### Title) or HTML headings (<h3>Title</h3>)
       const headingRegex = /(?:###\s*(.+)|<h3[^>]*>(.+?)<\/h3>)/gi;
       let match;
+      let foundViaHeading = false;
       while ((match = headingRegex.exec(content)) !== null) {
         const headingText = (match[1] || match[2] || '').trim();
         if (headingText) {
@@ -105,9 +143,21 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
             if (normalized.includes(section.id.replace(/-/g, ' '))) return true;
             return false;
           });
-          console.log('[Section] Match result:', idx, idx >= 0 ? `(${ALL_SECTIONS[idx].title})` : '(no match)');
+          console.log('[Section] Heading match:', idx, idx >= 0 ? `(${ALL_SECTIONS[idx].title})` : '(no match)');
           if (idx >= 0) {
             onSectionDetected(idx);
+            foundViaHeading = true;
+          }
+        }
+      }
+
+      // Strategy 2: Boilerplate phrase detection (catches sections without recognizable headings)
+      if (!foundViaHeading) {
+        for (const { phrase, sectionIndex } of BOILERPLATE_PHRASES) {
+          if (lower.includes(phrase)) {
+            console.log('[Section] Boilerplate match:', `"${phrase}"`, '→', ALL_SECTIONS[sectionIndex].title);
+            onSectionDetected(sectionIndex);
+            break; // One match per message is enough
           }
         }
       }
