@@ -62,6 +62,118 @@ const Chat = () => {
     }
   }, [authLoading, user]);
 
+  // Phase-aware status messages for the typing indicator
+  const getStatusMessages = (sectionIndex: number): string[] => {
+    // Career sections (index 4+)
+    if (sectionIndex >= 4) {
+      return [
+        'Querying career database',
+        'Analyzing career compatibility',
+        'Matching role profiles',
+        'Processing recommendations',
+        'Preparing career insights',
+      ];
+    }
+    // Personality sections (index 0-3) or not started yet
+    return [
+      'Retrieving profile data',
+      'Parsing assessment results',
+      'Analyzing personality insights',
+      'Preparing your section',
+      'Processing your input',
+    ];
+  };
+
+  // Custom typing indicator - replaces n8n default dots with rotating status text
+  useEffect(() => {
+    if (!chatInitialized) return;
+
+    const chatContainer = document.getElementById('n8n-chat-container');
+    if (!chatContainer) return;
+
+    let customIndicator: HTMLDivElement | null = null;
+    let rotationInterval: ReturnType<typeof setInterval> | null = null;
+    let messageIndex = 0;
+
+    const createCustomIndicator = () => {
+      if (customIndicator) return; // Already exists
+
+      const messages = getStatusMessages(currentSectionIndex);
+      messageIndex = 0;
+
+      customIndicator = document.createElement('div');
+      customIndicator.className = 'atlas-typing-indicator';
+      customIndicator.innerHTML = `
+        <div class="atlas-typing-bars">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <span class="atlas-typing-text">${messages[0]}</span>
+      `;
+
+      // Insert into chat messages list
+      const messagesList = chatContainer.querySelector('.chat-messages-list');
+      if (messagesList) {
+        messagesList.appendChild(customIndicator);
+        // Scroll to bottom
+        const scrollContainer = messagesList.closest('.chat-messages') || messagesList.parentElement;
+        if (scrollContainer) {
+          scrollContainer.scrollTop = scrollContainer.scrollHeight;
+        }
+      }
+
+      // Rotate messages every 3 seconds
+      rotationInterval = setInterval(() => {
+        messageIndex = (messageIndex + 1) % messages.length;
+        const textEl = customIndicator?.querySelector('.atlas-typing-text');
+        if (textEl) {
+          textEl.textContent = messages[messageIndex];
+        }
+      }, 3000);
+    };
+
+    const removeCustomIndicator = () => {
+      if (rotationInterval) {
+        clearInterval(rotationInterval);
+        rotationInterval = null;
+      }
+      if (customIndicator) {
+        customIndicator.remove();
+        customIndicator = null;
+      }
+    };
+
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        // Check for typing indicator being added
+        mutation.addedNodes.forEach((node) => {
+          if (node instanceof Element) {
+            if (node.classList?.contains('chat-message-typing') ||
+                node.querySelector?.('.chat-message-typing')) {
+              createCustomIndicator();
+            }
+          }
+        });
+
+        // Check for typing indicator being removed
+        mutation.removedNodes.forEach((node) => {
+          if (node instanceof Element) {
+            if (node.classList?.contains('chat-message-typing') ||
+                node.querySelector?.('.chat-message-typing')) {
+              removeCustomIndicator();
+            }
+          }
+        });
+      });
+    });
+
+    observer.observe(chatContainer, { childList: true, subtree: true });
+
+    return () => {
+      observer.disconnect();
+      removeCustomIndicator();
+    };
+  }, [chatInitialized, currentSectionIndex]);
+
   // MutationObserver to convert escaped HTML tags in chat messages to actual HTML
   useEffect(() => {
     if (!chatInitialized) return;

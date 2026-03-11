@@ -253,9 +253,62 @@ button[data-test-id="send-button"]:disabled {
     padding-right: 8px !important;
 }
 
-/* Typing indicator */
+/* Typing indicator - hide default n8n dots, replaced by custom status indicator */
 #n8n-chat .chat-message-typing {
-    color: var(--chat--color-typing);
+    display: none !important;
+}
+
+/* Custom Atlas typing indicator */
+.atlas-typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.875rem 1.125rem;
+    background: var(--chat--color-white);
+    border: 1px solid #e5e7eb;
+    border-radius: 1.125rem;
+    max-width: 280px;
+    margin-bottom: 1rem;
+}
+
+/* Small animated bars - data processing visualization */
+.atlas-typing-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.atlas-typing-bars span {
+    display: block;
+    width: 3px;
+    background: var(--chat--color-primary);
+    border-radius: 1px;
+    animation: atlas-bar-pulse 1.2s ease-in-out infinite;
+}
+
+.atlas-typing-bars span:nth-child(1) { height: 6px; animation-delay: 0s; }
+.atlas-typing-bars span:nth-child(2) { height: 10px; animation-delay: 0.15s; }
+.atlas-typing-bars span:nth-child(3) { height: 14px; animation-delay: 0.3s; }
+.atlas-typing-bars span:nth-child(4) { height: 8px; animation-delay: 0.45s; }
+
+@keyframes atlas-bar-pulse {
+    0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+    50% { opacity: 1; transform: scaleY(1); }
+}
+
+/* Rotating status text */
+.atlas-typing-text {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    font-style: italic;
+    animation: atlas-text-fade 3s ease-in-out infinite;
+}
+
+@keyframes atlas-text-fade {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
 }
 
 /* Scroll offset for section headers (account for sticky navbar) */
