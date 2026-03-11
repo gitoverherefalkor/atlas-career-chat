@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, LogOut, Settings, Play, MessageSquare, Clock, FileText, Download, Briefcase, Search, PlusCircle } from 'lucide-react';
+import { Loader2, LogOut, Settings, Play, MessageSquare, FileText, Download, Briefcase, Search, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -133,7 +133,7 @@ const Dashboard = () => {
     return savedSession?.isVerified || savedSession?.accessCodeData || hasMeaningfulProgress() || hasReport || hasChatSession;
   };
 
-  if (authLoading || profileLoading) {
+  if (authLoading || profileLoading || reportsLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -146,11 +146,18 @@ const Dashboard = () => {
     return null;
   }
 
-  const displayName = profile?.first_name && profile?.last_name 
+  const latestReport = getLatestReport();
+
+  // Redirect to the processing page if report is still being generated
+  // That page has a better UX for waiting (timer, progress steps, etc.)
+  if (latestReport && latestReport.status === 'processing') {
+    navigate('/report-processing');
+    return null;
+  }
+
+  const displayName = profile?.first_name && profile?.last_name
     ? `${profile.first_name} ${profile.last_name}`
     : profile?.email || user.email;
-
-  const latestReport = getLatestReport();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -252,8 +259,8 @@ const Dashboard = () => {
               </div>
             )}
 
-            {/* Continue Assessment Card - Only show if there's meaningful progress */}
-            {hasMeaningfulProgress() && (
+            {/* Continue Assessment Card - Only show if there's meaningful progress AND no report exists */}
+            {hasMeaningfulProgress() && !latestReport && (
               <Card className="hover:shadow-lg transition-shadow cursor-pointer mb-8" onClick={() => navigate('/assessment')}>
                 <CardContent className="p-6">
                   <div className="flex items-center space-x-4">
@@ -329,25 +336,7 @@ const Dashboard = () => {
               );
             })()}
 
-            {/* Show processing message if report is still being generated */}
-            {latestReport.status === 'processing' && (
-              <Card className="mb-6 border-gray-200 bg-gray-50">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="bg-gray-100 p-3 rounded-full">
-                      <Clock className="h-6 w-6 text-gray-600 animate-pulse" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 mb-2">Your Report is Being Generated</h3>
-                      <p className="text-gray-700">
-                        Our AI is analyzing your survey responses and creating your personalized career assessment.
-                        This usually takes 5-10 minutes. You'll receive an email when it's ready.
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            {/* Note: 'processing' status redirects to /report-processing page */}
 
             {/* Only show full report if status is completed */}
             {latestReport.status === 'completed' && (
