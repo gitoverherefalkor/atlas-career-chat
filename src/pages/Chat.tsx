@@ -84,6 +84,40 @@ const Chat = () => {
     ];
   };
 
+  // Auto-expand textarea as user types, up to 8 lines
+  useEffect(() => {
+    if (!chatInitialized) return;
+    const chatContainer = document.getElementById('n8n-chat-container');
+    if (!chatContainer) return;
+
+    const LINE_HEIGHT = 22.5; // 15px font * 1.5 line-height
+    const PADDING = 32; // 1rem top + 1rem bottom
+    const MIN_HEIGHT = 56;
+    const MAX_HEIGHT = Math.round(LINE_HEIGHT * 8 + PADDING); // ~212px for 8 lines
+
+    const autoResize = (textarea: HTMLTextAreaElement) => {
+      textarea.style.height = 'auto';
+      const newHeight = Math.min(Math.max(textarea.scrollHeight, MIN_HEIGHT), MAX_HEIGHT);
+      textarea.style.height = `${newHeight}px`;
+    };
+
+    const attachListener = () => {
+      const textarea = chatContainer.querySelector('textarea') as HTMLTextAreaElement | null;
+      if (!textarea || textarea.dataset.autoResize) return;
+      textarea.dataset.autoResize = 'true';
+      textarea.addEventListener('input', () => autoResize(textarea));
+    };
+
+    // Attach immediately if textarea already exists
+    attachListener();
+
+    // Also watch for textarea being re-created by n8n
+    const observer = new MutationObserver(() => attachListener());
+    observer.observe(chatContainer, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [chatInitialized]);
+
   // Custom typing indicator - replaces n8n default dots with rotating status text
   useEffect(() => {
     if (!chatInitialized) return;
