@@ -118,113 +118,90 @@ const Chat = () => {
     return () => observer.disconnect();
   }, [chatInitialized]);
 
-  // Voice input - inject mic button and handle speech recognition
+  // Voice input - standalone mic button positioned over input area
   useEffect(() => {
     if (!chatInitialized) return;
 
-    // Check browser support
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return; // Gracefully hide on unsupported browsers
+    if (!SpeechRecognition) return;
 
     const chatContainer = document.getElementById('n8n-chat-container');
     if (!chatContainer) return;
 
-    let recognition: any = null;
-    let micButton: HTMLButtonElement | null = null;
+    // Create mic button as a direct child of chat container — fully outside n8n widget DOM
+    if (chatContainer.querySelector('.atlas-mic-button')) return;
+
+    const micButton = document.createElement('button');
+    micButton.type = 'button';
+    micButton.className = 'atlas-mic-button';
+    micButton.title = 'Voice input';
+    micButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`;
+    chatContainer.appendChild(micButton);
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
     let isListening = false;
+    let finalTranscript = '';
 
-    const createMicButton = () => {
-      // Inject into the controls container (same parent as send button) to avoid overlay blocking clicks
-      const controls = chatContainer.querySelector('.chat-inputs-controls')
-        || chatContainer.querySelector('.chat-input')
-        || chatContainer.querySelector('.chat-inputs');
-      if (!controls || controls.querySelector('.atlas-mic-button')) return;
+    recognition.onresult = (event: any) => {
+      const textarea = chatContainer.querySelector('textarea') as HTMLTextAreaElement | null;
+      if (!textarea) return;
 
-      micButton = document.createElement('button');
-      micButton.type = 'button';
-      micButton.className = 'atlas-mic-button';
-      micButton.title = 'Voice input';
-      micButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`;
-      // Insert before the send button so mic appears to its left
-      const sendButton = controls.querySelector('button:not(.atlas-mic-button)');
-      if (sendButton) {
-        controls.insertBefore(micButton, sendButton);
-      } else {
-        controls.appendChild(micButton);
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interim += event.results[i][0].transcript;
+        }
       }
 
-      // Set up speech recognition
-      recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = 'en-US';
-
-      let finalTranscript = '';
-
-      recognition.onresult = (event: any) => {
-        const textarea = chatContainer.querySelector('textarea') as HTMLTextAreaElement | null;
-        if (!textarea) return;
-
-        let interim = '';
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interim += event.results[i][0].transcript;
-          }
-        }
-
-        // Set value via native setter so React/n8n detects the change
-        const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
-        if (nativeSetter) {
-          nativeSetter.call(textarea, finalTranscript + interim);
-        } else {
-          textarea.value = finalTranscript + interim;
-        }
-        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-      };
-
-      recognition.onend = () => {
-        // Auto-restart if still in listening mode (recognition can timeout)
-        if (isListening) {
-          try { recognition.start(); } catch { /* ignore */ }
-        }
-      };
-
-      recognition.onerror = (event: any) => {
-        if (event.error === 'not-allowed') {
-          isListening = false;
-          micButton?.classList.remove('atlas-mic-active');
-        }
-      };
-
-      micButton.addEventListener('click', () => {
-        if (isListening) {
-          // Stop listening
-          isListening = false;
-          recognition.stop();
-          micButton?.classList.remove('atlas-mic-active');
-          finalTranscript = '';
-        } else {
-          // Start listening — prepend to existing text
-          const textarea = chatContainer.querySelector('textarea') as HTMLTextAreaElement | null;
-          const existingText = textarea?.value || '';
-          finalTranscript = existingText ? existingText + ' ' : '';
-          isListening = true;
-          micButton?.classList.add('atlas-mic-active');
-          try { recognition.start(); } catch { /* ignore */ }
-        }
-      });
+      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
+      if (nativeSetter) {
+        nativeSetter.call(textarea, finalTranscript + interim);
+      } else {
+        textarea.value = finalTranscript + interim;
+      }
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
     };
 
-    // Inject once the input area is ready
-    createMicButton();
-    const observer = new MutationObserver(() => createMicButton());
-    observer.observe(chatContainer, { childList: true, subtree: true });
+    recognition.onend = () => {
+      if (isListening) {
+        try { recognition.start(); } catch { /* ignore */ }
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      if (event.error === 'not-allowed') {
+        isListening = false;
+        micButton.classList.remove('atlas-mic-active');
+      }
+    };
+
+    micButton.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (isListening) {
+        isListening = false;
+        recognition.stop();
+        micButton.classList.remove('atlas-mic-active');
+        finalTranscript = '';
+      } else {
+        const textarea = chatContainer.querySelector('textarea') as HTMLTextAreaElement | null;
+        const existingText = textarea?.value || '';
+        finalTranscript = existingText ? existingText + ' ' : '';
+        isListening = true;
+        micButton.classList.add('atlas-mic-active');
+        recognition.start();
+      }
+    });
 
     return () => {
-      observer.disconnect();
-      if (recognition) { try { recognition.stop(); } catch { /* ignore */ } }
+      try { recognition.stop(); } catch { /* ignore */ }
+      micButton.remove();
     };
   }, [chatInitialized]);
 
