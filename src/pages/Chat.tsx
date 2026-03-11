@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import DOMPurify from 'dompurify';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -9,22 +8,27 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, ArrowLeft, MessageSquare, LayoutDashboard, RefreshCw } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
-import '@n8n/chat/style.css';
-import '@/styles/n8n-chat.css';
-import { createChat } from '@n8n/chat';
 import { WelcomeCard } from '@/components/chat/WelcomeCard';
 import { WelcomeBackCard } from '@/components/chat/WelcomeBackCard';
 import { ClosingCard } from '@/components/chat/ClosingCard';
 import { ReportSidebar, ALL_SECTIONS } from '@/components/chat/ReportSidebar';
+import { ChatContainer } from '@/components/chat/ChatContainer';
+import type { ChatMessagesHandle } from '@/components/chat/ChatMessages';
+
+// ========================================================================
+// OLD N8N IMPORTS (preserved, no longer used)
+// import DOMPurify from 'dompurify';
+// import '@n8n/chat/style.css';
+// import '@/styles/n8n-chat.css';
+// import { createChat } from '@n8n/chat';
+// ========================================================================
 
 type ReportData = Tables<'reports'>;
 
 const Chat = () => {
-  // Check for existing session immediately to avoid flash
-  // n8n stores sessionId under 'n8n-chat/sessionId' key
+  // Session management — same localStorage keys as n8n for backward compatibility
   const hasExistingSession = localStorage.getItem('n8n-chat/sessionId') !== null;
 
-  // Check if session is stale (older than 72 hours)
   const getSessionTimestamp = () => {
     const timestamp = localStorage.getItem('n8n-chat/sessionTimestamp');
     return timestamp ? parseInt(timestamp) : null;
@@ -39,365 +43,68 @@ const Chat = () => {
 
   const sessionIsStale = hasExistingSession && isSessionStale();
 
-
+  // Core state
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [showWelcome, setShowWelcome] = useState(!hasExistingSession || sessionIsStale);
   const [showClosing, setShowClosing] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
-  const [chatInitialized, setChatInitialized] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(-1); // -1 = not started
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(-1);
   const [showSessionBanner, setShowSessionBanner] = useState(false);
-  const [isSessionCompleted, setIsSessionCompleted] = useState(false); // True when edge function marks complete
-  const chatInitRef = useRef(false); // Ref to prevent double initialization
+  const [isSessionCompleted, setIsSessionCompleted] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(
+    localStorage.getItem('n8n-chat/sessionId')
+  );
+
+  const chatMessagesRef = useRef<ChatMessagesHandle>(null);
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Load report on auth ready
   useEffect(() => {
     if (!authLoading) {
       loadUserReport();
     }
   }, [authLoading, user]);
 
-  // Phase-aware status messages for the typing indicator
-  const getStatusMessages = (sectionIndex: number): string[] => {
-    // Career sections (index 4+)
-    if (sectionIndex >= 4) {
-      return [
-        'Querying career database',
-        'Analyzing career compatibility',
-        'Matching role profiles',
-        'Processing recommendations',
-        'Preparing career insights',
-      ];
+  // Auto-restore session when returning with existing (non-stale) session
+  useEffect(() => {
+    if (!reportData || profileLoading || !profile) return;
+    if (!hasExistingSession || sessionIsStale) return;
+    if (!showWelcome) return; // Already past welcome
+
+    // Update session timestamp
+    localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
+
+    // Restore section progress
+    const storedIndex = localStorage.getItem(`chat_section_index_${reportData.id}`);
+    if (storedIndex) {
+      const index = parseInt(storedIndex, 10);
+      if (!isNaN(index)) {
+        setCurrentSectionIndex(index);
+      }
     }
-    // Personality sections (index 0-3) or not started yet
-    return [
-      'Retrieving profile data',
-      'Parsing assessment results',
-      'Analyzing personality insights',
-      'Preparing your section',
-      'Processing your input',
-    ];
-  };
 
-  // Auto-expand textarea as user types, up to 8 lines
-  useEffect(() => {
-    if (!chatInitialized) return;
-    const chatContainer = document.getElementById('n8n-chat-container');
-    if (!chatContainer) return;
+    // Show session restored banner
+    setShowSessionBanner(true);
+    setTimeout(() => setShowSessionBanner(false), 5000);
 
-    const LINE_HEIGHT = 22.5; // 15px font * 1.5 line-height
-    const PADDING = 32; // 1rem top + 1rem bottom
-    const MIN_HEIGHT = 56;
-    const MAX_HEIGHT = Math.round(LINE_HEIGHT * 8 + PADDING); // ~212px for 8 lines
+    // Go straight to chat (skip welcome)
+    setShowWelcome(false);
+  }, [reportData, profileLoading]);
 
-    const autoResize = (textarea: HTMLTextAreaElement) => {
-      textarea.style.setProperty('height', 'auto', 'important');
-      const newHeight = Math.min(Math.max(textarea.scrollHeight, MIN_HEIGHT), MAX_HEIGHT);
-      textarea.style.setProperty('height', `${newHeight}px`, 'important');
-    };
-
-    const attachListener = () => {
-      const textarea = chatContainer.querySelector('textarea') as HTMLTextAreaElement | null;
-      if (!textarea || textarea.dataset.autoResize) return;
-      textarea.dataset.autoResize = 'true';
-      textarea.addEventListener('input', () => autoResize(textarea));
-    };
-
-    // Attach immediately if textarea already exists
-    attachListener();
-
-    // Also watch for textarea being re-created by n8n
-    const observer = new MutationObserver(() => attachListener());
-    observer.observe(chatContainer, { childList: true, subtree: true });
-
-    return () => observer.disconnect();
-  }, [chatInitialized]);
-
-  // Voice input - standalone mic button positioned over input area
-  useEffect(() => {
-    if (!chatInitialized) return;
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) return;
-
-    const chatContainer = document.getElementById('n8n-chat-container');
-    if (!chatContainer) return;
-
-    // Create mic button as a direct child of chat container — fully outside n8n widget DOM
-    if (chatContainer.querySelector('.atlas-mic-button')) return;
-
-    const micButton = document.createElement('button');
-    micButton.type = 'button';
-    micButton.className = 'atlas-mic-button';
-    micButton.title = 'Voice input';
-    micButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>`;
-    chatContainer.appendChild(micButton);
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    let isListening = false;
-    let finalTranscript = '';
-
-    recognition.onresult = (event: any) => {
-      const textarea = chatContainer.querySelector('textarea') as HTMLTextAreaElement | null;
-      if (!textarea) return;
-
-      let interim = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalTranscript += event.results[i][0].transcript;
-        } else {
-          interim += event.results[i][0].transcript;
-        }
-      }
-
-      const nativeSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value')?.set;
-      if (nativeSetter) {
-        nativeSetter.call(textarea, finalTranscript + interim);
-      } else {
-        textarea.value = finalTranscript + interim;
-      }
-      textarea.dispatchEvent(new Event('input', { bubbles: true }));
-    };
-
-    recognition.onend = () => {
-      if (isListening) {
-        try { recognition.start(); } catch { /* ignore */ }
-      }
-    };
-
-    recognition.onerror = (event: any) => {
-      if (event.error === 'not-allowed') {
-        isListening = false;
-        micButton.classList.remove('atlas-mic-active');
-      }
-    };
-
-    micButton.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (isListening) {
-        isListening = false;
-        recognition.stop();
-        micButton.classList.remove('atlas-mic-active');
-        finalTranscript = '';
-      } else {
-        const textarea = chatContainer.querySelector('textarea') as HTMLTextAreaElement | null;
-        const existingText = textarea?.value || '';
-        finalTranscript = existingText ? existingText + ' ' : '';
-        isListening = true;
-        micButton.classList.add('atlas-mic-active');
-        recognition.start();
-      }
-    });
-
-    return () => {
-      try { recognition.stop(); } catch { /* ignore */ }
-      micButton.remove();
-    };
-  }, [chatInitialized]);
-
-  // Custom typing indicator - replaces n8n default dots with rotating status text
-  useEffect(() => {
-    if (!chatInitialized) return;
-
-    const chatContainer = document.getElementById('n8n-chat-container');
-    if (!chatContainer) return;
-
-    let customIndicator: HTMLDivElement | null = null;
-    let rotationInterval: ReturnType<typeof setInterval> | null = null;
-    let messageIndex = 0;
-
-    const createCustomIndicator = () => {
-      if (customIndicator) return; // Already exists
-
-      const messages = getStatusMessages(currentSectionIndex);
-      messageIndex = 0;
-
-      customIndicator = document.createElement('div');
-      customIndicator.className = 'atlas-typing-indicator';
-      customIndicator.innerHTML = `
-        <div class="atlas-typing-bars">
-          <span></span><span></span><span></span><span></span>
-        </div>
-        <span class="atlas-typing-text">${messages[0]}</span>
-      `;
-
-      // Insert into chat messages list
-      const messagesList = chatContainer.querySelector('.chat-messages-list');
-      if (messagesList) {
-        messagesList.appendChild(customIndicator);
-        // Scroll to bottom
-        const scrollContainer = messagesList.closest('.chat-messages') || messagesList.parentElement;
-        if (scrollContainer) {
-          scrollContainer.scrollTop = scrollContainer.scrollHeight;
-        }
-      }
-
-      // Rotate messages every 3 seconds
-      rotationInterval = setInterval(() => {
-        messageIndex = (messageIndex + 1) % messages.length;
-        const textEl = customIndicator?.querySelector('.atlas-typing-text');
-        if (textEl) {
-          textEl.textContent = messages[messageIndex];
-        }
-      }, 3000);
-    };
-
-    const removeCustomIndicator = () => {
-      if (rotationInterval) {
-        clearInterval(rotationInterval);
-        rotationInterval = null;
-      }
-      if (customIndicator) {
-        customIndicator.remove();
-        customIndicator = null;
-      }
-    };
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        // Check for typing indicator being added
-        mutation.addedNodes.forEach((node) => {
-          if (node instanceof Element) {
-            if (node.classList?.contains('chat-message-typing') ||
-                node.querySelector?.('.chat-message-typing')) {
-              createCustomIndicator();
-            }
-          }
-        });
-
-        // Check for typing indicator being removed
-        mutation.removedNodes.forEach((node) => {
-          if (node instanceof Element) {
-            if (node.classList?.contains('chat-message-typing') ||
-                node.querySelector?.('.chat-message-typing')) {
-              removeCustomIndicator();
-            }
-          }
-        });
-      });
-    });
-
-    observer.observe(chatContainer, { childList: true, subtree: true });
-
-    return () => {
-      observer.disconnect();
-      removeCustomIndicator();
-    };
-  }, [chatInitialized, currentSectionIndex]);
-
-  // MutationObserver to convert escaped HTML tags in chat messages to actual HTML
-  useEffect(() => {
-    if (!chatInitialized) return;
-
-    const convertHtmlTags = (element: Element) => {
-      // Find all text nodes that might contain HTML-like patterns
-      const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
-      const textNodes: Text[] = [];
-      let node;
-      while ((node = walker.nextNode())) {
-        if (node.textContent && /<[hH][3-6]>|<\/?strong>|<\/?em>/i.test(node.textContent)) {
-          textNodes.push(node as Text);
-        }
-      }
-
-      textNodes.forEach(textNode => {
-        const text = textNode.textContent || '';
-        // Convert HTML tag text to actual HTML
-        const converted = text
-          .replace(/<h3>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h3>/gi, '<h3 class="text-lg font-bold mt-4 mb-2 text-atlas-navy">$1</h3>')
-          .replace(/<h4>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h4>/gi, '<h4 class="text-base font-semibold mt-3 mb-1 text-atlas-blue">$1</h4>')
-          .replace(/<h5>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h5>/gi, '<h5 class="text-sm font-semibold mt-2 mb-1 text-gray-700">$1</h5>')
-          .replace(/<strong>(.*?)<\/strong>/gi, '<strong class="font-semibold">$1</strong>')
-          .replace(/<em>(.*?)<\/em>/gi, '<em>$1</em>');
-
-        if (converted !== text) {
-          const wrapper = document.createElement('span');
-          wrapper.innerHTML = DOMPurify.sanitize(converted, {
-            ALLOWED_TAGS: ['h3', 'h4', 'h5', 'strong', 'em', 'span'],
-            ALLOWED_ATTR: ['class']
-          });
-          textNode.parentNode?.replaceChild(wrapper, textNode);
-        }
-      });
-    };
-
-    const chatContainer = document.getElementById('n8n-chat-container');
-    if (!chatContainer) return;
-
-    // Process existing messages
-    chatContainer.querySelectorAll('.chat-message-markdown').forEach(convertHtmlTags);
-
-    // Watch for new messages
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          if (node instanceof Element) {
-            const messages = node.querySelectorAll('.chat-message-markdown');
-            if (messages.length > 0) {
-              messages.forEach(convertHtmlTags);
-            } else if (node.classList?.contains('chat-message-markdown')) {
-              convertHtmlTags(node);
-            }
-          }
-        });
-      });
-    });
-
-    observer.observe(chatContainer, { childList: true, subtree: true });
-
-    return () => observer.disconnect();
-  }, [chatInitialized]);
-
-  // Auto-initialize chat when returning with existing session (only if not stale)
-  useEffect(() => {
-    // Use ref to prevent multiple initializations (ref updates immediately, state doesn't)
-    if (chatInitRef.current || chatInitialized) return;
-
-    if (reportData && !profileLoading && profile && hasExistingSession && !sessionIsStale) {
-
-      // Update session timestamp
-      localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
-
-      // Restore section progress
-      const storedIndex = localStorage.getItem(`chat_section_index_${reportData.id}`);
-      if (storedIndex) {
-        const index = parseInt(storedIndex, 10);
-        if (!isNaN(index)) {
-          setCurrentSectionIndex(index);
-        }
-      }
-
-      // Show session restored banner
-      setShowSessionBanner(true);
-      // Auto-hide banner after 5 seconds
-      setTimeout(() => setShowSessionBanner(false), 5000);
-
-      // Initialize chat automatically (ref is set inside initializeChat)
-      initializeChat();
-    }
-  }, [reportData, profileLoading, chatInitialized, hasExistingSession]);
-
-  // Subscribe to report status changes via Supabase Realtime (replaces 3s polling)
-  // NOTE: Requires Realtime to be enabled on the 'reports' table in Supabase dashboard.
+  // Subscribe to report status changes via Supabase Realtime
   useEffect(() => {
     if (!reportData?.id) return;
     if (isSessionCompleted) return;
 
-    // Only subscribe when at or past the last section
     const isAtLastSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     if (!isAtLastSection) return;
 
-    // One-time check in case status changed before we subscribed
+    // One-time check
     const checkOnce = async () => {
       const { data, error } = await supabase
         .from('reports')
@@ -411,7 +118,7 @@ const Chat = () => {
     };
     checkOnce();
 
-    // Subscribe to realtime updates on this specific report
+    // Realtime subscription
     const channel = supabase
       .channel(`report-status-${reportData.id}`)
       .on(
@@ -435,65 +142,14 @@ const Chat = () => {
     };
   }, [reportData?.id, currentSectionIndex, isSessionCompleted]);
 
-  const initializeChat = () => {
-    // Prevent double initialization
-    if (chatInitialized || chatInitRef.current) {
-      return;
+  // Save section progress to localStorage
+  useEffect(() => {
+    if (reportData && currentSectionIndex >= 0) {
+      localStorage.setItem(`chat_section_index_${reportData.id}`, currentSectionIndex.toString());
     }
+  }, [currentSectionIndex, reportData]);
 
-    if (!reportData) {
-      console.error('Cannot initialize chat: reportData is null');
-      return;
-    }
-
-    const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL;
-    if (!chatWebhookUrl) {
-      console.error('Chat webhook URL not configured');
-      toast({
-        title: "Configuration Error",
-        description: "Chat is not properly configured. Please contact support.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Mark as initializing immediately
-    chatInitRef.current = true;
-
-    // Small delay to ensure DOM is ready
-    setTimeout(() => {
-      createChat({
-        webhookUrl: chatWebhookUrl,
-        mode: 'fullscreen',
-        target: '#n8n-chat-container',
-        chatSessionKey: 'n8n-chat/sessionId',
-        metadata: {
-          report_id: reportData.id,
-          first_name: profile?.first_name || '',
-          country: profile?.country || '',
-        },
-        initialMessages: [
-          'Chat is ready! 👋',
-          'Say hi to get started'
-        ],
-        i18n: {
-          en: {
-            title: 'Atlas Career Coach',
-            subtitle: 'Discuss your personalized career assessment',
-            footer: '',
-            getStarted: 'Start Chatting',
-            inputPlaceholder: 'Type here',
-          },
-        },
-        showWelcomeScreen: false,
-        loadPreviousSession: true,
-        enableStreaming: false,
-      });
-
-      setChatInitialized(true);
-    }, 100); // Reduced delay - just enough for DOM
-  };
-
+  // Start a new or continued chat session
   const handleStartSession = () => {
     if (profileLoading || !profile) {
       toast({
@@ -503,201 +159,35 @@ const Chat = () => {
       return;
     }
 
-    // Update session timestamp
+    // Generate or reuse session ID
+    let sid = localStorage.getItem('n8n-chat/sessionId');
+    if (!sid || sessionIsStale) {
+      sid = crypto.randomUUID();
+      localStorage.setItem('n8n-chat/sessionId', sid);
+    }
     localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
 
+    setSessionId(sid);
     setIsInitializing(true);
     setShowWelcome(false);
-    initializeChat();
     setIsInitializing(false);
   };
 
-  // Determine if this is a returning user with stale/expired session
+  // Section click handler — uses ref to scroll within custom chat
+  const handleSectionClick = (sectionId: string, _index: number) => {
+    chatMessagesRef.current?.scrollToSection(sectionId);
+  };
+
+  // Handle section detected from bot messages — only goes forward
+  const handleSectionDetected = (index: number) => {
+    setCurrentSectionIndex((prev) => Math.max(prev, index));
+  };
+
+  // Determine returning user state
   const storedProgressIndex = reportData
     ? parseInt(localStorage.getItem(`chat_section_index_${reportData.id}`) || '-1', 10)
     : -1;
   const isReturningUser = sessionIsStale && storedProgressIndex >= 0;
-
-  // Save section progress to localStorage whenever it changes
-  useEffect(() => {
-    if (reportData && currentSectionIndex >= 0) {
-      localStorage.setItem(`chat_section_index_${reportData.id}`, currentSectionIndex.toString());
-    }
-  }, [currentSectionIndex, reportData]);
-
-  // Store messages in localStorage for session persistence
-  const storeMessage = (message: { text: string; sender: 'user' | 'bot'; timestamp: number }) => {
-    if (!reportData) return;
-
-    const sessionId = localStorage.getItem('n8n-chat/sessionId');
-    if (!sessionId) return;
-
-    const storageKey = `chat_messages_${sessionId}`;
-    const existing = localStorage.getItem(storageKey);
-    const messages = existing ? JSON.parse(existing) : [];
-    messages.push(message);
-    localStorage.setItem(storageKey, JSON.stringify(messages));
-  };
-
-  // Load and display previous messages
-  const loadPreviousMessages = () => {
-    const sessionId = localStorage.getItem('n8n-chat/sessionId');
-    if (!sessionId) return;
-
-    const storageKey = `chat_messages_${sessionId}`;
-    const stored = localStorage.getItem(storageKey);
-    if (!stored) return;
-
-    try {
-      const messages = JSON.parse(stored);
-      // Messages will be rendered by n8n widget through loadPreviousSession
-      return messages;
-    } catch (e) {
-      console.error('Failed to load messages:', e);
-      return [];
-    }
-  };
-
-  // Watch for new chat messages and detect section headers
-  useEffect(() => {
-    if (!chatInitialized) return;
-
-    const chatContainer = document.querySelector('#n8n-chat-container');
-    if (!chatContainer) {
-      return;
-    }
-
-    // Helper to find which section a title matches
-    const findSectionIndex = (text: string): number => {
-      const lowerText = text.toLowerCase().trim();
-      return ALL_SECTIONS.findIndex(section => {
-        // Check main title
-        if (lowerText.includes(section.title.toLowerCase())) return true;
-        // Check alternative titles (what the agent might output)
-        if (section.altTitles.some(alt => lowerText.includes(alt))) return true;
-        // Check section id
-        if (lowerText.includes(section.id.replace(/-/g, ' '))) return true;
-        return false;
-      });
-    };
-
-    // Scan for section headers in a message (only h3 elements from ### markdown)
-    const scanForSections = (element: Element) => {
-      const messageText = element.textContent?.trim() || '';
-
-      // Legacy: Check for session completion via text (fallback)
-      // Primary method is now via Supabase realtime subscription on report status
-      if (messageText.includes('SESSION_COMPLETE')) {
-        setShowClosing(true);
-        return;
-      }
-
-      // Only look for h3 elements (rendered from ### markdown)
-      const h3Elements = element.querySelectorAll('h3');
-
-      h3Elements.forEach((h3) => {
-        const title = h3.textContent?.trim();
-        if (!title) return;
-
-        const sectionIndex = findSectionIndex(title);
-        if (sectionIndex >= 0) {
-          setCurrentSectionIndex(prev => Math.max(prev, sectionIndex));
-        }
-      });
-    };
-
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        mutation.addedNodes.forEach((node) => {
-          if (node.nodeType !== Node.ELEMENT_NODE) return;
-          const element = node as Element;
-
-          // Check bot messages
-          if (element.classList.contains('chat-message-from-bot') ||
-              element.querySelector('.chat-message-from-bot')) {
-            const messages = element.classList.contains('chat-message-from-bot')
-              ? [element]
-              : Array.from(element.querySelectorAll('.chat-message-from-bot'));
-
-            messages.forEach(scanForSections);
-          }
-
-          // Also scan any chat-message element
-          if (element.classList.contains('chat-message')) {
-            scanForSections(element);
-          }
-        });
-      });
-    });
-
-    observer.observe(chatContainer, {
-      childList: true,
-      subtree: true,
-    });
-
-    // Initial scan of existing messages
-    setTimeout(() => {
-      const existingMessages = chatContainer.querySelectorAll('.chat-message-from-bot, .chat-message-markdown');
-      existingMessages.forEach(scanForSections);
-    }, 1500);
-
-    return () => observer.disconnect();
-  }, [chatInitialized]);
-
-  // Disable chat input when session is completed
-  useEffect(() => {
-    if (!isSessionCompleted) return;
-
-    // Hide the chat footer/input
-    const chatFooter = document.querySelector('.chat-footer');
-    if (chatFooter) {
-      (chatFooter as HTMLElement).style.display = 'none';
-    }
-
-    // Also try to disable the textarea directly
-    const textarea = document.querySelector('#n8n-chat textarea');
-    if (textarea) {
-      (textarea as HTMLTextAreaElement).disabled = true;
-      (textarea as HTMLTextAreaElement).placeholder = 'Session completed - click "Complete Session" to view your report';
-    }
-  }, [isSessionCompleted]);
-
-  const handleSectionClick = (sectionId: string, index: number) => {
-    // Find the section from ALL_SECTIONS
-    const section = ALL_SECTIONS.find(s => s.id === sectionId);
-    if (!section) return;
-
-    // Build list of terms to search for
-    const searchTerms = [
-      section.title.toLowerCase(),
-      ...section.altTitles,
-      sectionId.replace(/-/g, ' ')
-    ];
-
-    // First try to find h3 elements directly (most accurate)
-    const allH3s = document.querySelectorAll('#n8n-chat-container h3');
-    for (const h3 of allH3s) {
-      const h3Text = h3.textContent?.toLowerCase() || '';
-
-      // Match against any of the search terms
-      if (searchTerms.some(term => h3Text.includes(term))) {
-        h3.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        return;
-      }
-    }
-
-    // Fallback: search through bot messages
-    const messages = document.querySelectorAll('.chat-message-from-bot');
-    for (const message of messages) {
-      const text = message.textContent?.toLowerCase() || '';
-
-      if (searchTerms.some(term => text.includes(term))) {
-        message.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        break;
-      }
-    }
-  };
-
 
   const loadUserReport = async () => {
     if (!user) {
@@ -745,6 +235,7 @@ const Chat = () => {
     }
   };
 
+  // Loading states
   if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -778,7 +269,7 @@ const Chat = () => {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      {/* Clean Header - Homepage Style */}
+      {/* Header */}
       <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
         <div className="container-atlas">
           <div className="flex justify-between items-center py-4">
@@ -826,8 +317,8 @@ const Chat = () => {
         </div>
       ) : (
         <div className="flex-1 flex relative">
-          {/* Chat Area - scrollable, with right margin for fixed sidebar */}
-          <div className={`flex-1 flex flex-col bg-gray-50 overflow-y-auto transition-all ${isSidebarCollapsed ? 'mr-12' : 'mr-72'}`}>
+          {/* Chat Area */}
+          <div className={`flex-1 flex flex-col bg-gray-50 transition-all ${isSidebarCollapsed ? 'mr-12' : 'mr-72'}`}>
             {/* Session Restored Banner */}
             {showSessionBanner && (
               <div className="bg-atlas-teal/10 border-b border-atlas-teal/20 px-4 py-2 flex items-center justify-center gap-2 text-sm text-atlas-navy">
@@ -837,14 +328,30 @@ const Chat = () => {
                   onClick={() => setShowSessionBanner(false)}
                   className="ml-2 text-gray-400 hover:text-gray-600"
                 >
-                  ×
+                  x
                 </button>
               </div>
             )}
-            <div id="n8n-chat-container" className="flex-1"></div>
+
+            {/* Custom Chat — replaces n8n widget */}
+            {sessionId && user && (
+              <ChatContainer
+                ref={chatMessagesRef}
+                reportId={reportData.id}
+                userId={user.id}
+                sessionId={sessionId}
+                firstName={profile?.first_name || ''}
+                country={profile?.country || ''}
+                currentSectionIndex={currentSectionIndex}
+                onSectionDetected={handleSectionDetected}
+                onSessionComplete={() => setShowClosing(true)}
+                isSessionCompleted={isSessionCompleted}
+                isSidebarCollapsed={isSidebarCollapsed}
+              />
+            )}
           </div>
 
-          {/* Report Sidebar - fixed position */}
+          {/* Report Sidebar */}
           <ReportSidebar
             currentSectionIndex={currentSectionIndex}
             isCollapsed={isSidebarCollapsed}
@@ -860,3 +367,19 @@ const Chat = () => {
 };
 
 export default Chat;
+
+// ========================================================================
+// OLD N8N CHAT CODE (preserved for rollback reference)
+//
+// The following code was replaced by the custom chat implementation above.
+// It used the @n8n/chat widget with MutationObservers for:
+// - Auto-expand textarea
+// - Voice input (mic button injection)
+// - Custom typing indicator
+// - HTML tag conversion
+// - Section detection
+// - Disable input on session complete
+//
+// The original file is preserved in git history at commit 1f6acc7
+// To restore: git checkout 1f6acc7 -- src/pages/Chat.tsx
+// ========================================================================

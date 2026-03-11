@@ -1,0 +1,99 @@
+import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
+import { ChatMessage } from './ChatMessage';
+import { TypingIndicator } from './TypingIndicator';
+import { Loader2 } from 'lucide-react';
+import type { ChatMessage as ChatMessageType } from '@/hooks/useChatMessages';
+
+export interface ChatMessagesHandle {
+  scrollToSection: (sectionId: string) => void;
+}
+
+interface ChatMessagesProps {
+  messages: ChatMessageType[];
+  isLoading: boolean;
+  isWaitingForResponse: boolean;
+  currentSectionIndex: number;
+  onSectionDetected: (index: number) => void;
+}
+
+export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
+  ({ messages, isLoading, isWaitingForResponse, currentSectionIndex, onSectionDetected }, ref) => {
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+    const bottomRef = useRef<HTMLDivElement>(null);
+    const isUserScrolledUpRef = useRef(false);
+
+    // Track if user has scrolled up (to disable auto-scroll)
+    const handleScroll = useCallback(() => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      const threshold = 100; // px from bottom
+      isUserScrolledUpRef.current =
+        container.scrollTop + container.clientHeight < container.scrollHeight - threshold;
+    }, []);
+
+    // Auto-scroll to bottom when new messages arrive (unless user scrolled up)
+    useEffect(() => {
+      if (!isUserScrolledUpRef.current) {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, [messages.length, isWaitingForResponse]);
+
+    // Expose scrollToSection for sidebar navigation
+    useImperativeHandle(ref, () => ({
+      scrollToSection: (sectionId: string) => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+        const heading = container.querySelector(`[data-section-id="${sectionId}"]`);
+        if (heading) {
+          heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      },
+    }));
+
+    if (isLoading) {
+      return (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="flex items-center gap-3 text-gray-400">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span className="text-sm">Loading conversation...</span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 overflow-y-auto"
+      >
+        <div className="max-w-[800px] mx-auto px-6 pt-8 pb-[140px]">
+          {messages.length === 0 && !isWaitingForResponse && (
+            <div className="text-center text-gray-400 text-sm py-12">
+              Send a message to start your session
+            </div>
+          )}
+
+          {messages.map((msg) => (
+            <ChatMessage
+              key={msg.id}
+              content={msg.content}
+              sender={msg.sender}
+              onSectionDetected={onSectionDetected}
+            />
+          ))}
+
+          <TypingIndicator
+            currentSectionIndex={currentSectionIndex}
+            isVisible={isWaitingForResponse}
+          />
+
+          {/* Invisible anchor for auto-scrolling */}
+          <div ref={bottomRef} />
+        </div>
+      </div>
+    );
+  }
+);
+
+ChatMessages.displayName = 'ChatMessages';
