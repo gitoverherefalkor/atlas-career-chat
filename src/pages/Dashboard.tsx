@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, LogOut, Settings, Play, MessageSquare, FileText, Download, Briefcase, Search, PlusCircle } from 'lucide-react';
+import { Loader2, LogOut, Settings, Play, FileText, Download, Briefcase, Search, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -155,6 +155,13 @@ const Dashboard = () => {
     return null;
   }
 
+  // Redirect to chat if report is ready for review — no reason to show
+  // a near-empty dashboard when the user should be in the chat
+  if (latestReport && latestReport.status === 'pending_review') {
+    navigate('/chat');
+    return null;
+  }
+
   const displayName = profile?.first_name && profile?.last_name
     ? `${profile.first_name} ${profile.last_name}`
     : profile?.email || user.email;
@@ -301,42 +308,7 @@ const Dashboard = () => {
         {/* Report Display or Preview */}
         {latestReport ? (
           <>
-            {/* Show pending review message if report is not completed */}
-            {latestReport.status === 'pending_review' && (() => {
-              const hasExistingSession = localStorage.getItem('n8n-chat/sessionId');
-
-              return (
-                <Card className="mb-6 border-blue-200 bg-blue-50">
-                  <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
-                      <div className="bg-blue-100 p-3 rounded-full">
-                        <MessageSquare className="h-6 w-6 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-blue-900 mb-2">
-                          {hasExistingSession ? 'Continue Your Career Chat' : 'Your Report is Ready for Review!'}
-                        </h3>
-                        <p className="text-blue-800 mb-4">
-                          {hasExistingSession
-                            ? 'Pick up where you left off in your career coaching conversation.'
-                            : 'Your personalized career assessment has been generated. To unlock your final report, complete a brief conversation with our AI to refine and personalize your insights based on your feedback.'
-                          }
-                        </p>
-                        <Button
-                          onClick={() => navigate('/chat')}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          {hasExistingSession ? 'Continue Chat' : 'Start AI Chat to Unlock Report'}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })()}
-
-            {/* Note: 'processing' status redirects to /report-processing page */}
+            {/* Note: 'processing' redirects to /report-processing, 'pending_review' redirects to /chat */}
 
             {/* Only show full report if status is completed */}
             {latestReport.status === 'completed' && (
