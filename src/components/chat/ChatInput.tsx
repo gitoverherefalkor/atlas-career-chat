@@ -43,9 +43,23 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     autoResize();
   }, [text, autoResize]);
 
+  // Stop mic recording (shared by send + mic toggle)
+  const stopListening = () => {
+    recognitionRef.current?.stop();
+    setIsListening(false);
+    isListeningRef.current = false;
+    finalTranscriptRef.current = '';
+  };
+
   const handleSend = () => {
     const trimmed = text.trim();
     if (!trimmed || disabled) return;
+
+    // Auto-stop mic when sending
+    if (isListening) {
+      stopListening();
+    }
+
     onSend(trimmed);
     setText('');
     // Reset textarea height
@@ -74,12 +88,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
 
     if (isListening) {
-      // Stop
       console.log('[Mic] Stopping recognition');
-      recognitionRef.current?.stop();
-      setIsListening(false);
-      isListeningRef.current = false;
-      finalTranscriptRef.current = '';
+      stopListening();
       return;
     }
 

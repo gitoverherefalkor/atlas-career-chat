@@ -125,7 +125,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     <div className="flex justify-start mb-4">
       <div
         ref={messageRef}
-        className="max-w-[75%] bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[0.9375rem] leading-relaxed text-gray-700"
+        className="max-w-[85%] bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[0.9375rem] leading-relaxed text-gray-700"
       >
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
