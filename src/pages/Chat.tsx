@@ -96,9 +96,9 @@ const Chat = () => {
     const MAX_HEIGHT = Math.round(LINE_HEIGHT * 8 + PADDING); // ~212px for 8 lines
 
     const autoResize = (textarea: HTMLTextAreaElement) => {
-      textarea.style.height = 'auto';
+      textarea.style.setProperty('height', 'auto', 'important');
       const newHeight = Math.min(Math.max(textarea.scrollHeight, MIN_HEIGHT), MAX_HEIGHT);
-      textarea.style.height = `${newHeight}px`;
+      textarea.style.setProperty('height', `${newHeight}px`, 'important');
     };
 
     const attachListener = () => {

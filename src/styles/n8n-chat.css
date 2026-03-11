@@ -177,7 +177,7 @@ textarea[data-test-id="chat-input"],
 .chat-input textarea,
 #n8n-chat textarea {
     width: 100% !important;
-    height: auto !important;
+    height: auto; /* no !important — JS auto-resize sets inline height */
     min-height: 56px !important;
     max-height: 212px !important; /* 8 lines: 8 * 22.5px line + 32px padding */
     border-radius: 12px !important;
