@@ -198,7 +198,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full bg-white border border-gray-200 rounded-xl px-5 pr-[104px] py-4 text-[0.9375rem] leading-normal font-sans resize-none overflow-y-auto shadow-md focus:outline-none focus:border-atlas-teal focus:ring-2 focus:ring-atlas-teal/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-white border border-gray-200 rounded-xl px-5 pr-[104px] py-4 text-[0.9375rem] leading-normal font-sans resize-none overflow-y-hidden shadow-md focus:outline-none focus:border-atlas-teal focus:ring-2 focus:ring-atlas-teal/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             style={{ minHeight: MIN_HEIGHT, maxHeight: MAX_HEIGHT }}
           />
 
