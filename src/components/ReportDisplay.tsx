@@ -49,11 +49,14 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
     return grouped;
   }, [dbSections]);
 
+  // Strip HTML tags from a string
+  const stripHtml = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
+
   // Get the title for a career section from the database
   const getCareerTitle = (careerId: string): string => {
     const sections = groupedSections[careerId];
     if (sections && sections.length > 0 && sections[0].title) {
-      return sections[0].title;
+      return stripHtml(sections[0].title);
     }
     // Fallback titles
     const fallbackTitles: Record<string, string> = {

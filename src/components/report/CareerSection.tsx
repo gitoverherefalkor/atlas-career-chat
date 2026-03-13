@@ -28,6 +28,9 @@ interface CareerSectionProps {
   onSectionExpand: (sectionId: string) => void;
 }
 
+// Strip HTML tags from a string (for clean title display)
+const stripHtml = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
+
 const CareerSection: React.FC<CareerSectionProps> = ({
   section,
   groupedSections,
@@ -36,11 +39,11 @@ const CareerSection: React.FC<CareerSectionProps> = ({
   onCareerExpand,
   onSectionExpand
 }) => {
-  // Get the title from database, fall back to static title
+  // Get the title from database, fall back to static title. Strip any HTML tags.
   const getCareerTitle = (careerId: string, fallbackTitle: string): string => {
     const sections = groupedSections[careerId];
     if (sections && sections.length > 0 && sections[0].title) {
-      return sections[0].title;
+      return stripHtml(sections[0].title);
     }
     return fallbackTitle;
   };

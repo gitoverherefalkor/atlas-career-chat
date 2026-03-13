@@ -13,6 +13,8 @@ import { useReports } from '@/hooks/useReports';
 import ReportDisplay from '@/components/ReportDisplay';
 import ReportPreview from '@/components/report/ReportPreview';
 import { AccessCodeModal } from '@/components/dashboard/AccessCodeModal';
+import { ExecSummaryModal } from '@/components/dashboard/ExecSummaryModal';
+import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 
 // Helper to get assessment session from localStorage
 const getAssessmentSession = () => {
@@ -30,6 +32,7 @@ const Dashboard = () => {
   const { reports, isLoading: reportsLoading } = useReports();
   const [isReportSectionExpanded, setIsReportSectionExpanded] = useState(false);
   const [showAccessCodeModal, setShowAccessCodeModal] = useState(false);
+  const [showExecSummaryModal, setShowExecSummaryModal] = useState(false);
   const [userAccessCode, setUserAccessCode] = useState<string | null>(null);
 
   const navigate = useNavigate();
@@ -147,6 +150,28 @@ const Dashboard = () => {
   }
 
   const latestReport = getLatestReport();
+
+  // Fetch report sections to check for exec summary
+  const { sections: reportSections } = useReportSections(latestReport?.id);
+  const execSummarySection = reportSections.find(
+    (s) => s.section_type === 'exec_summary' || s.section_type === 'executive_summary'
+  );
+
+  // Show exec summary modal on first visit after report completion
+  useEffect(() => {
+    if (!latestReport || latestReport.status !== 'completed' || !execSummarySection) return;
+    const dismissKey = `exec_summary_dismissed_${latestReport.id}`;
+    if (!localStorage.getItem(dismissKey)) {
+      setShowExecSummaryModal(true);
+    }
+  }, [latestReport, execSummarySection]);
+
+  const handleDismissExecSummary = () => {
+    setShowExecSummaryModal(false);
+    if (latestReport) {
+      localStorage.setItem(`exec_summary_dismissed_${latestReport.id}`, 'true');
+    }
+  };
 
   // Redirect to the processing page if report is still being generated
   // That page has a better UX for waiting (timer, progress steps, etc.)
@@ -329,6 +354,15 @@ const Dashboard = () => {
         <AccessCodeModal
           accessCode={userAccessCode}
           onClose={() => setShowAccessCodeModal(false)}
+        />
+      )}
+
+      {/* Executive Summary Modal — shown on first visit after report completion */}
+      {showExecSummaryModal && execSummarySection && (
+        <ExecSummaryModal
+          content={execSummarySection.content}
+          onClose={handleDismissExecSummary}
+          onViewReport={handleDismissExecSummary}
         />
       )}
     </div>
