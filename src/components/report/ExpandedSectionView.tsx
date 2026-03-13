@@ -1,26 +1,180 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import DOMPurify from 'dompurify';
 import { Card, CardContent } from '@/components/ui/card';
-import { X, ArrowRight, ArrowLeft } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, ChevronDown } from 'lucide-react';
 import { ReportSection } from '@/hooks/useReportSections';
 import AILegend from './AILegend';
 
-// Strip all HTML tags for clean text display (titles, nav buttons, IDs)
+// ── Utilities ───────────────────────────────────────────────────────────
+
+// Strip all HTML tags for clean text display (titles, nav buttons)
 const stripHtml = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
 
-// Parse inline HTML (<strong>, <em>, <b>, <i>) into React elements
-// instead of stripping them. Safe: only whitelisted tags are rendered.
-function renderInlineHtml(text: string): React.ReactNode {
-  const parts = text.split(/(<strong>.*?<\/strong>|<em>.*?<\/em>|<b>.*?<\/b>|<i>.*?<\/i>)/g);
-  if (parts.length === 1) return text; // No inline HTML found
-  return parts.map((part, i) => {
-    const strongMatch = part.match(/^<(?:strong|b)>(.*?)<\/(?:strong|b)>$/);
-    if (strongMatch) return <strong key={i} className="font-semibold">{strongMatch[1]}</strong>;
-    const emMatch = part.match(/^<(?:em|i)>(.*?)<\/(?:em|i)>$/);
-    if (emMatch) return <em key={i}>{emMatch[1]}</em>;
-    return part;
-  });
+// Convert HTML tags the AI sometimes includes to markdown equivalents.
+// Same logic as the chat's htmlToMarkdown — keeps one rendering pipeline.
+function htmlToMarkdown(text: string): string {
+  let result = text;
+  result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1');
+  result = result.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1');
+  result = result.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1');
+  result = result.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
+  result = result.replace(/<em>(.*?)<\/em>/gi, '*$1*');
+  result = result.replace(/<br\s*\/?>/gi, '\n');
+  // Convert ✓ and • bullets to markdown list items
+  result = result.replace(/^✓\s/gm, '- ✓ ');
+  result = result.replace(/^•\s/gm, '- ');
+  return result;
 }
+
+// ── Dashboard-tuned Markdown Components ─────────────────────────────────
+// Slightly larger than the chat components since this is full-page reading.
+
+const dashboardComponents: Record<string, React.FC<any>> = {
+  h2: ({ children, ...props }) => (
+    <h2 className="text-xl font-bold mt-8 mb-4 text-atlas-navy first:mt-0" {...props}>{children}</h2>
+  ),
+  h3: ({ children, ...props }) => (
+    <h3 className="text-xl font-bold mt-10 mb-4 text-atlas-navy first:mt-0" {...props}>{children}</h3>
+  ),
+  h4: ({ children, ...props }) => (
+    <h4 className="text-lg font-semibold mt-6 mb-3 text-atlas-blue" {...props}>{children}</h4>
+  ),
+  h5: ({ children, ...props }) => (
+    <h5 className="text-base font-semibold mt-5 mb-2 text-gray-800" {...props}>{children}</h5>
+  ),
+  p: ({ children, ...props }) => (
+    <p className="mb-3 last:mb-0" {...props}>{children}</p>
+  ),
+  ul: ({ children, ...props }) => (
+    <ul className="list-disc pl-6 mb-3 space-y-1.5" {...props}>{children}</ul>
+  ),
+  ol: ({ children, ...props }) => (
+    <ol className="list-decimal pl-6 mb-3 space-y-1.5" {...props}>{children}</ol>
+  ),
+  li: ({ children, ...props }) => (
+    <li className="leading-relaxed" {...props}>{children}</li>
+  ),
+  strong: ({ children, ...props }) => (
+    <strong className="font-semibold" {...props}>{children}</strong>
+  ),
+  // Horizontal rules are handled at a higher level (section separators), so hide them here
+  hr: () => null,
+};
+
+// ── Reusable Sub-components ─────────────────────────────────────────────
+
+// Render markdown through the full pipeline: htmlToMarkdown → sanitize → react-markdown
+const MarkdownContent: React.FC<{ content: string }> = ({ content }) => (
+  <ReactMarkdown remarkPlugins={[remarkGfm]} components={dashboardComponents}>
+    {DOMPurify.sanitize(htmlToMarkdown(content))}
+  </ReactMarkdown>
+);
+
+// Styled feedback and explore cards that appear below section content
+const FeedbackExploreCards: React.FC<{
+  feedback?: string | null;
+  explore?: string | null;
+  showAILegend?: boolean;
+}> = ({ feedback, explore, showAILegend }) => (
+  <>
+    {showAILegend && feedback && <AILegend />}
+    {feedback && (
+      <div className="mt-6 p-5 bg-amber-50 border border-amber-200 rounded-lg">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xl">💬</span>
+          <h4 className="font-semibold text-amber-800">Chat Session Feedback</h4>
+        </div>
+        <div className="text-amber-900">
+          <MarkdownContent content={feedback} />
+        </div>
+      </div>
+    )}
+    {explore && (
+      <div className="mt-4 p-5 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xl">🔍</span>
+          <h4 className="font-semibold text-blue-800">Explore More</h4>
+        </div>
+        <div className="text-blue-900">
+          <MarkdownContent content={explore} />
+        </div>
+      </div>
+    )}
+  </>
+);
+
+// Collapsible accordion for multi-career sections (runner-up, outside-box, dream-jobs).
+// Replaces the old JUMP TO navigation — each career is its own expandable block.
+const CollapsibleCareerAccordion: React.FC<{
+  sections: ReportSection[];
+  showAILegend: boolean;
+}> = ({ sections, showAILegend }) => {
+  const [openIndices, setOpenIndices] = useState<Set<number>>(new Set([0]));
+
+  const toggle = (idx: number) => {
+    setOpenIndices(prev => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      {sections.map((section, idx) => {
+        const isOpen = openIndices.has(idx);
+        const title = stripHtml(section.title || `Career ${idx + 1}`);
+
+        // Strip leading heading from content — the title is shown in the accordion header instead
+        let bodyMarkdown = htmlToMarkdown(section.content || '');
+        bodyMarkdown = bodyMarkdown.replace(/^#{1,4}\s+\**.*?\**\s*\n+/, '').trim();
+
+        return (
+          <div key={section.id} className="border border-gray-200 rounded-xl overflow-hidden">
+            {/* Accordion header — always visible */}
+            <button
+              onClick={() => toggle(idx)}
+              className="w-full flex items-center justify-between px-5 py-4 text-left bg-white hover:bg-gray-50 transition-colors"
+            >
+              <h3 className="text-lg font-bold text-atlas-navy font-heading m-0 leading-snug">
+                {title}
+              </h3>
+              <ChevronDown
+                className={`w-5 h-5 text-gray-400 shrink-0 ml-3 transition-transform duration-200 ${
+                  isOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+
+            {/* Collapsible body */}
+            {isOpen && (
+              <div className="px-5 pb-5 pt-3 border-t border-gray-100">
+                <div
+                  className="text-gray-700 leading-relaxed"
+                  style={{ fontSize: '16px', lineHeight: '1.8' }}
+                >
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={dashboardComponents}>
+                    {DOMPurify.sanitize(bodyMarkdown)}
+                  </ReactMarkdown>
+                  <FeedbackExploreCards
+                    feedback={section.feedback}
+                    explore={section.explore}
+                    showAILegend={showAILegend && idx === 0}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+// ── Main Component ──────────────────────────────────────────────────────
 
 interface GroupedSections {
   [uiSectionId: string]: ReportSection[];
@@ -54,177 +208,10 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
   // Career sections that should show AI Legend (all except dream-jobs)
   const careerSectionsWithAILegend = ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box'];
 
-  const renderSectionContent = (content: string, showAILegend: boolean = false) => {
-    const elements: React.ReactNode[] = [];
-    let currentFeedback: React.ReactNode[] = [];
-    let currentExplore: React.ReactNode[] = [];
-    let inFeedbackBlock = false;
-    let inExploreBlock = false;
-    let feedbackBlockKey = 0;
-    let exploreBlockKey = 0;
-    let aiLegendKey = 0;
-    let aiLegendShown = false;
-
-    // Helper to flush accumulated feedback/explore blocks
-    const flushBlocks = () => {
-      // Show AI Legend before feedback block (only once, if applicable)
-      if (showAILegend && !aiLegendShown && currentFeedback.length > 0) {
-        elements.push(<AILegend key={`ai-legend-${aiLegendKey++}`} />);
-        aiLegendShown = true;
-      }
-
-      if (currentFeedback.length > 0) {
-        elements.push(
-          <div key={`feedback-${feedbackBlockKey++}`} className="mt-6 p-5 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">💬</span>
-              <h4 className="font-semibold text-amber-800">Chat Session Feedback</h4>
-            </div>
-            <div className="text-amber-900">{currentFeedback}</div>
-          </div>
-        );
-        currentFeedback = [];
-      }
-      if (currentExplore.length > 0) {
-        elements.push(
-          <div key={`explore-${exploreBlockKey++}`} className="mt-4 p-5 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-xl">🔍</span>
-              <h4 className="font-semibold text-blue-800">Explore More</h4>
-            </div>
-            <div className="text-blue-900">{currentExplore}</div>
-          </div>
-        );
-        currentExplore = [];
-      }
-      inFeedbackBlock = false;
-      inExploreBlock = false;
-    };
-
-    content?.split('\n').forEach((paragraph, index) => {
-      // Check for feedback section marker
-      if (paragraph.includes('💬 Chat Session Feedback')) {
-        inFeedbackBlock = true;
-        inExploreBlock = false;
-        return;
-      }
-      // Check for explore section marker
-      if (paragraph.includes('🔍 Explore More')) {
-        inFeedbackBlock = false;
-        inExploreBlock = true;
-        return;
-      }
-
-      // Section separator - flush current blocks and reset
-      if (paragraph.trim() === '---') {
-        flushBlocks();
-        return;
-      }
-
-      // Common subheader patterns (should render as h5)
-      const subheaderPatterns = [
-        'Overview:',
-        'Overview',
-        'Feasibility Rating',
-        'Feasibility Rating:',
-        'Personality Fit',
-        'Personality Fit:',
-        'Steps for Pursuing This Role',
-        'Steps for Pursuing This Role:',
-        'Key Considerations',
-        'Key Considerations:',
-        'Compensation',
-        'Compensation:',
-        'Pros & Cons',
-        'Pros & Cons:',
-        'Pros',
-        'Cons',
-        'What you would do',
-        'Why this fits',
-        'Potential for growth',
-        'Alignment with your ambitions',
-        'Future Outlook',
-      ];
-
-      // Check if line is a subheader (starts with pattern, possibly with colon)
-      const isSubheader = subheaderPatterns.some(pattern =>
-        paragraph.trim() === pattern ||
-        paragraph.trim() === `${pattern}:` ||
-        paragraph.trim().toLowerCase() === pattern.toLowerCase() ||
-        paragraph.trim().toLowerCase() === `${pattern.toLowerCase()}:`
-      );
-
-      // Parse the paragraph - check for HTML tags first, then markdown
-      let element: React.ReactNode;
-
-      // HTML tag patterns - handle nested tags like <h3><strong>text</strong></h3>
-      const h3Match = paragraph.trim().match(/^<h3>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h3>$/);
-      const h4Match = paragraph.trim().match(/^<h4>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h4>$/);
-      const h5Match = paragraph.trim().match(/^<h5>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h5>$/);
-      const strongMatch = paragraph.trim().match(/^<strong>(.*?)<\/strong>$/);
-
-      if (h3Match) {
-        // HTML h3 tag
-        flushBlocks();
-        const title = h3Match[1];
-        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        element = <h3 key={index} id={id} className="text-xl font-bold mt-10 mb-4 text-atlas-navy first:mt-0 scroll-mt-24">{title}</h3>;
-      } else if (h4Match) {
-        // HTML h4 tag
-        element = <h4 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-blue">{h4Match[1]}</h4>;
-      } else if (h5Match) {
-        // HTML h5 tag
-        element = <h5 key={index} className="text-base font-semibold mt-6 mb-2 text-gray-800">{h5Match[1]}</h5>;
-      } else if (strongMatch) {
-        // HTML strong tag
-        element = <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{strongMatch[1]}</p>;
-      } else if (paragraph.startsWith('## ')) {
-        // Markdown h3 - flush blocks first
-        flushBlocks();
-        const title = paragraph.replace('## ', '');
-        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-        element = <h3 key={index} id={id} className="text-xl font-bold mt-10 mb-4 text-atlas-navy first:mt-0 scroll-mt-24">{title}</h3>;
-      } else if (paragraph.startsWith('### ')) {
-        // Markdown h4
-        element = <h4 key={index} className="text-lg font-semibold mt-6 mb-3 text-atlas-blue">{paragraph.replace('### ', '')}</h4>;
-      } else if (isSubheader) {
-        // h5 subheader styling
-        element = <h5 key={index} className="text-base font-semibold mt-6 mb-2 text-gray-800">{paragraph.trim()}</h5>;
-      } else if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
-        // Markdown bold
-        element = <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{paragraph.replace(/\*\*/g, '')}</p>;
-      } else if (paragraph.startsWith('•') || paragraph.startsWith('- ')) {
-        const text = paragraph.startsWith('- ') ? paragraph.substring(2) : paragraph.substring(1);
-        element = <p key={index} className="ml-6 mb-2 before:content-['•'] before:mr-2">{renderInlineHtml(text.trim())}</p>;
-      } else if (paragraph.trim() === '') {
-        element = <br key={index} />;
-      } else {
-        // Default paragraph — render inline HTML (strong, em) as React elements
-        element = <p key={index} className="mb-3">{renderInlineHtml(paragraph)}</p>;
-      }
-
-      if (element) {
-        if (inFeedbackBlock) {
-          currentFeedback.push(element);
-        } else if (inExploreBlock) {
-          currentExplore.push(element);
-        } else {
-          elements.push(element);
-        }
-      }
-    });
-
-    // Flush any remaining blocks at the end
-    flushBlocks();
-
-    return elements;
-  };
-
-  // Multi-item sections that should use generic titles in header
+  // Multi-item sections use collapsible accordions instead of one long page
   const multiItemSections = ['runner-up', 'outside-box', 'dream-jobs'];
 
   const getCareerTitle = (careerId: string) => {
-    // Section-level titles for display in header
     const sectionTitles: Record<string, string> = {
       'first-career': 'Primary Career Match',
       'second-career': 'Second Career Match',
@@ -234,15 +221,13 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
       'dream-jobs': 'Dream Job Analysis'
     };
 
-    // For multi-item sections, always use the generic section title
     if (multiItemSections.includes(careerId)) {
       return sectionTitles[careerId] || careerId;
     }
 
-    // For single-item sections, try to get title from database
     const sections = groupedSections[careerId];
     if (sections && sections.length > 0 && sections[0].title) {
-      return sections[0].title;
+      return stripHtml(sections[0].title);
     }
 
     return sectionTitles[careerId] || careerId;
@@ -260,11 +245,10 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
     return descriptions[careerId] || 'Detailed career analysis and recommendations';
   };
 
-  // Career section IDs that should use the career view, not the chapter section view
+  // Career section IDs that use the career view layout
   const careerSectionIds = ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box', 'dream-jobs'];
 
-  // Scroll-based read detection: mark section as read when user scrolls past 30%
-  // of the content, or after 8 seconds for short content that fits in the viewport
+  // ── Scroll-based read detection ────────────────────────────────────
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -284,7 +268,6 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
       if (!contentEl || marked) return;
       const rect = contentEl.getBoundingClientRect();
       const scrolledPast = Math.max(0, -rect.top);
-      // Mark read once they've scrolled past 30% of content (minimum 150px to avoid accidental triggers)
       if (scrolledPast >= Math.max(rect.height * 0.3, 150)) {
         markRead();
       }
@@ -306,15 +289,38 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
     };
   }, [expandedSection, onSectionRead]);
 
+  // ── Render helpers for content sections ────────────────────────────
+
+  // Render a single-item section's content (about-you sections or single careers)
+  const renderSingleSectionContent = (sectionId: string, chapterId: string, showAILegend: boolean) => {
+    const dbSections = groupedSections[sectionId];
+    const dbSection = dbSections?.[0];
+
+    if (!dbSection) {
+      return <p className="text-gray-500 italic">Content not available yet.</p>;
+    }
+
+    return (
+      <>
+        <MarkdownContent content={dbSection.content || ''} />
+        <FeedbackExploreCards
+          feedback={dbSection.feedback}
+          explore={dbSection.explore}
+          showAILegend={showAILegend}
+        />
+      </>
+    );
+  };
+
+  // ── JSX ────────────────────────────────────────────────────────────
+
   return (
     <Card className="mb-6">
       <CardContent className="p-0" ref={contentRef}>
+        {/* ── About You sections (non-career) ── */}
         {chapters.map(chapter =>
           chapter.sections.map((section: any) => {
-            // Skip if not the expanded section
             if (section.id !== expandedSection) return null;
-
-            // Skip if this is a career section - it will be rendered by the career view below
             if (careerSectionIds.includes(section.id)) return null;
 
             const nextSection = getNextSection(chapter.id, section.id);
@@ -322,7 +328,7 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
 
             return (
               <div key={section.id}>
-                {/* Close button - top right */}
+                {/* Close button */}
                 <div className="flex justify-end p-4 border-b border-gray-100">
                   <button
                     onClick={() => onSectionExpand(null)}
@@ -334,22 +340,21 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
 
                 <div className="p-6 md:p-8 lg:p-10">
                   <div className="max-w-prose mx-auto">
-                    {/* Title and description above content */}
+                    {/* Section header */}
                     <div className="mb-8">
                       <h2 className="text-2xl font-bold text-atlas-navy mb-2">{section.title}</h2>
                       <p className="text-gray-600">{section.description}</p>
                     </div>
 
+                    {/* Content */}
                     <div
                       className="text-gray-700 leading-relaxed"
-                      style={{
-                        fontSize: '16px',
-                        lineHeight: '1.8'
-                      }}
+                      style={{ fontSize: '16px', lineHeight: '1.8' }}
                     >
-                      {renderSectionContent(getSectionContent(chapter.id, section.id))}
+                      {renderSingleSectionContent(section.id, chapter.id, false)}
                     </div>
 
+                    {/* Prev / Next nav */}
                     {(previousSection || nextSection) && (
                       <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
                         <div>
@@ -382,12 +387,11 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
             );
           })
         )}
-        
-        {/* Individual Career Expanded View */}
-        {/* Check if this is a career section */}
+
+        {/* ── Career sections ── */}
         {careerSectionIds.includes(expandedSection) && (
           <div>
-            {/* Close button - top right */}
+            {/* Close button */}
             <div className="flex justify-end p-4 border-b border-gray-100">
               <button
                 onClick={() => onSectionExpand(null)}
@@ -399,43 +403,34 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
 
             <div className="p-6 md:p-8 lg:p-10">
               <div className="max-w-prose mx-auto">
-                {/* Navigation menu for multi-item sections */}
-                {multiItemSections.includes(expandedSection) && groupedSections[expandedSection] && groupedSections[expandedSection].length > 1 && (
-                  <nav className="mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Jump to:</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {groupedSections[expandedSection].map((section, idx) => {
-                        const title = stripHtml(section.title || `Item ${idx + 1}`);
-                        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-                        return (
-                          <button
-                            key={section.id}
-                            onClick={() => {
-                              const element = document.getElementById(id);
-                              if (element) {
-                                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              }
-                            }}
-                            className="px-3 py-1.5 text-sm bg-white border border-gray-300 rounded-full hover:bg-atlas-teal hover:text-white hover:border-atlas-teal transition-colors"
-                          >
-                            {title}
-                          </button>
-                        );
-                      })}
+                {/* Multi-item sections → collapsible accordions */}
+                {multiItemSections.includes(expandedSection) && groupedSections[expandedSection] ? (
+                  <>
+                    {/* Section header for multi-item */}
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold text-atlas-navy mb-2">{getCareerTitle(expandedSection)}</h2>
+                      <p className="text-gray-600">{getSectionDescription(expandedSection)}</p>
                     </div>
-                  </nav>
+                    <CollapsibleCareerAccordion
+                      sections={groupedSections[expandedSection]}
+                      showAILegend={careerSectionsWithAILegend.includes(expandedSection)}
+                    />
+                  </>
+                ) : (
+                  /* Single career sections → render content directly */
+                  <div
+                    className="text-gray-700 leading-relaxed"
+                    style={{ fontSize: '16px', lineHeight: '1.8' }}
+                  >
+                    {renderSingleSectionContent(
+                      expandedSection,
+                      'career-suggestions',
+                      careerSectionsWithAILegend.includes(expandedSection)
+                    )}
+                  </div>
                 )}
 
-                <div
-                  className="text-gray-700 leading-relaxed"
-                  style={{
-                    fontSize: '16px',
-                    lineHeight: '1.8'
-                  }}
-                >
-                  {renderSectionContent(getSectionContent('career-suggestions', expandedSection), careerSectionsWithAILegend.includes(expandedSection))}
-                </div>
-
+                {/* Prev / Next career nav */}
                 {(() => {
                   const nextCareer = getNextCareer(expandedSection);
                   const previousCareer = getPreviousCareer(expandedSection);

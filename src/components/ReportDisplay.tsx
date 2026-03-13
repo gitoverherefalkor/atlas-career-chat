@@ -254,6 +254,10 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
     setExpandedSection(sectionId);
     setExpandedCareerSection(null); // Reset career section when main section changes
     onSectionExpanded?.(sectionId !== null);
+    // Scroll to top when navigating between sections
+    if (sectionId !== null) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   const handleCareerSectionToggle = (sectionId: string) => {
@@ -264,6 +268,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
     setExpandedSection(careerId);
     setExpandedCareerSection(null);
     onSectionExpanded?.(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
