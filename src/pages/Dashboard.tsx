@@ -41,6 +41,31 @@ const Dashboard = () => {
   // Check for saved assessment progress
   const savedSession = getAssessmentSession();
 
+  // Compute latestReport early so we can pass it to hooks (hooks can't be after conditional returns)
+  const latestReport = (!reports || reports.length === 0) ? null : reports[0];
+
+  // Fetch report sections to check for exec summary (hook must be called unconditionally)
+  const { sections: reportSections } = useReportSections(latestReport?.id);
+  const execSummarySection = reportSections.find(
+    (s) => s.section_type === 'exec_summary' || s.section_type === 'executive_summary'
+  );
+
+  // Show exec summary modal on first visit after report completion
+  useEffect(() => {
+    if (!latestReport || latestReport.status !== 'completed' || !execSummarySection) return;
+    const dismissKey = `exec_summary_dismissed_${latestReport.id}`;
+    if (!localStorage.getItem(dismissKey)) {
+      setShowExecSummaryModal(true);
+    }
+  }, [latestReport, execSummarySection]);
+
+  const handleDismissExecSummary = () => {
+    setShowExecSummaryModal(false);
+    if (latestReport) {
+      localStorage.setItem(`exec_summary_dismissed_${latestReport.id}`, 'true');
+    }
+  };
+
   // Check if user has an access code in metadata and should see the modal
   useEffect(() => {
     if (user && !authLoading && !profileLoading && !reportsLoading) {
@@ -103,11 +128,6 @@ const Dashboard = () => {
     return `Section ${currentSection}, Question ${currentQuestion}`;
   };
 
-  const getLatestReport = () => {
-    if (!reports || reports.length === 0) return null;
-    return reports[0]; // Reports are ordered by created_at desc
-  };
-
   // Check if this is truly a returning user - ONLY based on reports, not saved sessions
   const isReturningUser = () => {
     return reports && reports.length > 0;
@@ -148,30 +168,6 @@ const Dashboard = () => {
     navigate('/auth');
     return null;
   }
-
-  const latestReport = getLatestReport();
-
-  // Fetch report sections to check for exec summary
-  const { sections: reportSections } = useReportSections(latestReport?.id);
-  const execSummarySection = reportSections.find(
-    (s) => s.section_type === 'exec_summary' || s.section_type === 'executive_summary'
-  );
-
-  // Show exec summary modal on first visit after report completion
-  useEffect(() => {
-    if (!latestReport || latestReport.status !== 'completed' || !execSummarySection) return;
-    const dismissKey = `exec_summary_dismissed_${latestReport.id}`;
-    if (!localStorage.getItem(dismissKey)) {
-      setShowExecSummaryModal(true);
-    }
-  }, [latestReport, execSummarySection]);
-
-  const handleDismissExecSummary = () => {
-    setShowExecSummaryModal(false);
-    if (latestReport) {
-      localStorage.setItem(`exec_summary_dismissed_${latestReport.id}`, 'true');
-    }
-  };
 
   // Redirect to the processing page if report is still being generated
   // That page has a better UX for waiting (timer, progress steps, etc.)
