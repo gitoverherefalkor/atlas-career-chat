@@ -8,9 +8,11 @@ interface AuthHeaderProps {
 const AuthHeader = ({ isLogin }: AuthHeaderProps) => {
   return (
     <div className="text-center mb-8">
-      <h1 className="text-3xl font-bold text-atlas-navy mb-2">
-        Atlas Assessment
-      </h1>
+      <img
+        src="/atlas-logo.png"
+        alt="Atlas Assessment"
+        className="h-12 w-auto mx-auto mb-2"
+      />
       <p className="text-gray-600 mb-2">
         {isLogin ? 'Sign in to your account' : 'Create your account to get started'}
       </p>
