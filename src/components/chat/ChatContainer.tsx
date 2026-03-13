@@ -118,7 +118,10 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       // Outside-the-box — NEEDS boilerplate (bare ### [title] headers in SOP)
       { phrase: 'outside-the-box career options', sectionIndex: 9 },
       // Dream jobs — NEEDS boilerplate (bare ### [title] headers in SOP)
+      // Multiple phrases across intro/outro in case agent paraphrases the intro
       { phrase: 'everyone has an idea of their ideal job', sectionIndex: 10 },
+      { phrase: "that's your dream job analysis", sectionIndex: 10 },
+      { phrase: 'your dream job assessment', sectionIndex: 10 },
     ];
 
     // Scan bot message content for section headings and boilerplate phrases
@@ -148,14 +151,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         }
       }
 
-      // Strategy 2: Boilerplate phrase detection (catches sections without recognizable headings)
-      if (!foundViaHeading) {
-        for (const { phrase, sectionIndex } of BOILERPLATE_PHRASES) {
-          if (lower.includes(phrase)) {
-            console.log('[Section] Boilerplate match:', `"${phrase}"`, '→', ALL_SECTIONS[sectionIndex].title);
-            onSectionDetected(sectionIndex);
-            break; // One match per message is enough
-          }
+      // Strategy 2: Boilerplate phrase detection — always runs alongside heading detection.
+      // Safe to always check because phrases are long/specific enough to avoid false positives,
+      // and onSectionDetected uses Math.max so it can only move the sidebar forward.
+      for (const { phrase, sectionIndex } of BOILERPLATE_PHRASES) {
+        if (lower.includes(phrase)) {
+          console.log('[Section] Boilerplate match:', `"${phrase}"`, '→', ALL_SECTIONS[sectionIndex].title);
+          onSectionDetected(sectionIndex);
+          break; // One match per message is enough
         }
       }
 
