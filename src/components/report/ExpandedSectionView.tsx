@@ -26,6 +26,9 @@ function htmlToMarkdown(text: string): string {
   // Convert ✓ and • bullets to markdown list items
   result = result.replace(/^✓\s/gm, '- ✓ ');
   result = result.replace(/^•\s/gm, '- ');
+  // Bold specific labels that should stand out
+  result = result.replace(/^(Alternative titles:)/gim, '**$1**');
+  result = result.replace(/^(Your match score:)/gim, '**$1**');
   return result;
 }
 
@@ -45,9 +48,21 @@ const dashboardComponents: Record<string, React.FC<any>> = {
   h5: ({ children, ...props }) => (
     <h5 className="text-base font-semibold mt-5 mb-2 text-gray-800" {...props}>{children}</h5>
   ),
-  p: ({ children, ...props }) => (
-    <p className="mb-3 last:mb-0" {...props}>{children}</p>
-  ),
+  p: ({ children, ...props }) => {
+    // Detect standalone bold paragraphs (e.g. "**Feasibility Rating**") and render as subheadings.
+    // This makes them visually consistent with numbered headers like "1. Career Name".
+    const childArray = React.Children.toArray(children);
+    if (
+      childArray.length === 1 &&
+      React.isValidElement(childArray[0]) &&
+      (childArray[0] as React.ReactElement).type === 'strong'
+    ) {
+      return (
+        <p className="text-base font-semibold mt-5 mb-2 text-gray-800" {...props}>{children}</p>
+      );
+    }
+    return <p className="mb-3 last:mb-0" {...props}>{children}</p>;
+  },
   ul: ({ children, ...props }) => (
     <ul className="list-disc pl-6 mb-3 space-y-1.5" {...props}>{children}</ul>
   ),
@@ -112,7 +127,7 @@ const CollapsibleCareerAccordion: React.FC<{
   sections: ReportSection[];
   showAILegend: boolean;
 }> = ({ sections, showAILegend }) => {
-  const [openIndices, setOpenIndices] = useState<Set<number>>(new Set([0]));
+  const [openIndices, setOpenIndices] = useState<Set<number>>(new Set());
 
   const toggle = (idx: number) => {
     setOpenIndices(prev => {
@@ -300,9 +315,18 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
       return <p className="text-gray-500 italic">Content not available yet.</p>;
     }
 
+    let content = dbSection.content || '';
+
+    // For career sections with a proper header above, strip the leading heading
+    // to avoid duplicate titles (DB content often starts with ### **Career Title**)
+    if (careerSectionIds.includes(sectionId)) {
+      const converted = htmlToMarkdown(content);
+      content = converted.replace(/^#{1,4}\s+\**.*?\**\s*\n+/, '').trim();
+    }
+
     return (
       <>
-        <MarkdownContent content={dbSection.content || ''} />
+        <MarkdownContent content={content} />
         <FeedbackExploreCards
           feedback={dbSection.feedback}
           explore={dbSection.explore}
@@ -417,17 +441,23 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                     />
                   </>
                 ) : (
-                  /* Single career sections → render content directly */
-                  <div
-                    className="text-gray-700 leading-relaxed"
-                    style={{ fontSize: '16px', lineHeight: '1.8' }}
-                  >
-                    {renderSingleSectionContent(
-                      expandedSection,
-                      'career-suggestions',
-                      careerSectionsWithAILegend.includes(expandedSection)
-                    )}
-                  </div>
+                  /* Single career sections (top 3) → header + content */
+                  <>
+                    <div className="mb-8">
+                      <h2 className="text-2xl font-bold text-atlas-navy mb-2">{getCareerTitle(expandedSection)}</h2>
+                      <p className="text-gray-600">{getSectionDescription(expandedSection)}</p>
+                    </div>
+                    <div
+                      className="text-gray-700 leading-relaxed"
+                      style={{ fontSize: '16px', lineHeight: '1.8' }}
+                    >
+                      {renderSingleSectionContent(
+                        expandedSection,
+                        'career-suggestions',
+                        careerSectionsWithAILegend.includes(expandedSection)
+                      )}
+                    </div>
+                  </>
                 )}
 
                 {/* Prev / Next career nav */}
