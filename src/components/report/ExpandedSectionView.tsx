@@ -1,9 +1,12 @@
 
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ReportSection } from '@/hooks/useReportSections';
 import AILegend from './AILegend';
+
+// Strip all HTML tags for clean text display (titles, nav buttons, IDs)
+const stripHtml = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
 
 // Parse inline HTML (<strong>, <em>, <b>, <i>) into React elements
 // instead of stripping them. Safe: only whitelisted tags are rendered.
@@ -33,6 +36,7 @@ interface ExpandedSectionViewProps {
   getNextCareer: (careerId: string) => any;
   getPreviousCareer: (careerId: string) => any;
   onSectionExpand: (sectionId: string | null) => void;
+  onSectionRead?: (sectionId: string) => void;
 }
 
 const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
@@ -44,7 +48,8 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
   getPreviousSection,
   getNextCareer,
   getPreviousCareer,
-  onSectionExpand
+  onSectionExpand,
+  onSectionRead
 }) => {
   // Career sections that should show AI Legend (all except dream-jobs)
   const careerSectionsWithAILegend = ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box'];
@@ -258,9 +263,52 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
   // Career section IDs that should use the career view, not the chapter section view
   const careerSectionIds = ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box', 'dream-jobs'];
 
+  // Scroll-based read detection: mark section as read when user scrolls past 30%
+  // of the content, or after 8 seconds for short content that fits in the viewport
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const contentEl = contentRef.current;
+    if (!contentEl || !onSectionRead) return;
+
+    let marked = false;
+    const sectionId = expandedSection;
+
+    const markRead = () => {
+      if (marked) return;
+      marked = true;
+      onSectionRead(sectionId);
+    };
+
+    const handleScroll = () => {
+      if (!contentEl || marked) return;
+      const rect = contentEl.getBoundingClientRect();
+      const scrolledPast = Math.max(0, -rect.top);
+      // Mark read once they've scrolled past 30% of content (minimum 150px to avoid accidental triggers)
+      if (scrolledPast >= Math.max(rect.height * 0.3, 150)) {
+        markRead();
+      }
+    };
+
+    // For short content that fits in the viewport, mark read after 8 seconds
+    const timerId = window.setTimeout(() => {
+      if (!contentEl || marked) return;
+      const rect = contentEl.getBoundingClientRect();
+      if (rect.height <= window.innerHeight * 1.3) {
+        markRead();
+      }
+    }, 8000);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timerId);
+    };
+  }, [expandedSection, onSectionRead]);
+
   return (
     <Card className="mb-6">
-      <CardContent className="p-0">
+      <CardContent className="p-0" ref={contentRef}>
         {chapters.map(chapter =>
           chapter.sections.map((section: any) => {
             // Skip if not the expanded section
@@ -357,7 +405,7 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                     <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Jump to:</h4>
                     <div className="flex flex-wrap gap-2">
                       {groupedSections[expandedSection].map((section, idx) => {
-                        const title = section.title || `Item ${idx + 1}`;
+                        const title = stripHtml(section.title || `Item ${idx + 1}`);
                         const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
                         return (
                           <button

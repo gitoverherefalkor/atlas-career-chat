@@ -37,6 +37,7 @@ interface ChapterCardProps {
   onCareerSectionToggle: (sectionId: string) => void;
   onCareerExpand: (careerId: string) => void;
   onSectionExpand: (sectionId: string) => void;
+  readSections?: Set<string>;
 }
 
 const ChapterCard: React.FC<ChapterCardProps> = ({
@@ -45,7 +46,8 @@ const ChapterCard: React.FC<ChapterCardProps> = ({
   expandedCareerSection,
   onCareerSectionToggle,
   onCareerExpand,
-  onSectionExpand
+  onSectionExpand,
+  readSections
 }) => {
   const IconComponent = chapter.icon;
 
@@ -80,6 +82,7 @@ const ChapterCard: React.FC<ChapterCardProps> = ({
                 onCareerSectionToggle={onCareerSectionToggle}
                 onCareerExpand={onCareerExpand}
                 onSectionExpand={onSectionExpand}
+                readSections={readSections}
               />
             </div>
           ))}

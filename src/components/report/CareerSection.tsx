@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Check } from 'lucide-react';
 import { ReportSection } from '@/hooks/useReportSections';
 
 interface Career {
@@ -26,10 +27,18 @@ interface CareerSectionProps {
   onCareerSectionToggle: (sectionId: string) => void;
   onCareerExpand: (careerId: string) => void;
   onSectionExpand: (sectionId: string) => void;
+  readSections?: Set<string>;
 }
 
 // Strip HTML tags from a string (for clean title display)
 const stripHtml = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
+
+const ReadBadge = () => (
+  <span className="flex items-center gap-1 text-xs text-emerald-600">
+    <Check className="h-3 w-3" />
+    Read
+  </span>
+);
 
 const CareerSection: React.FC<CareerSectionProps> = ({
   section,
@@ -37,7 +46,8 @@ const CareerSection: React.FC<CareerSectionProps> = ({
   expandedCareerSection,
   onCareerSectionToggle,
   onCareerExpand,
-  onSectionExpand
+  onSectionExpand,
+  readSections
 }) => {
   // Get the title from database, fall back to static title. Strip any HTML tags.
   const getCareerTitle = (careerId: string, fallbackTitle: string): string => {
@@ -66,12 +76,15 @@ const CareerSection: React.FC<CareerSectionProps> = ({
                 <span className="text-atlas-teal">•</span>
                 <p className="text-sm text-gray-600">{getCareerTitle(career.id, career.title)}</p>
               </div>
-              <button
-                onClick={() => onCareerExpand(career.id)}
-                className="ml-4 text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline whitespace-nowrap"
-              >
-                View content
-              </button>
+              <div className="ml-4 flex flex-col items-end gap-0.5">
+                <button
+                  onClick={() => onCareerExpand(career.id)}
+                  className="text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline whitespace-nowrap"
+                >
+                  View content
+                </button>
+                {readSections?.has(career.id) && <ReadBadge />}
+              </div>
             </div>
           </div>
         ))}
@@ -87,12 +100,15 @@ const CareerSection: React.FC<CareerSectionProps> = ({
           <h4 className="font-semibold text-gray-900 mb-1">{section.title}</h4>
           <p className="text-sm text-gray-600">{section.description}</p>
         </div>
-        <button
-          onClick={() => onSectionExpand(section.id)}
-          className="ml-4 text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline whitespace-nowrap"
-        >
-          View content
-        </button>
+        <div className="ml-4 flex flex-col items-end gap-0.5">
+          <button
+            onClick={() => onSectionExpand(section.id)}
+            className="text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline whitespace-nowrap"
+          >
+            View content
+          </button>
+          {readSections?.has(section.id) && <ReadBadge />}
+        </div>
       </div>
     </div>
   );

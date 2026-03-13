@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useReports } from '@/hooks/useReports';
 import { useReportSections, ReportSection, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import ReportHeader from './report/ReportHeader';
@@ -29,6 +29,25 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
 
   const latestReport = getLatestReport();
   const { sections: dbSections } = useReportSections(latestReport?.id);
+
+  // Track which sections the user has read (persisted in localStorage per report)
+  const readStorageKey = `report_read_${latestReport?.id}`;
+  const [readSections, setReadSections] = useState<Set<string>>(() => {
+    try {
+      const stored = localStorage.getItem(readStorageKey);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch { return new Set(); }
+  });
+
+  const markSectionRead = useCallback((sectionId: string) => {
+    setReadSections(prev => {
+      if (prev.has(sectionId)) return prev;
+      const next = new Set(prev);
+      next.add(sectionId);
+      localStorage.setItem(readStorageKey, JSON.stringify([...next]));
+      return next;
+    });
+  }, [readStorageKey]);
 
   // Group database sections by UI section ID
   const groupedSections = React.useMemo((): GroupedSections => {
@@ -263,6 +282,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
           getNextCareer={getNextCareer}
           getPreviousCareer={getPreviousCareer}
           onSectionExpand={handleSectionExpand}
+          onSectionRead={markSectionRead}
         />
       )}
 
@@ -278,6 +298,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
               onCareerSectionToggle={handleCareerSectionToggle}
               onCareerExpand={handleCareerExpand}
               onSectionExpand={handleSectionExpand}
+              readSections={readSections}
             />
           ))}
         </div>
