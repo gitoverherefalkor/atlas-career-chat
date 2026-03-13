@@ -1,13 +1,24 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
+import { ChevronDown } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
 
 interface ChatMessageProps {
   content: string;
   sender: 'user' | 'bot';
   onSectionDetected?: (sectionIndex: number) => void;
+}
+
+interface CareerBlock {
+  title: string;  // The ### heading text (bold markers stripped)
+  body: string;   // Everything after the heading line
+}
+
+interface SplitContent {
+  intro: string;
+  blocks: CareerBlock[];
 }
 
 // Convert HTML tags the agent sometimes sends to markdown equivalents
@@ -22,6 +33,37 @@ function htmlToMarkdown(text: string): string {
   result = result.replace(/<em>(.*?)<\/em>/gi, '*$1*');
   result = result.replace(/<br\s*\/?>/gi, '\n');
   return result;
+}
+
+// Split a message into an intro + career blocks, based on ### headings.
+// Only meaningful when a message contains 2+ ### sections (e.g. runner_ups,
+// outside_box, dream_jobs). Single-### messages are returned as-is.
+function splitIntoCareerBlocks(markdown: string): SplitContent {
+  const parts = markdown.split(/(?=^### )/m);
+  // Strip trailing horizontal rule from intro (SOP wraps content in ---)
+  const intro = (parts[0] || '').replace(/\n?\s*---\s*$/, '').trim();
+
+  const blocks: CareerBlock[] = parts.slice(1).map((block) => {
+    const firstNewline = block.indexOf('\n');
+    const titleLine = firstNewline >= 0 ? block.slice(0, firstNewline) : block;
+
+    // Clean title: strip ### prefix and any ** bold markers
+    const title = titleLine
+      .replace(/^###\s*/, '')
+      .replace(/\*\*/g, '')
+      .trim();
+
+    const rawBody = firstNewline >= 0 ? block.slice(firstNewline + 1) : '';
+    // Strip decorative --- separators at start/end of each block
+    const body = rawBody
+      .replace(/^\s*---\s*\n?/, '')
+      .replace(/\n?\s*---\s*$/, '')
+      .trim();
+
+    return { title, body };
+  });
+
+  return { intro, blocks };
 }
 
 // Check if a heading matches any section in ALL_SECTIONS
@@ -83,6 +125,74 @@ const markdownComponents = {
   ),
 };
 
+// Renders a multi-career message as collapsible blocks.
+// First career is open by default; subsequent ones are collapsed.
+const CollapsibleCareerBlocks: React.FC<{ intro: string; blocks: CareerBlock[] }> = ({
+  intro,
+  blocks,
+}) => {
+  const [openIndices, setOpenIndices] = useState<Set<number>>(new Set([0]));
+
+  const toggle = (idx: number) => {
+    setOpenIndices((prev) => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
+  };
+
+  return (
+    <div>
+      {/* Intro text — always visible */}
+      {intro && (
+        <div className="mb-3">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {intro}
+          </ReactMarkdown>
+        </div>
+      )}
+
+      {/* Career blocks */}
+      <div className="flex flex-col gap-2">
+        {blocks.map((block, idx) => {
+          const isOpen = openIndices.has(idx);
+          return (
+            <div
+              key={idx}
+              className="border border-gray-200 rounded-xl overflow-hidden"
+            >
+              {/* Clickable header — always visible */}
+              <button
+                onClick={() => toggle(idx)}
+                className="w-full flex items-center justify-between px-4 py-3 text-left bg-white hover:bg-gray-50 transition-colors"
+              >
+                {/* h3 so DOM section-detection still works */}
+                <h3 className="text-base font-bold text-atlas-navy font-heading m-0 leading-snug">
+                  {block.title}
+                </h3>
+                <ChevronDown
+                  className={`w-4 h-4 text-gray-400 shrink-0 ml-3 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Collapsible body */}
+              {isOpen && (
+                <div className="px-4 pb-4 pt-2 border-t border-gray-100 text-[0.9375rem]">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    {block.body}
+                  </ReactMarkdown>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
 export const ChatMessage: React.FC<ChatMessageProps> = ({
   content,
   sender,
@@ -90,7 +200,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
 
-  // After bot message renders, scan for section headings
+  // After bot message renders, scan for section headings in the DOM
   useEffect(() => {
     if (sender !== 'bot' || !onSectionDetected || !messageRef.current) return;
 
@@ -103,7 +213,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       console.log('[Section] findSectionIndex result:', idx, idx >= 0 ? `(${ALL_SECTIONS[idx].title})` : '(no match)');
       if (idx >= 0) {
         onSectionDetected(idx);
-        // Add a data attribute so sidebar can scroll to it
         h3.setAttribute('data-section-id', ALL_SECTIONS[idx].id);
       }
     });
@@ -119,10 +228,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     );
   }
 
-  // Bot message — render markdown
+  // Bot message — convert any HTML tags to markdown, then sanitize
   const processedContent = htmlToMarkdown(content);
-  // Sanitize to be safe
   const sanitized = DOMPurify.sanitize(processedContent);
+
+  // Check if this message has multiple career blocks worth collapsing
+  const { intro, blocks } = splitIntoCareerBlocks(sanitized);
+  const hasMultipleBlocks = blocks.length >= 2;
 
   return (
     <div className="flex justify-start mb-4">
@@ -130,12 +242,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         ref={messageRef}
         className="max-w-[85%] bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[0.9375rem] leading-relaxed text-gray-700"
       >
-        <ReactMarkdown
-          remarkPlugins={[remarkGfm]}
-          components={markdownComponents}
-        >
-          {sanitized}
-        </ReactMarkdown>
+        {hasMultipleBlocks ? (
+          <CollapsibleCareerBlocks intro={intro} blocks={blocks} />
+        ) : (
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {sanitized}
+          </ReactMarkdown>
+        )}
       </div>
     </div>
   );
