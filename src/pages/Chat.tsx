@@ -275,9 +275,7 @@ const Chat = () => {
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <a href="/" className="flex items-center">
-                <span className="text-2xl font-bold bg-gradient-to-r from-atlas-blue to-atlas-navy bg-clip-text text-transparent font-heading">
-                  Atlas Assessment
-                </span>
+                <img src="/atlas-logo.png" alt="Atlas Assessment" className="h-9 w-auto" />
               </a>
               <span className="ml-4 text-sm text-gray-500">
                 Career Coach
