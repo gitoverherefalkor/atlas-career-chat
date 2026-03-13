@@ -5,6 +5,20 @@ import { X, ArrowRight, ArrowLeft } from 'lucide-react';
 import { ReportSection } from '@/hooks/useReportSections';
 import AILegend from './AILegend';
 
+// Parse inline HTML (<strong>, <em>, <b>, <i>) into React elements
+// instead of stripping them. Safe: only whitelisted tags are rendered.
+function renderInlineHtml(text: string): React.ReactNode {
+  const parts = text.split(/(<strong>.*?<\/strong>|<em>.*?<\/em>|<b>.*?<\/b>|<i>.*?<\/i>)/g);
+  if (parts.length === 1) return text; // No inline HTML found
+  return parts.map((part, i) => {
+    const strongMatch = part.match(/^<(?:strong|b)>(.*?)<\/(?:strong|b)>$/);
+    if (strongMatch) return <strong key={i} className="font-semibold">{strongMatch[1]}</strong>;
+    const emMatch = part.match(/^<(?:em|i)>(.*?)<\/(?:em|i)>$/);
+    if (emMatch) return <em key={i}>{emMatch[1]}</em>;
+    return part;
+  });
+}
+
 interface GroupedSections {
   [uiSectionId: string]: ReportSection[];
 }
@@ -176,17 +190,12 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
         element = <p key={index} className="font-semibold mt-4 mb-2 text-gray-900">{paragraph.replace(/\*\*/g, '')}</p>;
       } else if (paragraph.startsWith('•') || paragraph.startsWith('- ')) {
         const text = paragraph.startsWith('- ') ? paragraph.substring(2) : paragraph.substring(1);
-        element = <p key={index} className="ml-6 mb-2 before:content-['•'] before:mr-2">{text.trim()}</p>;
+        element = <p key={index} className="ml-6 mb-2 before:content-['•'] before:mr-2">{renderInlineHtml(text.trim())}</p>;
       } else if (paragraph.trim() === '') {
         element = <br key={index} />;
       } else {
-        // Default paragraph - also strip any remaining inline HTML tags
-        const cleanedParagraph = paragraph
-          .replace(/<\/?strong>/g, '')
-          .replace(/<\/?em>/g, '')
-          .replace(/<\/?b>/g, '')
-          .replace(/<\/?i>/g, '');
-        element = <p key={index} className="mb-3">{cleanedParagraph}</p>;
+        // Default paragraph — render inline HTML (strong, em) as React elements
+        element = <p key={index} className="mb-3">{renderInlineHtml(paragraph)}</p>;
       }
 
       if (element) {
