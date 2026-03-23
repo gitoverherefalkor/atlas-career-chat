@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
+import { QuickReplies } from './QuickReplies';
 import { Loader2 } from 'lucide-react';
 import type { ChatMessage as ChatMessageType } from '@/hooks/useChatMessages';
 
@@ -12,12 +13,15 @@ interface ChatMessagesProps {
   messages: ChatMessageType[];
   isLoading: boolean;
   isWaitingForResponse: boolean;
+  isUserTyping: boolean;
   currentSectionIndex: number;
   onSectionDetected: (index: number) => void;
+  onQuickReply: (message: string) => void;
+  onFocusInput: () => void;
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, currentSectionIndex, onSectionDetected }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput }, ref) => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const isUserScrolledUpRef = useRef(false);
@@ -74,14 +78,27 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             </div>
           )}
 
-          {messages.map((msg) => (
-            <ChatMessage
-              key={msg.id}
-              content={msg.content}
-              sender={msg.sender}
-              onSectionDetected={onSectionDetected}
-            />
-          ))}
+          {messages.map((msg, idx) => {
+            const isLastMessage = idx === messages.length - 1;
+            const isLastBotMessage = isLastMessage && msg.sender === 'bot';
+
+            return (
+              <React.Fragment key={msg.id}>
+                <ChatMessage
+                  content={msg.content}
+                  sender={msg.sender}
+                  onSectionDetected={onSectionDetected}
+                />
+                {isLastBotMessage && (
+                  <QuickReplies
+                    onSend={onQuickReply}
+                    onFocusInput={onFocusInput}
+                    visible={!isWaitingForResponse && !isUserTyping}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
 
           <TypingIndicator
             currentSectionIndex={currentSectionIndex}

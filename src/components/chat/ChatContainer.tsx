@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, forwardRef } from 'react';
 import { ChatMessages, ChatMessagesHandle } from './ChatMessages';
-import { ChatInput } from './ChatInput';
+import { ChatInput, ChatInputHandle } from './ChatInput';
 import { ALL_SECTIONS } from './ReportSidebar';
 import { useN8nWebhook } from '@/hooks/useN8nWebhook';
 import { useChatMessages } from '@/hooks/useChatMessages';
@@ -36,6 +36,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     ref
   ) => {
     const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+    const [isUserTyping, setIsUserTyping] = useState(false);
+    const inputRef = useRef<ChatInputHandle>(null);
     const { toast } = useToast();
     const { sendMessage, loadPreviousSession } = useN8nWebhook();
     const { messages, isLoading, addMessage, seedFromHistory, hasMessages } =
@@ -213,12 +215,17 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           messages={messages}
           isLoading={isLoading}
           isWaitingForResponse={isWaitingForResponse}
+          isUserTyping={isUserTyping}
           currentSectionIndex={currentSectionIndex}
           onSectionDetected={onSectionDetected}
+          onQuickReply={handleSend}
+          onFocusInput={() => inputRef.current?.focus()}
         />
 
         <ChatInput
+          ref={inputRef}
           onSend={handleSend}
+          onTypingChange={setIsUserTyping}
           disabled={isSessionCompleted || isWaitingForResponse}
           placeholder={
             isSessionCompleted

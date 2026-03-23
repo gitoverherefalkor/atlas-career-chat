@@ -1,8 +1,13 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Send, Mic } from 'lucide-react';
+
+export interface ChatInputHandle {
+  focus: () => void;
+}
 
 interface ChatInputProps {
   onSend: (message: string) => void;
+  onTypingChange?: (isTyping: boolean) => void;
   disabled?: boolean;
   placeholder?: string;
   isSidebarCollapsed?: boolean;
@@ -11,18 +16,29 @@ interface ChatInputProps {
 const MIN_HEIGHT = 56;
 const MAX_HEIGHT = 212; // 8 lines
 
-export const ChatInput: React.FC<ChatInputProps> = ({
+export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   onSend,
+  onTypingChange,
   disabled = false,
   placeholder = 'Type here',
   isSidebarCollapsed = false,
-}) => {
+}, ref) => {
   const [text, setText] = useState('');
   const [isListening, setIsListening] = useState(false);
   const isListeningRef = useRef(false); // Mirror of isListening for closure access
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
   const finalTranscriptRef = useRef('');
+
+  // Expose focus method so quick replies can focus the input
+  useImperativeHandle(ref, () => ({
+    focus: () => textareaRef.current?.focus(),
+  }));
+
+  // Notify parent when user starts/stops typing (drives quick-reply visibility)
+  useEffect(() => {
+    onTypingChange?.(text.trim().length > 0);
+  }, [text, onTypingChange]);
 
   // Check for speech recognition support
   const SpeechRecognition =
@@ -236,4 +252,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       </div>
     </div>
   );
-};
+});
+
+ChatInput.displayName = 'ChatInput';
