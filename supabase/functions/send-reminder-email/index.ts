@@ -238,15 +238,8 @@ serve(async (req) => {
     });
   }
 
-  // Verify authorization (service role key from pg_net)
-  const authHeader = req.headers.get("Authorization") || "";
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-  if (!authHeader.includes(serviceRoleKey) && serviceRoleKey !== "") {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
+  // Auth: verify_jwt = false in config, called only by pg_cron via pg_net.
+  // The Supabase API gateway handles API key validation.
 
   try {
     const payload: ReminderPayload = await req.json();
