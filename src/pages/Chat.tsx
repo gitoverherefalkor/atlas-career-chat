@@ -67,12 +67,33 @@ const Chat = () => {
   const { toast } = useToast();
   const { trackChatStart, trackChatActivity, trackChatComplete } = useEngagementTracking();
 
+  // Server-side progress fallback (for new device / stale session)
+  const [serverSectionIndex, setServerSectionIndex] = useState<number | null>(null);
+
   // Load report on auth ready
   useEffect(() => {
     if (!authLoading) {
       loadUserReport();
     }
   }, [authLoading, user]);
+
+  // Fetch server-side chat progress as fallback when localStorage is empty/stale
+  useEffect(() => {
+    if (!user?.id || (!showWelcome)) return;
+    // Only fetch if we don't have valid localStorage progress
+    if (hasExistingSession && !sessionIsStale) return;
+
+    supabase
+      .from('user_engagement_tracking' as any)
+      .select('chat_last_section_index, chat_started_at')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data?.chat_started_at && data?.chat_last_section_index != null) {
+          setServerSectionIndex(data.chat_last_section_index as number);
+        }
+      });
+  }, [user?.id, showWelcome, hasExistingSession, sessionIsStale]);
 
   // Auto-restore session when returning with existing (non-stale) session
   useEffect(() => {
@@ -252,11 +273,12 @@ const Chat = () => {
     });
   };
 
-  // Determine returning user state
-  const storedProgressIndex = reportData
+  // Determine returning user state — use localStorage first, server-side as fallback
+  const localProgressIndex = reportData
     ? parseInt(localStorage.getItem(`chat_section_index_${reportData.id}`) || '-1', 10)
     : -1;
-  const isReturningUser = sessionIsStale && storedProgressIndex >= 0;
+  const storedProgressIndex = localProgressIndex >= 0 ? localProgressIndex : (serverSectionIndex ?? -1);
+  const isReturningUser = (!hasExistingSession || sessionIsStale) && storedProgressIndex >= 0;
 
   const loadUserReport = async () => {
     if (!user) {
