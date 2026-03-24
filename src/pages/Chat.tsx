@@ -272,22 +272,23 @@ const Chat = () => {
       {/* Header */}
       <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
         <div className="container-atlas">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex justify-between items-center py-3 sm:py-4">
             <div className="flex items-center">
               <a href="/" className="flex items-center">
-                <img src="/atlas-logo.png" alt="Atlas Assessment" className="h-9 w-auto" />
+                <img src="/atlas-logo.png" alt="Atlas Assessment" className="h-7 sm:h-9 w-auto" />
               </a>
-              <span className="ml-4 text-sm text-gray-500">
+              <span className="hidden sm:inline ml-4 text-sm text-gray-500">
                 Career Coach
               </span>
             </div>
             <Button
               variant="outline"
+              size="sm"
               onClick={() => navigate('/dashboard')}
-              className="hover:bg-atlas-blue/10 hover:text-atlas-navy hover:border-atlas-blue"
+              className="hover:bg-atlas-blue/10 hover:text-atlas-navy hover:border-atlas-blue text-xs sm:text-sm"
             >
-              <LayoutDashboard className="h-4 w-4 mr-2" />
-              Dashboard
+              <LayoutDashboard className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Dashboard</span>
             </Button>
           </div>
         </div>
@@ -316,7 +317,7 @@ const Chat = () => {
       ) : (
         <div className="flex-1 flex relative">
           {/* Chat Area */}
-          <div className={`flex-1 flex flex-col bg-gray-50 transition-all ${isSidebarCollapsed ? 'mr-12' : 'mr-72'}`}>
+          <div className={`flex-1 flex flex-col bg-gray-50 transition-all ${isSidebarCollapsed ? 'md:mr-12' : 'md:mr-72'}`}>
             {/* Session Restored Banner */}
             {showSessionBanner && (
               <div className="bg-atlas-teal/10 border-b border-atlas-teal/20 px-4 py-2 flex items-center justify-center gap-2 text-sm text-atlas-navy">

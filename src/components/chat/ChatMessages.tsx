@@ -71,7 +71,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto"
       >
-        <div className="max-w-[800px] mx-auto px-6 pt-8 pb-[140px]">
+        <div className="max-w-[800px] mx-auto px-3 sm:px-6 pt-4 sm:pt-8 pb-[180px] sm:pb-[140px]">
           {messages.length === 0 && !isWaitingForResponse && (
             <div className="text-center text-gray-400 text-sm py-12">
               Send a message to start your session

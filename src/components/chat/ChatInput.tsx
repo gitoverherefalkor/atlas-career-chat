@@ -197,60 +197,68 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   const sidebarWidth = isSidebarCollapsed ? '48px' : '288px';
 
   return (
-    <div
-      className="fixed bottom-0 left-0 z-30"
-      style={{ right: sidebarWidth }}
-    >
-      {/* Gradient fade */}
-      <div className="h-8 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
+    <>
+      {/* Inline style to apply sidebar offset only on desktop */}
+      <style>{`
+        .chat-input-root { right: 0; }
+        @media (min-width: 768px) {
+          .chat-input-root { right: ${sidebarWidth}; }
+        }
+      `}</style>
+      <div className="chat-input-root fixed bottom-0 left-0 z-30">
+        {/* Gradient fade */}
+        <div className="h-8 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
 
-      <div className="bg-gray-50 px-4 pb-4">
-        <div className="max-w-[800px] mx-auto relative">
-          <textarea
-            ref={textareaRef}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            disabled={disabled}
-            rows={1}
-            className="w-full bg-white border border-gray-200 rounded-xl px-5 pr-[104px] py-4 text-[0.9375rem] leading-normal font-sans resize-none overflow-y-hidden shadow-md focus:outline-none focus:border-atlas-teal focus:ring-2 focus:ring-atlas-teal/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{ minHeight: MIN_HEIGHT, maxHeight: MAX_HEIGHT }}
-          />
+        <div className="bg-gray-50 px-3 sm:px-4 pb-3 sm:pb-4">
+          <div className="max-w-[800px] mx-auto relative">
+            <textarea
+              ref={textareaRef}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              disabled={disabled}
+              rows={1}
+              className="w-full bg-white border border-gray-200 rounded-xl px-4 sm:px-5 pr-[88px] sm:pr-[104px] py-3 sm:py-4 text-sm sm:text-[0.9375rem] leading-normal font-sans resize-none overflow-y-hidden shadow-md focus:outline-none focus:border-atlas-teal focus:ring-2 focus:ring-atlas-teal/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ minHeight: MIN_HEIGHT, maxHeight: MAX_HEIGHT }}
+            />
 
-          {/* Buttons container — positioned inside the textarea visually */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
-            {/* Mic button — only show if browser supports speech recognition */}
-            {SpeechRecognition && (
+            {/* Buttons container — positioned inside the textarea visually */}
+            <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+              {/* Mic button — only show if browser supports speech recognition */}
+              {SpeechRecognition && (
+                <button
+                  type="button"
+                  onClick={toggleListening}
+                  disabled={disabled}
+                  title={isListening ? 'Stop recording' : 'Voice input'}
+                  className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-md transition-colors ${
+                    isListening
+                      ? 'text-red-500 bg-red-50 animate-mic-pulse'
+                      : 'text-gray-400 hover:text-atlas-teal hover:bg-atlas-teal/5'
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  <Mic size={18} className="sm:hidden" />
+                  <Mic size={20} className="hidden sm:block" />
+                </button>
+              )}
+
+              {/* Send button */}
               <button
                 type="button"
-                onClick={toggleListening}
-                disabled={disabled}
-                title={isListening ? 'Stop recording' : 'Voice input'}
-                className={`flex items-center justify-center w-10 h-10 rounded-md transition-colors ${
-                  isListening
-                    ? 'text-red-500 bg-red-50 animate-mic-pulse'
-                    : 'text-gray-400 hover:text-atlas-teal hover:bg-atlas-teal/5'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                onClick={handleSend}
+                disabled={disabled || !text.trim()}
+                title="Send message"
+                className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 bg-atlas-teal rounded-md text-white transition-all hover:bg-atlas-teal/90 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Mic size={20} />
+                <Send size={16} className="sm:hidden" />
+                <Send size={18} className="hidden sm:block" />
               </button>
-            )}
-
-            {/* Send button */}
-            <button
-              type="button"
-              onClick={handleSend}
-              disabled={disabled || !text.trim()}
-              title="Send message"
-              className="flex items-center justify-center w-11 h-11 bg-atlas-teal rounded-md text-white transition-all hover:bg-atlas-teal/90 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send size={18} />
-            </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 });
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { QuestionRenderer } from './QuestionRenderer';
 import { SectionIntroduction } from './SectionIntroduction';
-import { SurveyNavigation } from './SurveyNavigation';
+import { SurveyNavigation, MobileStepIndicator } from './SurveyNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -272,8 +272,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     }
     const sectionDescription = currentSection.description || "Let's continue with the next set of questions.";
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="flex gap-6 max-w-7xl mx-auto px-6">
+      <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+        <MobileStepIndicator
+          sections={survey.sections}
+          currentSectionIndex={currentSectionIndex}
+          completedSections={completedSections}
+          onSectionClick={handleSectionNavigation}
+        />
+        <div className="flex gap-6 max-w-7xl mx-auto px-3 sm:px-6">
           <SurveyNavigation
             sections={survey.sections}
             currentSectionIndex={currentSectionIndex}
@@ -304,27 +310,35 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   return (
     <ErrorBoundary>
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="flex gap-6 max-w-7xl mx-auto px-6">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      {/* Mobile step indicator */}
+      <MobileStepIndicator
+        sections={survey.sections}
+        currentSectionIndex={currentSectionIndex}
+        completedSections={completedSections}
+        onSectionClick={handleSectionNavigation}
+      />
+
+      <div className="flex gap-6 max-w-7xl mx-auto px-3 sm:px-6">
         <SurveyNavigation
           sections={survey.sections}
           currentSectionIndex={currentSectionIndex}
           completedSections={completedSections}
           onSectionClick={handleSectionNavigation}
         />
-        
+
         <div className="flex-1 max-w-4xl">
           {/* Header with smaller, grey title */}
-          <div className="mb-12">
-            <h1 className="text-lg font-light text-gray-600 mb-8">{survey.title}</h1>
-            
+          <div className="mb-6 sm:mb-12">
+            <h1 className="text-base sm:text-lg font-light text-gray-600 mb-4 sm:mb-8">{survey.title}</h1>
+
             {/* Progress with section info */}
-            <div className="mb-8">
+            <div className="mb-4 sm:mb-8">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-bold text-atlas-navy">
+                <span className="text-xs sm:text-sm font-bold text-atlas-navy">
                   Section {currentSectionIndex + 1}. {currentSection.title}
                 </span>
-                <span className="text-sm font-bold text-atlas-navy">
+                <span className="text-xs sm:text-sm font-bold text-atlas-navy">
                   Q. {currentQuestionInSection} of {totalQuestionsInSection}
                 </span>
               </div>
@@ -335,18 +349,18 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           {/* Submission Status Banner */}
           {submissionStatus === 'submitted' && (
             <Card className="mb-6 border-green-200 bg-green-50">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-green-800 font-medium">Assessment Submitted Successfully!</p>
-                    <p className="text-green-700 text-sm">Your responses are saved and your report is being generated. You'll receive an email when it's ready.</p>
+                    <p className="text-green-800 font-medium text-sm sm:text-base">Assessment Submitted Successfully!</p>
+                    <p className="text-green-700 text-xs sm:text-sm">Your responses are saved and your report is being generated.</p>
                   </div>
-                  <Button 
-                    onClick={handleClearSession} 
-                    variant="outline" 
+                  <Button
+                    onClick={handleClearSession}
+                    variant="outline"
                     size="sm"
-                    className="border-green-300 text-green-700 hover:bg-green-100"
+                    className="border-green-300 text-green-700 hover:bg-green-100 w-full sm:w-auto"
                   >
                     Continue to Dashboard
                   </Button>
@@ -357,18 +371,18 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
           {submissionStatus === 'failed' && (
             <Card className="mb-6 border-red-200 bg-red-50">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3">
-                  <RefreshCw className="h-5 w-5 text-red-600" />
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <RefreshCw className="h-5 w-5 text-red-600 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-red-800 font-medium">Submission Failed</p>
-                    <p className="text-red-700 text-sm">Don't worry - your answers are saved! You can try submitting again.</p>
+                    <p className="text-red-800 font-medium text-sm sm:text-base">Submission Failed</p>
+                    <p className="text-red-700 text-xs sm:text-sm">Don't worry - your answers are saved! You can try submitting again.</p>
                   </div>
-                  <Button 
-                    onClick={handleRetrySubmission} 
-                    variant="outline" 
+                  <Button
+                    onClick={handleRetrySubmission}
+                    variant="outline"
                     size="sm"
-                    className="border-red-300 text-red-700 hover:bg-red-100"
+                    className="border-red-300 text-red-700 hover:bg-red-100 w-full sm:w-auto"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
@@ -385,8 +399,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             </Card>
           )}
 
-          {/* Navigation (adjusted spacing) */}
-          <div className="flex justify-between mt-4 mb-4">
+          {/* Navigation — above question on desktop, below on mobile */}
+          <div className="hidden sm:flex justify-between mt-4 mb-4">
             <Button
               variant="ghost"
               onClick={handleBack}
@@ -424,8 +438,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
           {/* Current Question */}
           <Card>
-            <CardContent className="space-y-6 pt-6">
-              <div className="text-lg font-light text-gray-900">
+            <CardContent className="space-y-6 pt-4 sm:pt-6 px-3 sm:px-6">
+              <div className="text-base sm:text-lg font-light text-gray-900">
                 <QuestionRenderer
                   key={currentQuestion.id}
                   question={currentQuestion}
@@ -436,6 +450,45 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
               </div>
             </CardContent>
           </Card>
+
+          {/* Mobile-only navigation — sticky at bottom */}
+          <div className="sm:hidden sticky bottom-0 z-20 bg-gray-50 border-t border-gray-200 px-1 py-3 -mx-3 mt-4">
+            <div className="flex justify-between gap-3">
+              <Button
+                variant="ghost"
+                onClick={handleBack}
+                disabled={isFirstQuestion() || submissionStatus === 'submitted'}
+                className={`flex-1 ${isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}`}
+              >
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                Back
+              </Button>
+              <Button
+                onClick={isLastQuestion() ? handleSubmit : handleNext}
+                disabled={
+                  submissionStatus === 'submitted' ||
+                  !isCurrentQuestionComplete() ||
+                  isLoading ||
+                  isSubmitting
+                }
+                className="flex-1 bg-atlas-teal text-white hover:bg-atlas-teal/90"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : isLastQuestion() ? (
+                  <>
+                    Submit
+                    <Send className="h-4 w-4 ml-1" />
+                  </>
+                ) : (
+                  <>
+                    Continue
+                    <ArrowRight className="h-4 w-4 ml-1" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

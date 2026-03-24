@@ -1131,7 +1131,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         value={entry.startMonth || ''}
                         onValueChange={(val) => updateCareerHistory(index, 'startMonth', val)}
                       >
-                        <SelectTrigger className={`w-24 ${!isActive ? 'text-gray-400' : ''}`}>
+                        <SelectTrigger className={`w-full sm:w-24 ${!isActive ? 'text-gray-400' : ''}`}>
                           <SelectValue placeholder="Mon" />
                         </SelectTrigger>
                         <SelectContent>
@@ -1167,7 +1167,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         onValueChange={(val) => updateCareerHistory(index, 'endMonth', val)}
                         disabled={entry.isCurrent}
                       >
-                        <SelectTrigger className={`w-24 ${entry.isCurrent ? 'opacity-50' : ''} ${!isActive ? 'text-gray-400' : ''}`}>
+                        <SelectTrigger className={`w-full sm:w-24 ${entry.isCurrent ? 'opacity-50' : ''} ${!isActive ? 'text-gray-400' : ''}`}>
                           <SelectValue placeholder={entry.isCurrent ? 'Present' : 'Mon'} />
                         </SelectTrigger>
                         <SelectContent>
