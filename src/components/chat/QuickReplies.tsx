@@ -1,22 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, ArrowRight, RefreshCw, Pencil } from 'lucide-react';
+import { MessageSquare, ArrowRight, CheckCircle, RefreshCw, Pencil } from 'lucide-react';
 
 interface QuickReply {
   label: string;
   mobileLabel: string; // Shorter label for small screens
   message: string; // Text sent as a chat message (empty = focus input instead)
   icon: React.ReactNode;
+  variant?: 'default' | 'primary'; // Visual emphasis
 }
 
 interface QuickRepliesProps {
   onSend: (message: string) => void;
   onFocusInput: () => void;
   visible: boolean;
+  isLastSection?: boolean; // True when on dream jobs (final section)
 }
 
-// Universal button set — works for all personality + career sections.
-// The AI already knows the current section context and will respond appropriately.
-const REPLIES: QuickReply[] = [
+// Standard button set for all sections except the last one.
+const STANDARD_REPLIES: QuickReply[] = [
   {
     label: 'Looks good, next section',
     mobileLabel: 'Next section',
@@ -43,7 +44,37 @@ const REPLIES: QuickReply[] = [
   },
 ];
 
-export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput, visible }) => {
+// Final section (dream jobs) — "next section" becomes "wrap up"
+const FINAL_REPLIES: QuickReply[] = [
+  {
+    label: 'All done, wrap up session',
+    mobileLabel: 'Wrap up',
+    message: 'Looks good, I\'m all done! Let\'s wrap up the session.',
+    icon: <CheckCircle size={14} />,
+    variant: 'primary',
+  },
+  {
+    label: 'I\'d like to explore this more',
+    mobileLabel: 'Explore more',
+    message: 'I\'d like to explore this section a bit more',
+    icon: <RefreshCw size={14} />,
+  },
+  {
+    label: 'I see this differently',
+    mobileLabel: 'I disagree',
+    message: 'I see this a bit differently, I have some feedback',
+    icon: <MessageSquare size={14} />,
+  },
+  {
+    label: 'Something else',
+    mobileLabel: 'Something else',
+    message: '', // Empty = focus input
+    icon: <Pencil size={14} />,
+  },
+];
+
+export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput, visible, isLastSection = false }) => {
+  const replies = isLastSection ? FINAL_REPLIES : STANDARD_REPLIES;
   const [show, setShow] = useState(false);
   const [clicked, setClicked] = useState(false);
 
@@ -74,22 +105,25 @@ export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput
 
   return (
     <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mt-3 mb-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
-      {REPLIES.map((reply) => (
-        <button
-          key={reply.label}
-          onClick={() => handleClick(reply)}
-          className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-2.5 sm:py-2 text-sm font-medium rounded-full
-            border border-gray-200 bg-white text-gray-700
-            hover:border-atlas-teal hover:text-atlas-teal hover:bg-atlas-teal/5
-            active:bg-atlas-teal/10
-            transition-all duration-150 shadow-sm hover:shadow"
-        >
-          {reply.icon}
-          {/* Show shorter label on mobile, full label on sm+ */}
-          <span className="sm:hidden">{reply.mobileLabel}</span>
-          <span className="hidden sm:inline">{reply.label}</span>
-        </button>
-      ))}
+      {replies.map((reply) => {
+        const isPrimary = reply.variant === 'primary';
+        return (
+          <button
+            key={reply.label}
+            onClick={() => handleClick(reply)}
+            className={`inline-flex items-center justify-center sm:justify-start gap-1.5 px-3.5 py-2.5 sm:py-2 text-sm font-medium rounded-full
+              transition-all duration-150 shadow-sm hover:shadow
+              ${isPrimary
+                ? 'border border-atlas-teal bg-atlas-teal/10 text-atlas-teal hover:bg-atlas-teal hover:text-white active:bg-atlas-teal/90'
+                : 'border border-gray-200 bg-white text-gray-700 hover:border-atlas-teal hover:text-atlas-teal hover:bg-atlas-teal/5 active:bg-atlas-teal/10'
+              }`}
+          >
+            {reply.icon}
+            <span className="sm:hidden">{reply.mobileLabel}</span>
+            <span className="hidden sm:inline">{reply.label}</span>
+          </button>
+        );
+      })}
     </div>
   );
 };

@@ -101,6 +101,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                     onSend={onQuickReply}
                     onFocusInput={onFocusInput}
                     visible={!isWaitingForResponse && !isUserTyping}
+                    isLastSection={isDreamJobsSection}
                   />
                 )}
               </React.Fragment>
