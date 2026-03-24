@@ -3,6 +3,7 @@ import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
 import { QuickReplies } from './QuickReplies';
 import { Loader2 } from 'lucide-react';
+import { ALL_SECTIONS } from './ReportSidebar';
 import type { ChatMessage as ChatMessageType } from '@/hooks/useChatMessages';
 
 export interface ChatMessagesHandle {
@@ -18,10 +19,12 @@ interface ChatMessagesProps {
   onSectionDetected: (index: number) => void;
   onQuickReply: (message: string) => void;
   onFocusInput: () => void;
+  onDreamJobsRead?: () => void;
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead }, ref) => {
+    const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const isUserScrolledUpRef = useRef(false);
@@ -81,6 +84,8 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
           {messages.map((msg, idx) => {
             const isLastMessage = idx === messages.length - 1;
             const isLastBotMessage = isLastMessage && msg.sender === 'bot';
+            // Dream jobs message: collapse all blocks by default, track when all opened
+            const isDreamJobsMessage = isLastBotMessage && isDreamJobsSection;
 
             return (
               <React.Fragment key={msg.id}>
@@ -88,6 +93,8 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   content={msg.content}
                   sender={msg.sender}
                   onSectionDetected={onSectionDetected}
+                  defaultAllCollapsed={isDreamJobsMessage}
+                  onAllBlocksOpened={isDreamJobsMessage ? onDreamJobsRead : undefined}
                 />
                 {isLastBotMessage && (
                   <QuickReplies

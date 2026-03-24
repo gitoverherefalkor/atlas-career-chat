@@ -15,6 +15,8 @@ interface ChatContainerProps {
   currentSectionIndex: number;
   onSectionDetected: (index: number) => void;
   onSessionComplete: () => void;
+  onDreamJobsRead?: () => void;
+  onUserActivity?: () => void;
   isSessionCompleted: boolean;
   isSidebarCollapsed: boolean;
 }
@@ -30,6 +32,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       currentSectionIndex,
       onSectionDetected,
       onSessionComplete,
+      onDreamJobsRead,
+      onUserActivity,
       isSessionCompleted,
       isSidebarCollapsed,
     },
@@ -176,6 +180,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       // Add user message immediately
       addMessage('user', message);
       setIsWaitingForResponse(true);
+      onUserActivity?.();
 
       try {
         const response = await sendMessage(sessionId, message, {
@@ -220,6 +225,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           onSectionDetected={onSectionDetected}
           onQuickReply={handleSend}
           onFocusInput={() => inputRef.current?.focus()}
+          onDreamJobsRead={onDreamJobsRead}
         />
 
         <ChatInput

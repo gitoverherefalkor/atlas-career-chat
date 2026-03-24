@@ -9,6 +9,8 @@ interface ChatMessageProps {
   content: string;
   sender: 'user' | 'bot';
   onSectionDetected?: (sectionIndex: number) => void;
+  onAllBlocksOpened?: () => void;
+  defaultAllCollapsed?: boolean;
 }
 
 interface CareerBlock {
@@ -126,17 +128,45 @@ const markdownComponents = {
 };
 
 // Renders a multi-career message as collapsible blocks.
-// First career is open by default; subsequent ones are collapsed.
-const CollapsibleCareerBlocks: React.FC<{ intro: string; blocks: CareerBlock[] }> = ({
+// By default first career is open; when defaultAllCollapsed=true, all start closed.
+// When onAllBlocksOpened is provided, fires once every block has been opened at least once.
+const CollapsibleCareerBlocks: React.FC<{
+  intro: string;
+  blocks: CareerBlock[];
+  defaultAllCollapsed?: boolean;
+  onAllBlocksOpened?: () => void;
+}> = ({
   intro,
   blocks,
+  defaultAllCollapsed = false,
+  onAllBlocksOpened,
 }) => {
-  const [openIndices, setOpenIndices] = useState<Set<number>>(new Set([0]));
+  const [openIndices, setOpenIndices] = useState<Set<number>>(
+    new Set(defaultAllCollapsed ? [] : [0])
+  );
+  // Track which blocks have EVER been opened (for the "all read" signal)
+  const [everOpened, setEverOpened] = useState<Set<number>>(
+    new Set(defaultAllCollapsed ? [] : [0])
+  );
+  const firedRef = useRef(false);
 
   const toggle = (idx: number) => {
     setOpenIndices((prev) => {
       const next = new Set(prev);
       next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
+
+    // Track that this block was opened at least once
+    setEverOpened((prev) => {
+      if (prev.has(idx)) return prev;
+      const next = new Set(prev);
+      next.add(idx);
+      // Check if all blocks have now been opened at least once
+      if (next.size >= blocks.length && !firedRef.current && onAllBlocksOpened) {
+        firedRef.current = true;
+        onAllBlocksOpened();
+      }
       return next;
     });
   };
@@ -197,6 +227,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   content,
   sender,
   onSectionDetected,
+  onAllBlocksOpened,
+  defaultAllCollapsed = false,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
 
@@ -243,7 +275,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         className="max-w-[85%] bg-white border border-gray-200 rounded-2xl px-4 py-3.5 text-[0.9375rem] leading-relaxed text-gray-700"
       >
         {hasMultipleBlocks ? (
-          <CollapsibleCareerBlocks intro={intro} blocks={blocks} />
+          <CollapsibleCareerBlocks
+            intro={intro}
+            blocks={blocks}
+            defaultAllCollapsed={defaultAllCollapsed}
+            onAllBlocksOpened={onAllBlocksOpened}
+          />
         ) : (
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
             {sanitized}

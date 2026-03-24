@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,6 +53,8 @@ const Chat = () => {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(-1);
   const [showSessionBanner, setShowSessionBanner] = useState(false);
   const [isSessionCompleted, setIsSessionCompleted] = useState(false);
+  const [dreamJobsRead, setDreamJobsRead] = useState(false);
+  const autoCompleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [sessionId, setSessionId] = useState<string | null>(
     localStorage.getItem('n8n-chat/sessionId')
   );
@@ -141,6 +143,54 @@ const Chat = () => {
       supabase.removeChannel(channel);
     };
   }, [reportData?.id, currentSectionIndex, isSessionCompleted]);
+
+  // Auto-complete session: 30 min after all dream jobs have been read AND backend is done.
+  // Timer resets on any user message (handleSectionDetected is called per message).
+  const AUTOCOMPLETE_DELAY = 30 * 60 * 1000; // 30 minutes
+
+  const startAutoCompleteTimer = useCallback(() => {
+    // Clear any existing timer
+    if (autoCompleteTimerRef.current) {
+      clearTimeout(autoCompleteTimerRef.current);
+    }
+    // Only start if dream jobs have been read
+    if (!dreamJobsRead) return;
+
+    autoCompleteTimerRef.current = setTimeout(() => {
+      // When timer fires, check if backend is done too
+      if (isSessionCompleted) {
+        setShowClosing(true);
+      } else {
+        // Backend not done yet — re-check in 1 min
+        autoCompleteTimerRef.current = setTimeout(() => {
+          setShowClosing(true);
+        }, 60 * 1000);
+      }
+    }, AUTOCOMPLETE_DELAY);
+  }, [dreamJobsRead, isSessionCompleted]);
+
+  // When dream jobs are read or session completes, start/restart the timer
+  useEffect(() => {
+    if (dreamJobsRead && isSessionCompleted && !showClosing) {
+      startAutoCompleteTimer();
+    }
+    return () => {
+      if (autoCompleteTimerRef.current) {
+        clearTimeout(autoCompleteTimerRef.current);
+      }
+    };
+  }, [dreamJobsRead, isSessionCompleted, showClosing, startAutoCompleteTimer]);
+
+  const handleDreamJobsRead = useCallback(() => {
+    setDreamJobsRead(true);
+  }, []);
+
+  // Reset auto-complete timer when user sends a message
+  const handleUserActivity = useCallback(() => {
+    if (dreamJobsRead && !showClosing) {
+      startAutoCompleteTimer();
+    }
+  }, [dreamJobsRead, showClosing, startAutoCompleteTimer]);
 
   // Save section progress to localStorage
   useEffect(() => {
@@ -344,6 +394,8 @@ const Chat = () => {
                 currentSectionIndex={currentSectionIndex}
                 onSectionDetected={handleSectionDetected}
                 onSessionComplete={() => setShowClosing(true)}
+                onDreamJobsRead={handleDreamJobsRead}
+                onUserActivity={handleUserActivity}
                 isSessionCompleted={isSessionCompleted}
                 isSidebarCollapsed={isSidebarCollapsed}
               />
