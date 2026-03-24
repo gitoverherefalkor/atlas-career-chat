@@ -14,6 +14,7 @@ import { ClosingCard } from '@/components/chat/ClosingCard';
 import { ReportSidebar, ALL_SECTIONS } from '@/components/chat/ReportSidebar';
 import { ChatContainer } from '@/components/chat/ChatContainer';
 import type { ChatMessagesHandle } from '@/components/chat/ChatMessages';
+import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
 // ========================================================================
 // OLD N8N IMPORTS (preserved, no longer used)
@@ -64,6 +65,7 @@ const Chat = () => {
   const { profile, isLoading: profileLoading } = useProfile();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { trackChatStart, trackChatActivity, trackChatComplete } = useEngagementTracking();
 
   // Load report on auth ready
   useEffect(() => {
@@ -192,6 +194,13 @@ const Chat = () => {
     }
   }, [dreamJobsRead, showClosing, startAutoCompleteTimer]);
 
+  // Track chat completion for reminder system
+  useEffect(() => {
+    if (showClosing) {
+      trackChatComplete();
+    }
+  }, [showClosing, trackChatComplete]);
+
   // Save section progress to localStorage
   useEffect(() => {
     if (reportData && currentSectionIndex >= 0) {
@@ -221,6 +230,9 @@ const Chat = () => {
     setIsInitializing(true);
     setShowWelcome(false);
     setIsInitializing(false);
+
+    // Track chat session start for reminder system
+    trackChatStart();
   };
 
   // Section click handler — uses ref to scroll within custom chat
@@ -230,7 +242,14 @@ const Chat = () => {
 
   // Handle section detected from bot messages — only goes forward
   const handleSectionDetected = (index: number) => {
-    setCurrentSectionIndex((prev) => Math.max(prev, index));
+    setCurrentSectionIndex((prev) => {
+      const newIndex = Math.max(prev, index);
+      // Track chat progress when section advances
+      if (newIndex > prev) {
+        trackChatActivity(newIndex);
+      }
+      return newIndex;
+    });
   };
 
   // Determine returning user state

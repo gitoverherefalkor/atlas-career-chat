@@ -254,6 +254,7 @@ export type Database = {
           country: string | null
           created_at: string
           email: string
+          email_reminders_enabled: boolean
           first_name: string | null
           id: string
           last_name: string | null
@@ -268,6 +269,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email: string
+          email_reminders_enabled?: boolean
           first_name?: string | null
           id: string
           last_name?: string | null
@@ -282,6 +284,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string
+          email_reminders_enabled?: boolean
           first_name?: string | null
           id?: string
           last_name?: string | null
@@ -562,6 +565,60 @@ export type Database = {
           created_at?: string | null
           id?: string
           title?: string
+        }
+        Relationships: []
+      }
+      user_engagement_tracking: {
+        Row: {
+          user_id: string
+          survey_started_at: string | null
+          survey_last_activity_at: string | null
+          survey_completed_at: string | null
+          survey_last_section: number | null
+          survey_total_sections: number | null
+          chat_started_at: string | null
+          chat_last_activity_at: string | null
+          chat_completed_at: string | null
+          chat_last_section_index: number | null
+          signup_reminder_sent_at: string | null
+          survey_reminder_sent_at: string | null
+          chat_reminder_sent_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          survey_started_at?: string | null
+          survey_last_activity_at?: string | null
+          survey_completed_at?: string | null
+          survey_last_section?: number | null
+          survey_total_sections?: number | null
+          chat_started_at?: string | null
+          chat_last_activity_at?: string | null
+          chat_completed_at?: string | null
+          chat_last_section_index?: number | null
+          signup_reminder_sent_at?: string | null
+          survey_reminder_sent_at?: string | null
+          chat_reminder_sent_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          survey_started_at?: string | null
+          survey_last_activity_at?: string | null
+          survey_completed_at?: string | null
+          survey_last_section?: number | null
+          survey_total_sections?: number | null
+          chat_started_at?: string | null
+          chat_last_activity_at?: string | null
+          chat_completed_at?: string | null
+          chat_last_section_index?: number | null
+          signup_reminder_sent_at?: string | null
+          survey_reminder_sent_at?: string | null
+          chat_reminder_sent_at?: string | null
+          created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }

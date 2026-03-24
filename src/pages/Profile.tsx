@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, User, Save, FileText, CheckCircle } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { ArrowLeft, User, Save, FileText, CheckCircle, Bell } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +24,10 @@ const Profile = () => {
     age_range: profile?.age_range || '',
   });
 
+  const [emailReminders, setEmailReminders] = useState(
+    (profile as any)?.email_reminders_enabled ?? true
+  );
+
   React.useEffect(() => {
     if (profile) {
       setFormData({
@@ -33,6 +38,7 @@ const Profile = () => {
         pronouns: profile.pronouns || '',
         age_range: profile.age_range || '',
       });
+      setEmailReminders((profile as any)?.email_reminders_enabled ?? true);
     }
   }, [profile]);
 
@@ -294,6 +300,45 @@ const Profile = () => {
                 </Button>
               </div>
             </form>
+          </CardContent>
+        </Card>
+
+        {/* Email Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Bell className="h-5 w-5 mr-2" />
+              Email Preferences
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-sm">Email Reminders</p>
+                <p className="text-sm text-gray-500">
+                  Receive helpful reminders to continue your assessment and explore your career insights
+                </p>
+              </div>
+              <Switch
+                checked={emailReminders}
+                onCheckedChange={async (checked) => {
+                  setEmailReminders(checked);
+                  // Save immediately — no need to hit Save button
+                  const { error } = await supabase
+                    .from('profiles')
+                    .update({
+                      email_reminders_enabled: checked,
+                      updated_at: new Date().toISOString()
+                    } as any)
+                    .eq('id', user?.id);
+
+                  if (error) {
+                    console.error('Failed to update email preference:', error);
+                    setEmailReminders(!checked); // revert on error
+                  }
+                }}
+              />
+            </div>
           </CardContent>
         </Card>
       </div>

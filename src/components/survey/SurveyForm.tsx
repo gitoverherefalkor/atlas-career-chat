@@ -11,6 +11,7 @@ import { useSurveyState } from './hooks/useSurveyState';
 import { useResumePreFill } from './hooks/useResumePreFill';
 import { useSurveyNavigation } from './hooks/useSurveyNavigation';
 import { useSurveySubmission } from './hooks/useSurveySubmission';
+import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
   constructor(props: any) {
@@ -70,6 +71,27 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     getFilteredQuestions,
     clearSession
   } = surveyState;
+
+  // Engagement tracking for reminder emails
+  const { trackSurveyStart, trackSurveyProgress, trackSurveyComplete } = useEngagementTracking();
+
+  // Track survey start when first response appears
+  const hasStartedRef = React.useRef(false);
+  useEffect(() => {
+    if (!hasStartedRef.current && isSessionLoaded && Object.keys(responses).length > 0) {
+      hasStartedRef.current = true;
+      trackSurveyStart();
+    }
+  }, [isSessionLoaded, responses, trackSurveyStart]);
+
+  // Track section changes
+  const prevSectionRef = React.useRef(currentSectionIndex);
+  useEffect(() => {
+    if (survey && currentSectionIndex !== prevSectionRef.current) {
+      prevSectionRef.current = currentSectionIndex;
+      trackSurveyProgress(currentSectionIndex, survey.sections?.length ?? 0);
+    }
+  }, [currentSectionIndex, survey, trackSurveyProgress]);
 
   // IMPORTANT: Call ALL hooks unconditionally
   useResumePreFill({ isSessionLoaded, responses, setResponses, surveyId });

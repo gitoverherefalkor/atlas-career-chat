@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
 interface UseSurveySubmissionProps {
   surveyId: string;
@@ -25,6 +26,7 @@ export const useSurveySubmission = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { trackSurveyComplete } = useEngagementTracking();
 
   const markAccessCodeAsUsed = useCallback(async () => {
     if (!accessCodeData?.id) return;
@@ -110,6 +112,9 @@ export const useSurveySubmission = ({
       }
 
       setSubmissionStatus('submitted');
+
+      // Track survey completion for reminder system
+      trackSurveyComplete();
 
       toast({
         title: "Survey Submitted Successfully",
