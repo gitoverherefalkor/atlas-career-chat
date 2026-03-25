@@ -57,9 +57,16 @@ const PaymentSuccess = () => {
           setAccessCode(data.accessCode);
         }
 
-        // Store purchase data for pre-filling the auth form
+        // Store purchase data for pre-filling the auth form and access code recovery
+        // (persists across OAuth redirects and page navigations)
         if (data?.purchaseData) {
           setPurchaseData(data.purchaseData);
+          localStorage.setItem('purchase_data', JSON.stringify({
+            email: data.purchaseData.email,
+            firstName: data.purchaseData.firstName,
+            lastName: data.purchaseData.lastName,
+            accessCode: data.accessCode
+          }));
         }
         
         setIsComplete(true);
