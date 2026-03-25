@@ -129,13 +129,12 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
       'application/pdf',
       'application/msword',
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain'
     ];
 
     if (!allowedTypes.includes(file.type)) {
       toast({
         title: "File type not supported",
-        description: "Please upload a PDF, Word document, or plain text file.",
+        description: "Please upload a PDF or Word document (.pdf, .doc, .docx).",
         variant: "destructive",
       });
       return;
@@ -257,7 +256,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                   <Upload className="h-12 w-12 text-gray-400 mx-auto" />
                   <div>
                     <p className="font-medium text-gray-700">Upload your resume or CV</p>
-                    <p className="text-sm text-gray-500">PDF, Word, or text files up to 10MB</p>
+                    <p className="text-sm text-gray-500">PDF or Word documents up to 10MB</p>
                   </div>
                   <Button
                     onClick={() => fileInputRef.current?.click()}
@@ -269,7 +268,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                     ref={fileInputRef}
                     type="file"
                     className="hidden"
-                    accept=".pdf,.doc,.docx,.txt"
+                    accept=".pdf,.doc,.docx"
                     onChange={handleFileSelect}
                   />
                 </div>

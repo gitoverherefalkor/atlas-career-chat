@@ -82,20 +82,7 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
         throw new Error('Resume processing failed. Please try again.');
       }
 
-      const responseText = await webhookResponse.text();
-      console.log('[ResumeUpload] n8n raw response:', responseText);
-
-      if (!responseText || responseText.trim() === '') {
-        throw new Error('Resume processing returned an empty response. The n8n workflow may not be responding correctly.');
-      }
-
-      let n8nResult;
-      try {
-        n8nResult = JSON.parse(responseText);
-      } catch {
-        console.error('[ResumeUpload] Failed to parse n8n response as JSON:', responseText.substring(0, 200));
-        throw new Error('Resume processing returned invalid data. Please try again.');
-      }
+      const n8nResult = await webhookResponse.json();
       console.log('[ResumeUpload] n8n response:', n8nResult);
 
       // Step 4: Extract survey data from n8n response
