@@ -122,30 +122,52 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
           return;
         }
 
-        const redirectUrl = `${window.location.origin}/auth/confirm`;
-
-        const { data, error } = await supabase.auth.signUp({
-          email: formData.email,
-          password: formData.password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              first_name: formData.firstName,
-              last_name: formData.lastName,
-              access_code: accessCode
+        // Create pre-verified account via edge function (no email verification needed —
+        // the access code was already emailed, proving email ownership)
+        const { data: signupData, error: signupError } = await supabase.functions.invoke(
+          'signup-with-access-code',
+          {
+            body: {
+              email: formData.email,
+              password: formData.password,
+              firstName: formData.firstName,
+              lastName: formData.lastName,
+              accessCode: accessCode
             }
           }
-        });
+        );
 
-        if (error) {
-          setError(error.message);
+        if (signupError) {
+          setError(signupError.message || 'Failed to create account. Please try again.');
           return;
         }
 
-        if (data.user) {
-          localStorage.setItem('atlas_auth_method', 'email');
-          setSentToEmail(formData.email);
-          setEmailSent(true);
+        if (signupData?.error) {
+          setError(signupData.error);
+          return;
+        }
+
+        if (signupData?.success) {
+          // User created with confirmed email — sign in to establish session
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: formData.email,
+            password: formData.password
+          });
+
+          if (signInError) {
+            // Rare edge case: user was created but sign-in failed (network/timing)
+            setError('Account created successfully! Please sign in with your email and password.');
+            return;
+          }
+
+          if (signInData.user) {
+            localStorage.setItem('atlas_auth_method', 'email');
+            toast({
+              title: "Account created!",
+              description: "Welcome to Atlas Assessments.",
+            });
+            navigate('/dashboard');
+          }
         }
       }
     } catch (error) {

@@ -66,10 +66,21 @@ const Dashboard = () => {
     }
   };
 
-  // Check if user has an access code in metadata and should see the modal
+  // Check if user has an access code in metadata or localStorage (social signup fallback)
   useEffect(() => {
     if (user && !authLoading && !profileLoading && !reportsLoading) {
-      const accessCode = user.user_metadata?.access_code;
+      // Check user_metadata first (email signups), then localStorage (social signups from payment flow)
+      let accessCode = user.user_metadata?.access_code;
+      if (!accessCode) {
+        try {
+          const purchaseData = localStorage.getItem('purchase_data');
+          if (purchaseData) {
+            accessCode = JSON.parse(purchaseData).accessCode || null;
+          }
+        } catch {
+          // Ignore parse errors
+        }
+      }
       if (accessCode) {
         setUserAccessCode(accessCode);
         // Only show modal if user hasn't verified/started assessment yet
