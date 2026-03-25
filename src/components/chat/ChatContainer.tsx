@@ -228,6 +228,18 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           onDreamJobsRead={onDreamJobsRead}
         />
 
+        {/* Mobile-only Complete Session CTA — sidebar button isn't visible on mobile */}
+        {isSessionCompleted && (
+          <div className="md:hidden px-4 py-3 bg-white border-t border-gray-100">
+            <button
+              onClick={onSessionComplete}
+              className="w-full bg-atlas-teal text-white rounded-full py-3 font-semibold text-sm flex items-center justify-center gap-2"
+            >
+              View Your Report →
+            </button>
+          </div>
+        )}
+
         <ChatInput
           ref={inputRef}
           onSend={handleSend}
@@ -235,7 +247,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           disabled={isSessionCompleted || isWaitingForResponse}
           placeholder={
             isSessionCompleted
-              ? 'Session completed - click Complete Session to view your report'
+              ? 'Session completed - your report is ready above'
               : 'Type here'
           }
           isSidebarCollapsed={isSidebarCollapsed}
