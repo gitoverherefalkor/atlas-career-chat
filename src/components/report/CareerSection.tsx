@@ -49,11 +49,18 @@ const CareerSection: React.FC<CareerSectionProps> = ({
   onSectionExpand,
   readSections
 }) => {
+  // Generic subsection headings that n8n sometimes stores as the title instead of the career name
+  const GENERIC_HEADINGS = ['what works for you', 'the trade-offs', 'quick facts', 'ai impact', 'overview'];
+
   // Get the title from database, fall back to static title. Strip any HTML tags.
+  // Skip generic subsection headings that aren't actual career names.
   const getCareerTitle = (careerId: string, fallbackTitle: string): string => {
     const sections = groupedSections[careerId];
     if (sections && sections.length > 0 && sections[0].title) {
-      return stripHtml(sections[0].title);
+      const cleaned = stripHtml(sections[0].title).replace(/\*+/g, '').trim();
+      if (cleaned && !GENERIC_HEADINGS.includes(cleaned.toLowerCase())) {
+        return cleaned;
+      }
     }
     return fallbackTitle;
   };

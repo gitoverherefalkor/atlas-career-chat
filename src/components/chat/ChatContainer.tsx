@@ -118,7 +118,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       { phrase: "let's look at your core values", sectionIndex: 4 },
       // Top Career 1 — exact intro: "one of the most suitable jobs for you is"
       { phrase: 'one of the most suitable jobs for you is', sectionIndex: 5 },
-      // Career 2 & 3: no intro (continues from previous), heading detection handles
+      // Career 2 — agent often says "that was your second career match" or "your second top career"
+      { phrase: 'second career match', sectionIndex: 6 },
+      { phrase: 'second top career', sectionIndex: 6 },
+      { phrase: 'your second career', sectionIndex: 6 },
+      // Career 3 — agent often says "that was your third career match" or "your third top career"
+      { phrase: 'third career match', sectionIndex: 7 },
+      { phrase: 'third top career', sectionIndex: 7 },
+      { phrase: 'your third career', sectionIndex: 7 },
       // Runner-ups — exact intro phrase as backup for heading detection
       { phrase: 'runner-up career matches', sectionIndex: 8 },
       // Outside-the-box — NEEDS boilerplate (bare ### [title] headers in SOP)

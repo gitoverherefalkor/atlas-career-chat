@@ -31,7 +31,9 @@ const USER_STORAGE_KEYS = [
   'pre_survey_upload_complete',
   'n8n-chat/sessionId',
   'n8n-chat/sessionTimestamp',
-  'purchase_data',
+  // NOTE: purchase_data is NOT in this list — it must persist through
+  // sign-up so the Assessment page can pre-fill the access code.
+  // It is cleared explicitly after access code verification.
   'payment_country',
 ];
 

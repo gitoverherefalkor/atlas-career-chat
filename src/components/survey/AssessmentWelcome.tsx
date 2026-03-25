@@ -70,6 +70,8 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
       }
 
       if (data.valid) {
+        // Access code verified — clean up purchase_data, no longer needed
+        localStorage.removeItem('purchase_data');
         onVerified(data.accessCode);
       } else {
         setError(data.error);

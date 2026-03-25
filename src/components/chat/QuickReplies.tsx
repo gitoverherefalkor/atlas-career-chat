@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, ArrowRight, CheckCircle, RefreshCw, Pencil } from 'lucide-react';
+import { ThumbsDown, ArrowRight, CheckCircle, Search, Pencil } from 'lucide-react';
 
 interface QuickReply {
   label: string;
@@ -28,13 +28,13 @@ const STANDARD_REPLIES: QuickReply[] = [
     label: 'I\'d like to explore this more',
     mobileLabel: 'Explore more',
     message: 'I\'d like to explore this section a bit more',
-    icon: <RefreshCw size={14} />,
+    icon: <Search size={14} />,
   },
   {
     label: 'I see this differently',
     mobileLabel: 'I disagree',
     message: 'I see this a bit differently, I have some feedback',
-    icon: <MessageSquare size={14} />,
+    icon: <ThumbsDown size={14} />,
   },
   {
     label: 'Something else',
@@ -57,13 +57,13 @@ const FINAL_REPLIES: QuickReply[] = [
     label: 'I\'d like to explore this more',
     mobileLabel: 'Explore more',
     message: 'I\'d like to explore this section a bit more',
-    icon: <RefreshCw size={14} />,
+    icon: <Search size={14} />,
   },
   {
     label: 'I see this differently',
     mobileLabel: 'I disagree',
     message: 'I see this a bit differently, I have some feedback',
-    icon: <MessageSquare size={14} />,
+    icon: <ThumbsDown size={14} />,
   },
   {
     label: 'Something else',

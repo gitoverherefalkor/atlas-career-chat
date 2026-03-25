@@ -51,7 +51,12 @@ const Chat = () => {
   const [showClosing, setShowClosing] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [currentSectionIndex, setCurrentSectionIndex] = useState(-1);
+  // Initialize from localStorage to avoid 0/11 flash on session resume
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(() => {
+    if (!reportData) return -1;
+    const stored = localStorage.getItem(`chat_section_index_${reportData.id}`);
+    return stored ? parseInt(stored, 10) : -1;
+  });
   const [showSessionBanner, setShowSessionBanner] = useState(false);
   const [isSessionCompleted, setIsSessionCompleted] = useState(false);
   const [dreamJobsRead, setDreamJobsRead] = useState(false);
