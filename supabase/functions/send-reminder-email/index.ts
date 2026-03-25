@@ -211,6 +211,47 @@ function chatNotCompletedEmail(
   };
 }
 
+// ── Template 4: Chat completed but hasn't visited dashboard/report ──────────
+
+function reportNotViewedEmail(firstName: string): { subject: string; html: string } {
+  return {
+    subject: `Your full career report is ready, ${firstName}`,
+    html: wrapEmail(`
+      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+        Your personalized career report is waiting
+      </h2>
+
+      <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
+        Hi ${firstName},
+      </p>
+
+      <p style="font-size: 16px; line-height: 1.6; margin-bottom: 24px; color: #444;">
+        Great news — your AI career session is complete, and your full report has been generated. It combines everything from your assessment with the insights from your coaching session into one comprehensive overview.
+      </p>
+
+      <div style="background-color: #f0f7fa; border-left: 4px solid #27A1A1; padding: 20px; margin-bottom: 28px; border-radius: 0 8px 8px 0;">
+        <p style="color: #012F64; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">What's in your report:</p>
+        <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
+          <li><strong>Executive Summary</strong> — your personality, strengths, and top career matches at a glance</li>
+          <li><strong>Detailed Career Matches</strong> — with your coaching feedback incorporated</li>
+          <li><strong>Dream Job Analysis</strong> — how your aspirations align with your profile</li>
+          <li><strong>Actionable Next Steps</strong> — tailored to your goals</li>
+        </ul>
+      </div>
+
+      <p style="font-size: 16px; line-height: 1.6; margin-bottom: 24px; color: #444;">
+        We're also adding new features to your dashboard soon — including CV optimization and job search tools. Check back regularly to get the most out of your assessment.
+      </p>
+
+      ${ctaButton("View Your Report", `${BASE_URL}/dashboard`)}
+
+      <p style="font-size: 13px; color: #888; text-align: center;">
+        Your report is permanently saved in your dashboard — access it anytime.
+      </p>
+    `),
+  };
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 // Edge Function handler
 // ──────────────────────────────────────────────────────────────────────────────
@@ -225,7 +266,7 @@ interface ReminderUser {
 }
 
 interface ReminderPayload {
-  type: "signup_no_start" | "survey_abandoned" | "chat_not_completed";
+  type: "signup_no_start" | "survey_abandoned" | "chat_not_completed" | "report_not_viewed";
   users: ReminderUser[];
 }
 
@@ -275,6 +316,9 @@ serve(async (req) => {
             user.first_name,
             user.chat_last_section_index ?? -1,
           );
+          break;
+        case "report_not_viewed":
+          emailContent = reportNotViewedEmail(user.first_name);
           break;
         default:
           console.error(`Unknown reminder type: ${type}`);

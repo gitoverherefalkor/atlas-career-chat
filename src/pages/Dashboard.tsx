@@ -15,6 +15,7 @@ import ReportPreview from '@/components/report/ReportPreview';
 import { AccessCodeModal } from '@/components/dashboard/AccessCodeModal';
 import { ExecSummaryModal } from '@/components/dashboard/ExecSummaryModal';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
+import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
 // Helper to get assessment session from localStorage
 const getAssessmentSession = () => {
@@ -49,6 +50,14 @@ const Dashboard = () => {
   const execSummarySection = reportSections.find(
     (s) => s.section_type === 'exec_summary' || s.section_type === 'executive_summary'
   );
+
+  // Track dashboard visit for users who have completed chat
+  const { trackDashboardVisit } = useEngagementTracking();
+  useEffect(() => {
+    if (latestReport && latestReport.status === 'completed') {
+      trackDashboardVisit();
+    }
+  }, [latestReport?.id]);
 
   // Show exec summary modal on first visit after report completion
   useEffect(() => {

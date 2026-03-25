@@ -20,10 +20,14 @@ CREATE TABLE IF NOT EXISTS public.user_engagement_tracking (
   chat_completed_at TIMESTAMPTZ,
   chat_last_section_index INT,
 
+  -- Dashboard visit tracking (after chat completion)
+  dashboard_visited_after_chat_at TIMESTAMPTZ,
+
   -- Reminder flags (timestamps prevent duplicate sends)
   signup_reminder_sent_at TIMESTAMPTZ,
   survey_reminder_sent_at TIMESTAMPTZ,
   chat_reminder_sent_at TIMESTAMPTZ,
+  report_reminder_sent_at TIMESTAMPTZ,
 
   -- Bookkeeping
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -91,6 +95,7 @@ DECLARE
   signup_users JSONB;
   survey_users JSONB;
   chat_users JSONB;
+  report_users JSONB;
 BEGIN
   -- Read key from Supabase Vault (encrypted at rest, only accessible to SECURITY DEFINER)
   SELECT decrypted_secret INTO service_role_key
@@ -208,6 +213,40 @@ BEGIN
     WHERE user_id IN (
       SELECT (u->>'user_id')::uuid
       FROM jsonb_array_elements(chat_users) u
+    );
+  END IF;
+
+  -- ===== Reminder 4: Chat completed but hasn't visited dashboard (24h after chat complete) =====
+  SELECT COALESCE(jsonb_agg(jsonb_build_object(
+    'user_id', t.user_id,
+    'email', p.email,
+    'first_name', COALESCE(p.first_name, 'there')
+  )), '[]'::jsonb)
+  INTO report_users
+  FROM public.user_engagement_tracking t
+  JOIN public.profiles p ON t.user_id = p.id
+  WHERE t.chat_completed_at IS NOT NULL
+    AND t.dashboard_visited_after_chat_at IS NULL
+    AND t.report_reminder_sent_at IS NULL
+    AND t.chat_completed_at < NOW() - INTERVAL '24 hours'
+    AND p.email_reminders_enabled = TRUE
+    AND p.email IS NOT NULL;
+
+  IF jsonb_array_length(report_users) > 0 THEN
+    PERFORM net.http_post(
+      url := edge_function_url,
+      body := jsonb_build_object('type', 'report_not_viewed', 'users', report_users),
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || service_role_key
+      )
+    );
+
+    UPDATE public.user_engagement_tracking
+    SET report_reminder_sent_at = NOW(), updated_at = NOW()
+    WHERE user_id IN (
+      SELECT (u->>'user_id')::uuid
+      FROM jsonb_array_elements(report_users) u
     );
   END IF;
 END;

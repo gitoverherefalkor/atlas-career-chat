@@ -84,6 +84,13 @@ export function useEngagementTracking() {
     });
   }, [upsert]);
 
+  /** Called when a user who has completed chat visits the dashboard */
+  const trackDashboardVisit = useCallback(() => {
+    upsert({
+      dashboard_visited_after_chat_at: new Date().toISOString(),
+    });
+  }, [upsert]);
+
   return {
     trackSurveyStart,
     trackSurveyProgress,
@@ -91,5 +98,6 @@ export function useEngagementTracking() {
     trackChatStart,
     trackChatActivity,
     trackChatComplete,
+    trackDashboardVisit,
   };
 }
