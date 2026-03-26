@@ -81,6 +81,9 @@ export function useEngagementTracking() {
     upsert({
       chat_completed_at: new Date().toISOString(),
       chat_last_activity_at: new Date().toISOString(),
+      // Force section index to max — even if counter detection missed sections,
+      // the completion marker is authoritative (all 11 sections were covered)
+      chat_last_section_index: 10,
     });
   }, [upsert]);
 
