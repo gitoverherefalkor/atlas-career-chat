@@ -141,10 +141,14 @@ const CollapsibleCareerBlocks: React.FC<{
   defaultAllCollapsed = false,
   onAllBlocksOpened,
 }) => {
+  // Sub-blocks = everything after the first (title) block.
+  // The title block is always visible, so only sub-blocks are collapsible.
+  const subBlocks = blocks.slice(1);
+
   const [openIndices, setOpenIndices] = useState<Set<number>>(
     new Set(defaultAllCollapsed ? [] : [0])
   );
-  // Track which blocks have EVER been opened (for the "all read" signal)
+  // Track which sub-blocks have EVER been opened (for the "all read" signal)
   const [everOpened, setEverOpened] = useState<Set<number>>(
     new Set(defaultAllCollapsed ? [] : [0])
   );
@@ -157,19 +161,23 @@ const CollapsibleCareerBlocks: React.FC<{
       return next;
     });
 
-    // Track that this block was opened at least once
+    // Track that this sub-block was opened at least once
     setEverOpened((prev) => {
       if (prev.has(idx)) return prev;
       const next = new Set(prev);
       next.add(idx);
-      // Check if all blocks have now been opened at least once
-      if (next.size >= blocks.length && !firedRef.current && onAllBlocksOpened) {
+      // Check if all sub-blocks have now been opened at least once
+      if (next.size >= subBlocks.length && !firedRef.current && onAllBlocksOpened) {
         firedRef.current = true;
         onAllBlocksOpened();
       }
       return next;
     });
   };
+
+  // First block is the career title + intro — always expanded, never collapsible.
+  // Remaining blocks (subBlocks) are sub-sections — collapsible.
+  const titleBlock = blocks[0];
 
   return (
     <div>
@@ -182,43 +190,59 @@ const CollapsibleCareerBlocks: React.FC<{
         </div>
       )}
 
-      {/* Career blocks */}
-      <div className="flex flex-col gap-2">
-        {blocks.map((block, idx) => {
-          const isOpen = openIndices.has(idx);
-          return (
-            <div
-              key={idx}
-              className="border border-gray-200 rounded-xl overflow-hidden"
-            >
-              {/* Clickable header — always visible */}
-              <button
-                onClick={() => toggle(idx)}
-                className="w-full flex items-center justify-between px-4 py-3 text-left bg-white hover:bg-gray-50 transition-colors"
-              >
-                {/* h3 so DOM section-detection still works */}
-                <h3 className="text-base font-bold text-atlas-navy font-heading m-0 leading-snug">
-                  {block.title}
-                </h3>
-                <ChevronDown
-                  className={`w-4 h-4 text-gray-400 shrink-0 ml-3 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180' : ''
-                  }`}
-                />
-              </button>
+      {/* Career title block — always expanded, no chevron */}
+      {titleBlock && (
+        <div className="mb-3">
+          <h3 className="text-lg font-bold text-atlas-navy font-heading mt-4 mb-2">
+            {titleBlock.title}
+          </h3>
+          {titleBlock.body && (
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              {titleBlock.body}
+            </ReactMarkdown>
+          )}
+        </div>
+      )}
 
-              {/* Collapsible body */}
-              {isOpen && (
-                <div className="px-4 pb-4 pt-2 border-t border-gray-100 text-[0.9375rem]">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                    {block.body}
-                  </ReactMarkdown>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+      {/* Sub-section blocks — collapsible */}
+      {subBlocks.length > 0 && (
+        <div className="flex flex-col gap-2">
+          {subBlocks.map((block, idx) => {
+            const isOpen = openIndices.has(idx);
+            return (
+              <div
+                key={idx}
+                className="border border-gray-200 rounded-xl overflow-hidden"
+              >
+                {/* Clickable header — always visible */}
+                <button
+                  onClick={() => toggle(idx)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-left bg-white hover:bg-gray-50 transition-colors"
+                >
+                  {/* h3 so DOM section-detection still works */}
+                  <h3 className="text-base font-bold text-atlas-navy font-heading m-0 leading-snug">
+                    {block.title}
+                  </h3>
+                  <ChevronDown
+                    className={`w-4 h-4 text-gray-400 shrink-0 ml-3 transition-transform duration-200 ${
+                      isOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {/* Collapsible body */}
+                {isOpen && (
+                  <div className="px-4 pb-4 pt-2 border-t border-gray-100 text-[0.9375rem]">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                      {block.body}
+                    </ReactMarkdown>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };
