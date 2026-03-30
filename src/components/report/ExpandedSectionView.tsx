@@ -88,15 +88,31 @@ const MarkdownContent: React.FC<{ content: string }> = ({ content }) => (
   </ReactMarkdown>
 );
 
+// Returns true if the feedback text is essentially "no changes" boilerplate
+const isEmptyFeedback = (text: string): boolean => {
+  const normalized = text.toLowerCase().replace(/[^a-z\s]/g, '').trim();
+  return (
+    normalized.includes('no changes needed') ||
+    normalized.includes('no changes were made') ||
+    normalized.includes('no feedback was provided') ||
+    normalized.includes('no adjustments needed') ||
+    normalized.includes('no modifications') ||
+    normalized === ''
+  );
+};
+
 // Styled feedback and explore cards that appear below section content
 const FeedbackExploreCards: React.FC<{
   feedback?: string | null;
   explore?: string | null;
   showAILegend?: boolean;
-}> = ({ feedback, explore, showAILegend }) => (
+}> = ({ feedback, explore, showAILegend }) => {
+  const hasMeaningfulFeedback = feedback && !isEmptyFeedback(feedback);
+
+  return (
   <>
-    {showAILegend && feedback && <AILegend />}
-    {feedback && (
+    {showAILegend && hasMeaningfulFeedback && <AILegend />}
+    {hasMeaningfulFeedback && (
       <div className="mt-6 p-5 bg-amber-50 border border-amber-200 rounded-lg">
         <div className="flex items-center gap-2 mb-3">
           <span className="text-xl">💬</span>
@@ -119,7 +135,8 @@ const FeedbackExploreCards: React.FC<{
       </div>
     )}
   </>
-);
+  );
+};
 
 // Collapsible accordion for multi-career sections (runner-up, outside-box, dream-jobs).
 // Replaces the old JUMP TO navigation — each career is its own expandable block.

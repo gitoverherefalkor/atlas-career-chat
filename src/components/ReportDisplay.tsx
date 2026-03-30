@@ -7,6 +7,19 @@ import ChapterCard from './report/ChapterCard';
 import ExpandedSectionView from './report/ExpandedSectionView';
 import { chapters } from './report/reportData';
 
+// Returns true if the feedback text is essentially "no changes" boilerplate
+const isEmptyFeedback = (text: string): boolean => {
+  const normalized = text.toLowerCase().replace(/[^a-z\s]/g, '').trim();
+  return (
+    normalized.includes('no changes needed') ||
+    normalized.includes('no changes were made') ||
+    normalized.includes('no feedback was provided') ||
+    normalized.includes('no adjustments needed') ||
+    normalized.includes('no modifications') ||
+    normalized === ''
+  );
+};
+
 interface ReportDisplayProps {
   userEmail?: string;
   onSectionExpanded?: (expanded: boolean) => void;
@@ -156,8 +169,8 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
         }
       }
 
-      // Add feedback if present
-      if (section.feedback) {
+      // Add feedback if present (skip "no changes needed" boilerplate)
+      if (section.feedback && !isEmptyFeedback(section.feedback)) {
         content += `\n\n---\n\n**💬 Chat Session Feedback**\n\n${section.feedback}`;
       }
 
@@ -194,8 +207,8 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
 
       combinedContent += content;
 
-      // Add feedback if present
-      if (section.feedback) {
+      // Add feedback if present (skip "no changes needed" boilerplate)
+      if (section.feedback && !isEmptyFeedback(section.feedback)) {
         combinedContent += `\n\n**💬 Chat Session Feedback**\n\n${section.feedback}`;
       }
 
