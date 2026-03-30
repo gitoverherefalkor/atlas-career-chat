@@ -4,7 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
 import { Card, CardContent } from '@/components/ui/card';
-import { X, ArrowRight, ArrowLeft, ChevronDown } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, ChevronDown, Bot } from 'lucide-react';
 import { ReportSection } from '@/hooks/useReportSections';
 import AILegend from './AILegend';
 
@@ -88,6 +88,39 @@ const MarkdownContent: React.FC<{ content: string }> = ({ content }) => (
   </ReactMarkdown>
 );
 
+// Extract "How AI will impact this role" from markdown content into a separate block
+function extractAIImpactSection(markdown: string): { contentWithoutAI: string; aiImpactContent: string | null } {
+  // Match the h5 header and everything until the next h5 or end of content
+  const pattern = /##### How AI will impact this role\s*\n([\s\S]*?)(?=##### |\s*$)/i;
+  const match = markdown.match(pattern);
+
+  if (!match) return { contentWithoutAI: markdown, aiImpactContent: null };
+
+  const aiContent = match[1].trim();
+  if (!aiContent) return { contentWithoutAI: markdown, aiImpactContent: null };
+
+  // Remove the entire AI impact section (header + content) from the main content
+  const contentWithoutAI = markdown.replace(/##### How AI will impact this role\s*\n[\s\S]*?(?=##### |\s*$)/i, '').trim();
+
+  return { contentWithoutAI, aiImpactContent: aiContent };
+}
+
+// Styled callout box for AI impact analysis — displayed separately to highlight it as a USP
+const AIImpactCallout: React.FC<{ content: string }> = ({ content }) => (
+  <div className="mt-6 p-5 bg-slate-50 border border-slate-200 rounded-lg">
+    <div className="flex items-center gap-2 mb-3">
+      <Bot className="w-5 h-5 text-slate-600" />
+      <h4 className="font-semibold text-slate-700">AI Impact on This Role</h4>
+    </div>
+    <div className="text-slate-700">
+      <MarkdownContent content={content} />
+    </div>
+  </div>
+);
+
+// Sections that should show the AI impact callout (not outside-box or dream-jobs)
+const AI_IMPACT_SECTIONS = ['first-career', 'second-career', 'third-career', 'runner-up'];
+
 // Returns true if the feedback text is essentially "no changes" boilerplate
 const isEmptyFeedback = (text: string): boolean => {
   const normalized = text.toLowerCase().replace(/[^a-z\s]/g, '').trim();
@@ -143,7 +176,8 @@ const FeedbackExploreCards: React.FC<{
 const CollapsibleCareerAccordion: React.FC<{
   sections: ReportSection[];
   showAILegend: boolean;
-}> = ({ sections, showAILegend }) => {
+  showAIImpact?: boolean;
+}> = ({ sections, showAILegend, showAIImpact = false }) => {
   const [openIndices, setOpenIndices] = useState<Set<number>>(new Set());
 
   const toggle = (idx: number) => {
@@ -163,6 +197,15 @@ const CollapsibleCareerAccordion: React.FC<{
         // Strip leading heading from content — the title is shown in the accordion header instead
         let bodyMarkdown = htmlToMarkdown(section.content || '');
         bodyMarkdown = bodyMarkdown.replace(/^#{1,4}\s+\**.*?\**\s*\n+/, '').trim();
+
+        // Extract AI impact into its own callout if applicable
+        let mainContent = bodyMarkdown;
+        let aiImpactContent: string | null = null;
+        if (showAIImpact) {
+          const extracted = extractAIImpactSection(bodyMarkdown);
+          mainContent = extracted.contentWithoutAI;
+          aiImpactContent = extracted.aiImpactContent;
+        }
 
         return (
           <div key={section.id} className="border border-gray-200 rounded-xl overflow-hidden">
@@ -189,8 +232,9 @@ const CollapsibleCareerAccordion: React.FC<{
                   style={{ fontSize: '16px', lineHeight: '1.8' }}
                 >
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={dashboardComponents}>
-                    {DOMPurify.sanitize(bodyMarkdown)}
+                    {DOMPurify.sanitize(mainContent)}
                   </ReactMarkdown>
+                  {aiImpactContent && <AIImpactCallout content={aiImpactContent} />}
                   <FeedbackExploreCards
                     feedback={section.feedback}
                     explore={section.explore}
@@ -341,9 +385,19 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
       content = converted.replace(/^#{1,4}\s+\**.*?\**\s*\n+/, '').trim();
     }
 
+    // Extract AI impact section into its own callout for eligible career sections
+    let mainContent = content;
+    let aiImpactContent: string | null = null;
+    if (AI_IMPACT_SECTIONS.includes(sectionId)) {
+      const extracted = extractAIImpactSection(htmlToMarkdown(content));
+      mainContent = extracted.contentWithoutAI;
+      aiImpactContent = extracted.aiImpactContent;
+    }
+
     return (
       <>
-        <MarkdownContent content={content} />
+        <MarkdownContent content={mainContent} />
+        {aiImpactContent && <AIImpactCallout content={aiImpactContent} />}
         <FeedbackExploreCards
           feedback={dbSection.feedback}
           explore={dbSection.explore}
@@ -455,6 +509,7 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                     <CollapsibleCareerAccordion
                       sections={groupedSections[expandedSection]}
                       showAILegend={careerSectionsWithAILegend.includes(expandedSection)}
+                      showAIImpact={AI_IMPACT_SECTIONS.includes(expandedSection)}
                     />
                   </>
                 ) : (
