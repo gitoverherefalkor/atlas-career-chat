@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
 import { QuickReplies } from './QuickReplies';
@@ -25,6 +25,12 @@ interface ChatMessagesProps {
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
   ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead }, ref) => {
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
+    const [dreamJobsOpened, setDreamJobsOpened] = useState(false);
+
+    // Detect if the user has already sent a wrap-up message
+    const hasWrappedUp = messages.some(
+      (msg) => msg.sender === 'user' && msg.content.toLowerCase().includes('wrap up')
+    );
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
     const isUserScrolledUpRef = useRef(false);
@@ -94,14 +100,15 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   sender={msg.sender}
                   onSectionDetected={onSectionDetected}
                   defaultAllCollapsed={isDreamJobsMessage}
-                  onAllBlocksOpened={isDreamJobsMessage ? onDreamJobsRead : undefined}
+                  onAllBlocksOpened={isDreamJobsMessage ? () => { setDreamJobsOpened(true); onDreamJobsRead?.(); } : undefined}
                 />
                 {isLastBotMessage && (
                   <QuickReplies
                     onSend={onQuickReply}
                     onFocusInput={onFocusInput}
-                    visible={!isWaitingForResponse && !isUserTyping}
+                    visible={!isWaitingForResponse && !isUserTyping && (!isDreamJobsMessage || dreamJobsOpened)}
                     isLastSection={isDreamJobsSection}
+                    isWrappedUp={hasWrappedUp}
                   />
                 )}
               </React.Fragment>

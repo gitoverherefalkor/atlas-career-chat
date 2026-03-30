@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ThumbsDown, ArrowRight, CheckCircle, Search, Pencil } from 'lucide-react';
+import { ThumbsDown, ArrowRight, CheckCircle, Search, Pencil, LayoutDashboard } from 'lucide-react';
 
 interface QuickReply {
   label: string;
@@ -7,6 +7,7 @@ interface QuickReply {
   message: string; // Text sent as a chat message (empty = focus input instead)
   icon: React.ReactNode;
   variant?: 'default' | 'primary'; // Visual emphasis
+  action?: 'navigate-dashboard'; // Special action instead of sending a message
 }
 
 interface QuickRepliesProps {
@@ -14,6 +15,7 @@ interface QuickRepliesProps {
   onFocusInput: () => void;
   visible: boolean;
   isLastSection?: boolean; // True when on dream jobs (final section)
+  isWrappedUp?: boolean; // True after the user has sent the wrap-up message
 }
 
 // Standard button set for all sections except the last one.
@@ -73,8 +75,20 @@ const FINAL_REPLIES: QuickReply[] = [
   },
 ];
 
-export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput, visible, isLastSection = false }) => {
-  const replies = isLastSection ? FINAL_REPLIES : STANDARD_REPLIES;
+// Post-wrap-up — only option is to leave
+const POST_WRAP_REPLIES: QuickReply[] = [
+  {
+    label: 'Exit to Dashboard',
+    mobileLabel: 'Exit to Dashboard',
+    message: '',
+    icon: <LayoutDashboard size={14} />,
+    variant: 'primary',
+    action: 'navigate-dashboard',
+  },
+];
+
+export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput, visible, isLastSection = false, isWrappedUp = false }) => {
+  const replies = isWrappedUp ? POST_WRAP_REPLIES : isLastSection ? FINAL_REPLIES : STANDARD_REPLIES;
   const [show, setShow] = useState(false);
   const [clicked, setClicked] = useState(false);
 
@@ -93,6 +107,11 @@ export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput
   if (!show || clicked) return null;
 
   const handleClick = (reply: QuickReply) => {
+    if (reply.action === 'navigate-dashboard') {
+      window.location.href = '/dashboard';
+      return;
+    }
+
     setClicked(true);
 
     if (reply.message) {
