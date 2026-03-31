@@ -1,5 +1,6 @@
 
 import React from 'react';
+import DOMPurify from 'dompurify';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Trash2, FileText } from 'lucide-react';
@@ -31,7 +32,7 @@ const ReportSections: React.FC<ReportSectionsProps> = ({ reportId }) => {
   };
 
   const formatContent = (content: string) => {
-    return content.replace(/\n/g, '<br />');
+    return DOMPurify.sanitize(content.replace(/\n/g, '<br />'), { ALLOWED_TAGS: ['br'] });
   };
 
   if (isLoading) {

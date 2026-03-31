@@ -19,7 +19,7 @@ const AssessmentPage: React.FC = () => {
   const [step, dispatch] = useReducer(stepReducer, assessmentSteps.VERIFY_ACCESS_CODE);
 
   // Development-only infinite render guard
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.MODE === 'development') {
     const renderCount = useRef(0);
     useEffect(() => {
       renderCount.current++;

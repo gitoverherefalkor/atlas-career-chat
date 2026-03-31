@@ -16,14 +16,6 @@ import { ChatContainer } from '@/components/chat/ChatContainer';
 import type { ChatMessagesHandle } from '@/components/chat/ChatMessages';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
-// ========================================================================
-// OLD N8N IMPORTS (preserved, no longer used)
-// import DOMPurify from 'dompurify';
-// import '@n8n/chat/style.css';
-// import '@/styles/n8n-chat.css';
-// import { createChat } from '@n8n/chat';
-// ========================================================================
-
 type ReportData = Tables<'reports'>;
 
 const Chat = () => {
