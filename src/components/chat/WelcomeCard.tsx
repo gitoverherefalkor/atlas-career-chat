@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sparkles, CheckCircle2 } from 'lucide-react';
-import atlasFigure from '@/Atlas_figure_AA_live.png';
+import atlasFigure from '@/logos/Atlas_figure_AA_live.png';
 
 interface WelcomeCardProps {
   onReady: () => void;

@@ -19,6 +19,7 @@ import {
   BarChart3,
   FileText
 } from 'lucide-react';
+import AtlasFigure from '@/logos/Atlas_figure_AA_live.png';
 
 // --- Reusable UI ---
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -557,7 +558,10 @@ const Index = () => {
     if (user) {
       navigate('/dashboard');
     } else {
-      navigate('/payment');
+      const pricingSection = document.getElementById('pricing');
+      if (pricingSection) {
+        pricingSection.scrollIntoView({ behavior: 'smooth' });
+      }
     }
   };
 
@@ -677,10 +681,10 @@ const Index = () => {
               </div>
             </div>
 
-            {/* Right: Video Placeholder */}
-            <div className="lg:w-1/2 w-full max-w-xl">
+            {/* Right: Video Placeholder (hidden until real video is ready) */}
+            {/* <div className="lg:w-1/2 w-full max-w-xl">
               <VideoPlaceholder />
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
@@ -697,7 +701,7 @@ const Index = () => {
 
             {/* Step 1 */}
             <div className="flex flex-col md:flex-row gap-10 items-center">
-              <div className="md:w-1/2">
+              <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-[#012F64] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg">1</div>
                   <h3 className="text-2xl font-black text-[#012F64]">Take the Assessment</h3>
@@ -706,17 +710,11 @@ const Index = () => {
                   Answer questions about your background, skills, work style, values, and goals. Designed to capture what actually matters for career fit - not just personality types.
                 </p>
               </div>
-              <div className="md:w-1/2">
-                <ScreenshotPlaceholder
-                  title="Survey Interface"
-                  description="Screenshot of a survey question being answered. Show the clean interface, progress indicator, and a question like the 'high-pressure deadline' scenario."
-                />
-              </div>
             </div>
 
             {/* Step 2 */}
             <div className="flex flex-col md:flex-row-reverse gap-10 items-center">
-              <div className="md:w-1/2">
+              <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-[#012F64] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg">2</div>
                   <h3 className="text-2xl font-black text-[#012F64]">AI Analyzes Your Profile</h3>
@@ -725,17 +723,11 @@ const Index = () => {
                   A specialized 170+ step AI workflow (not ChatGPT) analyzes your responses, generates your personality profile, and matches you to specific careers with personalized justifications.
                 </p>
               </div>
-              <div className="md:w-1/2">
-                <ScreenshotPlaceholder
-                  title="Dashboard / Results Overview"
-                  description="Screenshot of the dashboard showing career categories landing. Show the 4 career categories (Top Careers, Runner-up, Outside the Box, Dream Job) with career cards visible."
-                />
-              </div>
             </div>
 
             {/* Step 3 */}
             <div className="flex flex-col md:flex-row gap-10 items-center">
-              <div className="md:w-1/2">
+              <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-[#012F64] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg">3</div>
                   <h3 className="text-2xl font-black text-[#012F64]">Chat With Your AI Coach</h3>
@@ -744,17 +736,11 @@ const Index = () => {
                   Discuss your results one-on-one. Ask follow-up questions, explore specific careers in depth, and get honest answers about fit, trade-offs, and next steps.
                 </p>
               </div>
-              <div className="md:w-1/2">
-                <ScreenshotPlaceholder
-                  title="AI Coaching Chat"
-                  description="Screenshot of the chat interface mid-conversation. Show the AI coach discussing a specific career recommendation with the user asking a follow-up question."
-                />
-              </div>
             </div>
 
             {/* Step 4 */}
             <div className="flex flex-col md:flex-row-reverse gap-10 items-center">
-              <div className="md:w-1/2">
+              <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-[#012F64] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg">4</div>
                   <h3 className="text-2xl font-black text-[#012F64]">Get Your Report</h3>
@@ -762,12 +748,6 @@ const Index = () => {
                 <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   Your complete career report - incorporating chat feedback - with personality analysis, all career recommendations, salary data, AI impact ratings, and concrete next steps.
                 </p>
-              </div>
-              <div className="md:w-1/2">
-                <ScreenshotPlaceholder
-                  title="Career Report Detail"
-                  description="Screenshot of a career recommendation detail page showing role name, fit score, salary range, AI impact rating, and the 'why this fits you' section."
-                />
               </div>
             </div>
           </div>
@@ -842,7 +822,7 @@ const Index = () => {
                 <span className="text-6xl font-black text-[#012F64] tracking-tighter">€39</span>
               </div>
               <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-10">Introductory Price</p>
-              <Button className="w-full py-6 text-xl tracking-tight shadow-xl" onClick={handleGetStarted}>Get Beta Access</Button>
+              <Button className="w-full py-6 text-xl tracking-tight shadow-xl" onClick={() => navigate('/auth')}>Get Beta Access</Button>
               <p className="text-gray-400 text-xs font-medium mt-6">Full refund if you're not satisfied.</p>
             </div>
           </div>
@@ -898,12 +878,15 @@ const Index = () => {
             <h2 className="text-4xl md:text-5xl font-black text-[#012F64] leading-tight">Why I Built This</h2>
           </div>
           <div className="bg-white p-10 md:p-14 rounded-[3rem] shadow-sm border border-gray-100">
-            <div className="flex items-center gap-6 mb-10">
-              <div className="w-20 h-20 bg-[#012F64] rounded-2xl flex items-center justify-center text-white font-black text-4xl shadow-xl">SG</div>
-              <div>
-                <div className="font-black text-[#012F64] text-2xl tracking-tighter">Sjoerd Geurts</div>
-                <div className="text-[#27A1A1] uppercase tracking-[0.25em] text-[10px] font-black">Founder, Atlas Assessment</div>
+            <div className="flex items-center justify-between mb-10">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 bg-[#012F64] rounded-2xl flex items-center justify-center text-white font-black text-4xl shadow-xl">SG</div>
+                <div>
+                  <div className="font-black text-[#012F64] text-2xl tracking-tighter">Sjoerd Geurts</div>
+                  <div className="text-[#27A1A1] uppercase tracking-[0.25em] text-[10px] font-black">Founder, Atlas Assessment</div>
+                </div>
               </div>
+              <img src={AtlasFigure} alt="Atlas Assessment" className="w-28 h-28 md:w-36 md:h-36 object-contain hidden sm:block" />
             </div>
             <div className="space-y-6 text-gray-600 leading-relaxed font-medium text-lg">
               <p>I've watched too many smart people stuck in careers they fell into by accident. Myself included.</p>
@@ -982,9 +965,11 @@ const Index = () => {
           <p className="text-lg md:text-xl text-blue-100/70 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
             Get clarity on your career direction. Take the assessment, get honest recommendations, make informed decisions.
           </p>
-          <Button className="text-xl md:text-2xl py-7 px-14 mb-6 uppercase tracking-widest shadow-[0_0_50px_rgba(39,161,161,0.3)]" onClick={handleGetStarted}>
-            Get Your Atlas Assessment - €39
-          </Button>
+          <div className="flex justify-center">
+            <Button className="text-xl md:text-2xl py-7 px-14 mb-6 uppercase tracking-widest shadow-[0_0_50px_rgba(39,161,161,0.3)]" onClick={handleGetStarted}>
+              Get Your Atlas Assessment - €39
+            </Button>
+          </div>
           <p className="text-blue-100/30 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Beta access. Full refund if you're not satisfied.</p>
         </div>
       </section>
