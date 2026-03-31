@@ -1,5 +1,5 @@
 
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,6 +27,7 @@ export const useSurveySubmission = ({
   const { toast } = useToast();
   const navigate = useNavigate();
   const { trackSurveyComplete } = useEngagementTracking();
+  const isSubmittingRef = useRef(false);
 
   const markAccessCodeAsUsed = useCallback(async () => {
     if (!accessCodeData?.id) return;
@@ -65,6 +66,9 @@ export const useSurveySubmission = ({
 
   const handleSubmit = useCallback(async () => {
     if (!accessCodeData || !user) return;
+    // Prevent double-submission (ref check is synchronous, unlike state)
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
 
     setIsSubmitting(true);
     setSubmissionStatus('submitting');
@@ -85,6 +89,7 @@ export const useSurveySubmission = ({
       if (submissionError) {
         console.error('Error submitting survey:', submissionError);
         setSubmissionStatus('failed');
+        isSubmittingRef.current = false; // Allow retry on failure
         toast({
           title: "Submission Failed",
           description: "Failed to submit your responses. Please try again - your answers are saved.",
@@ -131,6 +136,7 @@ export const useSurveySubmission = ({
     } catch (error) {
       console.error('Error submitting survey:', error);
       setSubmissionStatus('failed');
+      isSubmittingRef.current = false; // Allow retry on failure
       toast({
         title: "Submission Failed",
         description: "An unexpected error occurred. Please try again - your answers are saved.",
@@ -142,6 +148,7 @@ export const useSurveySubmission = ({
   }, [surveyId, responses, accessCodeData, user, setIsSubmitting, setSubmissionStatus, onComplete, toast, markAccessCodeAsUsed]);
 
   const handleRetrySubmission = () => {
+    isSubmittingRef.current = false;
     setSubmissionStatus('idle');
     handleSubmit();
   };
