@@ -822,7 +822,7 @@ const Index = () => {
                 <span className="text-6xl font-black text-[#012F64] tracking-tighter">€39</span>
               </div>
               <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-10">Introductory Price</p>
-              <Button className="w-full py-6 text-xl tracking-tight shadow-xl" onClick={() => navigate('/auth')}>Get Beta Access</Button>
+              <Button className="w-full py-6 text-xl tracking-tight shadow-xl" onClick={() => navigate('/payment')}>Get Beta Access</Button>
               <p className="text-gray-400 text-xs font-medium mt-6">Full refund if you're not satisfied.</p>
             </div>
           </div>
