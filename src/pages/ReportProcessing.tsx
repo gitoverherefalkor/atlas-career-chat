@@ -19,7 +19,7 @@ const SOFT_WARNING_AT = 3 * 60;   // 3 minutes
 const END_STATE_AT = 5 * 60;      // 5 minutes
 const POLL_INTERVAL = 15_000;     // 15 seconds
 
-type Phase = 'normal' | 'soft-warning' | 'end-state' | 'redirecting';
+type Phase = 'normal' | 'soft-warning' | 'end-state' | 'redirecting' | 'failed';
 
 const ReportProcessing = () => {
   const [timeElapsed, setTimeElapsed] = useState(0);
@@ -38,13 +38,18 @@ const ReportProcessing = () => {
         .from('reports')
         .select('id, status')
         .eq('user_id', user.id)
-        .in('status', ['completed', 'pending_review'])
+        .in('status', ['completed', 'pending_review', 'failed'])
         .order('created_at', { ascending: false })
         .limit(1);
 
       if (error) throw error;
 
       if (reports && reports.length > 0) {
+        const report = reports[0];
+        if (report.status === 'failed') {
+          setPhase('failed');
+          return;
+        }
         setPhase('redirecting');
         toast({
           title: "Your coach is ready!",
@@ -95,7 +100,9 @@ const ReportProcessing = () => {
         {/* Main card */}
         <Card className="shadow-lg border-0">
           <CardContent className="pt-8 pb-6 px-6">
-            {phase === 'redirecting' ? (
+            {phase === 'failed' ? (
+              <FailedState onDashboard={() => navigate('/dashboard')} />
+            ) : phase === 'redirecting' ? (
               <RedirectingState />
             ) : phase === 'end-state' ? (
               <EndState onDashboard={() => navigate('/dashboard')} />
@@ -234,6 +241,41 @@ function EndState({ onDashboard }: { onDashboard: () => void }) {
         </p>
         <p className="text-xs text-blue-600 mt-1">
           We'll email you as soon as your career coach is ready.
+        </p>
+      </div>
+
+      <Button
+        onClick={onDashboard}
+        className="w-full bg-atlas-teal hover:bg-atlas-teal/90 text-white"
+      >
+        Go to Dashboard
+      </Button>
+    </div>
+  );
+}
+
+// ─── Failed state ───────────────────────────────────────────────────
+function FailedState({ onDashboard }: { onDashboard: () => void }) {
+  return (
+    <div className="space-y-5">
+      <div className="text-center space-y-3">
+        <AlertCircle className="h-10 w-10 text-red-500 mx-auto" />
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold text-atlas-navy">
+            Something went wrong
+          </h2>
+          <p className="text-sm text-gray-600">
+            We hit a snag generating your report. Our team has been notified.
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-center">
+        <p className="text-sm text-blue-800 font-medium">
+          Your survey data is safe — nothing has been lost.
+        </p>
+        <p className="text-xs text-blue-600 mt-1">
+          We'll email you as soon as your report is ready.
         </p>
       </div>
 
