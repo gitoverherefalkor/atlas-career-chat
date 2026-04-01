@@ -163,11 +163,10 @@ export const mapExtractedDataToSurvey = (extractedData: Record<string, any>): Re
     }
   }
 
-  // Career history - format as array of 5 entries (padded with empty entries)
+  // Career history - keep all roles (overflow beyond 5 shown greyed out in UI)
   if (extractedData.career_history && Array.isArray(extractedData.career_history)) {
     const validHistory = extractedData.career_history
       .filter((entry: any) => entry && entry.title)
-      .slice(0, 5)
       .map((entry: any) => ({
         title: entry.title || '',
         companyName: entry.companyName || '',
@@ -182,11 +181,7 @@ export const mapExtractedDataToSurvey = (extractedData: Record<string, any>): Re
         isCurrent: entry.isCurrent || false
       }));
 
-    // Pad to 5 entries
-    while (validHistory.length < 5) {
-      validHistory.push({ ...EMPTY_CAREER_ENTRY });
-    }
-
+    // No padding - only send filled entries
     surveyData[QUESTION_MAPPINGS.job_title] = validHistory;
   }
 

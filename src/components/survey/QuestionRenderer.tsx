@@ -899,17 +899,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return `${years} year${years !== 1 ? 's' : ''}, ${months} month${months !== 1 ? 's' : ''}`;
       };
 
-      // Ensure value is always an array with 5 entries (handle string prefill from AI)
-      const ensureFiveEntries = (arr: CareerHistoryEntry[]): CareerHistoryEntry[] => {
-        const result = [...arr];
-        while (result.length < 5) {
-          result.push({ ...emptyEntry });
-        }
-        return result.slice(0, 5);
+      // Only keep filled entries (no empty padding) - handle string prefill from AI
+      const stripEmptyEntries = (arr: CareerHistoryEntry[]): CareerHistoryEntry[] => {
+        const filled = arr.filter(e => e.title && e.title.trim());
+        return filled.length > 0 ? filled : [];
       };
       const careerHistoryValue: CareerHistoryEntry[] = Array.isArray(value)
-        ? ensureFiveEntries(value)
-        : [{ ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }, { ...emptyEntry }];
+        ? stripEmptyEntries(value)
+        : [];
 
       // Helper to convert month name to number for sorting
       const monthToNumber = (month: string): number => {
@@ -965,24 +962,40 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         onChange(newHistory);
       };
 
-      const addCareerRow = () => {
-        if (careerHistoryValue.length < 5) {
-          onChange([...careerHistoryValue, { ...emptyEntry }]);
-        }
-      };
+      const MAX_ACTIVE_ROLES = 5;
 
-      const removeCareerRow = (index: number) => {
-        // Clear the entry and collapse gaps (move remaining entries up)
+      const addCareerRow = (position: 'top' | 'bottom' = 'bottom') => {
+        // Only allow adding if fewer than 5 active (filled) entries in the top 5
+        const activeCount = careerHistoryValue.slice(0, MAX_ACTIVE_ROLES).filter(e => e.title?.trim()).length;
+        if (activeCount >= MAX_ACTIVE_ROLES) return;
         const newHistory = [...careerHistoryValue];
-        newHistory.splice(index, 1);
-        // Always keep 5 slots
-        while (newHistory.length < 5) {
-          newHistory.push({ ...emptyEntry });
+        if (position === 'top') {
+          newHistory.unshift({ ...emptyEntry });
+        } else {
+          // Insert at position 5 max (before overflow), or at the end if < 5
+          const insertAt = Math.min(newHistory.length, MAX_ACTIVE_ROLES);
+          newHistory.splice(insertAt, 0, { ...emptyEntry });
         }
         onChange(newHistory);
       };
 
+      const removeCareerRow = (index: number) => {
+        const newHistory = [...careerHistoryValue];
+        newHistory.splice(index, 1);
+        onChange(newHistory);
+      };
+
+      const moveCareerRow = (index: number, direction: 'up' | 'down') => {
+        const newHistory = [...careerHistoryValue];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= newHistory.length) return;
+        [newHistory[index], newHistory[targetIndex]] = [newHistory[targetIndex], newHistory[index]];
+        onChange(newHistory);
+      };
+
       const getRoleLabel = (index: number, entry: CareerHistoryEntry) => {
+        const isOverflow = index >= MAX_ACTIVE_ROLES;
+        if (isOverflow) return `${entry.title || `Role ${index + 1}`} — not included`;
         if (entry.isCurrent) return `Role ${index + 1} (Current)`;
         if (index === 0) return 'Role 1 (Most Recent)';
         return `Role ${index + 1}`;
@@ -997,6 +1010,22 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return !!(entry.title && entry.title.trim());
       };
 
+      const activeFilledCount = careerHistoryValue.slice(0, MAX_ACTIVE_ROLES).filter(e => e.title?.trim()).length;
+
+      const AddRoleButton = ({ position }: { position: 'top' | 'bottom' }) => (
+        <button
+          type="button"
+          onClick={() => addCareerRow(position)}
+          disabled={activeFilledCount >= MAX_ACTIVE_ROLES}
+          className="w-full py-3 px-4 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-500 hover:border-atlas-teal hover:text-atlas-teal hover:bg-atlas-teal/5 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Add a role {activeFilledCount >= MAX_ACTIVE_ROLES ? '(5 max)' : `(${activeFilledCount}/5)`}
+        </button>
+      );
+
       return (
         <div>
           <div
@@ -1005,26 +1034,66 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           />
           {renderDescription()}
 
-          <div className="space-y-6">
+          <div className="space-y-4">
+            <AddRoleButton position="top" />
+
             {careerHistoryValue.map((entry, index) => {
               const isActive = isActiveEntry(entry);
+              const isOverflow = index >= MAX_ACTIVE_ROLES;
+
+              // Render divider just before first overflow entry
+              const showDividerBefore = index === MAX_ACTIVE_ROLES;
 
               return (
+                <React.Fragment key={index}>
+                {showDividerBefore && (
+                  <div className="flex items-center gap-3 pt-2">
+                    <div className="flex-1 border-t border-gray-300" />
+                    <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Move up to include</span>
+                    <div className="flex-1 border-t border-gray-300" />
+                  </div>
+                )}
                 <div
-                  key={index}
                   className={`p-5 border-2 rounded-xl shadow-sm transition-all duration-200 ${
-                    isActive
-                      ? 'bg-white border-atlas-teal/30'
-                      : 'bg-gray-50 border-gray-200 opacity-60'
+                    isOverflow
+                      ? 'bg-gray-50 border-gray-200 opacity-50'
+                      : isActive
+                        ? 'bg-white border-atlas-teal/30'
+                        : 'bg-white border-gray-200'
                   }`}
                 >
-                  {/* Role header */}
+                  {/* Role header with reorder + remove */}
                   <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
-                      <span className={`text-base font-semibold ${isActive ? 'text-atlas-navy' : 'text-gray-400'}`}>
+                      {/* Reorder arrows */}
+                      <div className="flex flex-col -space-y-1 mr-1">
+                        <button
+                          type="button"
+                          onClick={() => moveCareerRow(index, 'up')}
+                          disabled={index === 0}
+                          className="p-0.5 text-gray-400 hover:text-atlas-teal disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                          title="Move up"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveCareerRow(index, 'down')}
+                          disabled={index === careerHistoryValue.length - 1}
+                          className="p-0.5 text-gray-400 hover:text-atlas-teal disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                          title="Move down"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      </div>
+                      <span className={`text-base font-semibold ${isOverflow ? 'text-gray-400' : isActive ? 'text-atlas-navy' : 'text-gray-400'}`}>
                         {getRoleLabel(index, entry)}
                       </span>
-                      {isActive && (
+                      {isActive && !isOverflow && (
                         <div className="text-green-600">
                           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -1037,7 +1106,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       onClick={() => removeCareerRow(index)}
                       className="text-sm text-gray-400 hover:text-red-500 font-medium transition-colors"
                     >
-                      Clear
+                      Remove
                     </button>
                   </div>
 
@@ -1221,11 +1290,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                   )}
                 </div>
               </div>
+              </React.Fragment>
               );
             })}
 
+            <AddRoleButton position="bottom" />
+
             <p className="text-xs text-gray-500 mt-2 text-center">
-              Fill in up to 5 of your most recent or parallel professional roles. Click "Clear" to remove roles you don't want included.
+              Up to 5 roles are included in your assessment. Use the arrows to reorder.
             </p>
           </div>
         </div>
@@ -1238,8 +1310,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       const rawCareerData = allResponses?.[linkedQuestionId];
       const careerHistoryData: CareerHistoryEntry[] = Array.isArray(rawCareerData) ? rawCareerData : [];
 
-      // Filter to only show roles that have a title
-      const validCareers = careerHistoryData.filter(c => c.title && c.title.trim() !== '');
+      // Filter to only show active roles (first 5 with a title)
+      const validCareers = careerHistoryData.slice(0, 5).filter(c => c.title && c.title.trim() !== '');
 
       // Initialize happiness values if not set (ensure array)
       const happinessValue: CareerHappinessEntry[] = Array.isArray(value) ? value : validCareers.map(c => ({
@@ -1327,7 +1399,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       value={entry.reason}
                       onChange={(e) => updateHappiness(index, 'reason', e.target.value)}
                       placeholder="e.g., Great autonomy, too many direct reports, unclear expectations..."
-                      className="w-full text-sm"
+                      className="w-full text-sm bg-white placeholder:text-gray-300"
                     />
                   </div>
                 </div>

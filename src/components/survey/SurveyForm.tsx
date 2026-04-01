@@ -160,12 +160,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     }
 
     if (question.type === 'career_history') {
-      // For career history, validate that all active entries have companySize and companyCulture
+      // For career history, validate that the first 5 (active) entries with a title have companySize and companyCulture
+      // Overflow entries (index >= 5) are not included in the assessment and not validated
       if (!Array.isArray(response)) return false;
 
-      // Check each entry that has a title (active entries)
-      for (const entry of response) {
-        // If entry has a title, it's considered active and must have size and culture
+      const activeEntries = response.slice(0, 5);
+
+      // Check each active entry that has a title
+      for (const entry of activeEntries) {
         if (entry.title && entry.title.trim()) {
           if (!entry.companySize || !entry.companyCulture) {
             return false; // Active entry missing required fields
@@ -173,8 +175,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         }
       }
 
-      // At least one entry must be active
-      const hasActiveEntry = response.some(entry => entry.title && entry.title.trim());
+      // At least one active entry must have a title
+      const hasActiveEntry = activeEntries.some(entry => entry.title && entry.title.trim());
       return hasActiveEntry;
     }
 
