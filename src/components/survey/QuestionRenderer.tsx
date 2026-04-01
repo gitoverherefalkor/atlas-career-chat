@@ -1389,7 +1389,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs text-gray-500 mb-1">
+                    <label className="block text-xs text-atlas-navy font-medium mb-1">
                       Why this score? (optional)
                     </label>
                     <Input
