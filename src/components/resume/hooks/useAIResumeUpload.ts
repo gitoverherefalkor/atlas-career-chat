@@ -4,7 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { mapExtractedDataToSurvey } from '../utils/resumeDataMapper';
 
-const N8N_RESUME_WEBHOOK_URL = import.meta.env.VITE_N8N_RESUME_WEBHOOK_URL;
+// Resume extraction is proxied through a Supabase Edge Function
+// (eliminates CORS issues and hides the n8n webhook URL from the client)
 
 interface UseAIResumeUploadProps {
   onSuccess?: (data: any) => void;
@@ -21,12 +22,6 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
   const uploadAndProcess = async (file: File) => {
     if (!user) {
       onError?.('User not authenticated');
-      return;
-    }
-
-    if (!N8N_RESUME_WEBHOOK_URL) {
-      console.error('[ResumeUpload] VITE_N8N_RESUME_WEBHOOK_URL not configured');
-      onError?.('Resume processing is not configured. Please contact support.');
       return;
     }
 
@@ -65,25 +60,18 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
       setIsUploading(false);
       // Still processing (AI extraction happening in n8n)
 
-      // Step 3: Call n8n webhook with file URL and user ID
-      console.log('[ResumeUpload] Calling n8n webhook for AI extraction...');
-      const webhookResponse = await fetch(N8N_RESUME_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          file_url: fileUrl,
-          user_id: user.id
-        })
+      // Step 3: Call edge function proxy (which forwards to n8n server-side — no CORS issues)
+      console.log('[ResumeUpload] Calling edge function for AI extraction...');
+      const { data: n8nResult, error: fnError } = await supabase.functions.invoke('forward-resume-to-n8n', {
+        body: { file_url: fileUrl, user_id: user.id }
       });
 
-      if (!webhookResponse.ok) {
-        const errorText = await webhookResponse.text();
-        console.error('[ResumeUpload] n8n webhook error:', webhookResponse.status, errorText);
+      if (fnError) {
+        console.error('[ResumeUpload] Edge function error:', fnError);
         throw new Error('Resume processing failed. Please try again.');
       }
 
-      const n8nResult = await webhookResponse.json();
-      console.log('[ResumeUpload] n8n response:', n8nResult);
+      console.log('[ResumeUpload] Edge function response:', n8nResult);
 
       // Step 4: Extract survey data from n8n response
       // The webhook returns: {success, message, data: {resume_parsed_data: {uuid: {value: ...}}}}
