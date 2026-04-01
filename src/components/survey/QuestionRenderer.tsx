@@ -899,13 +899,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return `${years} year${years !== 1 ? 's' : ''}, ${months} month${months !== 1 ? 's' : ''}`;
       };
 
-      // Only keep filled entries (no empty padding) - handle string prefill from AI
-      const stripEmptyEntries = (arr: CareerHistoryEntry[]): CareerHistoryEntry[] => {
-        const filled = arr.filter(e => e.title && e.title.trim());
-        return filled.length > 0 ? filled : [];
-      };
+      // Parse value — keep all entries including empty ones the user just added
+      // Only strip trailing empty entries from initial prefill (string or padded arrays)
       const careerHistoryValue: CareerHistoryEntry[] = Array.isArray(value)
-        ? stripEmptyEntries(value)
+        ? value
         : [];
 
       // Helper to convert month name to number for sorting
