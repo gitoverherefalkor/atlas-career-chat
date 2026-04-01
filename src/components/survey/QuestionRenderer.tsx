@@ -1212,7 +1212,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         value={entry.startYear?.toString() || ''}
                         onValueChange={(val) => updateCareerHistory(index, 'startYear', val ? parseInt(val) : '')}
                       >
-                        <SelectTrigger className={`flex-1 ${!isActive ? 'text-gray-400' : ''}`}>
+                        <SelectTrigger className={`flex-1 ${!isActive ? 'text-gray-400' : ''} ${isActive && !entry.startYear ? 'border-red-300 focus:border-red-400' : ''}`}>
                           <SelectValue placeholder="Year" />
                         </SelectTrigger>
                         <SelectContent>

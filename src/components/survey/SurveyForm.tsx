@@ -169,7 +169,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       // Check each active entry that has a title
       for (const entry of activeEntries) {
         if (entry.title && entry.title.trim()) {
-          if (!entry.companySize || !entry.companyCulture) {
+          if (!entry.companySize || !entry.companyCulture || !entry.startYear) {
             return false; // Active entry missing required fields
           }
         }
