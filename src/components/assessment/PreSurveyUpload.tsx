@@ -228,7 +228,11 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                 e.stopPropagation();
                 setIsDragOver(false);
                 const file = e.dataTransfer.files?.[0];
-                if (file) validateAndSetFile(file);
+                if (file && validateAndSetFile(file)) {
+                  resetState();
+                  setIsProcessing(true);
+                  uploadAndProcess(file);
+                }
               }}
             >
               {uploadedFile ? (
