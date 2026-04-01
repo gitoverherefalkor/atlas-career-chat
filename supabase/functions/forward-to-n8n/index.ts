@@ -96,20 +96,53 @@ serve(async (req) => {
       return errorResponse('Assessment processing is temporarily unavailable.', 500, corsHeaders);
     }
 
-    // POST to N8N webhook
-    const resp = await fetch(n8nWebhookUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(n8nData),
-    });
+    // POST to N8N webhook with retry logic for transient failures (e.g. OOM)
+    const MAX_RETRIES = 1;
+    const RETRY_DELAY_MS = 30_000; // 30 seconds - gives n8n time to free memory
 
-    if (!resp.ok) {
-      const err = await resp.text();
-      console.error("N8N webhook error:", resp.status, err);
+    let resp: Response | null = null;
+    let lastError = '';
 
-      // Update report status to failed
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        resp = await fetch(n8nWebhookUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(n8nData),
+        });
+
+        if (resp.ok) {
+          break; // Success, exit retry loop
+        }
+
+        lastError = await resp.text();
+        const isRetryable = resp.status >= 500; // Only retry on 5xx (server errors like OOM)
+
+        if (isRetryable && attempt < MAX_RETRIES) {
+          console.warn(`N8N webhook attempt ${attempt + 1} failed (${resp.status}), retrying in ${RETRY_DELAY_MS / 1000}s...`);
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+          continue;
+        }
+
+        // Non-retryable error or final attempt failed
+        console.error("N8N webhook error:", resp.status, lastError);
+        break;
+      } catch (fetchError) {
+        // Network-level error (timeout, DNS, etc.)
+        lastError = String(fetchError);
+        if (attempt < MAX_RETRIES) {
+          console.warn(`N8N webhook attempt ${attempt + 1} network error, retrying in ${RETRY_DELAY_MS / 1000}s...`, lastError);
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY_MS));
+          continue;
+        }
+        console.error("N8N webhook network error after retries:", lastError);
+      }
+    }
+
+    if (!resp || !resp.ok) {
+      // Update report status to failed after all retries exhausted
       await supabase
         .from('reports')
         .update({ status: 'failed' })

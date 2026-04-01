@@ -1,0 +1,160 @@
+{
+  "name": "WF1-A Initial Summary",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        300
+      ],
+      "id": "a1000001-0001-0001-0001-000000000001",
+      "name": "Sub-workflow Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1000002-0001-0001-0001-000000000001",
+              "name": "initi summ prompt",
+              "value": "=# ROLE\nYou are a Lead Data Architect specializing in candidate profile normalization. Your goal is to transform structured JSON survey data into a high-fidelity, judgment-free \"Source of Truth\" Fact Sheet.\n\n# TASK\nExtract every specific detail from the input JSON. Preserve verbatim \"Other\" entries, specific role details, and personal comments. Do not interpret or coach; your job is to ensure the downstream Career Coach has 100% of the facts in a readable format.\n\n# OUTPUT FORMAT\n\n### **1. Core Identity & Current Status**\n- **Name:** [1a]\n- **Pronouns:** [1b]\n- **Age:** [1c]\n- **Region:** [1d]\n- **Primary Objectives/Goals:** [1e]\n- **Current Career Situation:** [1i]\n- **Total Years of Experience:** [1h]\n\n### **2. Professional History & Sentiment Log**\n- **Detailed Career History:** [Extract all roles from 1j. Include Title, Company, Size, Culture, Sector, and Dates]\n- **Sentiment Log:** [Extract Happiness scores and verbatim Reasons from 1k for each corresponding role]\n- **Skills & Technical Footprint:** \n  - **Top Skills:** [Extract from topSkills in 1l]\n  - **Certifications:** [Extract from certifications in 1l]\n  - **Notable Achievements:** [Extract verbatim from achievements in 1l]\n  - **Specialized Knowledge:** [4d]\n  - **AI Familiarity:** [4e]\n\n### **3. Education & Personal Context**\n- **Education Level:** [1f]\n- **Field of Study:** [1g]\n- **Personal Interests/Hobbies:** [1m]\n- **Additional Context/Constraints:** [1n - Include burnout notes, family commitments, etc.]\n- **Dream Jobs:** [4h]\n\n### **4. Values, Compensation & Work Preferences**\n- **Ranked Career Values (High to Low):** [3a]\n- **Cultural & WLB Preferences:** [Value Alignment (3b), WLB Importance (3c), Preferred Culture (4c)]\n- **Logistics & Pay:** [Schedule (3d), Salary Importance (3e), Bracket (3f), Pay Priority (3g)]\n\n### **5. Behavioral & Operational Profile**\n- **Energy & Social:** [Social energy (2a), Colleague interaction (6f)]\n- **Cognitive Style:** [Decision focus (2b), Decision speed (2c), Communication style (2d), Change response (2e)]\n- **Operational Style:** [Environment structure (2g), Risk tolerance (2h), Stress response (2i), Time management (5f)]\n- **Hindrances/Growth Areas:** [Self-identified barriers (2j)]\n\n### **6. Team Dynamics & Emotional Intelligence**\n- **Collaboration Style:** [Team role (5a), Motivator (5b), Preferred size (5c), Conflict style (5d & 2f)]\n- **Management Interaction:** [Preferred Leadership (5g), Response to Disagreement (5h)]\n- **EI & Feedback:** [Handling Feedback (6a), Providing Feedback (6b), Support style (6c), Emotional regulation (6d), Stress coping (6e), EI Challenges (6g)]\n\n### **7. Future Trajectory & Constraints**\n- **Goals:** [Short-term (7a), Long-term (7b)]\n- **Developmental Drive:** [Barriers (7c), Interest in new skills (7d), Areas to develop (7e), Workshop topics (4f)]\n- **Areas of Interest & Archetypes:** [Interests (4a), Archetypes (4b)]\n- **Avoidance List (Hard Constraints):** [Avoided work aspects (3h), Avoided industries (4g)]\n\n# CRITICAL INSTRUCTIONS\n- **Reference IDs:** Keep the Question ID (e.g., 1a, 7e) in brackets next to each fact\n- **Verbatim Content:** If a user wrote text, do not summarize it. Use the exact words\n- **Completeness:** If data exists for a field (like Achievements in 1l), extract it fully\n- **Judgment-Free:** Do not use words like \"appears to be\" or \"struggles with.\" Simply state: \"Candidate reports [X]\"\n\n\n# INPUT:\n\n{{ JSON.stringify($json.questions, null, 2) }}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -100,
+        300
+      ],
+      "id": "a1000003-0001-0001-0001-000000000001",
+      "name": "prompt_init_summary"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json[\"initi summ prompt\"] }}",
+        "batching": {}
+      },
+      "id": "a1000004-0001-0001-0001-000000000001",
+      "name": "Initial_summary",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        250,
+        500
+      ],
+      "id": "a1000005-0001-0001-0001-000000000001",
+      "name": "Gemini Flash",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TJBoqA8SVIj4Ikeq",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1000006-0001-0001-0001-000000000001",
+              "name": "summary_text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "a1000006-0001-0001-0001-000000000002",
+              "name": "report_id",
+              "value": "={{ $('Sub-workflow Trigger').item.json.report_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        550,
+        300
+      ],
+      "id": "a1000007-0001-0001-0001-000000000001",
+      "name": "Return Summary"
+    }
+  ],
+  "connections": {
+    "Sub-workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "prompt_init_summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "prompt_init_summary": {
+      "main": [
+        [
+          {
+            "node": "Initial_summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initial_summary": {
+      "main": [
+        [
+          {
+            "node": "Return Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Flash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Initial_summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}
