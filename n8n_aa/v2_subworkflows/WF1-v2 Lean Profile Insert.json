@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "REPLACE_WITH_NEW_WEBHOOK_PATH",
+        "path": "b5f05463-8eb4-4cbb-833f-c6cc476c3302",
         "options": {
           "allowedOrigins": "*",
           "binaryPropertyName": "",
@@ -25,16 +25,16 @@
         -1200,
         400
       ],
-      "id": "v2-0001-0001-0001-000000000001",
+      "id": "1509389a-5a64-4204-ba37-48324a53b9d6",
       "name": "Survey complete Webhook",
-      "webhookId": "REPLACE_WITH_NEW_WEBHOOK_PATH"
+      "webhookId": "b5f05463-8eb4-4cbb-833f-c6cc476c3302"
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
             {
-              "id": "v2-0002-0001-0001-000000000001",
+              "id": "cc38f98a-c108-4b7a-a482-6bcfcfa80cd1",
               "name": "=report_id",
               "value": "={{ $json.body.report_id }}",
               "type": "string"
@@ -49,7 +49,7 @@
         -900,
         300
       ],
-      "id": "v2-0003-0001-0001-000000000001",
+      "id": "4fa8d852-b959-4d49-80ad-e7ff8edfb534",
       "name": "rep_id"
     },
     {
@@ -62,7 +62,7 @@
         -900,
         500
       ],
-      "id": "v2-0004-0001-0001-000000000001",
+      "id": "90efd018-6e22-4926-abbc-ee2aed32f649",
       "name": "Process Survey Data"
     },
     {
@@ -70,7 +70,7 @@
         "assignments": {
           "assignments": [
             {
-              "id": "v2-0005-0001-0001-000000000001",
+              "id": "7aa95d3a-1db7-4d83-a689-72a703d056a5",
               "name": "initi summ prompt",
               "value": "=# ROLE\nYou are a Lead Data Architect specializing in candidate profile normalization. Your goal is to transform structured JSON survey data into a high-fidelity, judgment-free \"Source of Truth\" Fact Sheet.\n\n# TASK\nExtract every specific detail from the input JSON. Preserve verbatim \"Other\" entries, specific role details, and personal comments. Do not interpret or coach; your job is to ensure the downstream Career Coach has 100% of the facts in a readable format.\n\n# OUTPUT FORMAT\n\n### **1. Core Identity & Current Status**\n- **Name:** [1a]\n- **Pronouns:** [1b]\n- **Age:** [1c]\n- **Region:** [1d]\n- **Primary Objectives/Goals:** [1e]\n- **Current Career Situation:** [1i]\n- **Total Years of Experience:** [1h]\n\n### **2. Professional History & Sentiment Log**\n- **Detailed Career History:** [Extract all roles from 1j. Include Title, Company, Size, Culture, Sector, and Dates]\n- **Sentiment Log:** [Extract Happiness scores and verbatim Reasons from 1k for each corresponding role]\n- **Skills & Technical Footprint:** \n  - **Top Skills:** [Extract from topSkills in 1l]\n  - **Certifications:** [Extract from certifications in 1l]\n  - **Notable Achievements:** [Extract verbatim from achievements in 1l]\n  - **Specialized Knowledge:** [4d]\n  - **AI Familiarity:** [4e]\n\n### **3. Education & Personal Context**\n- **Education Level:** [1f]\n- **Field of Study:** [1g]\n- **Personal Interests/Hobbies:** [1m]\n- **Additional Context/Constraints:** [1n - Include burnout notes, family commitments, etc.]\n- **Dream Jobs:** [4h]\n\n### **4. Values, Compensation & Work Preferences**\n- **Ranked Career Values (High to Low):** [3a]\n- **Cultural & WLB Preferences:** [Value Alignment (3b), WLB Importance (3c), Preferred Culture (4c)]\n- **Logistics & Pay:** [Schedule (3d), Salary Importance (3e), Bracket (3f), Pay Priority (3g)]\n\n### **5. Behavioral & Operational Profile**\n- **Energy & Social:** [Social energy (2a), Colleague interaction (6f)]\n- **Cognitive Style:** [Decision focus (2b), Decision speed (2c), Communication style (2d), Change response (2e)]\n- **Operational Style:** [Environment structure (2g), Risk tolerance (2h), Stress response (2i), Time management (5f)]\n- **Hindrances/Growth Areas:** [Self-identified barriers (2j)]\n\n### **6. Team Dynamics & Emotional Intelligence**\n- **Collaboration Style:** [Team role (5a), Motivator (5b), Preferred size (5c), Conflict style (5d & 2f)]\n- **Management Interaction:** [Preferred Leadership (5g), Response to Disagreement (5h)]\n- **EI & Feedback:** [Handling Feedback (6a), Providing Feedback (6b), Support style (6c), Emotional regulation (6d), Stress coping (6e), EI Challenges (6g)]\n\n### **7. Future Trajectory & Constraints**\n- **Goals:** [Short-term (7a), Long-term (7b)]\n- **Developmental Drive:** [Barriers (7c), Interest in new skills (7d), Areas to develop (7e), Workshop topics (4f)]\n- **Areas of Interest & Archetypes:** [Interests (4a), Archetypes (4b)]\n- **Avoidance List (Hard Constraints):** [Avoided work aspects (3h), Avoided industries (4g)]\n\n# CRITICAL INSTRUCTIONS\n- **Reference IDs:** Keep the Question ID (e.g., 1a, 7e) in brackets next to each fact\n- **Verbatim Content:** If a user wrote text, do not summarize it. Use the exact words\n- **Completeness:** If data exists for a field (like Achievements in 1l), extract it fully\n- **Judgment-Free:** Do not use words like \"appears to be\" or \"struggles with.\" Simply state: \"Candidate reports [X]\"\n\n\n# INPUT:\n\n{{ JSON.stringify($json.questions, null, 2) }}\n",
               "type": "string"
@@ -85,7 +85,7 @@
         -560,
         500
       ],
-      "id": "v2-0006-0001-0001-000000000001",
+      "id": "945d0a84-08e7-4815-8480-292e1297a0ab",
       "name": "prompt_init_summary"
     },
     {
@@ -94,7 +94,7 @@
         "text": "={{ $json[\"initi summ prompt\"] }}",
         "batching": {}
       },
-      "id": "v2-0007-0001-0001-000000000001",
+      "id": "204c2565-ed29-44a8-bcee-d8a0bdaafe49",
       "name": "Initial_summary",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
@@ -114,7 +114,7 @@
         -208,
         700
       ],
-      "id": "v2-0008-0001-0001-000000000001",
+      "id": "14353d10-a010-43dd-9099-695d67b454a7",
       "name": "3F1",
       "credentials": {
         "googlePalmApi": {
@@ -133,7 +133,7 @@
         150,
         500
       ],
-      "id": "v2-0009-0001-0001-000000000001",
+      "id": "a3b2a912-c72e-4e40-a28e-185d75e26514",
       "name": "Prep init_summary"
     },
     {
@@ -147,7 +147,7 @@
         400,
         500
       ],
-      "id": "v2-0010-0001-0001-000000000001",
+      "id": "35c0aa3c-bff9-4abc-bcd3-c5e2ba23b776",
       "name": "SB insert init_summary",
       "credentials": {
         "supabaseApi": {
@@ -183,7 +183,7 @@
         650,
         500
       ],
-      "id": "v2-0011-0001-0001-000000000001",
+      "id": "4c35fb08-99fc-49f5-84e5-41773d810ad9",
       "name": "SB pull init_summary",
       "credentials": {
         "supabaseApi": {
@@ -197,7 +197,7 @@
         "assignments": {
           "assignments": [
             {
-              "id": "v2-0012-0001-0001-000000000001",
+              "id": "34c766ad-413a-463d-8f0b-50a646be4f67",
               "name": "instructions_perso_profile",
               "value": "=# Context\n\n# MANDATORY: SECOND PERSON VOICE\nThe input data below refers to the candidate in third person (\"the candidate\", \"he/his\").\nYou MUST write ALL output in second person: \"you\" and \"your\" throughout.\nUse their first name occasionally for warmth, but NEVER write about them in third person.\nThis applies to every sentence in every section. No exceptions.\n\nReview thoroughly:\n* the initial summary for candidate data: \n{{ $json.content }}\n\n# Role\n\nYou are a world-class career coach creating insightful personality analysis.\n\n# Prompt for Narrative Generation\n\nUsing the candidate's detailed summary of survey answers, generate a narrative report that follows the layout below. Write in clear, direct business casual language.\n\nYour narrative report must include the following four sections:\n\n# Required Sections:\n\n## Understanding Your Approach\n\n**Personality and Interaction Style**\n\nDiscuss how the candidate's personality traits and interaction style influence their work and team environments.\n\n**Impact in Different Environments**\n\nExplore how their personal attributes affect different work settings and contexts.\n\n**Key Insight**\n\nProvide 1-2 bottom-line realizations the candidate might not see themselves. Focus on connections or patterns that explain why they experience what they do. Reveal non-obvious implications, don't restate what they told you.\n\n## Strengths and How to Grow Them\n\n**Identifying Your Core Strengths**\n\nAnalyze the candidate's core strengths as revealed in their summary.\n\n**Leveraging Strengths in Your Career**\n\nExplain how these strengths can be leveraged in their professional journey.\n\n**Key Insight**\n\nProvide 1-2 bottom-line realizations about what their strengths actually mean. Focus on the underlying capability or pattern that connects different examples. Reveal their competitive advantage or unique positioning.\n\n## Areas for Development\n\n**Understanding Potential Growth Areas**\n\nIdentify potential areas for improvement drawing on the summary.\n\n**Implications for Your Growth**\n\nDiscuss how these areas might impact their professional development, effectiveness, and potential.\n\n**Key Insight**\n\nProvide 1-2 bottom-line realizations about why these challenges exist or how they connect to each other. Focus on root causes or patterns rather than surface observations.\n\n[note on this section: when relevant for the user, highlight that while AI skills are crucial, employers in the age of AI increasingly value people management skills like empathy, critical thinking, adaptability, and communication, as these human-centric abilities are harder for AI to replicate and essential for guiding teams through rapid technological change, managing AI tools effectively, and fostering innovation. The demand isn't just for technical AI proficiency but for leaders and workers who can strategically integrate AI while enhancing human collaboration, purpose, and complex problem-solving.]\n\n## Aligning with Your Values\n\n**Identifying Your Core Values**\n\nHighlight the candidate's core values as evidenced by their survey answers.\n\n**Values in Career Decisions**\n\nExplain how these values should influence their career decisions and everyday work practices.\n\n**Key Insight**\n\nProvide 1-2 bottom-line realizations about what their values reveal. Focus on tensions between stated priorities, misalignments with current path, or non-obvious implications for their career direction.\n\n# Content Requirements:\n\n**Critical focus areas:**\n\n* PERSONALITY ONLY - Do not discuss career feasibility, specific job recommendations, or dreamjob analysis. Those come in later phases. Stick to personality traits, interaction patterns, and what can be derived from behavioral data.\n* Focus on interpretation and pattern recognition, not recitation of survey answers\n* Don't list accomplishments back to them - they know what they've done\n* Extract the underlying capability or pattern instead\n* Key insights reveal something non-obvious - what their data means, not what they said\n* Integrate the candidate's primary goal naturally where relevant\n\n**Writing style:**\n\n* Write in active voice with short, punchy sentences\n* Break content into smaller paragraphs (2-4 sentences max)\n* Use sub-sub-headers within narrative sections when helpful for clarity\n* Maintain business casual tone throughout\n* Do not use the em-dash in your narrative\n* Refer to the avoid words list at the bottom\n* Active voice, SECOND PERSON. Use 'you' and occasionally their name to adress them!\n\n* STAY BETWEEN 280 and 350 WORDS PER REPORT SECTION\n\n# Formatting Requirements:\n\nClearly separate each section with the section header exactly as written above (e.g., `Understanding Your Approach`).\n\nWithin each section, use plain paragraphs with **bolded sub-sub-headers** where helpful.\n\nFor Key Insight, write 1-2 concise paragraphs that reveal the bottom line - not numbered lists.\n\n---\n\n# Example Output Format:\n\n## Understanding Your Approach\n\n**Personality and Interaction Style**\n\nYou push forward when things get unclear. Cut through ambiguity. Move toward situations where the path isn't mapped yet. This works well as a founder building AI solutions for businesses.\n\nBut here's the pattern: when stress hits, you accelerate instead of stepping back. You speak directly. Address conflicts head-on. Get things moving fast.\n\nCombined with your difficulty trusting team members and tendency to take on too much responsibility, you become the bottleneck. The same traits that make you effective at navigating change work against the work-life balance you want if you don't build systems that let others share the load.\n\n**Impact in Different Environments**\n\nYou want small teams and part-time work. Yet you're energized by social interaction and actively engage in discussions. You struggle with trusting others to complete tasks and managing different work styles.\n\nYou need the energy of collaboration but find it hard to let go of control. That's exactly what's required to scale a business while working three to four days a week.\n\nYour preference for planning ahead and predictable schedules conflicts with entrepreneurship's reality. Unexpected demands constantly emerge. The part-time constraint means you need exceptional discipline about what you take on. Ruthless clarity about what you delegate or simply don't do.\n\nYour comfort with flexible, creative environments helps. But perfectionism and procrastination will undermine your ability to work fewer hours unless you address them directly.\n\n**Key Insight**\n\nYour trust issues and control tendencies aren't personality flaws - they're rational responses to working without systems. You can't delegate effectively because you haven't built the structure that makes delegation safe. The irony: achieving the autonomy you want requires building the infrastructure that lets you trust others, not becoming less dependent on them.\n\n---\n\n## Strengths and How to Grow Them\n\n**What you actually do well**\n\nYou think big-picture while staying comfortable with incomplete information. This works well in rapidly evolving spaces.\n\nWith 15 years spanning AI workflows, business transformation, and entrepreneurship, you've built technical knowledge plus business acumen. Most people have one or the other.\n\nYour Good Shepherd Entertainment track record shows you execute at scale. Raised and sold millions in a completely new business model. You're not just technically proficient with AI, you work with it professionally while understanding how to apply it to actual business problems.\n\n**Where this takes you**\n\nYour AI and automation expertise, combined with your interest in teaching, points beyond traditional consulting. You could create content, build educational programs, or develop productized services that use your knowledge without requiring your direct time for every client.\n\nYour dream of podcasting or presenting isn't disconnected from your current path. Your ability to make complex AI concepts accessible to business audiences translates well to media and content creation.\n\nThe landscaping business idea reflects your ability to see how technology transforms traditional industries. This pattern of spotting transformation opportunities is your real competitive advantage.\n\n**Key Insight**\n\nYour real strength isn't AI expertise or business acumen separately - it's translation. You make technical concepts accessible to business audiences and business problems solvable through technical means. Most people can do one or the other. This means you're not competing with AI consultants or business strategists. You're solving a different problem entirely, which changes what you should charge for and how you position yourself.\n\n---\n\n## Areas for Development\n\n**The gap between goals and patterns**\n\nYou want work-life balance and part-time hours. Yet you procrastinate, struggle with time management, take on too much responsibility, and let perfectionism delay completion.\n\nThese aren't minor efficiency issues. They're fundamental barriers to the life you're trying to build.\n\nYour tendency to internalize stress without coping strategies makes this worse. So does your difficulty receiving feedback that might help you see these patterns more clearly.\n\nYou're extremely comfortable taking risks but also deal with self-doubt. This suggests you push yourself hard without good mechanisms for knowing when you're overdoing it. Your strength as an adapter means you adjust to changing circumstances. But if you're constantly adapting to cover for poor planning or overcommitment, that flexibility becomes a problem rather than an asset.\n\n**What this means for building a business**\n\nYour challenges with empathy, providing constructive feedback, and receiving criticism create real limitations if you want to run a successful business. You can't scale a company if you struggle to trust team members, have difficulty understanding their perspectives, and find it hard to give or receive feedback effectively.\n\nYour preference for practical solutions rather than empathetic support when colleagues face difficulties might be efficient. But it can prevent the relationships that make people want to work with you long-term. This matters especially in small teams where interpersonal dynamics have outsized impact.\n\nYour work-focused approach to colleague relationships works fine on its own. But combined with trust issues and feedback challenges, it makes building the reliable team you need much harder.\n\n**Key Insight**\n\nYour perfectionism and procrastination aren't separate from your trust issues - they're the same problem. You delay because you can't accept \"good enough\" from yourself, which makes you unable to accept it from others. This creates a cycle: you don't delegate because standards won't be met, so you overwork, which reinforces that only you can do it right. The fix isn't better time management. It's accepting that perfect execution matters less than consistent progress, from yourself and others.\n\n---\n\n## Aligning with Your Values\n\n**What matters to you**\n\nYou've ranked autonomy, creativity, and work-life balance as your top priorities. Helping others and job stability sit at the bottom.\n\nThis makes sense given your entrepreneurial background and AI expertise. You can create your own opportunities, so security matters less than freedom.\n\nYour target of 75,000 to 100,000 for part-time work translates to a high hourly rate. This shows you value both strong compensation and controlled hours.\n\nThe tension here is real: you want work-life balance, but entrepreneurship (especially early-stage ventures) rarely delivers the predictable part-time schedule you're after. Building toward complete autonomy typically requires an intense period before you can step back.\n\n**What this means for decisions**\n\nYour goals around better work-life balance and finding the right career path suggest you're at a transition point. But here's what's less obvious: you might be looking for balance in the wrong place.\n\nGiven your need for autonomy and creativity, plus your dislike of high-pressure environments, traditional employment probably won't satisfy you even with better hours.\n\nThe path forward isn't finding a new career. It's restructuring how you approach your current work. Your AI expertise means you can build a practice that delivers client value without requiring your constant presence.\n\nThe real challenge isn't capability. It's discipline around scope, pricing, and boundaries. The uncertainty about AI's professional impact that you see as a barrier is actually your opportunity. You're already at the cutting edge, which means you can shape how it affects your work rather than being shaped by it.\n\n**Key Insight**\n\nYou've framed your problem as \"finding the right career path,\" but your values reveal something different. You don't need a new path - you need to restructure your current one. The work you're doing aligns with your values (autonomy, creativity). What doesn't align is how you're doing it: taking on too much, working too many hours, maintaining no boundaries. Your dissatisfaction isn't about what you do. It's about how much control you've surrendered over when and how you do it.\n\n---\n\n# Avoid Words list:\n\n## Adjectives and Modifiers to Avoid:\n- valuable\n- significant (when describing abilities/advantages)\n- interesting\n- natural/naturally (when describing talents)\n- impressive\n- exceptional\n- remarkable\n- extraordinary\n- outstanding\n- unique\n- rare\n- perfect/perfectly\n- ideal/ideally\n- admirable\n- clear/clearly (as emphasis)\n- obvious/obviously (as emphasis)\n\n## Flattery Phrases to Avoid:\n- \"you have a valuable ability to...\"\n- \"gives you a significant advantage\"\n- \"positions you perfectly for...\"\n- \"you possess...\"\n- \"natural talent for...\"\n- \"you bring a wealth of...\"\n- \"your impressive track record...\"\n- \"this is particularly valuable because...\"\n- \"what makes this especially powerful...\"\n\n## Corporate/Generic Business Speak to Avoid:\n- serves you well\n- positions you as\n- represents an opportunity\n- suggests an untapped opportunity\n- creates a significant advantage\n- gives you a real edge\n- particularly powerful\n- especially impactful\n- meaningful impact\n- drive results\n- move the needle\n- leverage (overuse)\n- synergy\n- dynamic\n- innovative (as adjective for person)\n- forward-thinking (for person)\n- cutting-edge (for person)\n\n## Unnecessary Qualifiers/Hedges to Avoid:\n- \"The fact that...\"\n- \"It's worth noting that...\"\n- \"What's interesting is...\"\n- \"The reality is that...\"\n- \"It's important to recognize...\"\n- \"One thing to consider...\"\n- \"What's particularly noteworthy...\"\n- \"An important aspect to highlight...\"\n\n## AI-Sounding Transition Phrases to Avoid:\n- \"Let's explore...\"\n- \"It's crucial to understand...\"\n- \"Building on this...\"\n- \"Taking this further...\"\n- \"Diving deeper...\"\n- \"This begs the question...\"\n- \"At the end of the day...\"\n- \"The bottom line is...\"\n\n## Words to Use Sparingly (Not Banned, But Watch Overuse):\n- visionary (use only if absolutely specific)\n- passionate\n- dedicated\n- driven (okay occasionally)\n- strategic (overused)\n- innovative (as descriptor)\n- transformative\n- impactful\n\n## Better Alternatives:\n\nInstead of \\u2192 Use:\n- \"serves you well\" \\u2192 \"works well\" / \"helps\" / \"fits\"\n- \"significant advantage\" \\u2192 \"advantage\" / \"edge\" / just state the benefit\n- \"positions you perfectly\" \\u2192 \"positions you well\" / \"fits well with\"\n- \"valuable ability\" \\u2192 just describe the ability\n- \"interesting pattern\" \\u2192 \"pattern\" / \"worth noting\"\n- \"particularly powerful\" \\u2192 \"especially useful\" / just state why it matters\n- \"represents an opportunity\" \\u2192 \"points to\" / \"suggests\"\n- \"leverage your strengths\" \\u2192 \"use your strengths\"\n\nThe Core Principle: \nIf you can remove the adjective/modifier and the sentence is still clear and meaningful, remove it. Let the specific observations carry the weight, not the evaluative language.\n\n- DO NOT go below 280 or over 400 words per section \n- remember the second person perspective. NOT \"Jake is a \" BUT \"Jake, you are a\"",
               "type": "string"
@@ -212,7 +212,7 @@
         900,
         500
       ],
-      "id": "v2-0013-0001-0001-000000000001",
+      "id": "212f1be4-3b7e-4be7-895f-0e1c5caeb997",
       "name": "prompt_perso_prof"
     },
     {
@@ -221,7 +221,7 @@
         "text": "={{ $json.instructions_perso_profile }}",
         "batching": {}
       },
-      "id": "v2-0014-0001-0001-000000000001",
+      "id": "6450b24f-2165-4965-be49-46afa1239766",
       "name": "generate_personality_narrative",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
@@ -241,7 +241,7 @@
         1200,
         700
       ],
-      "id": "v2-0015-0001-0001-000000000001",
+      "id": "e40177fd-4840-4e87-b319-d40b7f7447cc",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
@@ -254,7 +254,7 @@
       "parameters": {
         "jsCode": "// ---------------- CONFIG ----------------\nconst SUBHEADER_PATTERNS = {\n  approach: [\n    \"Personality and Interaction Style\",\n    \"Impact in Different Environments\",\n    \"Key Insight\"\n  ],\n  strengths: [\n    \"Identifying Your Core Strengths\",\n    \"Leveraging Strengths in Your Career\",\n    \"Key Insight\"\n  ],\n  development: [\n    \"Understanding Potential Growth Areas\",\n    \"Implications for Your Growth\",\n    \"Key Insight\"\n  ],\n  values: [\n    \"Identifying Your Core Values\",\n    \"Values in Career Decisions\",\n    \"Key Insight\"\n  ]\n};\n\n// ---------------- HELPERS ----------------\nfunction cleanMarkdown(text) {\n  return text\n    .replace(/\\*\\*(.*?)\\*\\*/g, '$1')\n    .replace(/__(.*?)__/g, '$1')\n    .replace(/\\*(.*?)\\*/g, '$1')\n    .trim();\n}\n\nfunction extractSections(content, sectionType) {\n  const patterns = SUBHEADER_PATTERNS[sectionType] || [];\n  if (patterns.length === 0) return [];\n  \n  const regex = new RegExp(`(${patterns.join('|')}):?`, 'gi');\n  const parts = content.split(regex).filter(Boolean);\n  const sections = [];\n  \n  for (let i = 0; i < parts.length; i++) {\n    const p = parts[i].trim();\n    if (patterns.some(ph => new RegExp(ph, 'i').test(p))) {\n      const subheader = p.replace(/:$/, '').trim();\n      const next = parts[i + 1] ? parts[i + 1].trim() : '';\n      sections.push({ subheader, content: next });\n      i++;\n    }\n  }\n  return sections;\n}\n\n// ---------------- SOURCE DATA ----------------\nconst narrativeData = $('generate_personality_narrative').first().json;\nconst reportId = $('rep_id').first().json.report_id;\n\n// ---------------- NARRATIVE EXTRACTION ----------------\nconst titleRegex = /#{1,3}\\s*([^\\n#]+)/g;\nconst titles = [];\nlet match;\nwhile ((match = titleRegex.exec(narrativeData.text)) !== null) {\n  titles.push(match[1].trim());\n}\n\nconst contents = narrativeData.text.split(/#{1,3}\\s*[^\\n#]+\\n*/g);\ncontents.shift();\n\nconst sectionTypes = ['approach', 'strengths', 'development', 'values'];\nconst parsedSections = [];\n\nfor (let i = 0; i < contents.length; i++) {\n  const sectionType = sectionTypes[i];\n  const raw = cleanMarkdown(contents[i]);\n  parsedSections.push(extractSections(raw, sectionType));\n}\n\n// ---------------- OUTPUT ----------------\n// Only output the 4 narrative sections (init_summary already in SB)\nconst outputSections = [\n  { section_type: 'approach', title: titles[0] || null, content: parsedSections[0] || [] },\n  { section_type: 'strengths', title: titles[1] || null, content: parsedSections[1] || [] },\n  { section_type: 'development', title: titles[2] || null, content: parsedSections[2] || [] },\n  { section_type: 'values', title: titles[3] || null, content: parsedSections[3] || [] }\n];\n\nreturn outputSections\n  .filter(s => Array.isArray(s.content) && s.content.length > 0)\n  .map(s => {\n    const formatted = s.content.map(block => {\n      const subheader = block.subheader && block.subheader.trim()\n        ? `<h5>${block.subheader}</h5>\\n\\n`\n        : '';\n      const text = block.content || '';\n      return `${subheader}${text}`;\n    }).join('\\n\\n');\n\n    return {\n      json: {\n        report_id: reportId,\n        section_type: s.section_type,\n        title: s.title,\n        content: formatted\n      }\n    };\n  });"
       },
-      "id": "v2-0016-0001-0001-000000000001",
+      "id": "6e2e033a-f8f1-465e-ad05-180b67e0ded2",
       "name": "extract_report_sections_code",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -275,7 +275,7 @@
         1800,
         500
       ],
-      "id": "v2-0017-0001-0001-000000000001",
+      "id": "f53aad66-8b7e-4bee-b737-b7413dfed8ab",
       "name": "SB insert narrative sections",
       "credentials": {
         "supabaseApi": {
@@ -317,7 +317,7 @@
         2100,
         500
       ],
-      "id": "v2-0018-0001-0001-000000000001",
+      "id": "ce6d759f-0fc1-4d91-8f1f-df149e729020",
       "name": "update status",
       "credentials": {
         "supabaseApi": {
@@ -331,7 +331,7 @@
         "assignments": {
           "assignments": [
             {
-              "id": "v2-0019-0001-0001-000000000001",
+              "id": "384e336b-1423-4919-b3d5-c646d11438b3",
               "name": "=report_id",
               "value": "={{ $('rep_id').first().json.report_id }}",
               "type": "string"
@@ -346,7 +346,7 @@
         2400,
         500
       ],
-      "id": "v2-0020-0001-0001-000000000001",
+      "id": "f28970a5-5d17-474d-8aea-0bae3567d386",
       "name": "pass report_id to WF2"
     },
     {
@@ -376,7 +376,7 @@
         2700,
         500
       ],
-      "id": "v2-0021-0001-0001-000000000001",
+      "id": "47ae10db-446b-447c-9e00-1e07d29f92aa",
       "name": "Execute Suitable Jobs"
     }
   ],
@@ -569,5 +569,7 @@
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "tags": []
+  "tags": [],
+  "pinData": {},
+  "versionId": "ece0d655-06b9-43a2-8297-c093172e4027"
 }
