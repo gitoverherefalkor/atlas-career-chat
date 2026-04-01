@@ -78,6 +78,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
   const [uploadedFile, setUploadedFile] = React.useState<File | null>(null);
   const [showLinkedInTip, setShowLinkedInTip] = React.useState(false);
   const [showSkipConfirm, setShowSkipConfirm] = React.useState(false);
+  const [isDragOver, setIsDragOver] = React.useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -121,10 +122,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
     }
   });
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
+  const validateAndSetFile = (file: File): boolean => {
     const allowedTypes = [
       'application/pdf',
       'application/msword',
@@ -137,7 +135,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
         description: "Please upload a PDF or Word document (.pdf, .doc, .docx).",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     if (file.size > 10 * 1024 * 1024) {
@@ -146,11 +144,18 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
         description: "Please upload a file smaller than 10MB.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
     setUploadedFile(file);
     setShowSkipConfirm(false);
+    return true;
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    validateAndSetFile(file);
     resetState();
     setIsProcessing(true);
     uploadAndProcess(file);
@@ -209,7 +214,23 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
             </Alert>
 
             {/* Upload Area */}
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 mb-6 bg-white">
+            <div
+              className={`border-2 border-dashed rounded-lg p-6 mb-6 transition-colors ${
+                isDragOver
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-300 bg-white'
+              }`}
+              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
+              onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
+              onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragOver(false);
+                const file = e.dataTransfer.files?.[0];
+                if (file) validateAndSetFile(file);
+              }}
+            >
               {uploadedFile ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -252,18 +273,16 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                   )}
                 </div>
               ) : (
-                <div className="text-center space-y-4">
-                  <Upload className="h-12 w-12 text-gray-400 mx-auto" />
+                <div className="text-center space-y-4 cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+                  <Upload className={`h-12 w-12 mx-auto transition-colors ${isDragOver ? 'text-blue-500' : 'text-gray-400'}`} />
                   <div>
-                    <p className="font-medium text-gray-700">Upload your resume or CV</p>
-                    <p className="text-sm text-gray-500">PDF or Word documents up to 10MB</p>
+                    <p className="font-medium text-gray-700">
+                      {isDragOver ? 'Drop your file here' : 'Drag & drop your resume or CV'}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {isDragOver ? '' : 'or click to browse \u00B7 PDF or Word documents up to 10MB'}
+                    </p>
                   </div>
-                  <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    variant="outline"
-                  >
-                    Select File
-                  </Button>
                   <input
                     ref={fileInputRef}
                     type="file"
