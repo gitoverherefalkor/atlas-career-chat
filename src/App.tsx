@@ -1,11 +1,12 @@
 
-import { Suspense, lazy } from "react";
+import React, { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
+import { useLanguage } from "@/hooks/useLanguage";
 import { Loader2 } from "lucide-react";
 
 // Eagerly load the landing page and global components
@@ -42,10 +43,17 @@ const PageLoader = () => (
 
 const queryClient = new QueryClient();
 
+// Syncs i18next language with the user's Supabase profile preference
+const LanguageSync = ({ children }: { children: React.ReactNode }) => {
+  useLanguage();
+  return <>{children}</>;
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <LanguageSync>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -78,6 +86,7 @@ const App = () => {
           <CookieConsentBanner />
         </BrowserRouter>
       </TooltipProvider>
+      </LanguageSync>
     </AuthProvider>
   </QueryClientProvider>
   );

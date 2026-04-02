@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
+import i18n from '@/i18n';
 
 interface AuthContextType {
   user: User | null;
@@ -85,9 +86,10 @@ async function ensureProfile(user: User) {
         first_name: firstName,
         last_name: lastName,
         auth_provider: user.app_metadata?.provider || 'email',
+        preferred_language: i18n.language || 'en',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      });
+      } as any);
 
     if (error && error.code !== '23505') { // Ignore duplicate key errors
       console.error('Failed to create profile:', error);

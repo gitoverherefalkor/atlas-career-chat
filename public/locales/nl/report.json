@@ -1,0 +1,47 @@
+{
+  "chapters": {
+    "aboutYou": "Over jou",
+    "careerSuggestions": "Carrièresuggesties voor jou"
+  },
+  "sections": {
+    "executiveSummary": {
+      "title": "Samenvatting",
+      "description": "Wie je bent als professional en wat je carrière drijft."
+    },
+    "personalityTeam": {
+      "title": "Jouw aanpak",
+      "description": "Hoe je werkt, leiding geeft en uitdagingen navigeert."
+    },
+    "strengths": {
+      "title": "Jouw sterke punten",
+      "description": "Wat jou onderscheidt en hoe je deze capaciteiten strategisch kunt inzetten."
+    },
+    "growth": {
+      "title": "Ontwikkelgebieden",
+      "description": "Groeikansen die je helpen je doelen te bereiken."
+    },
+    "values": {
+      "title": "Jouw (carrière)waarden",
+      "description": "Wat voor jou het belangrijkst is en hoe dat de juiste carrièrematch vormt."
+    },
+    "topCareers": {
+      "title": "Top carrièresuggesties",
+      "description": "Drie functies die het beste bij je profiel, vaardigheden en doelen passen."
+    },
+    "firstCareer": "Eerste carrièrematch",
+    "secondCareer": "Tweede carrièrematch",
+    "thirdCareer": "Derde carrièrematch",
+    "runnerUp": {
+      "title": "Runner-up carrières",
+      "description": "Sterke alternatieve paden die het overwegen waard zijn."
+    },
+    "outsideBox": {
+      "title": "Verrassende carrières",
+      "description": "Onconventionele opties die aansluiten bij je interesses en sterke punten."
+    },
+    "dreamJobs": {
+      "title": "Droombaananalyse",
+      "description": "Realiteitscheck van je ideale carrière en wat ervoor nodig is."
+    }
+  }
+}

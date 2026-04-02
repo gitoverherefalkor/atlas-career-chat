@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "title": "Stop Guessing. Start Thriving.",
+    "subtitle": "Discover your ideal career path through an expert-developed, AI-enhanced assessment. Get personalized insights, actionable recommendations, and career clarity — delivered through an interactive experience."
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Your career clarity journey in three simple steps",
+    "step1Title": "Complete Assessment",
+    "step1Description": "Answer thoughtful questions about your experience, goals, personality and preferences. Takes about 25 minutes.",
+    "step2Title": "AI-Powered Insights",
+    "step2Description": "Our AI analyzes your unique profile to generate personalized career recommendations and a detailed personality report.",
+    "step3Title": "Take Action",
+    "step3Description": "Explore your results through an interactive chat, ask questions, and get actionable next steps for your career."
+  },
+  "whyAtlas": {
+    "title": "Why Atlas",
+    "subtitle": "What makes Atlas Assessment different",
+    "feature1Title": "Expert-Developed",
+    "feature1Description": "Built on proven career development frameworks and personality assessment methodologies.",
+    "feature2Title": "AI-Enhanced",
+    "feature2Description": "Advanced AI provides deeper analysis and more personalized recommendations than traditional assessments.",
+    "feature3Title": "Interactive Experience",
+    "feature3Description": "Discuss your results in real-time, ask follow-up questions, and explore careers that interest you."
+  },
+  "pricing": {
+    "title": "Invest in Your Future",
+    "betaAccess": "Beta Access",
+    "subtitle": "Get personalized career clarity with our comprehensive assessment package"
+  },
+  "about": {
+    "title": "About Us"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions"
+  }
+}

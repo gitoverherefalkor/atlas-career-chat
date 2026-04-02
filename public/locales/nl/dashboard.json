@@ -1,0 +1,21 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welkom, {{name}}!",
+  "report": {
+    "title": "Je carrièrerapport",
+    "processing": "Je rapport wordt gegenereerd...",
+    "viewReport": "Rapport bekijken",
+    "continueChat": "Chat voortzetten",
+    "startChat": "Chat starten",
+    "downloadPdf": "PDF downloaden",
+    "noReport": "Nog geen rapport beschikbaar.",
+    "startAssessment": "Assessment starten"
+  },
+  "assessment": {
+    "title": "Assessment",
+    "resumeProgress": "Voortgang hervatten",
+    "startNew": "Nieuwe assessment starten"
+  },
+  "signOut": "Uitloggen",
+  "settings": "Instellingen"
+}

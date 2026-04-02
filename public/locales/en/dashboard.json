@@ -1,0 +1,21 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome, {{name}}!",
+  "report": {
+    "title": "Your Career Report",
+    "processing": "Your report is being generated...",
+    "viewReport": "View Report",
+    "continueChat": "Continue Chat",
+    "startChat": "Start Chat",
+    "downloadPdf": "Download PDF",
+    "noReport": "No report available yet.",
+    "startAssessment": "Start Assessment"
+  },
+  "assessment": {
+    "title": "Assessment",
+    "resumeProgress": "Resume Progress",
+    "startNew": "Start New Assessment"
+  },
+  "signOut": "Sign Out",
+  "settings": "Settings"
+}

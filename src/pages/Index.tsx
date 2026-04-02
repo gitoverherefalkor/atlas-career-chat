@@ -20,6 +20,7 @@ import {
   FileText
 } from 'lucide-react';
 import AtlasFigure from '@/logos/Atlas_figure_AA_live.png';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 // --- Reusable UI ---
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -597,6 +598,7 @@ const Index = () => {
                 Log In
               </button>
             )}
+            <LanguageSwitcher className="text-blue-100 hover:text-white" />
             <Button className="py-2.5 px-6 text-xs uppercase tracking-tighter" onClick={handleGetStarted}>
               {user ? 'Dashboard' : 'Get Started'}
             </Button>
@@ -636,6 +638,9 @@ const Index = () => {
               <Button className="w-full text-base py-4 mt-4" onClick={handleGetStarted}>
                 {user ? 'Dashboard' : 'Get Started'}
               </Button>
+              <div className="mt-4">
+                <LanguageSwitcher className="text-white" />
+              </div>
             </div>
           </div>
         </div>

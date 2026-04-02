@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, User } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,6 +43,8 @@ const Navbar = () => {
               About Us
             </a>
             
+            <LanguageSwitcher />
+
             {user ? (
               <Button asChild className="btn-primary">
                 <button onClick={() => navigate('/dashboard')}>
@@ -95,6 +98,10 @@ const Navbar = () => {
               About Us
             </a>
             
+            <div className="py-2">
+              <LanguageSwitcher />
+            </div>
+
             {user ? (
               <Button className="btn-primary w-full mt-4" onClick={() => { navigate('/dashboard'); toggleMenu(); }}>
                 <User className="h-4 w-4 mr-2" />

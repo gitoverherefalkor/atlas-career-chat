@@ -1,0 +1,37 @@
+{
+  "hero": {
+    "title": "Stop met gissen. Begin met groeien.",
+    "subtitle": "Ontdek je ideale carrièrepad via een door experts ontwikkelde, AI-versterkte assessment. Krijg gepersonaliseerde inzichten, bruikbare aanbevelingen en carrièreduidelijkheid — aangeboden via een interactieve ervaring."
+  },
+  "howItWorks": {
+    "title": "Hoe het werkt",
+    "subtitle": "Je weg naar carrièreduidelijkheid in drie simpele stappen",
+    "step1Title": "Vul de assessment in",
+    "step1Description": "Beantwoord doordachte vragen over je ervaring, doelen, persoonlijkheid en voorkeuren. Duurt ongeveer 25 minuten.",
+    "step2Title": "AI-gestuurde inzichten",
+    "step2Description": "Onze AI analyseert je unieke profiel om gepersonaliseerde carrièreaanbevelingen en een gedetailleerd persoonlijkheidsrapport te genereren.",
+    "step3Title": "Onderneem actie",
+    "step3Description": "Bekijk je resultaten via een interactieve chat, stel vragen en krijg concrete vervolgstappen voor je carrière."
+  },
+  "whyAtlas": {
+    "title": "Waarom Atlas",
+    "subtitle": "Wat Atlas Assessment anders maakt",
+    "feature1Title": "Door experts ontwikkeld",
+    "feature1Description": "Gebouwd op bewezen loopbaanontwikkelingsraamwerken en persoonlijkheidsbeoordelingsmethodologieën.",
+    "feature2Title": "AI-versterkt",
+    "feature2Description": "Geavanceerde AI biedt diepere analyses en meer gepersonaliseerde aanbevelingen dan traditionele assessments.",
+    "feature3Title": "Interactieve ervaring",
+    "feature3Description": "Bespreek je resultaten in realtime, stel vervolgvragen en verken carrières die je interesseren."
+  },
+  "pricing": {
+    "title": "Investeer in je toekomst",
+    "betaAccess": "Bèta-toegang",
+    "subtitle": "Krijg gepersonaliseerde carrièreduidelijkheid met ons uitgebreide assessmentpakket"
+  },
+  "about": {
+    "title": "Over ons"
+  },
+  "faq": {
+    "title": "Veelgestelde vragen"
+  }
+}

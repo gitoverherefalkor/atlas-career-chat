@@ -1,0 +1,23 @@
+{
+  "welcome": {
+    "title": "Welkom bij je carrière-inzichtensessie",
+    "intro": "Welkom! Ik neem je persoonlijkheidsprofiel en carrièreaanbevelingen met je door — te beginnen met wie je bent als professional, gevolgd door de carrièrepaden die het beste bij je doelen en sterke punten passen.",
+    "encouragement": "Stel gerust vragen, geef je mening of verken een carrière verder tijdens het gesprek.",
+    "tip": "Je hoeft geen aantekeningen te maken — alles komt terecht in een volledig rapport op je dashboard. Reacties kunnen even duren omdat er meerdere AI-tools op de achtergrond werken.",
+    "ready": "Ik ben er klaar voor!",
+    "preparing": "Je sessie wordt voorbereid..."
+  },
+  "input": {
+    "placeholder": "Typ hier...",
+    "send": "Versturen"
+  },
+  "errors": {
+    "noResponse": "Ik heb geen reactie ontvangen. Probeer het opnieuw.",
+    "timeout": "De reactie duurde te lang. Probeer het opnieuw.",
+    "messageFailed": "Bericht mislukt"
+  },
+  "session": {
+    "viewReport": "Bekijk je rapport",
+    "completed": "Sessie afgerond — je rapport staat hierboven klaar."
+  }
+}

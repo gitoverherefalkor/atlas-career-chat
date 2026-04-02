@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "howItWorks": "How It Works",
+    "whyAtlas": "Why Atlas",
+    "pricing": "Pricing",
+    "aboutUs": "About Us",
+    "dashboard": "Dashboard",
+    "signIn": "Sign In",
+    "getStarted": "Get Started"
+  },
+  "footer": {
+    "brand": "Atlas Assessment",
+    "description": "Gain personalized, actionable career clarity through an expert-developed, AI-enhanced assessment delivered via a unique, interactive chat experience. Stop guessing, start directing your career.",
+    "copyright": "© {{year}} Falkor Atlas. All rights reserved.",
+    "quickLinks": "Quick Links",
+    "examples": "Examples",
+    "contact": "Contact",
+    "currentlyInBeta": "Currently in Beta",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "tagline": "Designed and developed with ♥ for career clarity"
+  },
+  "buttons": {
+    "back": "Back",
+    "continue": "Continue",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "retry": "Retry",
+    "loading": "Loading...",
+    "save": "Save",
+    "close": "Close"
+  },
+  "errors": {
+    "somethingWentWrong": "Something went wrong. Please refresh or contact support.",
+    "unexpectedError": "An unexpected error occurred. Please try again."
+  }
+}

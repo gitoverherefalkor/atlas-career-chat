@@ -1,0 +1,30 @@
+{
+  "sectionOf": "Section {{current}}. {{title}}",
+  "questionOf": "Q. {{current}} of {{total}}",
+  "submitted": {
+    "title": "Assessment Submitted Successfully!",
+    "description": "Your responses are saved and your report is being generated.",
+    "continueToDashboard": "Continue to Dashboard"
+  },
+  "failed": {
+    "title": "Submission Failed",
+    "description": "Don't worry — your answers are saved!",
+    "retry": "Retry Submission",
+    "retrying": "Retrying..."
+  },
+  "loading": {
+    "survey": "Loading your assessment...",
+    "progress": "Loading your progress..."
+  },
+  "errors": {
+    "failedToLoad": "Failed to load survey.",
+    "somethingWentWrong": "Something went wrong.",
+    "noQuestions": "No questions available in this section."
+  },
+  "welcome": {
+    "title": "Welcome to Your Assessment",
+    "accessCodeLabel": "Access Code",
+    "verify": "Verify",
+    "needCode": "Need an access code?"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "sectionOf": "Onderdeel {{current}}. {{title}}",
+  "questionOf": "Vraag {{current}} van {{total}}",
+  "submitted": {
+    "title": "Assessment succesvol ingediend!",
+    "description": "Je antwoorden zijn opgeslagen en je rapport wordt gegenereerd.",
+    "continueToDashboard": "Ga naar Dashboard"
+  },
+  "failed": {
+    "title": "Indienen mislukt",
+    "description": "Geen zorgen — je antwoorden zijn opgeslagen!",
+    "retry": "Opnieuw indienen",
+    "retrying": "Bezig met opnieuw indienen..."
+  },
+  "loading": {
+    "survey": "Je assessment wordt geladen...",
+    "progress": "Je voortgang wordt geladen..."
+  },
+  "errors": {
+    "failedToLoad": "Assessment kon niet worden geladen.",
+    "somethingWentWrong": "Er is iets misgegaan.",
+    "noQuestions": "Geen vragen beschikbaar in dit onderdeel."
+  },
+  "welcome": {
+    "title": "Welkom bij je assessment",
+    "accessCodeLabel": "Toegangscode",
+    "verify": "Verifiëren",
+    "needCode": "Heb je een toegangscode nodig?"
+  }
+}

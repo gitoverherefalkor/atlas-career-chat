@@ -1,0 +1,47 @@
+{
+  "chapters": {
+    "aboutYou": "About You",
+    "careerSuggestions": "Career Suggestions for You"
+  },
+  "sections": {
+    "executiveSummary": {
+      "title": "Executive Summary",
+      "description": "Who you are professionally and what drives your career."
+    },
+    "personalityTeam": {
+      "title": "Your Approach",
+      "description": "How you work, lead, and navigate challenges."
+    },
+    "strengths": {
+      "title": "Your Strengths",
+      "description": "What sets you apart and how to use these capabilities strategically."
+    },
+    "growth": {
+      "title": "Development Areas",
+      "description": "Growth opportunities that will help you reach your goals."
+    },
+    "values": {
+      "title": "Your (Career) Values",
+      "description": "What matters most to you and how it shapes the right career fit."
+    },
+    "topCareers": {
+      "title": "Top Career Suggestions",
+      "description": "Three roles that best match your profile, skills, and goals."
+    },
+    "firstCareer": "Primary Career Match",
+    "secondCareer": "Second Career Match",
+    "thirdCareer": "Third Career Match",
+    "runnerUp": {
+      "title": "Runner-up Careers",
+      "description": "Strong alternative paths worth considering."
+    },
+    "outsideBox": {
+      "title": "Outside-the-Box Careers",
+      "description": "Unconventional options aligned with your interests and strengths."
+    },
+    "dreamJobs": {
+      "title": "Dream Job Analysis",
+      "description": "Reality check on your ideal career and what it takes to get there."
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "nav": {
+    "howItWorks": "Hoe het werkt",
+    "whyAtlas": "Waarom Atlas",
+    "pricing": "Prijzen",
+    "aboutUs": "Over ons",
+    "dashboard": "Dashboard",
+    "signIn": "Inloggen",
+    "getStarted": "Aan de slag"
+  },
+  "footer": {
+    "brand": "Atlas Assessment",
+    "description": "Krijg gepersonaliseerde, bruikbare carrièreduidelijkheid via een door experts ontwikkelde, AI-versterkte assessment die wordt aangeboden via een unieke, interactieve chatervaring. Stop met gissen, begin met het sturen van je carrière.",
+    "copyright": "© {{year}} Falkor Atlas. Alle rechten voorbehouden.",
+    "quickLinks": "Snelle links",
+    "examples": "Voorbeelden",
+    "contact": "Contact",
+    "currentlyInBeta": "Momenteel in bèta",
+    "privacyPolicy": "Privacybeleid",
+    "termsOfService": "Algemene voorwaarden",
+    "tagline": "Ontworpen en ontwikkeld met ♥ voor carrièreduidelijkheid"
+  },
+  "buttons": {
+    "back": "Terug",
+    "continue": "Doorgaan",
+    "submit": "Verzenden",
+    "cancel": "Annuleren",
+    "retry": "Opnieuw proberen",
+    "loading": "Laden...",
+    "save": "Opslaan",
+    "close": "Sluiten"
+  },
+  "errors": {
+    "somethingWentWrong": "Er is iets misgegaan. Vernieuw de pagina of neem contact op met support.",
+    "unexpectedError": "Er is een onverwachte fout opgetreden. Probeer het opnieuw."
+  }
+}
