@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, FileText, Check, Circle, Lock, PartyPopper, X, ListOrdered } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, Check, Circle, Lock, PartyPopper, X, ListOrdered, ClipboardList, Compass, Zap, TrendingUp, Heart, Trophy, Award, Lightbulb, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 // All sections in order - matches store-report-sections
@@ -19,6 +19,28 @@ export const ALL_SECTIONS = [
 ] as const;
 
 export type SectionId = typeof ALL_SECTIONS[number]['id'];
+
+// Icons for each section in the sidebar
+const SECTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
+  'executive-summary': ClipboardList,
+  'personality-team': Compass,
+  'strengths': Zap,
+  'growth': TrendingUp,
+  'values': Heart,
+  'first-career': Trophy,   // will be overridden by number badge in button
+  'second-career': Trophy,
+  'third-career': Trophy,
+  'runner-up': Award,
+  'outside-box': Lightbulb,
+  'dream-jobs': Sparkles,
+};
+
+// Numbered labels for the top-3 careers
+const CAREER_NUMBER: Record<string, string> = {
+  'first-career': '1',
+  'second-career': '2',
+  'third-career': '3',
+};
 
 // Pre-compute sections by chapter for cleaner rendering
 const ABOUT_YOU_SECTIONS = ALL_SECTIONS
@@ -80,6 +102,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
             {ABOUT_YOU_SECTIONS.map((section) => (
               <SectionButton
                 key={section.id}
+                sectionId={section.id}
                 title={section.title}
                 state={getSectionState(section.globalIndex)}
                 onClick={() => handleClick(section.id, section.globalIndex)}
@@ -96,6 +119,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
             {CAREER_SECTIONS.map((section) => (
               <SectionButton
                 key={section.id}
+                sectionId={section.id}
                 title={section.title}
                 state={getSectionState(section.globalIndex)}
                 onClick={() => handleClick(section.id, section.globalIndex)}
@@ -245,13 +269,17 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
 
 // Individual section button - simplified props
 interface SectionButtonProps {
+  sectionId: string;
   title: string;
   state: 'past' | 'current' | 'upcoming';
   onClick: () => void;
   disabled: boolean;
 }
 
-const SectionButton: React.FC<SectionButtonProps> = ({ title, state, onClick, disabled }) => {
+const SectionButton: React.FC<SectionButtonProps> = ({ sectionId, title, state, onClick, disabled }) => {
+  const SectionIcon = SECTION_ICONS[sectionId];
+  const careerNumber = CAREER_NUMBER[sectionId];
+
   return (
     <button
       onClick={onClick}
@@ -272,6 +300,21 @@ const SectionButton: React.FC<SectionButtonProps> = ({ title, state, onClick, di
         {state === 'current' && <Circle className="h-4 w-4 fill-current" />}
         {state === 'upcoming' && <Lock className="h-3.5 w-3.5" />}
       </span>
+
+      {/* Section icon or number badge */}
+      {state !== 'past' && (
+        careerNumber ? (
+          <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 ${
+            state === 'current' ? 'bg-white/20 text-white' : 'bg-atlas-teal/15 text-atlas-teal'
+          }`}>
+            {careerNumber}
+          </span>
+        ) : SectionIcon ? (
+          <SectionIcon className={`h-3.5 w-3.5 flex-shrink-0 ${
+            state === 'current' ? 'text-white' : state === 'upcoming' ? 'text-gray-300' : 'text-atlas-teal'
+          }`} />
+        ) : null
+      )}
 
       {/* Title */}
       <span className={state === 'upcoming' ? 'opacity-60' : ''}>{title}</span>

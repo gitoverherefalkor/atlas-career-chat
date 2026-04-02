@@ -6,12 +6,14 @@ import { ReportSection } from '@/hooks/useReportSections';
 interface Career {
   id: string;
   title: string;
+  iconLabel?: string; // '1', '2', '3' for numbered careers
 }
 
 interface Section {
   id: string;
   title: string;
   description: string;
+  icon?: React.ComponentType<{ className?: string }>;
   isCollapsible?: boolean;
   careers?: Career[];
 }
@@ -65,13 +67,18 @@ const CareerSection: React.FC<CareerSectionProps> = ({
     return fallbackTitle;
   };
 
+  const SectionIcon = section.icon;
+
   // Sections with careers array - show header with careers listed below (always expanded)
   if (section.careers) {
     return (
       <div>
         {/* Section header */}
         <div className="p-4 border-b border-gray-100">
-          <h4 className="font-semibold text-gray-900">{section.title}</h4>
+          <div className="flex items-center gap-2 mb-0.5">
+            {SectionIcon && <SectionIcon className="h-4 w-4 text-atlas-teal flex-shrink-0" />}
+            <h4 className="font-semibold text-gray-900">{section.title}</h4>
+          </div>
           <p className="text-sm text-gray-600">{section.description}</p>
         </div>
 
@@ -80,7 +87,13 @@ const CareerSection: React.FC<CareerSectionProps> = ({
           <div key={career.id} className="px-4 py-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0">
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-3">
-                <span className="text-atlas-teal">•</span>
+                {career.iconLabel ? (
+                  <span className="w-5 h-5 rounded-full bg-atlas-teal/15 text-atlas-teal text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    {career.iconLabel}
+                  </span>
+                ) : (
+                  <span className="text-atlas-teal">•</span>
+                )}
                 <p className="text-sm text-gray-600">{getCareerTitle(career.id, career.title)}</p>
               </div>
               <div className="ml-4 flex flex-col items-end gap-0.5">
@@ -104,7 +117,10 @@ const CareerSection: React.FC<CareerSectionProps> = ({
     <div className="p-4 hover:bg-gray-50">
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <h4 className="font-semibold text-gray-900 mb-1">{section.title}</h4>
+          <div className="flex items-center gap-2 mb-1">
+            {SectionIcon && <SectionIcon className="h-4 w-4 text-atlas-teal flex-shrink-0" />}
+            <h4 className="font-semibold text-gray-900">{section.title}</h4>
+          </div>
           <p className="text-sm text-gray-600">{section.description}</p>
         </div>
         <div className="ml-4 flex flex-col items-end gap-0.5">
