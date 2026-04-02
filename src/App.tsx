@@ -30,6 +30,7 @@ const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const Support = lazy(() => import("./pages/Support"));
 const Payment = lazy(() => import("./pages/Payment"));
 const ColorTest = lazy(() => import("./pages/ColorTest"));
+const Jobs = lazy(() => import("./pages/Jobs"));
 
 // Loading fallback shown while lazy chunks are downloading
 const PageLoader = () => (
@@ -68,6 +69,7 @@ const App = () => {
               <Route path="/support" element={<Support />} />
               <Route path="/payment" element={<Payment />} />
               <Route path="/color-test" element={<ColorTest />} />
+              <Route path="/jobs" element={<Jobs />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

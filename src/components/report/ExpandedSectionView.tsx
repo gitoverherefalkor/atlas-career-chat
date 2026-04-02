@@ -4,7 +4,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
 import { Card, CardContent } from '@/components/ui/card';
-import { X, ArrowRight, ArrowLeft, ChevronDown, Bot } from 'lucide-react';
+import { X, ArrowRight, ArrowLeft, ChevronDown, Bot, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { ReportSection } from '@/hooks/useReportSections';
 import AILegend from './AILegend';
 
@@ -281,6 +282,8 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
   onSectionExpand,
   onSectionRead
 }) => {
+  const navigate = useNavigate();
+
   // Career sections that should show AI Legend (all except dream-jobs)
   const careerSectionsWithAILegend = ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box'];
 
@@ -530,6 +533,25 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                       )}
                     </div>
                   </>
+                )}
+
+                {/* Job search CTA */}
+                {careerSectionIds.includes(expandedSection) && expandedSection !== 'dream-jobs' && (
+                  <div className="mt-6 p-5 bg-emerald-50 border border-emerald-200 rounded-lg">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <h4 className="font-semibold text-emerald-800 mb-1">Interested in this career?</h4>
+                        <p className="text-sm text-emerald-700">Find matching job openings near you.</p>
+                      </div>
+                      <button
+                        onClick={() => navigate(`/jobs?career=${expandedSection}`)}
+                        className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+                      >
+                        <Search className="h-4 w-4" />
+                        Find Jobs
+                      </button>
+                    </div>
+                  </div>
                 )}
 
                 {/* Prev / Next career nav */}
