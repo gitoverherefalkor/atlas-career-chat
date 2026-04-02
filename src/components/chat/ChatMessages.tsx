@@ -33,7 +33,9 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
     );
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
+    const lastMessageRef = useRef<HTMLDivElement>(null);
     const isUserScrolledUpRef = useRef(false);
+    const prevMessagesLengthRef = useRef(messages.length);
 
     // Track if user has scrolled up (to disable auto-scroll)
     const handleScroll = useCallback(() => {
@@ -44,8 +46,23 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
         container.scrollTop + container.clientHeight < container.scrollHeight - threshold;
     }, []);
 
-    // Auto-scroll to bottom when new messages arrive (unless user scrolled up)
+    // When a new message arrives: scroll to the top of the new message so user reads from the start.
+    // While waiting for a response: scroll to bottom to show the typing indicator.
     useEffect(() => {
+      const newMessageArrived = messages.length > prevMessagesLengthRef.current;
+      prevMessagesLengthRef.current = messages.length;
+
+      if (newMessageArrived) {
+        const lastMsg = messages[messages.length - 1];
+        if (lastMsg?.sender === 'bot') {
+          // Scroll so the top of the new bot message is visible
+          lastMessageRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          isUserScrolledUpRef.current = false;
+          return;
+        }
+      }
+
+      // For user messages or typing indicator, scroll to bottom (unless user scrolled up)
       if (!isUserScrolledUpRef.current) {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
       }
@@ -95,6 +112,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
 
             return (
               <React.Fragment key={msg.id}>
+                {isLastMessage && <div ref={lastMessageRef} />}
                 <ChatMessage
                   content={msg.content}
                   sender={msg.sender}
