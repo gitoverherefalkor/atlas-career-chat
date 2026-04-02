@@ -126,6 +126,13 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
         rawData: payload?.parsed_raw || payload
       };
 
+      // Data minimisation: clear raw resume text now that parsing is complete.
+      // The structured resume_parsed_data is kept for survey pre-fill.
+      await supabase
+        .from('profiles')
+        .update({ resume_data: null } as any)
+        .eq('id', user.id);
+
       setProcessingResult(result);
       setHasProcessed(true);
       onSuccess?.(result);

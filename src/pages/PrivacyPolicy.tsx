@@ -12,7 +12,7 @@ const PrivacyPolicy = () => {
           <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-sm p-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-8">Privacy Policy</h1>
             <div className="text-sm text-gray-600 mb-8">
-              <p>Last updated: June 23, 2025</p>
+              <p>Last updated: April 2, 2026</p>
             </div>
 
             <div className="prose max-w-none">
@@ -56,15 +56,14 @@ const PrivacyPolicy = () => {
               </section>
 
               <section className="mb-8">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. How We Use Your Information</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">3. How We Use Your Information and Legal Basis</h2>
+                <p className="text-gray-700 mb-4">Under the GDPR (Article 6), we process your data based on the following legal grounds:</p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2">
-                  <li>Provide personalized career assessment and recommendations</li>
-                  <li>Generate detailed career clarity reports</li>
-                  <li>Improve our AI-enhanced assessment algorithms</li>
-                  <li>Communicate with you about your assessment results</li>
-                  <li>Provide customer support and respond to inquiries</li>
-                  <li>Comply with legal obligations and protect our rights</li>
-                  <li>Send important updates about our services (with your consent for marketing)</li>
+                  <li><strong>Contract performance:</strong> Provide personalized career assessment and recommendations, generate career reports, and process payments</li>
+                  <li><strong>Contract performance:</strong> Communicate with you about your assessment results and provide customer support</li>
+                  <li><strong>Legitimate interest:</strong> Improve our assessment methodology and platform reliability</li>
+                  <li><strong>Legal obligation:</strong> Comply with applicable laws and protect our rights</li>
+                  <li><strong>Consent:</strong> Send marketing communications and optional reminder emails (you can opt out at any time via your profile settings)</li>
                 </ul>
               </section>
 
@@ -85,9 +84,17 @@ const PrivacyPolicy = () => {
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">5. Data Sharing and Disclosure</h2>
-                <p className="text-gray-700 mb-4">We do not sell your personal information. We may share your information in the following circumstances:</p>
+                <p className="text-gray-700 mb-4">We do not sell your personal information. We share data with the following processors to operate our platform:</p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2">
-                  <li><strong>Service Providers:</strong> Trusted third-party services that help us operate our platform</li>
+                  <li><strong>Supabase Inc.</strong> (EU/US) — Database hosting, authentication, and file storage</li>
+                  <li><strong>n8n GmbH</strong> (Germany) — AI-powered assessment analysis and career report generation</li>
+                  <li><strong>Google LLC</strong> (US, EU Data Processing Framework) — Resume text extraction via Gemini AI</li>
+                  <li><strong>Stripe Inc.</strong> (US, EU Data Processing Framework) — Payment processing</li>
+                  <li><strong>Resend Inc.</strong> (US) — Transactional email delivery</li>
+                  <li><strong>Vercel Inc.</strong> (US) — Website hosting and delivery</li>
+                </ul>
+                <p className="text-gray-700 mt-4">We may also share information when:</p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2">
                   <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
                   <li><strong>Business Transfers:</strong> In case of merger, acquisition, or sale of assets</li>
                   <li><strong>Consent:</strong> With your explicit permission for other purposes</li>
@@ -109,44 +116,61 @@ const PrivacyPolicy = () => {
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">7. Your Rights (GDPR)</h2>
-                <p className="text-gray-700 mb-4">If you are located in the European Union, you have the following rights:</p>
+                <p className="text-gray-700 mb-4">Under the GDPR, you have the following rights:</p>
                 <ul className="list-disc list-inside text-gray-700 space-y-2">
-                  <li><strong>Access:</strong> Request copies of your personal information</li>
-                  <li><strong>Rectification:</strong> Request correction of inaccurate information</li>
-                  <li><strong>Erasure:</strong> Request deletion of your personal information</li>
-                  <li><strong>Portability:</strong> Request transfer of your data to another service</li>
-                  <li><strong>Restriction:</strong> Request limitation of processing</li>
-                  <li><strong>Objection:</strong> Object to processing of your personal information</li>
-                  <li><strong>Withdraw Consent:</strong> Withdraw consent for data processing</li>
+                  <li><strong>Access:</strong> Download a copy of your personal data from your Profile settings</li>
+                  <li><strong>Rectification:</strong> Update your information via your Profile settings</li>
+                  <li><strong>Erasure:</strong> Permanently delete your account and all data from your Profile settings</li>
+                  <li><strong>Portability:</strong> Export your data in machine-readable format (JSON) from your Profile settings</li>
+                  <li><strong>Restriction:</strong> Request limitation of processing by contacting us</li>
+                  <li><strong>Objection:</strong> Object to processing by contacting us</li>
+                  <li><strong>Withdraw Consent:</strong> Withdraw consent at any time (e.g. disable email reminders in your Profile)</li>
                 </ul>
+                <p className="text-gray-700 mt-4">
+                  You can exercise your rights to access, export, and delete directly from your <strong>Profile Settings</strong> page. For other requests, contact us at privacy@atlas-assessments.com.
+                </p>
+              </section>
+
+              <section className="mb-8">
+                <h2 className="text-2xl font-semibold text-gray-900 mb-4">7a. Automated Decision-Making</h2>
+                <p className="text-gray-700 mb-4">
+                  Our platform uses AI to analyze your assessment responses and generate personalized career recommendations. This involves automated profiling of your personality traits, skills, and career preferences.
+                </p>
+                <p className="text-gray-700 mb-4">
+                  <strong>Important:</strong> These AI-generated recommendations are advisory only and do not constitute binding decisions about your career, employment, or any other matter. You are free to follow, modify, or disregard any recommendation.
+                </p>
+                <p className="text-gray-700">
+                  Under GDPR Article 22, you have the right to request human review of any automated assessment. Contact us at privacy@atlas-assessments.com if you wish to exercise this right.
+                </p>
               </section>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Data Retention</h2>
                 <p className="text-gray-700">
-                  We retain your personal information for as long as necessary to provide our services and fulfill the purposes outlined in this Privacy Policy. Assessment data is typically retained for 7 years to allow for long-term career tracking and improvement of our services, unless you request earlier deletion.
+                  We retain your personal information for up to 3 years after your last login, or for the duration of your account, whichever is longer. You can delete your account and all associated data at any time from your Profile settings. After account deletion, all personal data is permanently removed within 30 days.
                 </p>
               </section>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">9. Cookies and Tracking</h2>
                 <p className="text-gray-700 mb-4">
-                  We use cookies and similar technologies to improve your experience:
-                </p>
-                <ul className="list-disc list-inside text-gray-700 space-y-2">
-                  <li>Essential cookies for platform functionality</li>
-                  <li>Analytics cookies to understand usage patterns</li>
-                  <li>Preference cookies to remember your settings</li>
-                </ul>
-                <p className="text-gray-700 mt-4">
-                  You can control cookie preferences through your browser settings.
+                  We use only essential cookies required for platform functionality (authentication). We do not use analytics, tracking, or advertising cookies. See our <a href="/cookie-policy" className="text-blue-600 hover:underline">Cookie Policy</a> for details.
                 </p>
               </section>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">10. International Data Transfers</h2>
-                <p className="text-gray-700">
-                  Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your personal information in accordance with applicable data protection laws.
+                <p className="text-gray-700 mb-4">
+                  Some of our service providers process data outside the EU/EEA:
+                </p>
+                <ul className="list-disc list-inside text-gray-700 space-y-2">
+                  <li><strong>n8n GmbH</strong> — Germany (EU, no transfer needed)</li>
+                  <li><strong>Supabase Inc.</strong> — EU region selected for database hosting</li>
+                  <li><strong>Google LLC, Stripe Inc.</strong> — US, covered by the EU-US Data Privacy Framework</li>
+                  <li><strong>Resend Inc., Vercel Inc.</strong> — US, covered by Standard Contractual Clauses</li>
+                </ul>
+                <p className="text-gray-700 mt-4">
+                  We ensure appropriate safeguards are in place for all international transfers in accordance with GDPR Chapter V.
                 </p>
               </section>
 
