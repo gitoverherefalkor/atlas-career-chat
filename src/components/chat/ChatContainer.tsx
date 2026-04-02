@@ -19,6 +19,7 @@ interface ChatContainerProps {
   onUserActivity?: () => void;
   isSessionCompleted: boolean;
   isSidebarCollapsed: boolean;
+  autoResumeMessage?: string; // If set, send this message automatically on mount (for session resume)
 }
 
 export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
@@ -36,6 +37,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       onUserActivity,
       isSessionCompleted,
       isSidebarCollapsed,
+      autoResumeMessage,
     },
     ref
   ) => {
@@ -94,6 +96,22 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         }
       });
     }, [isLoading, hasMessages, messages]);
+
+    // Auto-send a resume message when returning to the chat (e.g. after session restore)
+    // This prevents the empty "Send a message to start your session" screen.
+    const autoResumeAttemptedRef = useRef(false);
+    useEffect(() => {
+      if (!autoResumeMessage || autoResumeAttemptedRef.current) return;
+      if (isLoading) return; // Wait until messages have loaded
+      if (hasMessages) return; // If there are already messages, don't auto-send
+      autoResumeAttemptedRef.current = true;
+
+      // Small delay so the UI renders before the request fires
+      const timer = setTimeout(() => {
+        handleSend(autoResumeMessage);
+      }, 300);
+      return () => clearTimeout(timer);
+    }, [isLoading, hasMessages, autoResumeMessage]);
 
     // Exact boilerplate intro phrases from the agent's BOILERPLATE QUICK REFERENCE.
     // ONLY used as fallback when heading-based detection misses.

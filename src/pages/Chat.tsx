@@ -56,6 +56,7 @@ const Chat = () => {
   const [sessionId, setSessionId] = useState<string | null>(
     localStorage.getItem('n8n-chat/sessionId')
   );
+  const [autoResumeMessage, setAutoResumeMessage] = useState<string | undefined>(undefined);
 
   const chatMessagesRef = useRef<ChatMessagesHandle>(null);
   const { user, isLoading: authLoading } = useAuth();
@@ -113,6 +114,10 @@ const Chat = () => {
     // Show session restored banner
     setShowSessionBanner(true);
     setTimeout(() => setShowSessionBanner(false), 5000);
+
+    // Set auto-resume in case Supabase messages are empty (migration gap)
+    // ChatContainer will only send it if there are no loaded messages.
+    setAutoResumeMessage("Hi, I'm back! Let's continue where we left off.");
 
     // Go straight to chat (skip welcome)
     setShowWelcome(false);
@@ -238,11 +243,18 @@ const Chat = () => {
 
     // Generate or reuse session ID
     let sid = localStorage.getItem('n8n-chat/sessionId');
-    if (!sid || sessionIsStale) {
+    const isNewSession = !sid || sessionIsStale;
+    if (isNewSession) {
       sid = crypto.randomUUID();
       localStorage.setItem('n8n-chat/sessionId', sid);
     }
     localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
+
+    // If this is a returning user starting a fresh session, auto-send a resume prompt
+    // so the bot greets them instead of showing an empty chat
+    if (isNewSession && isReturningUser) {
+      setAutoResumeMessage("Hi, I'm back! Let's continue where we left off.");
+    }
 
     setSessionId(sid);
     setIsInitializing(true);
@@ -436,6 +448,7 @@ const Chat = () => {
                 onUserActivity={handleUserActivity}
                 isSessionCompleted={isSessionCompleted}
                 isSidebarCollapsed={isSidebarCollapsed}
+                autoResumeMessage={autoResumeMessage}
               />
             )}
           </div>
