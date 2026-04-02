@@ -49,13 +49,18 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
 
       console.log('[ResumeUpload] File uploaded:', uploadData.path);
 
-      // Step 2: Get public URL for the uploaded file
-      const { data: urlData } = supabase.storage
+      // Step 2: Get a signed URL (expires in 5 minutes — enough for n8n to download)
+      const { data: urlData, error: signError } = await supabase.storage
         .from('resumes')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 300);
 
-      const fileUrl = urlData.publicUrl;
-      console.log('[ResumeUpload] File URL:', fileUrl);
+      if (signError || !urlData?.signedUrl) {
+        console.error('[ResumeUpload] Failed to create signed URL:', signError);
+        throw new Error('Failed to prepare file for processing. Please try again.');
+      }
+
+      const fileUrl = urlData.signedUrl;
+      console.log('[ResumeUpload] Signed URL created (expires in 5 min)');
 
       setIsUploading(false);
       // Still processing (AI extraction happening in n8n)

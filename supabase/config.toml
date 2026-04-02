@@ -40,6 +40,12 @@ verify_jwt = false
 [functions.search-jobs]
 verify_jwt = false
 
+[functions.delete-user-data]
+verify_jwt = true
+
+[functions.export-user-data]
+verify_jwt = true
+
 [auth]
 site_url = "https://atlas-assessments.com"
 additional_redirect_urls = ["https://atlas-career-chat.lovable.app", "http://localhost:3000"]

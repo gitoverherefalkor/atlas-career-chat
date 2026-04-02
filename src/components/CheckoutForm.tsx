@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   firstName: z.string().min(2, {
@@ -41,6 +42,9 @@ const formSchema = z.object({
   }),
   businessName: z.string().optional(),
   vatNumber: z.string().optional(),
+  acceptTerms: z.literal(true, {
+    errorMap: () => ({ message: "You must accept the Privacy Policy and Terms of Service." }),
+  }),
 });
 
 type CheckoutFormValues = z.infer<typeof formSchema>;
@@ -124,6 +128,7 @@ export function CheckoutForm() {
       country: '',
       businessName: '',
       vatNumber: '',
+      acceptTerms: undefined as unknown as true,
     },
   });
 
@@ -173,6 +178,15 @@ export function CheckoutForm() {
     try {
       // Store country in localStorage for profile update after payment/signup
       localStorage.setItem('payment_country', values.country);
+
+      // Record consent timestamp for GDPR compliance
+      if (user) {
+        const consentTimestamp = new Date().toISOString();
+        await supabase.from('profiles').update({
+          privacy_consent_at: consentTimestamp,
+          terms_consent_at: consentTimestamp,
+        } as any).eq('id', user.id);
+      }
 
       const { data, error: apiError } = await supabase.functions.invoke("create-checkout", {
         body: {
@@ -326,6 +340,33 @@ export function CheckoutForm() {
               )}
             />
           </div>
+        <FormField
+          control={form.control}
+          name="acceptTerms"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox
+                  checked={field.value === true}
+                  onCheckedChange={(checked) => field.onChange(checked === true ? true : undefined)}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="text-sm font-normal text-gray-600">
+                  I agree to the{' '}
+                  <a href="/privacy-policy" target="_blank" className="text-atlas-blue underline hover:text-atlas-navy">
+                    Privacy Policy
+                  </a>{' '}
+                  and{' '}
+                  <a href="/terms-conditions" target="_blank" className="text-atlas-blue underline hover:text-atlas-navy">
+                    Terms of Service
+                  </a>
+                </FormLabel>
+                <FormMessage />
+              </div>
+            </FormItem>
+          )}
+        />
         {error && (
           <div className="text-destructive text-sm p-3 bg-destructive/10 rounded-md">
             {error}

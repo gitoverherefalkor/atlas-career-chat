@@ -8,9 +8,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
 
-// Eagerly load the landing page (first thing users see)
+// Eagerly load the landing page and global components
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 
 // Lazy load all other routes — only downloaded when the user navigates to them
 const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
@@ -74,6 +75,7 @@ const App = () => {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
+          <CookieConsentBanner />
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>

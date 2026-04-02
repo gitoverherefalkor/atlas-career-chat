@@ -5,15 +5,20 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, User, Save, FileText, CheckCircle, Bell } from 'lucide-react';
+import { ArrowLeft, User, Save, FileText, CheckCircle, Bell, Download, Trash2, Shield } from 'lucide-react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Profile = () => {
   const { user } = useAuth();
   const { profile, updateProfile, isUpdating } = useProfile();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isExporting, setIsExporting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   const [formData, setFormData] = useState({
     first_name: profile?.first_name || '',
@@ -52,6 +57,49 @@ const Profile = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateProfile(formData);
+  };
+
+  const handleExportData = async () => {
+    setIsExporting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('export-user-data');
+      if (error) throw error;
+
+      // Download as JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `atlas-assessments-data-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast({ title: 'Data exported', description: 'Your data has been downloaded as a JSON file.' });
+    } catch (err: any) {
+      console.error('Export error:', err);
+      toast({ title: 'Export failed', description: 'Something went wrong. Please try again or contact support.', variant: 'destructive' });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke('delete-user-data');
+      if (error) throw error;
+
+      // Sign out and redirect
+      await supabase.auth.signOut();
+      navigate('/');
+    } catch (err: any) {
+      console.error('Delete error:', err);
+      toast({ title: 'Deletion failed', description: 'Something went wrong. Please contact support at privacy@atlas-assessments.com', variant: 'destructive' });
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   if (!user) {
@@ -339,6 +387,108 @@ const Profile = () => {
                 }}
               />
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Your Data (GDPR) */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Shield className="h-5 w-5 mr-2" />
+              Your Data
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-gray-600">
+              You have the right to download a copy of all your personal data, or request its permanent deletion.
+              See our <a href="/privacy-policy" className="text-atlas-blue underline">Privacy Policy</a> for more details.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                variant="outline"
+                onClick={handleExportData}
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4 mr-2" />
+                    Download My Data
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Delete Account */}
+        <Card className="border-red-200">
+          <CardHeader>
+            <CardTitle className="flex items-center text-red-700">
+              <Trash2 className="h-5 w-5 mr-2" />
+              Delete Account
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {!showDeleteConfirm ? (
+              <>
+                <p className="text-sm text-gray-600">
+                  Permanently delete your account and all associated data including assessment results,
+                  career reports, chat history, and uploaded documents. This action cannot be undone.
+                </p>
+                <Button
+                  variant="outline"
+                  className="border-red-300 text-red-700 hover:bg-red-50"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete My Account
+                </Button>
+              </>
+            ) : (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-4">
+                <p className="text-sm font-medium text-red-800">
+                  Are you sure? This will permanently delete:
+                </p>
+                <ul className="text-sm text-red-700 list-disc list-inside space-y-1">
+                  <li>Your profile and personal information</li>
+                  <li>All assessment responses</li>
+                  <li>Career reports and recommendations</li>
+                  <li>Chat conversation history</li>
+                  <li>Uploaded resume/CV files</li>
+                </ul>
+                <p className="text-sm text-red-800 font-medium">
+                  This cannot be undone. You will be signed out immediately.
+                </p>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={isDeleting}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                        Deleting...
+                      </>
+                    ) : (
+                      'Yes, Delete Everything'
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
