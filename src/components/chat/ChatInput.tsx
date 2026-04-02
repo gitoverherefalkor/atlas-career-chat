@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, forwardRef, useImperativeHandle } from 'react';
 import { Send, Mic } from 'lucide-react';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
 export interface ChatInputHandle {
   focus: () => void;
@@ -24,11 +25,14 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   isSidebarCollapsed = false,
 }, ref) => {
   const [text, setText] = useState('');
-  const [isListening, setIsListening] = useState(false);
-  const isListeningRef = useRef(false); // Mirror of isListening for closure access
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const recognitionRef = useRef<any>(null);
-  const finalTranscriptRef = useRef('');
+
+  // Voice input via shared hook
+  const { isListening, isSupported: hasSpeechRecognition, toggleListening, stopListening } =
+    useSpeechRecognition({
+      onTranscript: setText,
+      existingText: text,
+    });
 
   // Expose focus method so quick replies can focus the input
   useImperativeHandle(ref, () => ({
@@ -39,12 +43,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   useEffect(() => {
     onTypingChange?.(text.trim().length > 0);
   }, [text, onTypingChange]);
-
-  // Check for speech recognition support
-  const SpeechRecognition =
-    typeof window !== 'undefined'
-      ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-      : null;
 
   // Auto-resize textarea on content change
   const autoResize = useCallback(() => {
@@ -58,14 +56,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
   useEffect(() => {
     autoResize();
   }, [text, autoResize]);
-
-  // Stop mic recording (shared by send + mic toggle)
-  const stopListening = () => {
-    recognitionRef.current?.stop();
-    setIsListening(false);
-    isListeningRef.current = false;
-    finalTranscriptRef.current = '';
-  };
 
   const handleSend = () => {
     const trimmed = text.trim();
@@ -90,109 +80,6 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
       handleSend();
     }
   };
-
-  // Voice input — request mic permission via getUserMedia first, then use SpeechRecognition
-  // getUserMedia reliably triggers the browser permission popup; SpeechRecognition.start() often doesn't
-  const toggleListening = async () => {
-    console.log('[Mic] toggleListening called');
-    console.log('[Mic] SpeechRecognition available:', !!SpeechRecognition);
-    console.log('[Mic] isListening:', isListening);
-
-    if (!SpeechRecognition) {
-      console.warn('[Mic] SpeechRecognition not available — exiting');
-      return;
-    }
-
-    if (isListening) {
-      console.log('[Mic] Stopping recognition');
-      stopListening();
-      return;
-    }
-
-    // Step 1: Request mic permission explicitly via getUserMedia
-    // This reliably triggers the browser permission prompt
-    try {
-      console.log('[Mic] Requesting mic permission via getUserMedia...');
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Release the stream immediately — we just needed the permission grant
-      stream.getTracks().forEach((track) => track.stop());
-      console.log('[Mic] Mic permission granted');
-    } catch (err) {
-      console.error('[Mic] Mic permission denied or error:', err);
-      return; // User denied mic access, don't proceed
-    }
-
-    // Step 2: Start SpeechRecognition (now that we have mic permission)
-    console.log('[Mic] Creating new SpeechRecognition instance');
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
-
-    finalTranscriptRef.current = text ? text + ' ' : '';
-
-    recognition.onresult = (event: any) => {
-      console.log('[Mic] onresult fired');
-      let interim = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) {
-          finalTranscriptRef.current += event.results[i][0].transcript;
-        } else {
-          interim += event.results[i][0].transcript;
-        }
-      }
-      setText(finalTranscriptRef.current + interim);
-    };
-
-    recognition.onstart = () => {
-      console.log('[Mic] onstart fired — recognition is active');
-    };
-
-    recognition.onaudiostart = () => {
-      console.log('[Mic] onaudiostart — microphone is capturing');
-    };
-
-    recognition.onend = () => {
-      console.log('[Mic] onend fired, isListeningRef:', isListeningRef.current);
-      // Auto-restart if still listening (recognition can timeout)
-      if (isListeningRef.current) {
-        try {
-          recognition.start();
-        } catch (e) {
-          console.error('[Mic] Failed to auto-restart:', e);
-        }
-      }
-    };
-
-    recognition.onerror = (event: any) => {
-      console.error('[Mic] onerror:', event.error, event.message);
-      if (event.error === 'not-allowed' || event.error === 'aborted') {
-        setIsListening(false);
-        isListeningRef.current = false;
-      }
-    };
-
-    recognitionRef.current = recognition;
-    setIsListening(true);
-    isListeningRef.current = true;
-
-    try {
-      recognition.start();
-      console.log('[Mic] recognition.start() called successfully');
-    } catch (e) {
-      console.error('[Mic] recognition.start() threw:', e);
-      setIsListening(false);
-      isListeningRef.current = false;
-    }
-  };
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      recognitionRef.current?.stop();
-      isListeningRef.current = false;
-    };
-  }, []);
 
   const sidebarWidth = isSidebarCollapsed ? '48px' : '288px';
 
@@ -226,7 +113,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
             {/* Buttons container — positioned inside the textarea visually */}
             <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {/* Mic button — only show if browser supports speech recognition */}
-              {SpeechRecognition && (
+              {hasSpeechRecognition && (
                 <button
                   type="button"
                   onClick={toggleListening}

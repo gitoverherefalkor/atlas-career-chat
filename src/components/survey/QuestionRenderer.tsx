@@ -8,7 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Mic } from 'lucide-react';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
 interface QuestionRendererProps {
   question: Question;
@@ -466,26 +467,13 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
     case 'long_text':
       return (
-        <div>
-          <div 
-            className="text-lg font-light mb-2"
-            dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
-          />
-          {renderDescription()}
-          <textarea
-            value={value || ''}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="Enter your response..."
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-base leading-relaxed resize-y min-h-[350px]"
-            rows={10}
-            maxLength={question.config?.max_length}
-          />
-          {question.config?.max_length && (
-            <p className="text-sm text-gray-500 mt-2">
-              {(value || '').length} / {question.config.max_length} characters
-            </p>
-          )}
-        </div>
+        <LongTextWithVoice
+          question={question}
+          value={value}
+          onChange={onChange}
+          formatTextWithEmphasis={formatTextWithEmphasis}
+          renderDescription={renderDescription}
+        />
       );
 
     case 'number':
@@ -1683,4 +1671,57 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         </div>
       );
   }
+};
+
+// Separate component for long_text so the voice hook is called unconditionally
+const LongTextWithVoice: React.FC<{
+  question: Question;
+  value: any;
+  onChange: (value: any) => void;
+  formatTextWithEmphasis: (text: string) => { __html: string };
+  renderDescription: () => React.ReactNode;
+}> = ({ question, value, onChange, formatTextWithEmphasis, renderDescription }) => {
+  const { isListening, isSupported, toggleListening } = useSpeechRecognition({
+    onTranscript: onChange,
+    existingText: value || '',
+  });
+
+  return (
+    <div>
+      <div
+        className="text-lg font-light mb-2"
+        dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
+      />
+      {renderDescription()}
+      <div className="relative">
+        <textarea
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Enter your response..."
+          className="w-full rounded-md border border-gray-300 px-3 py-2 pr-12 text-base leading-relaxed resize-y min-h-[350px]"
+          rows={10}
+          maxLength={question.config?.max_length}
+        />
+        {isSupported && (
+          <button
+            type="button"
+            onClick={toggleListening}
+            title={isListening ? 'Stop recording' : 'Voice input'}
+            className={`absolute bottom-3 right-3 flex items-center justify-center w-9 h-9 rounded-md transition-colors ${
+              isListening
+                ? 'text-red-500 bg-red-50 animate-mic-pulse'
+                : 'text-gray-400 hover:text-atlas-teal hover:bg-atlas-teal/5'
+            }`}
+          >
+            <Mic size={18} />
+          </button>
+        )}
+      </div>
+      {question.config?.max_length && (
+        <p className="text-sm text-gray-500 mt-2">
+          {(value || '').length} / {question.config.max_length} characters
+        </p>
+      )}
+    </div>
+  );
 };
