@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,7 +37,11 @@ const Dashboard = () => {
   const [userAccessCode, setUserAccessCode] = useState<string | null>(null);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+
+  // If user explicitly navigated here (e.g. from chat), don't auto-redirect back
+  const cameFromChat = location.state?.fromChat === true;
 
   // Check for saved assessment progress
   const savedSession = getAssessmentSession();
@@ -180,7 +184,7 @@ const Dashboard = () => {
   // navigate() called during render is a no-op in React Router 6 and causes blank pages.
   const needsAuthRedirect = !authLoading && !user;
   const needsProcessingRedirect = !authLoading && !reportsLoading && latestReport?.status === 'processing';
-  const needsChatRedirect = !authLoading && !reportsLoading && latestReport?.status === 'pending_review';
+  const needsChatRedirect = !authLoading && !reportsLoading && latestReport?.status === 'pending_review' && !cameFromChat;
 
   useEffect(() => {
     if (needsAuthRedirect) {

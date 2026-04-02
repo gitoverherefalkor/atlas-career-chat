@@ -317,7 +317,7 @@ const Chat = () => {
           description: "Complete your assessment first to access the career coach.",
           variant: "destructive",
         });
-        navigate('/dashboard');
+        navigate('/dashboard', { state: { fromChat: true } });
         return;
       }
 
@@ -329,7 +329,7 @@ const Chat = () => {
         description: "Unable to load your report. Please try again.",
         variant: "destructive",
       });
-      navigate('/dashboard');
+      navigate('/dashboard', { state: { fromChat: true } });
     } finally {
       setIsLoading(false);
     }
@@ -357,7 +357,7 @@ const Chat = () => {
             <p className="text-gray-600 mb-6">
               Complete your assessment to start chatting with your AI career coach.
             </p>
-            <Button onClick={() => navigate('/dashboard')} className="w-full">
+            <Button onClick={() => navigate('/dashboard', { state: { fromChat: true } })} className="w-full">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go to Dashboard
             </Button>
@@ -384,7 +384,7 @@ const Chat = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/dashboard', { state: { fromChat: true } })}
               className="hover:bg-atlas-blue/10 hover:text-atlas-navy hover:border-atlas-blue text-xs sm:text-sm"
             >
               <LayoutDashboard className="h-4 w-4 sm:mr-2" />
