@@ -176,31 +176,29 @@ const Dashboard = () => {
     return savedSession?.isVerified || savedSession?.accessCodeData || hasMeaningfulProgress() || hasReport || hasChatSession;
   };
 
-  if (authLoading || profileLoading || reportsLoading) {
+  // Redirects must happen in useEffect, not during render.
+  // navigate() called during render is a no-op in React Router 6 and causes blank pages.
+  const needsAuthRedirect = !authLoading && !user;
+  const needsProcessingRedirect = !authLoading && !reportsLoading && latestReport?.status === 'processing';
+  const needsChatRedirect = !authLoading && !reportsLoading && latestReport?.status === 'pending_review';
+
+  useEffect(() => {
+    if (needsAuthRedirect) {
+      navigate('/auth', { replace: true });
+    } else if (needsProcessingRedirect) {
+      navigate('/report-processing', { replace: true });
+    } else if (needsChatRedirect) {
+      navigate('/chat', { replace: true });
+    }
+  }, [needsAuthRedirect, needsProcessingRedirect, needsChatRedirect, navigate]);
+
+  // Show loading spinner while data is loading OR a redirect is about to happen
+  if (authLoading || profileLoading || reportsLoading || needsAuthRedirect || needsProcessingRedirect || needsChatRedirect) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
-  }
-
-  if (!user) {
-    navigate('/auth');
-    return null;
-  }
-
-  // Redirect to the processing page if report is still being generated
-  // That page has a better UX for waiting (timer, progress steps, etc.)
-  if (latestReport && latestReport.status === 'processing') {
-    navigate('/report-processing');
-    return null;
-  }
-
-  // Redirect to chat if report is ready for review — no reason to show
-  // a near-empty dashboard when the user should be in the chat
-  if (latestReport && latestReport.status === 'pending_review') {
-    navigate('/chat');
-    return null;
   }
 
   const displayName = profile?.first_name && profile?.last_name
