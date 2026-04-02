@@ -85,3 +85,23 @@ Current development focus: building out the platform features and establishing n
 - Platform needs to send survey data to n8n
 - Platform needs to receive assessment results from n8n
 - Consider webhook endpoints and API connections
+
+## n8n API access
+- **Instance**: https://falkoratlas.app.n8n.cloud
+- **API Key**: stored in `.env` as `N8N_API_KEY`
+- **Auth header**: `X-N8N-API-KEY`
+- **Usage**: `curl -s -H "X-N8N-API-KEY: $(grep N8N_API_KEY .env | cut -d'"' -f2)" https://falkoratlas.app.n8n.cloud/api/v1/workflows`
+- **Capabilities**: List/get/update workflows, check executions, activate/deactivate
+- **Important**: Never modify n8n workflows or question mappings without explicit approval
+- **Workflow exports**: JSON backups are in `n8n_aa/` folder
+
+### Workflow IDs (current architecture)
+| Workflow | ID | Purpose |
+|----------|-----|---------|
+| WF1 (Profile Insert) | nupGvBByAGh4A9tL | Survey → personality profile |
+| WF2 (Enrich 15) | vVv0tsnFlBnarMdq | Career research + AI impact |
+| WF3 (Scoring + OOB) | LJA5JPHvnqhA36Oh | Career scoring + outside-the-box |
+| WF4 (Content Gen) | pXlzC6vuG7TO28oQ | Top 3 + runner-up + dream job narratives |
+| WF5 (Chat) | h7ie9zN080IM2g7N | Interactive career coach chat |
+| Error Handler | FbsruPbuZI2Fgtc8 | Global error logging + email alerts |
+| Resume Extract | myWIhgaahAXD2ULz | PDF resume parsing |
