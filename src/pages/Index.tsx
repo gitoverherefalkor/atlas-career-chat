@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import {
@@ -526,6 +527,7 @@ const ImagePlaceholder: React.FC<{
 
 // --- Main Page ---
 const Index = () => {
+  const { t } = useTranslation(['common', 'landing']);
   const [scrolled, setScrolled] = useState(false);
   const [founderExpanded, setFounderExpanded] = useState(false);
   const [crisisOpen, setCrisisOpen] = useState(false);
@@ -541,9 +543,9 @@ const Index = () => {
   }, []);
 
   const navLinks = [
-    { name: "How It Works", href: "#how-it-works" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "About", href: "#about" },
+    { name: t('common:nav.howItWorks'), href: "#how-it-works" },
+    { name: t('common:nav.pricing'), href: "#pricing" },
+    { name: t('common:nav.aboutUs'), href: "#about" },
   ];
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -595,12 +597,12 @@ const Index = () => {
                 onClick={() => navigate('/auth')}
                 className={`font-bold text-xs uppercase tracking-widest transition-colors ${scrolled ? 'text-blue-100 hover:text-white' : 'text-blue-100/70 hover:text-white'}`}
               >
-                Log In
+                {t('common:nav.signIn')}
               </button>
             )}
             <LanguageSwitcher className="text-blue-100 hover:text-white" />
             <Button className="py-2.5 px-6 text-xs uppercase tracking-tighter" onClick={handleGetStarted}>
-              {user ? 'Dashboard' : 'Get Started'}
+              {user ? t('common:nav.dashboard') : t('common:nav.getStarted')}
             </Button>
           </div>
 
@@ -632,11 +634,11 @@ const Index = () => {
                   onClick={() => { setMobileMenuOpen(false); navigate('/auth'); }}
                   className="text-white text-2xl font-bold tracking-tight hover:text-[#27A1A1] transition-colors text-left"
                 >
-                  Log In
+                  {t('common:nav.signIn')}
                 </button>
               )}
               <Button className="w-full text-base py-4 mt-4" onClick={handleGetStarted}>
-                {user ? 'Dashboard' : 'Get Started'}
+                {user ? t('common:nav.dashboard') : t('common:nav.getStarted')}
               </Button>
               <div className="mt-4">
                 <LanguageSwitcher className="text-white" />
