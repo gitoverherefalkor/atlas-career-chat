@@ -60,7 +60,8 @@ function handleUserSwitch(userId: string) {
   localStorage.setItem('atlas_current_user', userId);
 }
 
-// Ensure profile exists for authenticated user
+// Ensure profile exists for authenticated user.
+// Sets a short-lived localStorage flag so redirect logic can route new users to /payment.
 async function ensureProfile(user: User) {
   const { data: existingProfile } = await supabase
     .from('profiles')
@@ -69,6 +70,9 @@ async function ensureProfile(user: User) {
     .maybeSingle();
 
   if (!existingProfile) {
+    // Signal for post-auth redirect: new user → /payment
+    localStorage.setItem('atlas_is_new_user', 'true');
+
     // Extract name from user metadata (OAuth providers)
     const metadata = user.user_metadata || {};
     const firstName = metadata.given_name || metadata.first_name ||
@@ -95,6 +99,17 @@ async function ensureProfile(user: User) {
       console.error('Failed to create profile:', error);
     }
   }
+}
+
+// Consume the new-user flag (read once, then clear).
+// Returns '/payment' for new users, '/dashboard' for returning users.
+export function getPostAuthRedirect(): string {
+  const isNew = localStorage.getItem('atlas_is_new_user');
+  if (isNew) {
+    localStorage.removeItem('atlas_is_new_user');
+    return '/payment';
+  }
+  return '/dashboard';
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

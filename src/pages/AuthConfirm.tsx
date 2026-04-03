@@ -6,8 +6,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+// Check if user has a profile (existing user) or is brand new.
+// Returns '/payment' for new users, '/dashboard' for returning users.
+async function resolvePostAuthRedirect(userId: string): Promise<string> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle();
+  return data ? '/dashboard' : '/payment';
+}
 
 const AuthConfirm = () => {
   const [searchParams] = useSearchParams();
@@ -51,9 +61,10 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Successfully signed in!');
 
-          // Redirect to dashboard
+          // Route new users to /payment, returning users to /dashboard
+          const dest = await resolvePostAuthRedirect(sessionData.user?.id);
           setTimeout(() => {
-            window.location.href = '/dashboard';
+            window.location.href = dest;
           }, 1000);
           return;
         } catch (err) {
@@ -112,9 +123,10 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Successfully signed in!');
 
-          // Redirect to dashboard
+          // Route new users to /payment, returning users to /dashboard
+          const dest = await resolvePostAuthRedirect(user.id);
           setTimeout(() => {
-            window.location.href = '/dashboard';
+            window.location.href = dest;
           }, 1000);
           return;
         } catch (err) {
@@ -144,7 +156,8 @@ const AuthConfirm = () => {
         // Check if user is already logged in
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
-          navigate('/dashboard');
+          const dest = await resolvePostAuthRedirect(session.user.id);
+          navigate(dest);
           return;
         }
 
@@ -177,9 +190,10 @@ const AuthConfirm = () => {
           setStatus('success');
           setMessage('Your email has been confirmed successfully!');
 
-          // Redirect to dashboard after email verification
+          // Route new users to /payment, returning users to /dashboard
+          const dest = await resolvePostAuthRedirect(data.user.id);
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate(dest);
           }, 2000);
         }
       } catch (error) {

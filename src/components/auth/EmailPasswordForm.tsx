@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Mail, Lock, User, Eye, EyeOff, CheckCircle, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { getPostAuthRedirect } from '@/hooks/useAuth';
 
 interface EmailPasswordFormProps {
   isLogin: boolean;
@@ -105,7 +106,10 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
             title: t('toasts.welcomeBack'),
             description: t('toasts.loggedInSuccess'),
           });
-          navigate('/dashboard');
+          // ensureProfile may have set the new-user flag via onAuthStateChange
+          // Give it a tick to run, then consume the flag
+          await new Promise(r => setTimeout(r, 100));
+          navigate(getPostAuthRedirect());
         }
       } else {
         // Verify passwords match
