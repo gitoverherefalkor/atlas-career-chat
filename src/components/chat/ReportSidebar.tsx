@@ -1,6 +1,22 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, FileText, Check, Circle, Lock, PartyPopper, X, ListOrdered, ClipboardList, Compass, Zap, TrendingUp, Heart, Trophy, Award, Lightbulb, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Map section IDs to translation keys in report.json
+const SECTION_I18N_KEY: Record<string, string> = {
+  'executive-summary': 'sections.executiveSummary.title',
+  'personality-team': 'sections.personalityTeam.title',
+  'strengths': 'sections.strengths.title',
+  'growth': 'sections.growth.title',
+  'values': 'sections.values.title',
+  'first-career': 'sections.firstCareer',
+  'second-career': 'sections.secondCareer',
+  'third-career': 'sections.thirdCareer',
+  'runner-up': 'sections.runnerUp.title',
+  'outside-box': 'sections.outsideBox.title',
+  'dream-jobs': 'sections.dreamJobs.title',
+};
 
 // All sections in order - matches store-report-sections
 // Each section has: id, title (display), altTitles (what agent might output)
@@ -68,7 +84,14 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   onCompleteSession,
   isSessionCompleted = false
 }) => {
+  const { t } = useTranslation(['report', 'chat']);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Translate a section title using the report namespace, falling back to the English static title
+  const translateTitle = (sectionId: string, fallback: string) => {
+    const key = SECTION_I18N_KEY[sectionId];
+    return key ? t(key, { defaultValue: fallback }) : fallback;
+  };
 
   // Determine section state based on current progress
   const getSectionState = (index: number): 'past' | 'current' | 'upcoming' => {
@@ -97,13 +120,13 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
       <div className="flex-1 overflow-y-auto py-2">
         {/* About You Chapter */}
         <div className="px-4 py-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">About You</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('chapters.aboutYou')}</p>
           <div className="space-y-1">
             {ABOUT_YOU_SECTIONS.map((section) => (
               <SectionButton
                 key={section.id}
                 sectionId={section.id}
-                title={section.title}
+                title={translateTitle(section.id, section.title)}
                 state={getSectionState(section.globalIndex)}
                 onClick={() => handleClick(section.id, section.globalIndex)}
                 disabled={!isClickable(section.globalIndex)}
@@ -114,13 +137,13 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
 
         {/* Career Suggestions Chapter */}
         <div className="px-4 py-2 mt-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Career Suggestions</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('chapters.careerSuggestions')}</p>
           <div className="space-y-1">
             {CAREER_SECTIONS.map((section) => (
               <SectionButton
                 key={section.id}
                 sectionId={section.id}
-                title={section.title}
+                title={translateTitle(section.id, section.title)}
                 state={getSectionState(section.globalIndex)}
                 onClick={() => handleClick(section.id, section.globalIndex)}
                 disabled={!isClickable(section.globalIndex)}
@@ -138,7 +161,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
             className="w-full bg-atlas-teal hover:bg-atlas-teal/90 text-white"
           >
             <PartyPopper className="h-4 w-4 mr-2" />
-            Complete Session
+            {t('chat:session.completeSession')}
           </Button>
         </div>
       )}
@@ -146,7 +169,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
       {/* Progress indicator */}
       <div className="p-4 border-t border-gray-100 flex-shrink-0">
         <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-          <span>Progress</span>
+          <span>{t('chat:session.progress')}</span>
           <span>{Math.max(0, currentSectionIndex + 1)} / {ALL_SECTIONS.length}</span>
         </div>
         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
@@ -192,7 +215,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         <div className="flex items-center justify-between p-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center space-x-2">
             <FileText className="h-5 w-5 text-atlas-teal" />
-            <h2 className="font-heading font-semibold text-atlas-navy text-sm">Report Sections</h2>
+            <h2 className="font-heading font-semibold text-atlas-navy text-sm">{t('chat:session.reportSections')}</h2>
           </div>
           <Button
             variant="ghost"
@@ -235,7 +258,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
                       ? 'bg-atlas-teal/20 text-atlas-teal hover:bg-atlas-teal/30 cursor-pointer'
                       : 'bg-gray-100 text-gray-400 cursor-not-allowed'
                 }`}
-                title={section.title}
+                title={translateTitle(section.id, section.title)}
               >
                 {state === 'past' ? <Check className="h-3 w-3" /> : index + 1}
               </button>
@@ -249,7 +272,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
           <div className="flex items-center justify-between p-4 border-b border-gray-100 flex-shrink-0">
             <div className="flex items-center space-x-2">
               <FileText className="h-5 w-5 text-atlas-teal" />
-              <h2 className="font-heading font-semibold text-atlas-navy text-sm">Report Sections</h2>
+              <h2 className="font-heading font-semibold text-atlas-navy text-sm">{t('chat:session.reportSections')}</h2>
             </div>
             <Button
               variant="ghost"

@@ -18,6 +18,9 @@
   },
   "session": {
     "viewReport": "View Your Report",
-    "completed": "Session completed — your report is ready above."
+    "completed": "Session completed — your report is ready above.",
+    "completeSession": "Complete Session",
+    "reportSections": "Report Sections",
+    "progress": "Progress"
   }
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,7 @@ const getPurchaseData = () => {
 };
 
 const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
+  const { t } = useTranslation('auth');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -100,15 +102,15 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
         if (data.user) {
           localStorage.setItem('atlas_auth_method', 'email');
           toast({
-            title: "Welcome back!",
-            description: "You've been logged in successfully.",
+            title: t('toasts.welcomeBack'),
+            description: t('toasts.loggedInSuccess'),
           });
           navigate('/dashboard');
         }
       } else {
         // Verify passwords match
         if (formData.password !== formData.confirmPassword) {
-          setError('Passwords do not match.');
+          setError(t('errors.passwordsDoNotMatch'));
           return;
         }
 
@@ -118,7 +120,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
 
         // If no access code, prevent signup
         if (!accessCode) {
-          setError('You need an access code to create an account. Please purchase an assessment first or use the access code from your email.');
+          setError(t('errors.needAccessCode'));
           return;
         }
 
@@ -138,7 +140,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
         );
 
         if (signupError) {
-          setError(signupError.message || 'Failed to create account. Please try again.');
+          setError(signupError.message || t('errors.failedToCreate'));
           return;
         }
 
@@ -156,15 +158,15 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
 
           if (signInError) {
             // Rare edge case: user was created but sign-in failed (network/timing)
-            setError('Account created successfully! Please sign in with your email and password.');
+            setError(t('errors.accountCreatedSignIn'));
             return;
           }
 
           if (signInData.user) {
             localStorage.setItem('atlas_auth_method', 'email');
             toast({
-              title: "Account created!",
-              description: "Welcome to Atlas Assessments.",
+              title: t('toasts.accountCreated'),
+              description: t('toasts.welcomeToAtlas'),
             });
             navigate('/dashboard');
           }
@@ -172,7 +174,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
       }
     } catch (error) {
       console.error('Auth error:', error);
-      setError('An unexpected error occurred. Please try again.');
+      setError(t('common:errors.unexpectedError'));
     } finally {
       setIsLoading(false);
     }
@@ -191,7 +193,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
       if (error) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } else {
-        toast({ title: "Email sent", description: "A new verification email has been sent." });
+        toast({ title: t('toasts.emailSent'), description: t('toasts.newVerificationSent') });
       }
     } catch {
       toast({ title: "Error", description: "Failed to resend. Please try again.", variant: "destructive" });
@@ -210,14 +212,14 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
           </div>
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-atlas-navy">Check your email</h3>
+          <h3 className="text-lg font-semibold text-atlas-navy">{t('emailVerification.checkYourEmail')}</h3>
           <p className="text-sm text-gray-600 mt-1">
-            We sent a verification link to
+            {t('emailVerification.weSentLink')}
           </p>
           <p className="text-sm font-medium text-atlas-navy mt-1">{sentToEmail}</p>
         </div>
         <p className="text-xs text-gray-500">
-          Click the link in the email to activate your account. You'll be signed in automatically.
+          {t('emailVerification.clickLink')}
         </p>
         <div className="pt-2 space-y-2">
           <Button
@@ -228,13 +230,13 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
             className="w-full"
           >
             {isResending ? (
-              <><Loader2 className="h-3 w-3 mr-2 animate-spin" /> Sending...</>
+              <><Loader2 className="h-3 w-3 mr-2 animate-spin" /> {t('emailVerification.sending')}</>
             ) : (
-              <><RefreshCw className="h-3 w-3 mr-2" /> Resend verification email</>
+              <><RefreshCw className="h-3 w-3 mr-2" /> {t('emailVerification.resend')}</>
             )}
           </Button>
           <p className="text-xs text-gray-400">
-            Didn't receive it? Check your spam folder.
+            {t('emailVerification.didntReceive')}
           </p>
         </div>
       </div>
@@ -247,7 +249,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium mb-1">
-              First Name
+              {t('firstName')}
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -259,13 +261,13 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
                 value={formData.firstName}
                 onChange={handleInputChange}
                 className="pl-10"
-                placeholder="John"
+                placeholder={t('placeholders.firstName')}
               />
             </div>
           </div>
           <div>
             <label htmlFor="lastName" className="block text-sm font-medium mb-1">
-              Last Name
+              {t('lastName')}
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -277,7 +279,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
                 value={formData.lastName}
                 onChange={handleInputChange}
                 className="pl-10"
-                placeholder="Doe"
+                placeholder={t('placeholders.lastName')}
               />
             </div>
           </div>
@@ -286,7 +288,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
 
       <div>
         <label htmlFor="email" className="block text-sm font-medium mb-1">
-          Email
+          {t('email')}
         </label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -298,7 +300,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
             value={formData.email}
             onChange={handleInputChange}
             className="pl-10"
-            placeholder="your@email.com"
+            placeholder={t('placeholders.email')}
           />
         </div>
       </div>
@@ -306,7 +308,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
       <div>
         <div className="flex items-center justify-between mb-1">
           <label htmlFor="password" className="block text-sm font-medium">
-            Password
+            {t('password')}
           </label>
           {isLogin && (
             <button
@@ -314,7 +316,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
               onClick={() => navigate('/forgot-password')}
               className="text-xs text-atlas-navy hover:underline"
             >
-              Forgot password?
+              {t('forgotPassword')}
             </button>
           )}
         </div>
@@ -328,7 +330,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
             value={formData.password}
             onChange={handleInputChange}
             className="pl-10 pr-10"
-            placeholder={isLogin ? "Enter your password" : "Create a password"}
+            placeholder={isLogin ? t('placeholders.enterPassword') : t('placeholders.createPassword')}
             minLength={8}
           />
           <button
@@ -341,7 +343,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
         </div>
         {!isLogin && (
           <p className="text-xs text-gray-500 mt-1">
-            Password must be at least 8 characters long
+            {t('passwordMinLength')}
           </p>
         )}
       </div>
@@ -349,7 +351,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
       {!isLogin && (
         <div>
           <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
-            Confirm Password
+            {t('confirmPassword')}
           </label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -361,7 +363,7 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
               value={formData.confirmPassword}
               onChange={handleInputChange}
               className="pl-10"
-              placeholder="Repeat your password"
+              placeholder={t('placeholders.repeatPassword')}
               minLength={8}
             />
           </div>
@@ -378,10 +380,10 @@ const EmailPasswordForm = ({ isLogin, disabled }: EmailPasswordFormProps) => {
         {isLoading ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            {isLogin ? 'Signing in...' : 'Creating account...'}
+            {isLogin ? t('signingIn') : t('creatingAccount')}
           </>
         ) : (
-          isLogin ? 'Sign In' : 'Create Account'
+          isLogin ? t('signIn') : t('createAccount')
         )}
       </Button>
     </form>

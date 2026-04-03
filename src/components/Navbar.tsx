@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from "@/components/ui/button";
 import { Menu, X, User } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
@@ -7,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 const Navbar = () => {
+  const { t } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -31,35 +33,35 @@ const Navbar = () => {
 
           <div className="hidden md:flex space-x-8 items-center">
             <a href="#how-it-works" className="text-gray-700 hover:text-primary font-medium">
-              How It Works
+              {t('nav.howItWorks')}
             </a>
             <a href="#why-atlas" className="text-gray-700 hover:text-primary font-medium">
-              Why Atlas
+              {t('nav.whyAtlas')}
             </a>
             <a href="#pricing" className="text-gray-700 hover:text-primary font-medium">
-              Pricing
+              {t('nav.pricing')}
             </a>
             <a href="#about" className="text-gray-700 hover:text-primary font-medium">
-              About Us
+              {t('nav.aboutUs')}
             </a>
-            
+
             <LanguageSwitcher />
 
             {user ? (
               <Button asChild className="btn-primary">
                 <button onClick={() => navigate('/dashboard')}>
                   <User className="h-4 w-4 mr-2" />
-                  Dashboard
+                  {t('nav.dashboard')}
                 </button>
               </Button>
             ) : (
               <div className="flex space-x-2">
                 <Button variant="outline" onClick={() => navigate('/auth')}>
-                  Sign In
+                  {t('nav.signIn')}
                 </Button>
                 <Button asChild className="btn-primary">
                   <a href="#pricing">
-                    Get Started
+                    {t('nav.getStarted')}
                   </a>
                 </Button>
               </div>
@@ -86,18 +88,18 @@ const Navbar = () => {
         <div className="md:hidden bg-white shadow-lg animate-fade-in">
           <div className="container-atlas py-4 space-y-3">
             <a href="#how-it-works" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
-              How It Works
+              {t('nav.howItWorks')}
             </a>
             <a href="#why-atlas" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
-              Why Atlas
+              {t('nav.whyAtlas')}
             </a>
             <a href="#pricing" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
-              Pricing
+              {t('nav.pricing')}
             </a>
             <a href="#about" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
-              About Us
+              {t('nav.aboutUs')}
             </a>
-            
+
             <div className="py-2">
               <LanguageSwitcher />
             </div>
@@ -105,16 +107,16 @@ const Navbar = () => {
             {user ? (
               <Button className="btn-primary w-full mt-4" onClick={() => { navigate('/dashboard'); toggleMenu(); }}>
                 <User className="h-4 w-4 mr-2" />
-                Dashboard
+                {t('nav.dashboard')}
               </Button>
             ) : (
               <div className="space-y-2">
                 <Button variant="outline" className="w-full" onClick={() => { navigate('/auth'); toggleMenu(); }}>
-                  Sign In
+                  {t('nav.signIn')}
                 </Button>
                 <Button asChild className="btn-primary w-full">
                   <a href="#pricing" onClick={toggleMenu}>
-                    Get Started
+                    {t('nav.getStarted')}
                   </a>
                 </Button>
               </div>
