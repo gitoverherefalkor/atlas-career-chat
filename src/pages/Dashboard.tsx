@@ -365,8 +365,8 @@ const Dashboard = () => {
             )}
           </>
         ) : (
-          /* Show report preview when no report exists yet */
-          <ReportPreview onStartAssessment={() => userAccessCode ? setShowAccessCodeModal(true) : navigate('/assessment')} />
+          /* Show report preview when no report exists yet — hide CTA if assessment is already in progress */
+          <ReportPreview onStartAssessment={hasMeaningfulProgress() ? undefined : () => userAccessCode ? setShowAccessCodeModal(true) : navigate('/assessment')} />
         )}
       </div>
 
