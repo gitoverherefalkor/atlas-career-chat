@@ -54,39 +54,38 @@
   }
 
   .dark {
-    /* Atlas dark palette.
-       Near-black warm charcoal base, teal brighter for contrast, gold as accent.
+    /* Atlas dark palette — matches the warmth of the landing-page hero (#1A1A1A).
+       Not pitch-black, so it reads as "sophisticated dark" not "OLED void".
        Titles (--atlas-navy) flip to near-white so text-atlas-navy auto-inverts. */
     --atlas-navy: 245 245 247;
 
-    --background: 240 5% 7%;          /* #0F0F12 */
+    --background: 0 0% 10%;            /* #1A1A1A — same as landing hero */
     --foreground: 0 0% 96%;            /* #F5F5F5 */
 
-    --card: 240 5% 11%;                /* #1A1A1D */
+    --card: 0 0% 14%;                  /* #242424 — subtle lift over bg */
     --card-foreground: 0 0% 96%;
 
-    --popover: 240 5% 13%;             /* #1F1F22 */
+    --popover: 0 0% 17%;               /* #2B2B2B — for dropdowns/modals */
     --popover-foreground: 0 0% 96%;
 
-    /* Teal lifted from #27A1A1 (hsl 180 61% 39%) to hsl 180 55% 45% (#34B8B8)
-       so it stays punchy on dark bg without vibrating. */
+    /* Teal brightened from #27A1A1 → #34B8B8 so it stays punchy on dark bg. */
     --primary: 180 55% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 25% 16%;          /* deep teal surface */
+    --secondary: 180 25% 18%;          /* deep teal surface */
     --secondary-foreground: 180 55% 80%;
 
-    --muted: 240 5% 15%;
-    --muted-foreground: 240 5% 62%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 0% 62%;
 
-    --accent: 180 25% 16%;
+    --accent: 180 25% 18%;
     --accent-foreground: 180 55% 80%;
 
     --destructive: 0 62.8% 40%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5% 18%;
-    --input: 240 5% 18%;
+    --border: 0 0% 22%;                /* #383838 — visible but not harsh */
+    --input: 0 0% 22%;
     --ring: 180 55% 45%;
   }
 }

@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Loader2 } from "lucide-react";
@@ -54,6 +54,29 @@ const LanguageSync = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
+// Forces light mode on marketing/payment routes regardless of user's theme
+// preference. Homepage and payment flow are always light — those pages have
+// their own bespoke layouts that aren't designed to invert.
+const LIGHT_ONLY_ROUTES = ['/', '/payment', '/payment-success'];
+const ThemeScopeGuard = () => {
+  const location = useLocation();
+  React.useEffect(() => {
+    const root = document.documentElement;
+    const forceLight = LIGHT_ONLY_ROUTES.includes(location.pathname);
+    if (forceLight) {
+      root.classList.remove('dark');
+    } else {
+      // Restore the user's saved preference when leaving a light-only route.
+      try {
+        if (localStorage.getItem('atlas_theme') === 'dark') {
+          root.classList.add('dark');
+        }
+      } catch { /* ignore */ }
+    }
+  }, [location.pathname]);
+  return null;
+};
+
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
@@ -63,6 +86,7 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ThemeScopeGuard />
           <ChunkLoadErrorBoundary>
             <Suspense fallback={<PageLoader />}>
             <Routes>
