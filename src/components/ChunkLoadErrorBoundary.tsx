@@ -64,7 +64,7 @@ export class ChunkLoadErrorBoundary extends React.Component<Props, State> {
       return (
         this.props.fallback ?? (
           <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 text-center">
-            <h2 className="text-2xl font-bold text-[#012F64] mb-3">Something went wrong</h2>
+            <h2 className="text-2xl font-bold text-[#1A1A1A] mb-3">Something went wrong</h2>
             <p className="text-gray-600 mb-6">Please refresh the page to continue.</p>
             <button
               onClick={() => {

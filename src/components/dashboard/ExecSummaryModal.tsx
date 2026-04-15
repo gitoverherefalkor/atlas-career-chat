@@ -38,7 +38,7 @@ function renderExecContent(content: string): React.ReactNode[] {
     const h5Match = trimmed.match(/^<h5>(?:<strong>)?(.*?)(?:<\/strong>)?<\/h5>$/);
     if (h5Match) {
       elements.push(
-        <h3 key={index} className="text-lg font-bold text-atlas-navy mt-6 mb-2 first:mt-0">
+        <h3 key={index} className="text-lg font-bold text-atlas-teal mt-6 mb-2 first:mt-0">
           {h5Match[1]}
         </h3>
       );
@@ -83,7 +83,7 @@ export const ExecSummaryModal: React.FC<ExecSummaryModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between px-8 pt-8 pb-4 border-b border-gray-100">
           <div>
-            <h2 className="text-2xl font-bold text-atlas-navy">Your Executive Summary</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Your Executive Summary</h2>
             <p className="text-sm text-gray-500 mt-1">A snapshot of your career profile and direction.</p>
           </div>
           <button

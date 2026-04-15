@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Check } from 'lucide-react';
+import { Check, Eye } from 'lucide-react';
 import { ReportSection } from '@/hooks/useReportSections';
 
 interface Career {
@@ -99,9 +99,11 @@ const CareerSection: React.FC<CareerSectionProps> = ({
               <div className="ml-4 flex flex-col items-end gap-0.5">
                 <button
                   onClick={() => onCareerExpand(career.id)}
-                  className="text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline whitespace-nowrap"
+                  aria-label="View content"
+                  title="View content"
+                  className="text-atlas-teal hover:text-atlas-teal/80 p-1 rounded-md hover:bg-atlas-teal/10 transition-colors"
                 >
-                  View content
+                  <Eye className="h-5 w-5" />
                 </button>
                 {readSections?.has(career.id) && <ReadBadge />}
               </div>
@@ -126,9 +128,11 @@ const CareerSection: React.FC<CareerSectionProps> = ({
         <div className="ml-4 flex flex-col items-end gap-0.5">
           <button
             onClick={() => onSectionExpand(section.id)}
-            className="text-atlas-blue hover:text-atlas-navy text-sm font-medium hover:underline whitespace-nowrap"
+            aria-label="View content"
+            title="View content"
+            className="text-atlas-teal hover:text-atlas-teal/80 p-1 rounded-md hover:bg-atlas-teal/10 transition-colors"
           >
-            View content
+            <Eye className="h-5 w-5" />
           </button>
           {readSections?.has(section.id) && <ReadBadge />}
         </div>

@@ -99,7 +99,7 @@ const markdownComponents = {
   ),
   h5: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h5
-      className="text-sm font-semibold text-gray-600 mt-2 mb-1"
+      className="text-sm font-semibold text-atlas-teal mt-2 mb-1"
       {...props}
     >
       {children}

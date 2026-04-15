@@ -65,7 +65,10 @@ export default {
         atlas: {
           blue: '#3989AF',
           orange: '#EA7923',
-          navy: '#012F64',
+          // navy is themeable via CSS variable so we can preview alternate palettes
+          // (e.g. v2 charcoal at #1A1A1A) by toggling .v2-palette on the body.
+          // Default value lives in src/index.css.
+          navy: 'rgb(var(--atlas-navy) / <alpha-value>)',
           teal: '#27A1A1',
           gold: '#D4A024',
           indigo: '#4f46e5',

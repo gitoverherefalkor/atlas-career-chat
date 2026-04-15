@@ -49,6 +49,7 @@ const CookieConsentBanner = () => {
           </Button>
           <Button
             size="sm"
+            className="bg-atlas-teal hover:bg-atlas-teal/90 text-white"
             onClick={() => handleAccept('all')}
           >
             Accept All

@@ -19,9 +19,6 @@ import NotFound from "./pages/NotFound";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { ChunkLoadErrorBoundary } from "./components/ChunkLoadErrorBoundary";
 
-// Hidden V2 landing page preview (charcoal palette) — not linked from anywhere
-const IndexV2 = lazy(() => import("./pages/IndexV2"));
-
 // Lazy load all other routes — only downloaded when the user navigates to them
 const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
 const Assessment = lazy(() => import("./pages/Assessment"));
@@ -70,7 +67,6 @@ const App = () => {
             <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/v2" element={<IndexV2 />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/confirm" element={<AuthConfirm />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -32,7 +32,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', className = '', ...props }) => {
   const variants = {
-    primary: 'bg-[#27A1A1] hover:bg-[#1f8282] text-white shadow-lg shadow-teal-900/40 hover:-translate-y-0.5',
+    primary: 'bg-[#2ABFBF] hover:bg-[#27A1A1] text-white shadow-xl shadow-teal-500/40 hover:shadow-teal-400/60 hover:-translate-y-0.5',
     secondary: 'bg-white/10 hover:bg-white/20 text-white border border-white/10 backdrop-blur-sm',
     outline: 'border-2 border-[#3989AF] text-[#3989AF] hover:bg-[#3989AF] hover:text-white',
   };
@@ -455,7 +455,7 @@ const CareerPathBg = () => {
 const VideoPlaceholder = () => (
   <div className="relative w-full bg-[#0a1f3d] rounded-2xl border-2 border-dashed border-white/20 overflow-hidden group cursor-pointer hover:border-[#27A1A1]/50 transition-all">
     {/* Fake video thumbnail background */}
-    <div className="absolute inset-0 bg-gradient-to-br from-[#012F64] via-[#0a2a52] to-[#27A1A1]/20 opacity-80" />
+    <div className="absolute inset-0 bg-gradient-to-br from-[#1A1A1A] via-[#0a2a52] to-[#27A1A1]/20 opacity-80" />
     {/* Main content area */}
     <div className="relative z-10 flex flex-col items-center gap-4 py-16 md:py-20 px-6">
       <div className="w-20 h-20 rounded-full bg-[#27A1A1]/90 flex items-center justify-center shadow-2xl shadow-teal-500/30 group-hover:scale-110 transition-transform">
@@ -485,11 +485,11 @@ const ScreenshotPlaceholder: React.FC<{
 }> = ({ title, description, aspect = 'aspect-[4/3]', className = '' }) => (
   <div className={`relative w-full ${aspect} bg-gradient-to-br from-gray-100 to-gray-50 rounded-2xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center overflow-hidden ${className}`}>
     <div className="relative z-10 flex flex-col items-center gap-3 p-6 text-center">
-      <div className="w-14 h-14 rounded-2xl bg-[#012F64]/10 flex items-center justify-center">
-        <Camera className="w-6 h-6 text-[#012F64]/40" />
+      <div className="w-14 h-14 rounded-2xl bg-[#1A1A1A]/10 flex items-center justify-center">
+        <Camera className="w-6 h-6 text-[#1A1A1A]/40" />
       </div>
       <div>
-        <p className="text-[#012F64]/70 font-bold text-sm">{title}</p>
+        <p className="text-[#1A1A1A]/70 font-bold text-sm">{title}</p>
         <p className="text-gray-400 text-xs font-medium mt-1 max-w-xs leading-relaxed">{description}</p>
       </div>
     </div>
@@ -572,7 +572,7 @@ const Index = () => {
     <div className="min-h-screen bg-[#fcfdfe] text-[#374151] font-sans selection:bg-[#27A1A1] selection:text-white overflow-x-hidden">
 
       {/* ========== NAVIGATION ========== */}
-      <nav className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-[#012F64]/95 backdrop-blur-xl py-4 shadow-2xl border-b border-white/5' : 'bg-transparent py-8'}`}>
+      <nav className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-[#1A1A1A]/95 backdrop-blur-xl py-4 shadow-2xl border-b border-white/5' : 'bg-transparent py-8'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="w-10 h-10 bg-gradient-to-tr from-[#27A1A1] to-[#3989AF] rounded-xl flex items-center justify-center shadow-lg">
@@ -612,7 +612,7 @@ const Index = () => {
         </div>
 
         {/* Mobile Sidebar */}
-        <div className={`fixed inset-0 bg-[#012F64] z-[101] transition-transform duration-500 transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} lg:hidden`}>
+        <div className={`fixed inset-0 bg-[#1A1A1A] z-[101] transition-transform duration-500 transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} lg:hidden`}>
           <div className="p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-10">
               <span className="text-white text-2xl font-black tracking-tighter">ATLAS</span>
@@ -649,8 +649,10 @@ const Index = () => {
       </nav>
 
       {/* ========== HERO ========== */}
-      <section className="relative min-h-screen flex items-center bg-[#012F64] pt-28 pb-20 md:py-20 overflow-hidden">
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#27A1A1]/10 rounded-full blur-[120px] -mr-96 -mt-96" />
+      <section className="relative min-h-screen flex items-center bg-[#1A1A1A] pt-28 pb-20 md:py-20 overflow-hidden">
+        {/* Subtle teal gradient overlay for depth */}
+        <div className="absolute inset-0 bg-gradient-to-br from-[#27A1A1]/10 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#27A1A1]/15 rounded-full blur-[120px] -mr-96 -mt-96" />
         <CareerPathBg />
         <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
@@ -700,7 +702,7 @@ const Index = () => {
       <section id="how-it-works" className="py-24 md:py-32 bg-white scroll-mt-24">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-[#012F64] mb-6 leading-tight tracking-tight">From Assessment to Action</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-[#1A1A1A] mb-6 leading-tight tracking-tight">From Assessment to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">Action</span></h2>
             <p className="text-xl text-gray-500 font-medium max-w-2xl mx-auto">Four steps. Fifteen minutes. Concrete career paths that actually fit who you are today.</p>
           </div>
 
@@ -710,8 +712,8 @@ const Index = () => {
             <div className="flex flex-col md:flex-row gap-10 items-center">
               <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#012F64] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg">1</div>
-                  <h3 className="text-2xl font-black text-[#012F64]">Take the Assessment</h3>
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#27A1A1] to-[#3989AF] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg shadow-teal-500/30">1</div>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]">Take the Assessment</h3>
                 </div>
                 <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   Answer questions about your background, skills, work style, values, and goals. Designed to capture what actually matters for career fit - not just personality types.
@@ -723,8 +725,8 @@ const Index = () => {
             <div className="flex flex-col md:flex-row-reverse gap-10 items-center">
               <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#012F64] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg">2</div>
-                  <h3 className="text-2xl font-black text-[#012F64]">AI Analyzes Your Profile</h3>
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#27A1A1] to-[#3989AF] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg shadow-teal-500/30">2</div>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]">AI Analyzes Your Profile</h3>
                 </div>
                 <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   A specialized 170+ step AI workflow (not ChatGPT) analyzes your responses, generates your personality profile, and matches you to specific careers with personalized justifications.
@@ -736,8 +738,8 @@ const Index = () => {
             <div className="flex flex-col md:flex-row gap-10 items-center">
               <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#012F64] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg">3</div>
-                  <h3 className="text-2xl font-black text-[#012F64]">Chat With Your AI Coach</h3>
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#27A1A1] to-[#3989AF] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg shadow-teal-500/30">3</div>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]">Chat With Your AI Coach</h3>
                 </div>
                 <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   Discuss your results one-on-one. Ask follow-up questions, explore specific careers in depth, and get honest answers about fit, trade-offs, and next steps.
@@ -749,8 +751,8 @@ const Index = () => {
             <div className="flex flex-col md:flex-row-reverse gap-10 items-center">
               <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-[#012F64] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg">4</div>
-                  <h3 className="text-2xl font-black text-[#012F64]">Get Your Report</h3>
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#27A1A1] to-[#3989AF] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg shadow-teal-500/30">4</div>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]">Get Your Report</h3>
                 </div>
                 <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   Your complete career report - incorporating chat feedback - with personality analysis, all career recommendations, salary data, AI impact ratings, and concrete next steps.
@@ -765,7 +767,7 @@ const Index = () => {
       <section className="py-24 md:py-32 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-[#012F64] mb-6 leading-tight tracking-tight">Not another personality test</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-[#1A1A1A] mb-6 leading-tight tracking-tight">Not another <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">personality test</span></h2>
             <p className="text-xl text-gray-500 font-medium max-w-2xl mx-auto">Atlas gives you actual job titles, salary data, and honest reality checks - not vague personality insights you'll forget by tomorrow.</p>
           </div>
 
@@ -777,11 +779,11 @@ const Index = () => {
               { icon: FileText, title: "Specific, not vague", desc: "10+ career recommendations with salary ranges, day-to-day breakdowns, and personalized fit explanations." },
             ].map((item, i) => (
               <div key={i} className="bg-white p-8 rounded-2xl border border-gray-100 flex gap-5 hover:shadow-lg transition-all">
-                <div className="w-12 h-12 bg-[#27A1A1]/10 rounded-xl flex items-center justify-center text-[#27A1A1] shrink-0">
+                <div className="w-12 h-12 bg-gradient-to-br from-[#27A1A1] to-[#3989AF] rounded-xl flex items-center justify-center text-white shrink-0 shadow-md shadow-teal-500/20">
                   <item.icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-black text-[#012F64] mb-2">{item.title}</h4>
+                  <h4 className="text-lg font-black text-[#1A1A1A] mb-2">{item.title}</h4>
                   <p className="text-gray-500 leading-relaxed font-medium text-sm">{item.desc}</p>
                 </div>
               </div>
@@ -791,13 +793,15 @@ const Index = () => {
       </section>
 
       {/* ========== PRICING ========== */}
-      <section id="pricing" className="py-24 md:py-32 bg-[#012F64] text-white scroll-mt-24">
-        <div className="container mx-auto px-6">
+      <section id="pricing" className="relative py-24 md:py-32 bg-[#1A1A1A] text-white scroll-mt-24 overflow-hidden">
+        {/* Subtle teal gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tl from-[#27A1A1]/8 via-transparent to-transparent pointer-events-none" />
+        <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-5xl mx-auto bg-white rounded-[3rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col md:flex-row">
             {/* Value Side */}
-            <div className="p-10 md:p-16 flex-1 text-[#012F64]">
+            <div className="p-10 md:p-16 flex-1 text-[#1A1A1A]">
               <div className="text-[#27A1A1] font-black uppercase tracking-[0.2em] text-[10px] mb-4">The Package</div>
-              <h2 className="text-3xl md:text-4xl font-black mb-10 tracking-tighter">Everything you need for your next move</h2>
+              <h2 className="text-3xl md:text-4xl font-black mb-10 tracking-tighter">Everything you need for your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">next move</span></h2>
               <div className="space-y-5">
                 {[
                   "Complete personality and career assessment",
@@ -823,10 +827,10 @@ const Index = () => {
 
             {/* Action Side */}
             <div className="bg-slate-50 p-10 md:p-16 md:w-[380px] flex flex-col justify-center items-center text-center border-t md:border-t-0 md:border-l border-gray-100">
-              <div className="bg-[#D4A024] text-[#012F64] px-5 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-8">Beta Access</div>
+              <div className="bg-[#D4A024] text-[#1A1A1A] px-5 py-2 rounded-full text-xs font-black uppercase tracking-[0.2em] mb-8">Beta Access</div>
               <div className="flex items-center justify-center gap-4 mb-4">
                 <span className="text-gray-300 line-through text-2xl font-bold">€79</span>
-                <span className="text-6xl font-black text-[#012F64] tracking-tighter">€39</span>
+                <span className="text-6xl font-black text-[#1A1A1A] tracking-tighter">€39</span>
               </div>
               <p className="text-gray-400 font-bold uppercase tracking-widest text-[10px] mb-10">Introductory Price</p>
               <Button className="w-full py-6 text-xl tracking-tight shadow-xl" onClick={() => navigate('/payment')}>Get Beta Access</Button>
@@ -841,7 +845,7 @@ const Index = () => {
         <div className="container mx-auto px-6 max-w-4xl">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
             <div>
-              <h3 className="text-2xl font-black text-[#012F64] mb-8 flex items-center gap-4">
+              <h3 className="text-2xl font-black text-[#1A1A1A] mb-8 flex items-center gap-4">
                 <CheckCircle2 className="text-[#27A1A1] w-7 h-7 shrink-0" />
                 <span>You're in the right place if:</span>
               </h3>
@@ -859,7 +863,7 @@ const Index = () => {
               </ul>
             </div>
             <div>
-              <h3 className="text-2xl font-black text-[#012F64] mb-8 flex items-center gap-4">
+              <h3 className="text-2xl font-black text-[#1A1A1A] mb-8 flex items-center gap-4">
                 <XCircle className="text-red-400 w-7 h-7 shrink-0" />
                 <span>This probably isn't for you if:</span>
               </h3>
@@ -882,14 +886,14 @@ const Index = () => {
       <section id="about" className="py-24 md:py-32 bg-gray-50 border-t border-gray-100 scroll-mt-24">
         <div className="container mx-auto px-6 max-w-3xl">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-black text-[#012F64] leading-tight">Why I Built This</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-[#1A1A1A] leading-tight">Why I <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">Built This</span></h2>
           </div>
           <div className="bg-white p-10 md:p-14 rounded-[3rem] shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-10">
               <div className="flex items-center gap-6">
-                <div className="w-20 h-20 bg-[#012F64] rounded-2xl flex items-center justify-center text-white font-black text-4xl shadow-xl">SG</div>
+                <div className="w-20 h-20 bg-[#1A1A1A] rounded-2xl flex items-center justify-center text-white font-black text-4xl shadow-xl">SG</div>
                 <div>
-                  <div className="font-black text-[#012F64] text-2xl tracking-tighter">Sjoerd Geurts</div>
+                  <div className="font-black text-[#1A1A1A] text-2xl tracking-tighter">Sjoerd Geurts</div>
                   <div className="text-[#27A1A1] uppercase tracking-[0.25em] text-[10px] font-black">Founder, Atlas Assessment</div>
                 </div>
               </div>
@@ -901,7 +905,7 @@ const Index = () => {
                 <p>Most of us made career decisions based on what we were "supposed" to do, what subjects we happened to be good at, or what seemed safe at the time. Then life happens - your priorities shift, the market changes, AI starts eating jobs - and suddenly you're questioning everything.</p>
                 <p>Traditional career coaching is expensive and often just as confused about the future as you are. Generic career tests give you personality types and vague suggestions. You need something that actually helps.</p>
                 <p>Atlas combines proven career coaching methodology with AI analysis to give you concrete, honest career recommendations based on who you are right now - not who your parents expected you to become.</p>
-                <p className="font-black text-[#012F64]">Currently in beta. Your feedback shapes what this becomes.</p>
+                <p className="font-black text-[#1A1A1A]">Currently in beta. Your feedback shapes what this becomes.</p>
                 {!founderExpanded && <div className="absolute bottom-0 left-0 w-full h-28 bg-gradient-to-t from-white to-transparent" />}
               </div>
               <button onClick={() => setFounderExpanded(!founderExpanded)} className="text-[#27A1A1] font-black text-sm flex items-center gap-2 group tracking-widest uppercase py-4">
@@ -920,9 +924,9 @@ const Index = () => {
             className="w-full flex items-center justify-between py-4 group"
           >
             <div className="flex items-center gap-4">
-              <BarChart3 className="w-6 h-6 text-[#012F64]/40" />
+              <BarChart3 className="w-6 h-6 text-[#1A1A1A]/40" />
               <div className="text-left">
-                <h3 className="text-lg font-black text-[#012F64]">The Career Uncertainty Crisis</h3>
+                <h3 className="text-lg font-black text-[#1A1A1A]">The Career Uncertainty Crisis</h3>
                 <p className="text-sm text-gray-400 font-medium">85% global disengagement. 66% career regret. See the data.</p>
               </div>
             </div>
@@ -931,7 +935,7 @@ const Index = () => {
 
           <div className={`overflow-hidden transition-all duration-700 ${crisisOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <div className="pt-6 pb-4">
-              <div className="bg-[#012F64] rounded-2xl p-8 md:p-12 text-white mb-8">
+              <div className="bg-[#1A1A1A] rounded-2xl p-8 md:p-12 text-white mb-8">
                 <div className="text-[#27A1A1] font-black uppercase tracking-[0.2em] text-[10px] mb-4">2025 Career Satisfaction Report</div>
                 <h3 className="text-3xl md:text-4xl font-black mb-4 leading-tight">85% Global Disengagement</h3>
                 <p className="text-blue-100/60 font-medium leading-relaxed max-w-lg">Workers report feeling disconnected from their daily purpose and long-term career trajectory.</p>
@@ -939,15 +943,15 @@ const Index = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
                 <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                  <div className="text-3xl font-black text-[#012F64] mb-2">66%</div>
+                  <div className="text-3xl font-black text-[#1A1A1A] mb-2">66%</div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Career Regret</p>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                  <div className="text-3xl font-black text-[#012F64] mb-2">50%</div>
+                  <div className="text-3xl font-black text-[#1A1A1A] mb-2">50%</div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Actively Looking</p>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                  <div className="text-3xl font-black text-[#012F64] mb-2">54%</div>
+                  <div className="text-3xl font-black text-[#1A1A1A] mb-2">54%</div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Job Stress</p>
                 </div>
               </div>
@@ -965,8 +969,8 @@ const Index = () => {
       </section>
 
       {/* ========== FINAL CTA ========== */}
-      <section className="py-32 md:py-40 bg-[#012F64] text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#012F64] via-transparent to-[#27A1A1]/10 pointer-events-none" />
+      <section className="py-32 md:py-40 bg-[#1A1A1A] text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#1A1A1A] via-transparent to-[#27A1A1]/10 pointer-events-none" />
         <div className="container mx-auto px-6 relative z-10">
           <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-tight">Ready to Stop Guessing?</h2>
           <p className="text-lg md:text-xl text-blue-100/70 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
@@ -986,10 +990,10 @@ const Index = () => {
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="w-10 h-10 bg-[#012F64] rounded-xl flex items-center justify-center shadow-xl">
+              <div className="w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center shadow-xl">
                 <Layers className="text-white w-6 h-6" />
               </div>
-              <span className="text-2xl font-black tracking-tighter text-[#012F64]">ATLAS</span>
+              <span className="text-2xl font-black tracking-tighter text-[#1A1A1A]">ATLAS</span>
             </div>
             <p className="text-gray-300 font-bold text-[10px] tracking-[0.3em] uppercase">© 2026 ATLAS ASSESSMENT</p>
           </div>
