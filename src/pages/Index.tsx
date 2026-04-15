@@ -816,7 +816,7 @@ const Index = () => {
                 ))}
                 <div className="flex items-start gap-4 font-black text-[#D4A024] pt-4">
                   <Sparkles className="w-5 h-5 shrink-0 mt-0.5" />
-                  <span className="text-sm leading-tight">Features to act on recommendations in development!</span>
+                  <span className="text-sm leading-tight">Like the suggestions? We help you land the job (beta)</span>
                 </div>
               </div>
             </div>
