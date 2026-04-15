@@ -286,15 +286,12 @@ const Dashboard = () => {
                         </div>
                       </button>
 
-                      {/* Job Openings */}
-                      <button
-                        onClick={() => navigate('/jobs')}
-                        className="w-full flex items-center space-x-3 text-left p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <Search className="h-5 w-5 text-atlas-blue" />
+                      {/* Job Openings - Coming Soon (route still accessible via /jobs for testers) */}
+                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
+                        <Search className="h-5 w-5" />
                         <div>
-                          <span className="text-sm font-medium text-gray-900">Check Job Openings</span>
-                          <span className="text-xs text-gray-500 ml-2">Find matching jobs</span>
+                          <span className="text-sm font-medium">Check Job Openings</span>
+                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
                         </div>
                       </button>
 

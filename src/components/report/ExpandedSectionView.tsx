@@ -47,7 +47,7 @@ const dashboardComponents: Record<string, React.FC<any>> = {
     <h4 className="text-lg font-semibold mt-6 mb-3 text-atlas-blue" {...props}>{children}</h4>
   ),
   h5: ({ children, ...props }) => (
-    <h5 className="text-base font-semibold mt-5 mb-2 text-gray-800" {...props}>{children}</h5>
+    <h5 className="text-base font-semibold mt-5 mb-2 text-atlas-teal" {...props}>{children}</h5>
   ),
   p: ({ children, ...props }) => {
     // Detect standalone bold paragraphs (e.g. "**Feasibility Rating**") and render as subheadings.
@@ -535,24 +535,8 @@ const ExpandedSectionView: React.FC<ExpandedSectionViewProps> = ({
                   </>
                 )}
 
-                {/* Job search CTA */}
-                {careerSectionIds.includes(expandedSection) && expandedSection !== 'dream-jobs' && (
-                  <div className="mt-6 p-5 bg-emerald-50 border border-emerald-200 rounded-lg">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <h4 className="font-semibold text-emerald-800 mb-1">Interested in this career?</h4>
-                        <p className="text-sm text-emerald-700">Find matching job openings near you.</p>
-                      </div>
-                      <button
-                        onClick={() => navigate(`/jobs?career=${expandedSection}`)}
-                        className="shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors"
-                      >
-                        <Search className="h-4 w-4" />
-                        Find Jobs
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {/* Job search CTA — temporarily hidden while feature is in testing.
+                    Testers can access the feature directly via /jobs?career={sectionId}. */}
 
                 {/* Prev / Next career nav */}
                 {(() => {
