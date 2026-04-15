@@ -9,8 +9,12 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Loader2 } from "lucide-react";
 
-// Eagerly load the landing page and global components
+// Eagerly load the landing page, payment route, and global components.
+// Payment is eagerly loaded because it's the primary conversion route — a
+// slow lazy-chunk fetch on first click ("Get Beta Access") was causing
+// blank-page reports for first-time visitors.
 import Index from "./pages/Index";
+import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 import CookieConsentBanner from "./components/CookieConsentBanner";
 import { ChunkLoadErrorBoundary } from "./components/ChunkLoadErrorBoundary";
@@ -34,9 +38,9 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const Support = lazy(() => import("./pages/Support"));
-const Payment = lazy(() => import("./pages/Payment"));
 const ColorTest = lazy(() => import("./pages/ColorTest"));
 const Jobs = lazy(() => import("./pages/Jobs"));
+// Note: Payment is intentionally NOT lazy-loaded — see eager imports above.
 
 // Loading fallback shown while lazy chunks are downloading
 const PageLoader = () => (
