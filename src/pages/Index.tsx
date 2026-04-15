@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import AtlasFigure from '@/logos/Atlas_figure_AA_live.png';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import ThemeToggle from '@/components/ThemeToggle';
 
 // --- Reusable UI ---
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -600,6 +601,7 @@ const Index = () => {
                 {t('common:nav.signIn')}
               </button>
             )}
+            <ThemeToggle className="text-blue-100 hover:text-white" />
             <LanguageSwitcher className="text-blue-100 hover:text-white" />
             <Button className="py-2.5 px-6 text-xs uppercase tracking-tighter" onClick={handleGetStarted}>
               {user ? t('common:nav.dashboard') : t('common:nav.getStarted')}
@@ -641,6 +643,7 @@ const Index = () => {
                 {user ? t('common:nav.dashboard') : t('common:nav.getStarted')}
               </Button>
               <div className="mt-4">
+                <ThemeToggle className="text-white" />
                 <LanguageSwitcher className="text-white" />
               </div>
             </div>

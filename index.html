@@ -21,6 +21,15 @@
   </head>
 
   <body>
+    <!-- Apply saved theme before React renders to avoid a flash of the wrong theme. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('atlas_theme');
+          if (t === 'dark') document.documentElement.classList.add('dark');
+        } catch (e) { /* ignore */ }
+      })();
+    </script>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
