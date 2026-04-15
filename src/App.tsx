@@ -13,6 +13,10 @@ import { Loader2 } from "lucide-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import CookieConsentBanner from "./components/CookieConsentBanner";
+import { ChunkLoadErrorBoundary } from "./components/ChunkLoadErrorBoundary";
+
+// Hidden V2 landing page preview (charcoal palette) — not linked from anywhere
+const IndexV2 = lazy(() => import("./pages/IndexV2"));
 
 // Lazy load all other routes — only downloaded when the user navigates to them
 const PaymentSuccess = lazy(() => import("./components/PaymentSuccess"));
@@ -58,9 +62,11 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
+          <ChunkLoadErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/v2" element={<IndexV2 />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/auth/confirm" element={<AuthConfirm />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -82,7 +88,8 @@ const App = () => {
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </Suspense>
+            </Suspense>
+          </ChunkLoadErrorBoundary>
           <CookieConsentBanner />
         </BrowserRouter>
       </TooltipProvider>
