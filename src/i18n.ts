@@ -23,7 +23,10 @@ i18n
   .use(initReactI18next)
   .init({
     fallbackLng: 'en',
-    supportedLngs: ['en', 'nl'],
+    // Dutch is disabled in the UI until all strings are translated.
+    // Keeping only 'en' here forces any detected/stored 'nl' back to English.
+    // To re-enable Dutch: add 'nl' here and flip `disabled: false` in LanguageSwitcher.
+    supportedLngs: ['en'],
     ns: ['common', 'auth', 'landing', 'survey', 'chat', 'report', 'dashboard'],
     defaultNS: 'common',
 

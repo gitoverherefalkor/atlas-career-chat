@@ -9,9 +9,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 
+// Dutch is temporarily disabled until all UI is fully translated.
+// To re-enable: set `disabled: false` on the 'nl' entry below.
 const languages = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'nl', label: 'Nederlands', flag: '🇳🇱' },
+  { code: 'en', label: 'English', flag: '🇬🇧', disabled: false },
+  { code: 'nl', label: 'Nederlands', flag: '🇳🇱', disabled: true },
 ] as const;
 
 interface LanguageSwitcherProps {
@@ -21,9 +23,11 @@ interface LanguageSwitcherProps {
 const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className }) => {
   const { i18n } = useTranslation();
 
-  const currentLang = languages.find(l => l.code === i18n.language) || languages[0];
+  // Force English while other languages are disabled
+  const currentLang = languages.find(l => l.code === i18n.language && !l.disabled) || languages[0];
 
-  const handleChange = (code: string) => {
+  const handleChange = (code: string, disabled: boolean) => {
+    if (disabled) return;
     i18n.changeLanguage(code);
   };
 
@@ -39,11 +43,15 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({ className }) => {
         {languages.map(lang => (
           <DropdownMenuItem
             key={lang.code}
-            onClick={() => handleChange(lang.code)}
-            className={lang.code === i18n.language ? 'bg-gray-100' : ''}
+            onClick={() => handleChange(lang.code, lang.disabled)}
+            disabled={lang.disabled}
+            className={lang.code === i18n.language && !lang.disabled ? 'bg-gray-100' : ''}
           >
             <span className="mr-2">{lang.flag}</span>
             {lang.label}
+            {lang.disabled && (
+              <span className="ml-2 text-xs text-gray-400 italic">coming soon</span>
+            )}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
