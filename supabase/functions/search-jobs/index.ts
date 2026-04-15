@@ -72,9 +72,9 @@ serve(async (req) => {
       return errorResponse('Job search is temporarily unavailable.', 503, corsHeaders);
     }
 
-    // Call n8n with 60-second timeout
+    // Call n8n with 150-second timeout (LinkedIn scraping via Apify can take 20-90s)
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 60_000);
+    const timeout = setTimeout(() => controller.abort(), 150_000);
 
     let resp: Response;
     try {
