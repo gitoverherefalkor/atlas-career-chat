@@ -339,3 +339,28 @@
 .palette-beige.dark .bg-popover .text-muted-foreground {
   color: hsl(199 30% 30%) !important;
 }
+/* Very light gray classes (200/300) are used for "locked/disabled" states
+   in the survey sidebar — on cream they become invisible. Bring them back
+   to legible teal tones so the locked section titles/descriptions read. */
+.palette-beige.dark .bg-card .text-gray-300 { color: hsl(199 25% 48%) !important; }
+.palette-beige.dark .bg-card .text-gray-200 { color: hsl(199 20% 58%) !important; }
+
+/* Preserve the red "required field empty" border on cream cards.
+   The generic border override above uses !important with tan, which kills
+   these validation states — restore them with a cream-compatible red. */
+.palette-beige.dark .bg-card .border-red-300 { border-color: #D97B7B !important; }
+.palette-beige.dark .bg-card .border-red-400 { border-color: #CC5C5C !important; }
+
+/* Focus rings inside cream cards: the default ring-offset-color is the
+   page's dark bg, which peeks through as a black outline between the input
+   and the teal ring. Flip the offset to the cream card so it's pure teal. */
+.palette-beige.dark .bg-card input:focus-visible,
+.palette-beige.dark .bg-card textarea:focus-visible,
+.palette-beige.dark .bg-card select:focus-visible,
+.palette-beige.dark .bg-card button[role="combobox"]:focus,
+.palette-beige.dark .bg-card button[role="combobox"]:focus-visible,
+.palette-beige.dark .bg-popover input:focus-visible,
+.palette-beige.dark .bg-popover textarea:focus-visible {
+  --tw-ring-offset-color: hsl(42 40% 95%) !important;
+  --tw-ring-offset-width: 0 !important;
+}
