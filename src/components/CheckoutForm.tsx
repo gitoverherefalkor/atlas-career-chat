@@ -238,12 +238,12 @@ export function CheckoutForm() {
   }
 
   return (
-    <div className="rounded-xl shadow-lg bg-white/90 p-8 border border-gray-200">
+    <div className="rounded-xl shadow-2xl bg-[#242424] p-8 border border-white/10 backdrop-blur-sm">
       <div className="mb-6 text-center">
-        <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-gray-900 drop-shadow-sm">
+        <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-white">
           Your Information
         </h2>
-        <p className="mt-2 text-gray-600 text-base">
+        <p className="mt-2 text-gray-300 text-base">
           Please fill in your details below. Business customers can enter their company info for invoicing.
         </p>
       </div>
@@ -254,9 +254,9 @@ export function CheckoutForm() {
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>First Name</FormLabel>
+              <FormLabel className="text-gray-200">First Name</FormLabel>
               <FormControl>
-                <Input placeholder="Claire" className="placeholder:text-gray-300" {...field} />
+                <Input placeholder="Claire" className="bg-white/5 border-white/10 text-white placeholder:text-gray-500" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -267,9 +267,9 @@ export function CheckoutForm() {
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Last Name</FormLabel>
+              <FormLabel className="text-gray-200">Last Name</FormLabel>
               <FormControl>
-                <Input placeholder="Ritty" className="placeholder:text-gray-300" {...field} />
+                <Input placeholder="Ritty" className="bg-white/5 border-white/10 text-white placeholder:text-gray-500" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -280,9 +280,9 @@ export function CheckoutForm() {
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className="text-gray-200">Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="claire.ritty@email.com" className="placeholder:text-gray-300" {...field} />
+                <Input type="email" placeholder="claire.ritty@email.com" className="bg-white/5 border-white/10 text-white placeholder:text-gray-500" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -293,10 +293,10 @@ export function CheckoutForm() {
           name="country"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Country</FormLabel>
+              <FormLabel className="text-gray-200">Country</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white data-[placeholder]:text-gray-500">
                     <SelectValue placeholder="Select a country" />
                   </SelectTrigger>
                 </FormControl>
@@ -318,9 +318,9 @@ export function CheckoutForm() {
               name="businessName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Business Name <span className="text-xs text-gray-400">(optional)</span></FormLabel>
+                  <FormLabel className="text-gray-200">Business Name <span className="text-xs text-gray-400">(optional)</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="Atlas Solutions BV" className="placeholder:text-gray-300" {...field} />
+                    <Input placeholder="Atlas Solutions BV" className="bg-white/5 border-white/10 text-white placeholder:text-gray-500" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -331,9 +331,9 @@ export function CheckoutForm() {
               name="vatNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>VAT Number <span className="text-xs text-gray-400">(optional)</span></FormLabel>
+                  <FormLabel className="text-gray-200">VAT Number <span className="text-xs text-gray-400">(optional)</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="NL123456789B01" className="placeholder:text-gray-300" {...field} />
+                    <Input placeholder="NL123456789B01" className="bg-white/5 border-white/10 text-white placeholder:text-gray-500" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -352,13 +352,13 @@ export function CheckoutForm() {
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel className="text-sm font-normal text-gray-600">
+                <FormLabel className="text-sm font-normal text-gray-300">
                   I agree to the{' '}
-                  <a href="/privacy-policy" target="_blank" className="text-atlas-blue underline hover:text-atlas-navy">
+                  <a href="/privacy-policy" target="_blank" className="text-atlas-teal underline hover:text-atlas-teal/80">
                     Privacy Policy
                   </a>{' '}
                   and{' '}
-                  <a href="/terms-conditions" target="_blank" className="text-atlas-blue underline hover:text-atlas-navy">
+                  <a href="/terms-conditions" target="_blank" className="text-atlas-teal underline hover:text-atlas-teal/80">
                     Terms of Service
                   </a>
                 </FormLabel>
@@ -372,11 +372,11 @@ export function CheckoutForm() {
             {error}
           </div>
         )}
-          <Button type="submit" className="w-full bg-gradient-to-r from-atlas-blue to-atlas-navy text-white font-bold py-3 rounded-lg shadow-lg hover:scale-105 transition-transform duration-150" disabled={isLoading}>
+          <Button type="submit" className="w-full bg-atlas-teal hover:bg-atlas-teal/90 text-white font-bold py-3 rounded-lg shadow-lg shadow-teal-500/20 hover:shadow-teal-400/40 transition-all duration-150" disabled={isLoading}>
           {isLoading ? "Processing..." : "Proceed to Checkout"}
         </Button>
-          <p className="text-xs text-center text-muted-foreground mt-2">
-          You'll be securely redirected to <span className="font-medium">Stripe</span> to complete your payment
+          <p className="text-xs text-center text-gray-400 mt-2">
+          You'll be securely redirected to <span className="font-medium text-gray-300">Stripe</span> to complete your payment
         </p>
       </form>
     </Form>
