@@ -698,16 +698,12 @@ const Index = () => {
         </div>
       </section>
 
-      {/* ========== HOW IT WORKS + WHY ATLAS (merged "green ocean" section) ========== */}
-      <section id="how-it-works" className="relative py-24 md:py-32 bg-[#213F4F] text-white scroll-mt-24 overflow-hidden">
-        {/* Subtle teal glow top-right to match the hero's depth */}
-        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-[#27A1A1]/10 via-transparent to-transparent" />
-        <div className="pointer-events-none absolute top-0 right-0 w-[700px] h-[700px] bg-[#27A1A1]/10 rounded-full blur-[140px] -mr-64 -mt-64" />
-
-        <div className="container mx-auto px-6 relative z-10">
+      {/* ========== HOW IT WORKS ========== */}
+      <section id="how-it-works" className="py-24 md:py-32 bg-white scroll-mt-24">
+        <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight tracking-tight">From Assessment to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">Action</span></h2>
-            <p className="text-xl text-gray-300 font-medium max-w-2xl mx-auto">Four steps. Fifteen minutes. Concrete career paths that actually fit who you are today.</p>
+            <h2 className="text-4xl md:text-5xl font-black text-[#1A1A1A] mb-6 leading-tight tracking-tight">From Assessment to <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">Action</span></h2>
+            <p className="text-xl text-gray-500 font-medium max-w-2xl mx-auto">Four steps. Fifteen minutes. Concrete career paths that actually fit who you are today.</p>
           </div>
 
           <div className="max-w-5xl mx-auto space-y-20">
@@ -717,9 +713,9 @@ const Index = () => {
               <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#27A1A1] to-[#3989AF] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg shadow-teal-500/30">1</div>
-                  <h3 className="text-2xl font-black text-white">Take the Assessment</h3>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]">Take the Assessment</h3>
                 </div>
-                <p className="text-gray-300 text-lg leading-relaxed font-medium ml-16">
+                <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   Answer questions about your background, skills, work style, values, and goals. Designed to capture what actually matters for career fit - not just personality types.
                 </p>
               </div>
@@ -730,9 +726,9 @@ const Index = () => {
               <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#27A1A1] to-[#3989AF] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg shadow-teal-500/30">2</div>
-                  <h3 className="text-2xl font-black text-white">AI Analyzes Your Profile</h3>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]">AI Analyzes Your Profile</h3>
                 </div>
-                <p className="text-gray-300 text-lg leading-relaxed font-medium ml-16">
+                <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   A specialized 170+ step AI workflow (not ChatGPT) analyzes your responses, generates your personality profile, and matches you to specific careers with personalized justifications.
                 </p>
               </div>
@@ -743,9 +739,9 @@ const Index = () => {
               <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#27A1A1] to-[#3989AF] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg shadow-teal-500/30">3</div>
-                  <h3 className="text-2xl font-black text-white">Chat With Your AI Coach</h3>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]">Chat With Your AI Coach</h3>
                 </div>
-                <p className="text-gray-300 text-lg leading-relaxed font-medium ml-16">
+                <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   Discuss your results one-on-one. Ask follow-up questions, explore specific careers in depth, and get honest answers about fit, trade-offs, and next steps.
                 </p>
               </div>
@@ -756,22 +752,23 @@ const Index = () => {
               <div className="md:w-full">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#27A1A1] to-[#3989AF] text-white flex items-center justify-center text-xl font-black shrink-0 shadow-lg shadow-teal-500/30">4</div>
-                  <h3 className="text-2xl font-black text-white">Get Your Report</h3>
+                  <h3 className="text-2xl font-black text-[#1A1A1A]">Get Your Report</h3>
                 </div>
-                <p className="text-gray-300 text-lg leading-relaxed font-medium ml-16">
+                <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
                   Your complete career report - incorporating chat feedback - with personality analysis, all career recommendations, salary data, AI impact ratings, and concrete next steps.
                 </p>
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Divider */}
-          <div className="max-w-5xl mx-auto mt-24 mb-20 border-t border-white/10" />
-
-          {/* "Not another personality test" inner block — cream cards on ocean */}
+      {/* ========== WHAT MAKES ATLAS DIFFERENT (compact) ========== */}
+      <section className="py-24 md:py-32 bg-gray-50">
+        <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight tracking-tight">Not another <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">personality test</span></h2>
-            <p className="text-xl text-gray-300 font-medium max-w-2xl mx-auto">Atlas gives you actual job titles, salary data, and honest reality checks - not vague personality insights you'll forget by tomorrow.</p>
+            <h2 className="text-4xl md:text-5xl font-black text-[#1A1A1A] mb-6 leading-tight tracking-tight">Not another <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">personality test</span></h2>
+            <p className="text-xl text-gray-500 font-medium max-w-2xl mx-auto">Atlas gives you actual job titles, salary data, and honest reality checks - not vague personality insights you'll forget by tomorrow.</p>
           </div>
 
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -781,7 +778,7 @@ const Index = () => {
               { icon: CheckCircle2, title: "Honest, not flattering", desc: "Reality checks on challenges, trade-offs, and skills you'd need to develop. No cheerleading." },
               { icon: FileText, title: "Specific, not vague", desc: "10+ career recommendations with salary ranges, day-to-day breakdowns, and personalized fit explanations." },
             ].map((item, i) => (
-              <div key={i} className="bg-[#FDFBF2] p-8 rounded-2xl border border-white/10 flex gap-5 hover:shadow-xl hover:shadow-black/20 transition-all">
+              <div key={i} className="bg-white p-8 rounded-2xl border border-gray-100 flex gap-5 hover:shadow-lg transition-all">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#27A1A1] to-[#3989AF] rounded-xl flex items-center justify-center text-white shrink-0 shadow-md shadow-teal-500/20">
                   <item.icon className="w-6 h-6" />
                 </div>
