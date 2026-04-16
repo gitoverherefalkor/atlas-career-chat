@@ -223,20 +223,20 @@
 }
 
 /* ===== Warm-cream cards preview (?beige) — editorial / premium feel.
-   Cool teal-navy canvas with warm cream "paper" cards. Requires flipping
-   text-on-card back to dark. */
+   Lighter teal-navy canvas (same as ?teal2) with warm cream "paper" cards.
+   Text on cards uses a deep teal-navy (ties the palette together). */
 .palette-beige.dark {
-  --background: 198 45% 13%;          /* #122E3B — teal-navy canvas */
+  --background: 199 35% 20%;          /* #213F4F — lighter canvas (low contrast to cream) */
   --foreground: 0 0% 96%;              /* light text on canvas */
 
   --card: 40 42% 89%;                  /* #ECE3D0 — warm cream paper */
-  --card-foreground: 30 15% 16%;        /* #2E2922 — warm near-black */
+  --card-foreground: 198 45% 13%;      /* #122E3B — deep teal-navy, not brown */
 
   --popover: 44 45% 93%;               /* #F3ECDC — lighter cream for modals */
-  --popover-foreground: 30 15% 16%;
+  --popover-foreground: 198 45% 13%;
 
-  --muted: 40 20% 80%;                 /* #D2CBBA — dusty beige for input bg */
-  --muted-foreground: 30 10% 35%;      /* warm mid-grey */
+  --muted: 40 20% 82%;                 /* #D6CFBF — dusty beige for input bg */
+  --muted-foreground: 199 30% 30%;     /* teal-navy muted, readable on cream */
 
   --border: 38 25% 70%;                /* warm tan */
   --input: 38 25% 70%;
@@ -249,45 +249,49 @@
 }
 
 /* Content on cream cards needs dark text — override the global
-   dark-mode "text-gray-* → foreground (light)" rules so text on
-   cream reads correctly. */
+   dark-mode "text-gray-* → foreground (light)" rules. Uses deep
+   teal-navy (#122E3B) so the palette feels unified. */
 .palette-beige.dark .bg-card,
 .palette-beige.dark .bg-popover {
-  color: hsl(30 15% 16%);
+  color: hsl(198 45% 13%);
 }
 .palette-beige.dark .bg-card .text-gray-900,
 .palette-beige.dark .bg-card .text-gray-800,
 .palette-beige.dark .bg-popover .text-gray-900,
 .palette-beige.dark .bg-popover .text-gray-800 {
-  color: hsl(30 15% 16%) !important;
+  color: hsl(198 45% 13%) !important;
 }
 .palette-beige.dark .bg-card .text-gray-700,
 .palette-beige.dark .bg-popover .text-gray-700 {
-  color: hsl(30 12% 28%) !important;
+  color: hsl(198 40% 22%) !important;
 }
 .palette-beige.dark .bg-card .text-gray-600,
 .palette-beige.dark .bg-popover .text-gray-600 {
-  color: hsl(30 10% 38%) !important;
+  color: hsl(199 32% 30%) !important;
 }
 .palette-beige.dark .bg-card .text-gray-500,
 .palette-beige.dark .bg-popover .text-gray-500 {
-  color: hsl(30 8% 48%) !important;
+  color: hsl(200 22% 40%) !important;
+}
+.palette-beige.dark .bg-card .text-gray-400,
+.palette-beige.dark .bg-popover .text-gray-400 {
+  color: hsl(200 18% 50%) !important;
 }
 /* Titles that use text-atlas-navy (charcoal via var) need to stay dark too */
 .palette-beige.dark .bg-card .text-atlas-navy,
 .palette-beige.dark .bg-popover .text-atlas-navy {
-  color: hsl(30 15% 16%) !important;
+  color: hsl(198 45% 13%) !important;
 }
-/* Inputs/textareas on cream cards: slightly darker cream bg, dark text */
+/* Inputs/textareas on cream cards: slightly lighter cream bg, deep teal text */
 .palette-beige.dark .bg-card input,
 .palette-beige.dark .bg-card textarea,
 .palette-beige.dark .bg-popover input,
 .palette-beige.dark .bg-popover textarea {
   background-color: hsl(42 40% 95%) !important;
-  color: hsl(30 15% 16%) !important;
+  color: hsl(198 45% 13%) !important;
   border-color: hsl(38 25% 75%) !important;
 }
 .palette-beige.dark .bg-card input::placeholder,
 .palette-beige.dark .bg-card textarea::placeholder {
-  color: hsl(30 10% 55%) !important;
+  color: hsl(200 15% 55%) !important;
 }
