@@ -282,16 +282,60 @@
 .palette-beige.dark .bg-popover .text-atlas-navy {
   color: hsl(198 45% 13%) !important;
 }
-/* Inputs/textareas on cream cards: slightly lighter cream bg, deep teal text */
+/* Form controls inside cream cards — inputs, textareas, and anything
+   using bg-background (select triggers, date selects, number spinners,
+   empty/placeholder option rows) get the light-cream input styling so
+   they read as "on paper" rather than clashing with the canvas. */
 .palette-beige.dark .bg-card input,
 .palette-beige.dark .bg-card textarea,
+.palette-beige.dark .bg-card select,
+.palette-beige.dark .bg-card button[role="combobox"],
+.palette-beige.dark .bg-card .bg-background,
 .palette-beige.dark .bg-popover input,
-.palette-beige.dark .bg-popover textarea {
+.palette-beige.dark .bg-popover textarea,
+.palette-beige.dark .bg-popover select,
+.palette-beige.dark .bg-popover button[role="combobox"],
+.palette-beige.dark .bg-popover .bg-background {
   background-color: hsl(42 40% 95%) !important;
   color: hsl(198 45% 13%) !important;
-  border-color: hsl(38 25% 75%) !important;
+  border-color: hsl(38 25% 72%) !important;
 }
 .palette-beige.dark .bg-card input::placeholder,
-.palette-beige.dark .bg-card textarea::placeholder {
+.palette-beige.dark .bg-card textarea::placeholder,
+.palette-beige.dark .bg-popover input::placeholder,
+.palette-beige.dark .bg-popover textarea::placeholder {
   color: hsl(200 15% 55%) !important;
+}
+/* Select trigger placeholder text (span with data-placeholder attr) */
+.palette-beige.dark .bg-card [data-placeholder],
+.palette-beige.dark .bg-popover [data-placeholder] {
+  color: hsl(200 15% 55%) !important;
+}
+/* Muted surfaces (bg-muted / bg-gray-50 / bg-gray-100) inside cream cards
+   should also stay in the cream family — otherwise they read as dark bars. */
+.palette-beige.dark .bg-card .bg-muted,
+.palette-beige.dark .bg-card .bg-gray-50,
+.palette-beige.dark .bg-card .bg-gray-100,
+.palette-beige.dark .bg-popover .bg-muted,
+.palette-beige.dark .bg-popover .bg-gray-50,
+.palette-beige.dark .bg-popover .bg-gray-100 {
+  background-color: hsl(40 28% 85%) !important;
+}
+/* Disabled/locked rows (date End when "currently work here", or locked
+   section descriptions) lose too much contrast on cream. Keep them
+   readable by lifting the minimum opacity. */
+.palette-beige.dark .bg-card .opacity-40,
+.palette-beige.dark .bg-card .opacity-50,
+.palette-beige.dark .bg-card .opacity-60 {
+  opacity: 0.72 !important;
+}
+/* The `text-foreground` semantic token points to the page foreground
+   (near-white) — inside cream cards it needs to flip to card-foreground. */
+.palette-beige.dark .bg-card .text-foreground,
+.palette-beige.dark .bg-popover .text-foreground {
+  color: hsl(var(--card-foreground)) !important;
+}
+.palette-beige.dark .bg-card .text-muted-foreground,
+.palette-beige.dark .bg-popover .text-muted-foreground {
+  color: hsl(199 30% 30%) !important;
 }
