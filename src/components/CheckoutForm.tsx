@@ -240,7 +240,7 @@ export function CheckoutForm() {
   return (
     <div className="rounded-xl shadow-lg bg-white/90 p-8 border border-gray-200">
       <div className="mb-6 text-center">
-        <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-atlas-navy drop-shadow-sm">
+        <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-gray-900 drop-shadow-sm">
           Your Information
         </h2>
         <p className="mt-2 text-gray-600 text-base">

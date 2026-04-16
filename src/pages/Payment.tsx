@@ -28,11 +28,11 @@ export default function Payment() {
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-atlas-blue/10 via-white to-atlas-navy/10 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-lg space-y-8">
         <div className="text-center space-y-3">
-          <h2 className="text-2xl md:text-3xl font-bold text-atlas-navy">
+          <h2 className="text-2xl md:text-3xl font-bold text-atlas-teal">
             You're making a smart move.
           </h2>
           <p className="text-base text-gray-600 max-w-md mx-auto">
-            A small investment of time and money — for real clarity on where your career can go next.
+            A small investment of time and money for real clarity on where your career can go next.
           </p>
         </div>
         <CheckoutForm assessmentTitle={survey?.title || 'Atlas Career Assessment'} />
