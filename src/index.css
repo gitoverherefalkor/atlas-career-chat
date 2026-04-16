@@ -150,16 +150,19 @@
 }
 
 /* ===== Dark mode remaps for hardcoded Tailwind utility classes =====
-   Covers components that use bg-white / bg-gray-* / text-gray-* instead
-   of semantic tokens. Under the editorial-warm dark theme, bg-white and
-   bg-gray-50 both become cream "paper" surfaces. */
+   Editorial-warm theme:
+     - bg-white → cream "paper" card (lifted surface)
+     - bg-gray-50 → teal-navy canvas (page background)
+     - bg-gray-100 → muted dusty beige (visible but subtle tint on canvas)
+   Components that use these classes inherit the right surface without
+   per-file refactors. */
 .dark .bg-white { background-color: hsl(var(--card)) !important; }
-.dark .bg-gray-50 { background-color: hsl(var(--card)) !important; }
-.dark .bg-gray-100 { background-color: hsl(var(--muted)) !important; }
+.dark .bg-gray-50 { background-color: hsl(var(--background)) !important; }
+.dark .bg-gray-100 { background-color: hsl(var(--background)) !important; }
 .dark .bg-gray-200 { background-color: hsl(var(--muted)) !important; }
 .dark .bg-gray-900 { background-color: hsl(var(--card)) !important; }
 .dark .bg-\[\#fcfdfe\] { background-color: hsl(var(--background)) !important; }
-.dark .bg-\[\#fafafa\] { background-color: hsl(var(--card)) !important; }
+.dark .bg-\[\#fafafa\] { background-color: hsl(var(--background)) !important; }
 
 .dark .border-gray-100 { border-color: hsl(var(--border)) !important; }
 .dark .border-gray-200 { border-color: hsl(var(--border)) !important; }
