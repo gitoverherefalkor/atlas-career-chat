@@ -5,14 +5,15 @@ import { Button } from '@/components/ui/button';
 const STORAGE_KEY = 'atlas_theme';
 type Theme = 'light' | 'dark';
 
-// Read saved theme (light default — OS preference is intentionally ignored for now).
+// Reflect whatever the init script / ThemeScopeGuard has already applied.
+// (Off-homepage default is dark; homepage is always light.)
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light';
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'dark' ? 'dark' : 'light';
-  } catch {
-    return 'light';
-  }
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+  } catch { /* ignore */ }
+  return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 }
 
 interface ThemeToggleProps {

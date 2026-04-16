@@ -21,12 +21,16 @@
   </head>
 
   <body>
-    <!-- Apply saved theme before React renders to avoid a flash of the wrong theme. -->
+    <!-- Apply theme before React renders to avoid flash.
+         Homepage (/) is always light. Every other route (payment, auth, dashboard,
+         chat, survey, report, …) defaults to dark unless user explicitly chose light. -->
     <script>
       (function () {
         try {
-          var t = localStorage.getItem('atlas_theme');
-          if (t === 'dark') document.documentElement.classList.add('dark');
+          var path = window.location.pathname;
+          if (path === '/') return; // homepage is single-mode light
+          var saved = localStorage.getItem('atlas_theme');
+          if (saved !== 'light') document.documentElement.classList.add('dark');
         } catch (e) { /* ignore */ }
       })();
     </script>

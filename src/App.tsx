@@ -54,24 +54,25 @@ const LanguageSync = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Forces light mode on marketing/payment routes regardless of user's theme
-// preference. Homepage and payment flow are always light — those pages have
-// their own bespoke layouts that aren't designed to invert.
-const LIGHT_ONLY_ROUTES = ['/', '/payment', '/payment-success'];
+// Homepage (/) is always light — it's the bespoke marketing design and has
+// no toggle. Every other route (payment onwards: /payment, /auth, /dashboard,
+// /chat, /survey, /report, …) is dark by default unless the user opted into
+// light via the ThemeToggle.
+const LIGHT_ONLY_ROUTES = ['/'];
 const ThemeScopeGuard = () => {
   const location = useLocation();
   React.useEffect(() => {
     const root = document.documentElement;
-    const forceLight = LIGHT_ONLY_ROUTES.includes(location.pathname);
-    if (forceLight) {
+    if (LIGHT_ONLY_ROUTES.includes(location.pathname)) {
       root.classList.remove('dark');
-    } else {
-      // Restore the user's saved preference when leaving a light-only route.
-      try {
-        if (localStorage.getItem('atlas_theme') === 'dark') {
-          root.classList.add('dark');
-        }
-      } catch { /* ignore */ }
+      return;
+    }
+    // Off-homepage: apply user preference (dark is the default).
+    try {
+      const saved = localStorage.getItem('atlas_theme');
+      root.classList.toggle('dark', saved !== 'light');
+    } catch {
+      root.classList.add('dark');
     }
   }, [location.pathname]);
   return null;
