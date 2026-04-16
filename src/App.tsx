@@ -64,13 +64,11 @@ const ThemeScopeGuard = () => {
   React.useEffect(() => {
     const root = document.documentElement;
 
-    // Palette previews (URL params, no storage):
-    //   ?teal  — teal-navy base, lighter cards
-    //   ?teal2 — inverted: lighter canvas, darker card wells
-    //   ?beige — teal-navy canvas with warm cream "paper" cards (editorial)
+    // ?beige preview for the homepage — visualizes how the landing page
+    // (normally single-mode light) would look with cream body + teal-navy
+    // hero/pricing sections. Only the homepage is light-only, so this is
+    // the one route where the preview matters.
     const params = new URLSearchParams(location.search);
-    root.classList.toggle('palette-teal', params.has('teal') && !params.has('teal2'));
-    root.classList.toggle('palette-teal2', params.has('teal2'));
     root.classList.toggle('palette-beige', params.has('beige'));
 
     if (LIGHT_ONLY_ROUTES.includes(location.pathname)) {

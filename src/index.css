@@ -54,39 +54,39 @@
   }
 
   .dark {
-    /* Atlas dark palette — "graphite warmth" rather than "void black".
-       Base sits a step up from pure charcoal so cards and modals can lift
-       above it without disappearing into a black hole.
-       Titles (--atlas-navy) flip to near-white so text-atlas-navy auto-inverts. */
-    --atlas-navy: 245 245 247;
+    /* Atlas dark palette — editorial warmth.
+       Cool teal-navy canvas with warm cream "paper" cards. Teal remains
+       the primary accent; mustard gold is the secondary for loading/highlight
+       states. --atlas-navy flips to deep teal so text-atlas-navy on cream
+       reads as near-black in the same color family as the page. */
+    --atlas-navy: 18 46 59;             /* #122E3B — deep teal-navy for text on cream */
 
-    --background: 0 0% 17%;            /* #2B2B2B — true graphite */
-    --foreground: 0 0% 96%;            /* #F5F5F5 */
+    --background: 199 35% 20%;          /* #213F4F — teal-navy canvas */
+    --foreground: 0 0% 96%;              /* #F5F5F5 — light text on canvas */
 
-    --card: 0 0% 22%;                  /* #383838 — clearly lifted from bg */
-    --card-foreground: 0 0% 96%;
+    --card: 40 42% 89%;                  /* #ECE3D0 — warm cream paper */
+    --card-foreground: 198 45% 13%;     /* #122E3B — deep teal-navy text */
 
-    --popover: 0 0% 27%;               /* #454545 — modal/dropdown surface */
-    --popover-foreground: 0 0% 96%;
+    --popover: 44 45% 93%;               /* #F3ECDC — lighter cream for modals */
+    --popover-foreground: 198 45% 13%;
 
-    /* Teal brightened from #27A1A1 → #34B8B8 so it stays punchy on dark bg. */
-    --primary: 180 55% 45%;
+    --primary: 180 55% 45%;              /* teal brightened for contrast */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 25% 20%;          /* deep teal surface */
-    --secondary-foreground: 180 55% 80%;
+    --secondary: 180 40% 85%;
+    --secondary-foreground: 180 61% 22%;
 
-    --muted: 0 0% 24%;
-    --muted-foreground: 0 0% 68%;
+    --muted: 40 20% 82%;                 /* dusty beige for input bg in cards */
+    --muted-foreground: 199 30% 30%;     /* readable teal on cream */
 
-    --accent: 180 25% 24%;
-    --accent-foreground: 180 55% 82%;
+    --accent: 180 40% 85%;
+    --accent-foreground: 180 61% 22%;
 
     --destructive: 0 62.8% 40%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 33%;                /* #545454 — clearly visible edges */
-    --input: 0 0% 33%;
+    --border: 38 25% 70%;                /* warm tan */
+    --input: 38 25% 70%;
     --ring: 180 55% 45%;
   }
 }
@@ -150,23 +150,16 @@
 }
 
 /* ===== Dark mode remaps for hardcoded Tailwind utility classes =====
-   Covers the ~90% of components that use bg-white / bg-gray-* / text-gray-*
-   instead of semantic tokens. Without this, those classes stay bright-white
-   in dark mode. */
+   Covers components that use bg-white / bg-gray-* / text-gray-* instead
+   of semantic tokens. Under the editorial-warm dark theme, bg-white and
+   bg-gray-50 both become cream "paper" surfaces. */
 .dark .bg-white { background-color: hsl(var(--card)) !important; }
-.dark .bg-gray-50 { background-color: hsl(var(--background)) !important; }
+.dark .bg-gray-50 { background-color: hsl(var(--card)) !important; }
 .dark .bg-gray-100 { background-color: hsl(var(--muted)) !important; }
 .dark .bg-gray-200 { background-color: hsl(var(--muted)) !important; }
 .dark .bg-gray-900 { background-color: hsl(var(--card)) !important; }
 .dark .bg-\[\#fcfdfe\] { background-color: hsl(var(--background)) !important; }
-.dark .bg-\[\#fafafa\] { background-color: hsl(var(--background)) !important; }
-
-.dark .text-gray-900 { color: hsl(var(--foreground)) !important; }
-.dark .text-gray-800 { color: hsl(var(--foreground)) !important; }
-.dark .text-gray-700 { color: rgb(220 220 224) !important; }
-.dark .text-gray-600 { color: hsl(var(--muted-foreground)) !important; }
-.dark .text-gray-500 { color: rgb(160 160 170) !important; }
-.dark .text-gray-400 { color: rgb(130 130 138) !important; }
+.dark .bg-\[\#fafafa\] { background-color: hsl(var(--card)) !important; }
 
 .dark .border-gray-100 { border-color: hsl(var(--border)) !important; }
 .dark .border-gray-200 { border-color: hsl(var(--border)) !important; }
@@ -177,190 +170,138 @@
 .dark .bg-blue-100 { background-color: rgb(52 184 184 / 0.18) !important; }
 .dark .border-blue-200 { border-color: rgb(52 184 184 / 0.35) !important; }
 .dark .text-blue-700,
-.dark .text-blue-800 { color: #5ACFCF !important; }
-.dark .text-blue-900 { color: #80DADA !important; }
+.dark .text-blue-800 { color: #1f8282 !important; }
+.dark .text-blue-900 { color: #186666 !important; }
 
-/* Landing page hero / pricing keep their intentional dark backgrounds —
-   but in dark mode we want them to match the new base. Push them one step
-   deeper than the page bg so they still feel like distinct sections. */
-.dark .bg-\[\#1A1A1A\] { background-color: #070709 !important; }
+/* Landing page hero / pricing keep their intentional #1A1A1A dark section
+   on the light homepage — don't touch it (homepage is always light). */
 
-/* ===== Teal-navy palette PREVIEW — appended when body has .palette-teal
-   (activated by adding ?teal to any URL). Keeps teal + mustard accents;
-   swaps the graphite base for a cool cyan-teal undertone. */
-.palette-teal.dark,
-.palette-teal .dark {
-  --background: 198 45% 13%;      /* #122E3B */
-  --card: 199 35% 20%;            /* #213F4F */
-  --popover: 200 30% 27%;         /* #305269 */
-  --muted: 200 28% 22%;
-  --muted-foreground: 200 15% 70%;
-  --border: 200 25% 32%;
-  --input: 200 25% 32%;
-  --secondary: 180 30% 22%;
-  --accent: 180 30% 22%;
-}
-/* Apply teal-navy to the landing page hero + pricing even in light mode,
-   so the "dark sections" on the marketing page also pick up the preview. */
-.palette-teal .bg-\[\#1A1A1A\] {
-  background-color: #122E3B !important;
+/* ===== Cream-surface content overrides =====
+   Any cream surface in dark mode — .bg-card, .bg-popover, and the
+   bg-white/bg-gray-50 that get remapped to cream — needs dark text,
+   readable muted tones, and cream-native form controls.
+   We use compound selectors covering all four surface classes so every
+   cream region (cards, modals, cookie banner, etc.) behaves consistently. */
+
+/* Base text color on cream */
+.dark .bg-card,
+.dark .bg-popover,
+.dark .bg-white,
+.dark .bg-gray-50 {
+  color: hsl(var(--card-foreground));
 }
 
-/* ===== Teal-navy INVERTED preview (?teal2) — lighter page, darker cards.
-   Cards sit as deep wells in a lighter canvas.
-   Homepage hero is deliberately NOT overridden — the landing page stays
-   with its original #1A1A1A hero. */
-.palette-teal2.dark {
-  --background: 199 35% 20%;      /* #213F4F — lighter canvas */
-  --card: 199 45% 12%;            /* #112934 — darker inset card */
-  --popover: 200 50% 9%;           /* #0C2530 — deepest well for modals */
-  --muted: 198 35% 16%;
-  --muted-foreground: 200 15% 70%;
-  --border: 200 25% 32%;
-  --input: 200 25% 32%;
-  --secondary: 180 35% 15%;
-  --accent: 180 35% 15%;
-}
-
-/* ===== Warm-cream cards preview (?beige) — editorial / premium feel.
-   Lighter teal-navy canvas (same as ?teal2) with warm cream "paper" cards.
-   Text on cards uses a deep teal-navy (ties the palette together). */
-.palette-beige.dark {
-  --background: 199 35% 20%;          /* #213F4F — lighter canvas (low contrast to cream) */
-  --foreground: 0 0% 96%;              /* light text on canvas */
-
-  --card: 40 42% 89%;                  /* #ECE3D0 — warm cream paper */
-  --card-foreground: 198 45% 13%;      /* #122E3B — deep teal-navy, not brown */
-
-  --popover: 44 45% 93%;               /* #F3ECDC — lighter cream for modals */
-  --popover-foreground: 198 45% 13%;
-
-  --muted: 40 20% 82%;                 /* #D6CFBF — dusty beige for input bg */
-  --muted-foreground: 199 30% 30%;     /* teal-navy muted, readable on cream */
-
-  --border: 38 25% 70%;                /* warm tan */
-  --input: 38 25% 70%;
-
-  --secondary: 180 40% 85%;
-  --secondary-foreground: 180 61% 22%;
-
-  --accent: 180 40% 85%;
-  --accent-foreground: 180 61% 22%;
-}
-
-/* Content on cream cards needs dark text — override the global
-   dark-mode "text-gray-* → foreground (light)" rules. Uses deep
-   teal-navy (#122E3B) so the palette feels unified. */
-.palette-beige.dark .bg-card,
-.palette-beige.dark .bg-popover {
-  color: hsl(198 45% 13%);
-}
-.palette-beige.dark .bg-card .text-gray-900,
-.palette-beige.dark .bg-card .text-gray-800,
-.palette-beige.dark .bg-popover .text-gray-900,
-.palette-beige.dark .bg-popover .text-gray-800 {
+/* gray-900/800 → deepest text */
+.dark .bg-card .text-gray-900, .dark .bg-card .text-gray-800,
+.dark .bg-popover .text-gray-900, .dark .bg-popover .text-gray-800,
+.dark .bg-white .text-gray-900, .dark .bg-white .text-gray-800,
+.dark .bg-gray-50 .text-gray-900, .dark .bg-gray-50 .text-gray-800 {
   color: hsl(198 45% 13%) !important;
 }
-.palette-beige.dark .bg-card .text-gray-700,
-.palette-beige.dark .bg-popover .text-gray-700 {
+/* gray-700 → deep body text */
+.dark .bg-card .text-gray-700,
+.dark .bg-popover .text-gray-700,
+.dark .bg-white .text-gray-700,
+.dark .bg-gray-50 .text-gray-700 {
   color: hsl(198 40% 22%) !important;
 }
-.palette-beige.dark .bg-card .text-gray-600,
-.palette-beige.dark .bg-popover .text-gray-600 {
+/* gray-600 → body / description */
+.dark .bg-card .text-gray-600,
+.dark .bg-popover .text-gray-600,
+.dark .bg-white .text-gray-600,
+.dark .bg-gray-50 .text-gray-600 {
   color: hsl(199 32% 30%) !important;
 }
-.palette-beige.dark .bg-card .text-gray-500,
-.palette-beige.dark .bg-popover .text-gray-500 {
+/* gray-500 → muted hint */
+.dark .bg-card .text-gray-500,
+.dark .bg-popover .text-gray-500,
+.dark .bg-white .text-gray-500,
+.dark .bg-gray-50 .text-gray-500 {
   color: hsl(200 22% 40%) !important;
 }
-.palette-beige.dark .bg-card .text-gray-400,
-.palette-beige.dark .bg-popover .text-gray-400 {
+/* gray-400 → fainter hint */
+.dark .bg-card .text-gray-400,
+.dark .bg-popover .text-gray-400,
+.dark .bg-white .text-gray-400,
+.dark .bg-gray-50 .text-gray-400 {
   color: hsl(200 18% 50%) !important;
 }
-/* Titles that use text-atlas-navy (charcoal via var) need to stay dark too */
-.palette-beige.dark .bg-card .text-atlas-navy,
-.palette-beige.dark .bg-popover .text-atlas-navy {
+/* gray-300 / gray-200 → locked/disabled states (survey sidebar) */
+.dark .bg-card .text-gray-300, .dark .bg-popover .text-gray-300,
+.dark .bg-white .text-gray-300, .dark .bg-gray-50 .text-gray-300 {
+  color: hsl(199 25% 48%) !important;
+}
+.dark .bg-card .text-gray-200, .dark .bg-popover .text-gray-200,
+.dark .bg-white .text-gray-200, .dark .bg-gray-50 .text-gray-200 {
+  color: hsl(199 20% 58%) !important;
+}
+
+/* text-atlas-navy on cream → stay dark (the var flips to light in dark mode) */
+.dark .bg-card .text-atlas-navy, .dark .bg-popover .text-atlas-navy,
+.dark .bg-white .text-atlas-navy, .dark .bg-gray-50 .text-atlas-navy {
   color: hsl(198 45% 13%) !important;
 }
-/* Form controls inside cream cards — inputs, textareas, and anything
-   using bg-background (select triggers, date selects, number spinners,
-   empty/placeholder option rows) get the light-cream input styling so
-   they read as "on paper" rather than clashing with the canvas. */
-.palette-beige.dark .bg-card input,
-.palette-beige.dark .bg-card textarea,
-.palette-beige.dark .bg-card select,
-.palette-beige.dark .bg-card button[role="combobox"],
-.palette-beige.dark .bg-card .bg-background,
-.palette-beige.dark .bg-popover input,
-.palette-beige.dark .bg-popover textarea,
-.palette-beige.dark .bg-popover select,
-.palette-beige.dark .bg-popover button[role="combobox"],
-.palette-beige.dark .bg-popover .bg-background {
+
+/* Semantic text tokens on cream flip to card foreground */
+.dark .bg-card .text-foreground, .dark .bg-popover .text-foreground,
+.dark .bg-white .text-foreground, .dark .bg-gray-50 .text-foreground {
+  color: hsl(var(--card-foreground)) !important;
+}
+.dark .bg-card .text-muted-foreground, .dark .bg-popover .text-muted-foreground,
+.dark .bg-white .text-muted-foreground, .dark .bg-gray-50 .text-muted-foreground {
+  color: hsl(199 30% 30%) !important;
+}
+
+/* Form controls on cream surfaces — flip to cream-native styling */
+.dark .bg-card input, .dark .bg-card textarea, .dark .bg-card select,
+.dark .bg-card button[role="combobox"], .dark .bg-card .bg-background,
+.dark .bg-popover input, .dark .bg-popover textarea, .dark .bg-popover select,
+.dark .bg-popover button[role="combobox"], .dark .bg-popover .bg-background,
+.dark .bg-white input, .dark .bg-white textarea, .dark .bg-white select,
+.dark .bg-white button[role="combobox"], .dark .bg-white .bg-background,
+.dark .bg-gray-50 input, .dark .bg-gray-50 textarea, .dark .bg-gray-50 select,
+.dark .bg-gray-50 button[role="combobox"], .dark .bg-gray-50 .bg-background {
   background-color: hsl(42 40% 95%) !important;
   color: hsl(198 45% 13%) !important;
   border-color: hsl(38 25% 72%) !important;
 }
-.palette-beige.dark .bg-card input::placeholder,
-.palette-beige.dark .bg-card textarea::placeholder,
-.palette-beige.dark .bg-popover input::placeholder,
-.palette-beige.dark .bg-popover textarea::placeholder {
+.dark .bg-card input::placeholder, .dark .bg-card textarea::placeholder,
+.dark .bg-popover input::placeholder, .dark .bg-popover textarea::placeholder {
   color: hsl(200 15% 55%) !important;
 }
-/* Select trigger placeholder text (span with data-placeholder attr) */
-.palette-beige.dark .bg-card [data-placeholder],
-.palette-beige.dark .bg-popover [data-placeholder] {
+.dark .bg-card [data-placeholder], .dark .bg-popover [data-placeholder] {
   color: hsl(200 15% 55%) !important;
 }
-/* Muted surfaces (bg-muted / bg-gray-50 / bg-gray-100) inside cream cards
-   should also stay in the cream family — otherwise they read as dark bars. */
-.palette-beige.dark .bg-card .bg-muted,
-.palette-beige.dark .bg-card .bg-gray-50,
-.palette-beige.dark .bg-card .bg-gray-100,
-.palette-beige.dark .bg-popover .bg-muted,
-.palette-beige.dark .bg-popover .bg-gray-50,
-.palette-beige.dark .bg-popover .bg-gray-100 {
+
+/* Nested muted surfaces on cream — keep in cream family */
+.dark .bg-card .bg-muted, .dark .bg-card .bg-gray-50, .dark .bg-card .bg-gray-100,
+.dark .bg-popover .bg-muted, .dark .bg-popover .bg-gray-50, .dark .bg-popover .bg-gray-100 {
   background-color: hsl(40 28% 85%) !important;
 }
-/* Disabled/locked rows (date End when "currently work here", or locked
-   section descriptions) lose too much contrast on cream. Keep them
-   readable by lifting the minimum opacity. */
-.palette-beige.dark .bg-card .opacity-40,
-.palette-beige.dark .bg-card .opacity-50,
-.palette-beige.dark .bg-card .opacity-60 {
+
+/* Lift disabled/locked opacity on cream so "Present" date field and
+   locked section descriptions remain legible */
+.dark .bg-card .opacity-40, .dark .bg-card .opacity-50, .dark .bg-card .opacity-60 {
   opacity: 0.72 !important;
 }
-/* The `text-foreground` semantic token points to the page foreground
-   (near-white) — inside cream cards it needs to flip to card-foreground. */
-.palette-beige.dark .bg-card .text-foreground,
-.palette-beige.dark .bg-popover .text-foreground {
-  color: hsl(var(--card-foreground)) !important;
-}
-.palette-beige.dark .bg-card .text-muted-foreground,
-.palette-beige.dark .bg-popover .text-muted-foreground {
-  color: hsl(199 30% 30%) !important;
-}
-/* Very light gray classes (200/300) are used for "locked/disabled" states
-   in the survey sidebar — on cream they become invisible. Bring them back
-   to legible teal tones so the locked section titles/descriptions read. */
-.palette-beige.dark .bg-card .text-gray-300 { color: hsl(199 25% 48%) !important; }
-.palette-beige.dark .bg-card .text-gray-200 { color: hsl(199 20% 58%) !important; }
 
-/* Preserve the red "required field empty" border on cream cards.
-   The generic border override above uses !important with tan, which kills
-   these validation states — restore them with a cream-compatible red. */
-.palette-beige.dark .bg-card .border-red-300 { border-color: #D97B7B !important; }
-.palette-beige.dark .bg-card .border-red-400 { border-color: #CC5C5C !important; }
+/* Preserve the "required field empty" red border on cream — the generic
+   !important tan border above would otherwise kill the validation state */
+.dark .bg-card .border-red-300 { border-color: #D97B7B !important; }
+.dark .bg-card .border-red-400 { border-color: #CC5C5C !important; }
 
-/* Focus rings inside cream cards: the default ring-offset-color is the
-   page's dark bg, which peeks through as a black outline between the input
-   and the teal ring. Flip the offset to the cream card so it's pure teal. */
-.palette-beige.dark .bg-card input:focus-visible,
-.palette-beige.dark .bg-card textarea:focus-visible,
-.palette-beige.dark .bg-card select:focus-visible,
-.palette-beige.dark .bg-card button[role="combobox"]:focus,
-.palette-beige.dark .bg-card button[role="combobox"]:focus-visible,
-.palette-beige.dark .bg-popover input:focus-visible,
-.palette-beige.dark .bg-popover textarea:focus-visible {
+/* Focus rings on cream: flip the ring-offset to cream so only the teal
+   ring shows, not a dark outline between input and ring */
+.dark .bg-card input:focus-visible, .dark .bg-card textarea:focus-visible,
+.dark .bg-card select:focus-visible, .dark .bg-card button[role="combobox"]:focus,
+.dark .bg-card button[role="combobox"]:focus-visible,
+.dark .bg-popover input:focus-visible, .dark .bg-popover textarea:focus-visible {
   --tw-ring-offset-color: hsl(42 40% 95%) !important;
   --tw-ring-offset-width: 0 !important;
 }
+
+/* ===== Homepage beige preview (?beige on /) — swap the light-mode landing
+   page body + dark hero sections to cream + teal-navy, to visualize how a
+   future beige homepage would feel. No effect on ordinary traffic. */
+.palette-beige .bg-\[\#fcfdfe\] { background-color: #F1E9D6 !important; }
+.palette-beige .bg-\[\#1A1A1A\] { background-color: #213F4F !important; }
