@@ -1,6 +1,7 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { QuestionRenderer } from './QuestionRenderer';
 import { SectionIntroduction } from './SectionIntroduction';
+import { SectionCompleteFlash } from './SectionCompleteFlash';
 import { SurveyNavigation, MobileStepIndicator } from './SurveyNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { useResumePreFill } from './hooks/useResumePreFill';
 import { useSurveyNavigation } from './hooks/useSurveyNavigation';
 import { useSurveySubmission } from './hooks/useSurveySubmission';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
+import { useAssessmentSession } from '@/components/assessment/AssessmentSessionContext';
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
   constructor(props: any) {
@@ -32,19 +34,44 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
   }
 }
 
+// Milestone messages shown at key completion thresholds (fired once per session)
+const MILESTONES: { pct: number; message: string; duration: number }[] = [
+  {
+    pct: 25,
+    message: "The more honest your answers, the more useful your results will be. Keep going.",
+    duration: 4000,
+  },
+  {
+    pct: 50,
+    message: "Good moment for a stretch or a cup of tea. Your progress is automatically saved — come back whenever you're ready.",
+    duration: 6000,
+  },
+  {
+    pct: 75,
+    message: "This level of depth is exactly what makes the final report genuinely useful. Worth the time.",
+    duration: 4000,
+  },
+  {
+    pct: 90,
+    message: "Final stretch — just a few more questions.",
+    duration: 4000,
+  },
+];
+
 interface SurveyFormProps {
   surveyId: string;
   onComplete: (responses: Record<string, any>) => void;
   accessCodeData?: any;
 }
 
-export const SurveyForm: React.FC<SurveyFormProps> = ({ 
-  surveyId, 
-  onComplete, 
-  accessCodeData 
+export const SurveyForm: React.FC<SurveyFormProps> = ({
+  surveyId,
+  onComplete,
+  accessCodeData
 }) => {
   const navigate = useNavigate();
-  
+  const { triggerSave } = useAssessmentSession();
+
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL LOGIC
   // Custom hooks for state management
   const surveyState = useSurveyState(surveyId);
@@ -72,6 +99,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     clearSession
   } = surveyState;
 
+  // Section complete flash state
+  const [showSectionComplete, setShowSectionComplete] = useState(false);
+  const [completedSectionTitle, setCompletedSectionTitle] = useState('');
+
+  // Milestone state
+  const [activeMilestone, setActiveMilestone] = useState<string | null>(null);
+  const firedMilestonesRef = useRef<Set<number>>(new Set());
+  const milestoneInitRef = useRef(false);
+
   // Engagement tracking for reminder emails
   const { trackSurveyStart, trackSurveyProgress, trackSurveyComplete } = useEngagementTracking();
 
@@ -93,8 +129,52 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     }
   }, [currentSectionIndex, survey, trackSurveyProgress]);
 
+  // Milestone effect: fire encouragement messages at key completion thresholds
+  useEffect(() => {
+    if (!survey || !isSessionLoaded) return;
+
+    const totalQ = survey.sections.reduce((acc: number, s: any) =>
+      acc + getFilteredQuestions(s).length, 0);
+    const answered = Object.values(responses).filter(
+      v => v !== null && v !== undefined && v !== ''
+    ).length;
+    const pct = totalQ > 0 ? (answered / totalQ) * 100 : 0;
+
+    // On first load, silently pre-mark milestones that were already passed
+    if (!milestoneInitRef.current) {
+      milestoneInitRef.current = true;
+      for (const m of MILESTONES) {
+        if (pct >= m.pct) firedMilestonesRef.current.add(m.pct);
+      }
+      return;
+    }
+
+    // Check for newly crossed milestones
+    let timerId: ReturnType<typeof setTimeout> | null = null;
+    for (const m of MILESTONES) {
+      if (pct >= m.pct && !firedMilestonesRef.current.has(m.pct)) {
+        firedMilestonesRef.current.add(m.pct);
+        setActiveMilestone(m.message);
+        timerId = setTimeout(() => setActiveMilestone(null), m.duration);
+        break; // Only one at a time
+      }
+    }
+    return () => { if (timerId) clearTimeout(timerId); };
+  }, [responses, survey, isSessionLoaded, getFilteredQuestions]);
+
   // IMPORTANT: Call ALL hooks unconditionally
   useResumePreFill({ isSessionLoaded, responses, setResponses, surveyId });
+
+  // Callback for the section complete flash — intercepts section transitions
+  const handleSectionComplete = useCallback((proceed: () => void) => {
+    const title = survey?.sections[currentSectionIndex]?.title ?? '';
+    setCompletedSectionTitle(title);
+    setShowSectionComplete(true);
+    setTimeout(() => {
+      setShowSectionComplete(false);
+      proceed();
+    }, 1200);
+  }, [survey, currentSectionIndex]);
 
   const surveyNavigation = useSurveyNavigation({
     survey,
@@ -104,9 +184,21 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     setCurrentQuestionIndex,
     setShowSectionIntro,
     setCompletedSections,
-    getFilteredQuestions
+    getFilteredQuestions,
+    onSectionComplete: handleSectionComplete,
   });
-  const { handleNext, handleBack, handleSectionNavigation } = surveyNavigation;
+  const { handleNext: rawHandleNext, handleBack: rawHandleBack, handleSectionNavigation, navigationDirection } = surveyNavigation;
+
+  // Wrap navigation handlers to flash the "auto-saved" indicator
+  const handleNext = useCallback(() => {
+    triggerSave();
+    rawHandleNext();
+  }, [rawHandleNext, triggerSave]);
+
+  const handleBack = useCallback(() => {
+    triggerSave();
+    rawHandleBack();
+  }, [rawHandleBack, triggerSave]);
 
   const surveySubmission = useSurveySubmission({
     surveyId,
@@ -116,7 +208,12 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     setSubmissionStatus,
     onComplete
   });
-  const { handleSubmit, handleRetrySubmission } = surveySubmission;
+  const { handleSubmit: rawHandleSubmit, handleRetrySubmission } = surveySubmission;
+
+  const handleSubmit = useCallback(() => {
+    triggerSave();
+    return rawHandleSubmit();
+  }, [rawHandleSubmit, triggerSave]);
 
   // Helper function to check if current question is complete
   const checkIfCurrentQuestionComplete = useCallback((question: any) => {
@@ -186,7 +283,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   // Keyboard event handler for Enter key
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (!survey) return;
-    
+
     if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
       // Don't trigger on Enter in textarea or other multi-line inputs
       const target = event.target as HTMLElement;
@@ -197,13 +294,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       const filteredQuestions = getFilteredQuestions(survey.sections[currentSectionIndex]);
       const currentQuestion = filteredQuestions[currentQuestionIndex];
       const isCurrentQuestionComplete = checkIfCurrentQuestionComplete(currentQuestion);
-      const isLastQuestion = currentSectionIndex === survey.sections.length - 1 && 
+      const isLastQuestion = currentSectionIndex === survey.sections.length - 1 &&
                            currentQuestionIndex === filteredQuestions.length - 1;
 
       // Only proceed if current question is complete
       if (isCurrentQuestionComplete) {
         event.preventDefault();
-        
+
         if (isLastQuestion) {
           handleSubmit();
         } else {
@@ -221,8 +318,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   }, [setResponses]);
 
   const handleSectionIntroContinue = useCallback(() => {
+    triggerSave();
     setShowSectionIntro(false);
-  }, [setShowSectionIntro]);
+  }, [setShowSectionIntro, triggerSave]);
 
   const handleClearSession = useCallback(() => {
     clearSession();
@@ -238,7 +336,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   }, [handleKeyDown]);
 
   // NOW we can do conditional returns, AFTER all hooks have been called
-  
+
   // Loading states
   if (isLoading) {
     return (
@@ -269,24 +367,77 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const currentSection = survey.sections[currentSectionIndex];
   const filteredQuestions = getFilteredQuestions(currentSection);
   const currentQuestion = filteredQuestions[currentQuestionIndex];
-  
+
   // Calculate progress within current section only
   const currentQuestionInSection = currentQuestionIndex + 1;
   const totalQuestionsInSection = filteredQuestions.length;
   const progress = (currentQuestionInSection / totalQuestionsInSection) * 100;
+
+  // Calculate global progress across all sections
+  const totalQuestions = survey.sections.reduce((acc: number, s: any) =>
+    acc + getFilteredQuestions(s).length, 0);
+  const totalAnswered = Object.values(responses).filter(
+    v => v !== null && v !== undefined && v !== ''
+  ).length;
+  const globalPct = totalQuestions > 0 ? Math.min(100, (totalAnswered / totalQuestions) * 100) : 0;
 
   const isCurrentQuestionComplete = () => {
     return checkIfCurrentQuestionComplete(currentQuestion);
   };
 
   const isLastQuestion = () => {
-    return currentSectionIndex === survey.sections.length - 1 && 
+    return currentSectionIndex === survey.sections.length - 1 &&
            currentQuestionIndex === filteredQuestions.length - 1;
   };
 
   const isFirstQuestion = () => {
     return currentSectionIndex === 0 && currentQuestionIndex === 0 && !showSectionIntro;
   };
+
+  // Global progress bar — rendered in all active survey states
+  const GlobalProgressBar = (
+    <div className="fixed top-0 left-0 right-0 h-[3px] z-30 bg-gray-100">
+      <div
+        className="h-full bg-atlas-teal transition-all duration-500 ease-out"
+        style={{ width: `${globalPct}%` }}
+      />
+    </div>
+  );
+
+  // Milestone message banner — shown briefly at key completion thresholds
+  const MilestoneBanner = activeMilestone ? (
+    <div className="fixed top-[3px] left-0 right-0 z-40 flex justify-center pt-3 pointer-events-none px-4">
+      <div className="animate-in fade-in slide-in-from-top-2 duration-300 bg-white border border-gray-200 rounded-full px-5 py-2 text-sm text-gray-600 shadow-sm max-w-lg text-center">
+        {activeMilestone}
+      </div>
+    </div>
+  ) : null;
+
+  // Section complete flash
+  if (showSectionComplete) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+        {GlobalProgressBar}
+        <MobileStepIndicator
+          sections={survey.sections}
+          currentSectionIndex={currentSectionIndex}
+          completedSections={completedSections}
+          onSectionClick={handleSectionNavigation}
+        />
+        <div className="flex gap-6 max-w-7xl mx-auto px-3 sm:px-6">
+          <SurveyNavigation
+            sections={survey.sections}
+            currentSectionIndex={currentSectionIndex}
+            completedSections={completedSections}
+            onSectionClick={handleSectionNavigation}
+          />
+          <div className="flex-1">
+            <SectionCompleteFlash sectionTitle={completedSectionTitle} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show section introduction for all sections (including first)
   if (showSectionIntro) {
@@ -297,6 +448,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     const sectionDescription = currentSection.description || "Let's continue with the next set of questions.";
     return (
       <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+        {GlobalProgressBar}
         <MobileStepIndicator
           sections={survey.sections}
           currentSectionIndex={currentSectionIndex}
@@ -335,6 +487,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   return (
     <ErrorBoundary>
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      {GlobalProgressBar}
+      {MilestoneBanner}
+
       {/* Mobile step indicator */}
       <MobileStepIndicator
         sections={survey.sections}
@@ -460,20 +615,28 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             </Button>
           </div>
 
-          {/* Current Question */}
-          <Card>
-            <CardContent className="space-y-6 pt-4 sm:pt-6 px-3 sm:px-6">
-              <div className="text-base sm:text-lg font-light text-gray-900">
-                <QuestionRenderer
-                  key={currentQuestion.id}
-                  question={currentQuestion}
-                  value={responses[currentQuestion.id]}
-                  onChange={(value) => handleResponseChange(currentQuestion.id, value)}
-                  allResponses={responses}
-                />
-              </div>
-            </CardContent>
-          </Card>
+          {/* Current Question — keyed wrapper triggers slide animation on question change */}
+          <div
+            key={currentQuestion.id}
+            className={`animate-in duration-300 ${
+              navigationDirection === 'forward'
+                ? 'slide-in-from-right-6'
+                : 'slide-in-from-left-6'
+            }`}
+          >
+            <Card>
+              <CardContent className="space-y-6 pt-4 sm:pt-6 px-3 sm:px-6">
+                <div className="text-base sm:text-lg font-light text-gray-900">
+                  <QuestionRenderer
+                    question={currentQuestion}
+                    value={responses[currentQuestion.id]}
+                    onChange={(value) => handleResponseChange(currentQuestion.id, value)}
+                    allResponses={responses}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Mobile-only navigation — sticky at bottom */}
           <div className="sm:hidden sticky bottom-0 z-20 bg-gray-50 border-t border-gray-200 px-1 py-3 -mx-3 mt-4">

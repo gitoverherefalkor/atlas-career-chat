@@ -12,10 +12,14 @@ interface SessionData {
   completedSections: string[];
 }
 
+type SaveStatus = 'idle' | 'saving' | 'saved';
+
 interface SessionContextType {
   session: SessionData;
   updateSession: (updates: Partial<SessionData>) => void;
   clearSession: () => void;
+  saveStatus: SaveStatus;
+  triggerSave: () => void;
 }
 
 const defaultSession: SessionData = {
@@ -34,6 +38,9 @@ const AssessmentSessionContext = createContext<SessionContextType | undefined>(u
 
 export const AssessmentSessionProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<SessionData>(defaultSession);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+  const savingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const savedTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isInitialized = useRef(false);
   const lastSavedSession = useRef<string>('');
 
@@ -75,8 +82,18 @@ export const AssessmentSessionProvider: React.FC<{ children: React.ReactNode }> 
     lastSavedSession.current = '';
   };
 
+  // Flash a brief "saving" state then settle into "saved"
+  const triggerSave = () => {
+    if (savingTimeoutRef.current) clearTimeout(savingTimeoutRef.current);
+    if (savedTimeoutRef.current) clearTimeout(savedTimeoutRef.current);
+    setSaveStatus('saving');
+    savingTimeoutRef.current = setTimeout(() => {
+      setSaveStatus('saved');
+    }, 500);
+  };
+
   return (
-    <AssessmentSessionContext.Provider value={{ session, updateSession, clearSession }}>
+    <AssessmentSessionContext.Provider value={{ session, updateSession, clearSession, saveStatus, triggerSave }}>
       {children}
     </AssessmentSessionContext.Provider>
   );
