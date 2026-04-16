@@ -1569,12 +1569,6 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                             : 'border border-transparent p-1.5'
                         }`}
                       >
-                        <Input
-                          value={skillText}
-                          onChange={(e) => updateSkillsField('topSkills', index, e.target.value)}
-                          placeholder={placeholder}
-                          className="flex-1"
-                        />
                         <div className="flex items-center gap-1 flex-shrink-0" role="group" aria-label={`Rank skill ${index + 1}`}>
                           {[1, 2, 3].map((rank) => {
                             const isActive = currentRank === rank;
@@ -1597,6 +1591,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                             );
                           })}
                         </div>
+                        <Input
+                          value={skillText}
+                          onChange={(e) => updateSkillsField('topSkills', index, e.target.value)}
+                          placeholder={placeholder}
+                          className="flex-1"
+                        />
                       </div>
                     );
                   })}
