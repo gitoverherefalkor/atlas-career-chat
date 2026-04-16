@@ -65,11 +65,13 @@ const ThemeScopeGuard = () => {
     const root = document.documentElement;
 
     // Palette previews (URL params, no storage):
-    //   ?teal  — teal-navy base, lighter cards (darker canvas, lighter wells)
+    //   ?teal  — teal-navy base, lighter cards
     //   ?teal2 — inverted: lighter canvas, darker card wells
+    //   ?beige — teal-navy canvas with warm cream "paper" cards (editorial)
     const params = new URLSearchParams(location.search);
-    root.classList.toggle('palette-teal', params.has('teal'));
+    root.classList.toggle('palette-teal', params.has('teal') && !params.has('teal2'));
     root.classList.toggle('palette-teal2', params.has('teal2'));
+    root.classList.toggle('palette-beige', params.has('beige'));
 
     if (LIGHT_ONLY_ROUTES.includes(location.pathname)) {
       root.classList.remove('dark');
