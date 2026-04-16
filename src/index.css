@@ -303,8 +303,21 @@
   --tw-ring-offset-width: 0 !important;
 }
 
-/* ===== Homepage beige preview (?beige on /) — swap the light-mode landing
-   page body + dark hero sections to cream + teal-navy, to visualize how a
-   future beige homepage would feel. No effect on ordinary traffic. */
-.palette-beige .bg-\[\#fcfdfe\] { background-color: #F1E9D6 !important; }
-.palette-beige .bg-\[\#1A1A1A\] { background-color: #213F4F !important; }
+/* ===== Homepage beige preview (?beige on /) — visualize how the landing
+   page feels with the cream + teal-navy palette. No effect on ordinary
+   traffic. Uses three cream tones so sections still alternate subtly
+   (white → cream paper, gray-50 → slightly darker for banding), and
+   inner cards get a lifted paler cream so they stand above the section. */
+.palette-beige .bg-\[\#fcfdfe\] { background-color: #F1E9D6 !important; } /* page base */
+.palette-beige .bg-\[\#1A1A1A\] { background-color: #213F4F !important; } /* hero + pricing → teal-navy */
+.palette-beige section.bg-white { background-color: #F1E9D6 !important; }  /* "How It Works", "Why Atlas" — match base */
+.palette-beige section.bg-gray-50 { background-color: #E8DFC6 !important; } /* alternating section band */
+.palette-beige footer.bg-white { background-color: #E8DFC6 !important; }  /* footer */
+/* Inner card-like surfaces on the landing page — give them a lifted paler
+   cream so they stand above the cream section */
+.palette-beige section .bg-white { background-color: #FAF4E0 !important; }
+.palette-beige section .bg-gray-50 { background-color: #EDE4CC !important; }
+/* Borders on cream sections — use warm tan instead of cold grey */
+.palette-beige section .border-gray-100,
+.palette-beige section .border-gray-200,
+.palette-beige footer.border-gray-100 { border-color: #D8CDB1 !important; }
