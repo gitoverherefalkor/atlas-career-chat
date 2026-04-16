@@ -79,14 +79,18 @@ const SocialAuthButtons = ({ disabled, onError, highlightMethod }: SocialAuthBut
     }
   };
 
+  // OAuth buttons use standard white-card styling so the Google/LinkedIn
+  // brand marks are instantly recognizable in both light and dark themes.
+  // Arbitrary hex values so the global bg-white → dark-card override doesn't flip them.
+  const oauthBtn = 'w-full bg-[#ffffff] hover:bg-[#f3f4f6] text-[#1f2937] border border-[#d1d5db] shadow-sm';
+
   return (
     <div className="grid grid-cols-2 gap-3">
       <Button
         type="button"
-        variant="outline"
         onClick={handleGoogleSignIn}
         disabled={isGoogleLoading || disabled || isLinkedInLoading}
-        className={`w-full ${highlightMethod === 'google' ? 'ring-2 ring-atlas-blue ring-offset-1' : ''}`}
+        className={`${oauthBtn} ${highlightMethod === 'google' ? 'ring-2 ring-atlas-teal ring-offset-2 ring-offset-background' : ''}`}
       >
         {isGoogleLoading ? (
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -115,15 +119,14 @@ const SocialAuthButtons = ({ disabled, onError, highlightMethod }: SocialAuthBut
 
       <Button
         type="button"
-        variant="outline"
         onClick={handleLinkedInSignIn}
         disabled={isLinkedInLoading || disabled || isGoogleLoading}
-        className={`w-full ${highlightMethod === 'linkedin' ? 'ring-2 ring-atlas-blue ring-offset-1' : ''}`}
+        className={`${oauthBtn} ${highlightMethod === 'linkedin' ? 'ring-2 ring-atlas-teal ring-offset-2 ring-offset-background' : ''}`}
       >
         {isLinkedInLoading ? (
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
         ) : (
-          <Linkedin className="h-4 w-4 mr-2 text-[#0077B5]" />
+          <Linkedin className="h-4 w-4 mr-2 text-[#0077B5] fill-[#0077B5]" />
         )}
         LinkedIn
       </Button>
