@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, Circle, Lock, Loader2 } from 'lucide-react';
+import { CheckCircle, Lock, LockOpen, Loader2 } from 'lucide-react';
 import { useAssessmentSession } from '@/components/assessment/AssessmentSessionContext';
 
 interface Section {
@@ -34,20 +34,23 @@ const AutoSaveNotice: React.FC<{ compact?: boolean }> = ({ compact = false }) =>
     );
   }
 
+  // Aligned to match the section-item layout above: same horizontal padding (px-3),
+  // same icon size (h-5 w-5), and the description is indented past the icon column
+  // (pl-8 = icon width 20px + gap-3 12px) so it sits under the "Progress auto-saved" text.
   return (
-    <div className="mt-4 pt-4 border-t border-gray-100">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="mt-4 pt-4 border-t border-gray-100 px-3">
+      <div className="flex items-center gap-3 mb-1">
         {isSaving ? (
-          <Loader2 className="h-4 w-4 animate-spin text-atlas-gold flex-shrink-0" />
+          <Loader2 className="h-5 w-5 animate-spin text-atlas-gold flex-shrink-0" />
         ) : (
-          <CheckCircle className="h-4 w-4 text-atlas-gold flex-shrink-0" />
+          <CheckCircle className="h-5 w-5 text-atlas-gold flex-shrink-0" />
         )}
         <p className="text-sm font-medium text-atlas-navy">
           {isSaving ? 'Saving…' : 'Progress auto-saved'}
         </p>
       </div>
-      <p className="text-xs text-gray-500 leading-relaxed">
-        You can safely close this tab and return later — your answers stay where you left off.
+      <p className="text-xs text-gray-500 leading-relaxed pl-8">
+        You can safely close this tab and return later. Your answers stay where you left off.
       </p>
     </div>
   );
@@ -60,11 +63,13 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
   onSectionClick
 }) => {
   const getSectionStatus = (sectionIndex: number) => {
-    if (completedSections.includes(sectionIndex)) {
-      return 'completed';
-    } else if (sectionIndex === currentSectionIndex) {
+    // `current` wins over `completed` — the section you're working on shouldn't
+    // display a completion checkmark until you've actually moved past it.
+    if (sectionIndex === currentSectionIndex) {
       return 'current';
-    } else if (sectionIndex <= currentSectionIndex) {
+    } else if (completedSections.includes(sectionIndex)) {
+      return 'completed';
+    } else if (sectionIndex < currentSectionIndex) {
       return 'accessible';
     } else {
       return 'locked';
@@ -76,9 +81,9 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
       case 'completed':
         return <CheckCircle className="h-5 w-5 text-atlas-gold" />;
       case 'current':
-        return <Circle className="h-5 w-5 text-gray-400" />;
+        return <LockOpen className="h-5 w-5 text-atlas-teal" />;
       case 'accessible':
-        return <Circle className="h-5 w-5 text-gray-400" />;
+        return <LockOpen className="h-5 w-5 text-atlas-teal" />;
       default:
         return <Lock className="h-5 w-5 text-gray-300" />;
     }
@@ -136,9 +141,11 @@ export const MobileStepIndicator: React.FC<{
   onSectionClick: (sectionIndex: number) => void;
 }> = ({ sections, currentSectionIndex, completedSections, onSectionClick }) => {
   const getSectionStatus = (sectionIndex: number) => {
-    if (completedSections.includes(sectionIndex)) return 'completed';
+    // Same rule as the desktop sidebar: the current section never shows a checkmark
+    // even if it's already been added to completedSections on intro.
     if (sectionIndex === currentSectionIndex) return 'current';
-    if (sectionIndex <= currentSectionIndex) return 'accessible';
+    if (completedSections.includes(sectionIndex)) return 'completed';
+    if (sectionIndex < currentSectionIndex) return 'accessible';
     return 'locked';
   };
 
