@@ -205,3 +205,19 @@
 .palette-teal .bg-\[\#1A1A1A\] {
   background-color: #122E3B !important;
 }
+
+/* ===== Teal-navy INVERTED preview (?teal2) — lighter page, darker cards.
+   Cards sit as deep wells in a lighter canvas.
+   Homepage hero is deliberately NOT overridden — the landing page stays
+   with its original #1A1A1A hero. */
+.palette-teal2.dark {
+  --background: 199 35% 20%;      /* #213F4F — lighter canvas */
+  --card: 199 45% 12%;            /* #112934 — darker inset card */
+  --popover: 200 50% 9%;           /* #0C2530 — deepest well for modals */
+  --muted: 198 35% 16%;
+  --muted-foreground: 200 15% 70%;
+  --border: 200 25% 32%;
+  --input: 200 25% 32%;
+  --secondary: 180 35% 15%;
+  --accent: 180 35% 15%;
+}

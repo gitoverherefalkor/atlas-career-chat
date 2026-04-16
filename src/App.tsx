@@ -64,11 +64,12 @@ const ThemeScopeGuard = () => {
   React.useEffect(() => {
     const root = document.documentElement;
 
-    // ?teal preview: swap dark-mode base to a cool teal-navy undertone.
-    // Toggled per-URL; no storage. Remove the query param or visit without
-    // it to restore the default graphite palette.
-    const hasTealPreview = new URLSearchParams(location.search).has('teal');
-    root.classList.toggle('palette-teal', hasTealPreview);
+    // Palette previews (URL params, no storage):
+    //   ?teal  — teal-navy base, lighter cards (darker canvas, lighter wells)
+    //   ?teal2 — inverted: lighter canvas, darker card wells
+    const params = new URLSearchParams(location.search);
+    root.classList.toggle('palette-teal', params.has('teal'));
+    root.classList.toggle('palette-teal2', params.has('teal2'));
 
     if (LIGHT_ONLY_ROUTES.includes(location.pathname)) {
       root.classList.remove('dark');
