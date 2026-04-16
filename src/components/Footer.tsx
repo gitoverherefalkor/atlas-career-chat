@@ -73,9 +73,6 @@ const Footer = () => {
                 {t('footer.termsOfService')}
               </Link>
             </div>
-            <div className="text-sm text-gray-500">
-              <p>{t('footer.tagline')}</p>
-            </div>
           </div>
         </div>
       </div>
