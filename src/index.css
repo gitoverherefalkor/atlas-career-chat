@@ -303,21 +303,19 @@
   --tw-ring-offset-width: 0 !important;
 }
 
-/* ===== Homepage beige preview (?beige on /) — visualize how the landing
-   page feels with the cream + teal-navy palette. No effect on ordinary
-   traffic. Uses three cream tones so sections still alternate subtly
-   (white → cream paper, gray-50 → slightly darker for banding), and
-   inner cards get a lifted paler cream so they stand above the section. */
-.palette-beige .bg-\[\#fcfdfe\] { background-color: #F1E9D6 !important; } /* page base */
+/* ===== Homepage beige preview (?beige on /) — subtle warm tint that
+   reads as "premium paper" rather than "saturated cream". Tones sit
+   between pure white and the app's #ECE3D0 card cream so large page
+   swaths stay calm. Three-tone system preserves section alternation. */
+.palette-beige .bg-\[\#fcfdfe\] { background-color: #FAF5E8 !important; } /* page base — very subtle warm */
 .palette-beige .bg-\[\#1A1A1A\] { background-color: #213F4F !important; } /* hero + pricing → teal-navy */
-.palette-beige section.bg-white { background-color: #F1E9D6 !important; }  /* "How It Works", "Why Atlas" — match base */
-.palette-beige section.bg-gray-50 { background-color: #E8DFC6 !important; } /* alternating section band */
-.palette-beige footer.bg-white { background-color: #E8DFC6 !important; }  /* footer */
-/* Inner card-like surfaces on the landing page — give them a lifted paler
-   cream so they stand above the cream section */
-.palette-beige section .bg-white { background-color: #FAF4E0 !important; }
-.palette-beige section .bg-gray-50 { background-color: #EDE4CC !important; }
-/* Borders on cream sections — use warm tan instead of cold grey */
+.palette-beige section.bg-white { background-color: #FAF5E8 !important; } /* match base */
+.palette-beige section.bg-gray-50 { background-color: #F2EBD6 !important; } /* banding — one step warmer */
+.palette-beige footer.bg-white { background-color: #F2EBD6 !important; }
+/* Inner cards on landing page — near-white with warm hint, lifts above sections */
+.palette-beige section .bg-white { background-color: #FDFBF2 !important; }
+.palette-beige section .bg-gray-50 { background-color: #F4EEDB !important; }
+/* Borders — warm soft tan, less assertive than before */
 .palette-beige section .border-gray-100,
 .palette-beige section .border-gray-200,
-.palette-beige footer.border-gray-100 { border-color: #D8CDB1 !important; }
+.palette-beige footer.border-gray-100 { border-color: #E6DFCB !important; }
