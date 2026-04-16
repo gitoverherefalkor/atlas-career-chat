@@ -1394,10 +1394,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         </div>
       );
 
-    case 'skills_achievements':
+    case 'skills_achievements': {
       // Skills, certifications, and achievements - extracted from LinkedIn/resume
+      // First 3 skills are the "active" top 3 sent to scoring; slots 4–9 are overflow that
+      // the user can promote into the top 3 via reorder arrows.
+      const MAX_TOP_SKILLS = 3;
+      const MAX_TOTAL_SKILLS = 9;
       const emptySkillsAchievements: SkillsAchievementsEntry = {
-        topSkills: ['', '', ''],
+        topSkills: Array(MAX_TOTAL_SKILLS).fill(''),
         certifications: ['', '', ''],
         achievements: []
       };
@@ -1439,10 +1443,15 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         parsedAchievements = [{ company: 'Other', yearRange: '', text: rawAchievements }];
       }
 
+      // Pad topSkills to MAX_TOTAL_SKILLS so every slot renders. Legacy saved values of length 3
+      // get padded out to 9 automatically.
+      const padArray = (arr: string[] | undefined, length: number): string[] =>
+        [...(Array.isArray(arr) ? arr : []), ...Array(length).fill('')].slice(0, length);
+
       const skillsValue: SkillsAchievementsEntry = value && typeof value === 'object'
         ? {
-            topSkills: Array.isArray(rawSkills) ? [...rawSkills, '', '', ''].slice(0, 3) : ['', '', ''],
-            certifications: Array.isArray(rawCerts) ? [...rawCerts, '', '', ''].slice(0, 3) : ['', '', ''],
+            topSkills: padArray(rawSkills, MAX_TOTAL_SKILLS),
+            certifications: padArray(rawCerts, 3),
             achievements: parsedAchievements
           }
         : { ...emptySkillsAchievements };
@@ -1452,6 +1461,16 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         updated[field] = [...updated[field]];
         updated[field][index] = newValue;
         onChange(updated);
+      };
+
+      // Move a skill up or down in the list — lets the user promote an overflow skill (slots 4–9)
+      // into the top 3, or reorder within the top 3 itself.
+      const moveSkill = (index: number, direction: 'up' | 'down') => {
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= MAX_TOTAL_SKILLS) return;
+        const updated = [...skillsValue.topSkills];
+        [updated[index], updated[targetIndex]] = [updated[targetIndex], updated[index]];
+        onChange({ ...skillsValue, topSkills: updated });
       };
 
       // Update achievement text for a specific company box
@@ -1479,19 +1498,77 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             <div className="p-5 border-2 rounded-xl bg-white shadow-sm">
               <h3 className="text-base font-semibold text-atlas-navy mb-4">Top Skills & Certifications</h3>
 
-              {/* Top Skills - 3 fixed fields */}
+              {/* Top Skills - 3 active + up to 6 overflow in a 3×3 grid.
+                  Extra skills are pulled from the CV and greyed out; the user can move any of them
+                  up into the top 3 (which is what the scoring workflow actually uses). */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Your 3 Top Skills</label>
+                <p className="text-xs text-gray-500 mb-3">
+                  The first 3 count as your top skills. Skills below are pulled from your CV — use the arrows to promote any of them into your top 3.
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  {[0, 1, 2].map((index) => (
-                    <Input
-                      key={`skill-${index}`}
-                      value={skillsValue.topSkills[index] || ''}
-                      onChange={(e) => updateSkillsField('topSkills', index, e.target.value)}
-                      placeholder={index === 0 ? 'e.g., Strategic Planning' : index === 1 ? 'e.g., Stakeholder Management' : 'e.g., Budget Administration'}
-                      className="w-full"
-                    />
-                  ))}
+                  {Array.from({ length: MAX_TOTAL_SKILLS }).map((_, index) => {
+                    const isOverflow = index >= MAX_TOP_SKILLS;
+                    const isDividerBefore = index === MAX_TOP_SKILLS;
+                    const placeholder =
+                      index === 0 ? 'e.g., Strategic Planning'
+                      : index === 1 ? 'e.g., Stakeholder Management'
+                      : index === 2 ? 'e.g., Budget Administration'
+                      : 'Additional skill';
+
+                    return (
+                      <React.Fragment key={`skill-${index}`}>
+                        {isDividerBefore && (
+                          <div className="md:col-span-3 flex items-center gap-3 pt-2 pb-1">
+                            <div className="flex-1 border-t border-gray-300" />
+                            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Move up to include</span>
+                            <div className="flex-1 border-t border-gray-300" />
+                          </div>
+                        )}
+                        <div
+                          className={`flex items-center gap-1 rounded-md transition-all duration-200 ${
+                            isOverflow
+                              ? 'bg-gray-50 border border-dotted border-gray-300 opacity-60 p-1'
+                              : ''
+                          }`}
+                        >
+                          {/* Reorder arrows */}
+                          <div className="flex flex-col -space-y-1 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => moveSkill(index, 'up')}
+                              disabled={index === 0}
+                              className="p-0.5 text-gray-400 hover:text-atlas-teal disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                              title="Move up"
+                              aria-label={`Move skill ${index + 1} up`}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                              </svg>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveSkill(index, 'down')}
+                              disabled={index === MAX_TOTAL_SKILLS - 1}
+                              className="p-0.5 text-gray-400 hover:text-atlas-teal disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                              title="Move down"
+                              aria-label={`Move skill ${index + 1} down`}
+                            >
+                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                          </div>
+                          <Input
+                            value={skillsValue.topSkills[index] || ''}
+                            onChange={(e) => updateSkillsField('topSkills', index, e.target.value)}
+                            placeholder={placeholder}
+                            className={`w-full ${isOverflow ? 'bg-transparent border-transparent focus-visible:border-gray-300 text-gray-600' : ''}`}
+                          />
+                        </div>
+                      </React.Fragment>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -1605,6 +1682,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           </div>
         </div>
       );
+    }
 
     case 'interests_hobbies':
       // Interests/Hobbies - 3 separate input fields with 50 character max

@@ -49,7 +49,7 @@ Extract these fields (use null if not found):
     { "title": "...", "companyName": "...", "sector": "...", "startMonth": "Mar", "startYear": 2018, "endMonth": "Dec", "endYear": 2019, "isCurrent": false }
   ],
   "career_situation": "MUST be one of: Non-leadership or individual contributor role (no direct reports) | Managerial or leadership role (Managing 1-4 direct reports, focusing on team coordination and supervision) | Senior managerial role (Managing 5 or more direct reports, involved in strategic decision-making and broader team oversight) | Executive function (VP to C-suite roles or equivalent senior leadership positions with comprehensive organizational responsibilities) | Entrepreneur seeking an employed role | Currently on a career break or transition | Looking to re-enter the workforce",
-  "top_skills": ["Skill 1", "Skill 2", "Skill 3"],
+  "top_skills": ["Skill 1", "Skill 2", "Skill 3", "Skill 4", "Skill 5", "Skill 6", "Skill 7", "Skill 8", "Skill 9"],
   "certifications": ["Certification 1", "Certification 2"],
   "achievements": [
     { "text": "Achievement description summarized in 1-2 sentences", "company": "Company Name", "year": 2022 }
@@ -65,7 +65,7 @@ RULES:
 - startMonth/startYear/endMonth/endYear: Extract from job dates (e.g., "Jan 2020 - Present" → startMonth: "Jan", startYear: 2020, endMonth: null, endYear: null, isCurrent: true)
 - Month format MUST be 3-letter abbreviation: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec
 - isCurrent: true if job says "Present" or is the current/most recent role, false otherwise
-- top_skills: Extract from LinkedIn's "Top Skills" section or infer top 3 professional skills. Max 3 skills.
+- top_skills: Extract ALL professional skills in the exact order they appear on the CV (e.g., from a "Skills" or "Top Skills" section). Preserve the candidate's own ordering — do NOT reorder or rank them. Max 9 skills. If the CV has fewer, return fewer.
 - certifications: Extract from certifications/licenses section. Max 3 certifications.
 - achievements: Extract notable accomplishments from job descriptions, intro summary, or achievements section. Include company name and year when available. Focus on concrete results (founded company, led team, achieved X%, etc).
 - Return ONLY valid JSON, no markdown, no explanation`;

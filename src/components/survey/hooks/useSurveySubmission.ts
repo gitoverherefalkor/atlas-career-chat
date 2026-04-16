@@ -74,10 +74,23 @@ export const useSurveySubmission = ({
     setSubmissionStatus('submitting');
 
     try {
+      // Sanitize payload before submission: the skills UI stores up to 9 skills (3 active + 6
+      // overflow the user can promote), but the scoring workflow only expects the top 3.
+      // Trim topSkills so n8n receives the same shape it always has.
+      const SKILLS_ACHIEVEMENTS_ID = '11111111-1111-1111-1111-11111111111f';
+      const sanitizedResponses = { ...responses };
+      const skillsAnswer = sanitizedResponses[SKILLS_ACHIEVEMENTS_ID];
+      if (skillsAnswer && typeof skillsAnswer === 'object' && Array.isArray(skillsAnswer.topSkills)) {
+        sanitizedResponses[SKILLS_ACHIEVEMENTS_ID] = {
+          ...skillsAnswer,
+          topSkills: skillsAnswer.topSkills.slice(0, 3).filter((s: string) => s && s.trim() !== '')
+        };
+      }
+
       // Submit to database with access code reference
       const answerData: any = {
         survey_id: surveyId,
-        payload: responses,
+        payload: sanitizedResponses,
         access_code_id: accessCodeData?.id
       };
 

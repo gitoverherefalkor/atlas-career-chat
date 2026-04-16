@@ -191,15 +191,15 @@ export const mapExtractedDataToSurvey = (extractedData: Record<string, any>): Re
     certifications: string[];
     achievements: Array<{ company: string; yearRange: string; text: string }>;
   } = {
-    topSkills: ['', '', ''],
+    topSkills: ['', '', '', '', '', '', '', '', ''],
     certifications: ['', '', ''],
     achievements: []
   };
 
-  // Top skills - take up to 3
+  // Top skills - take up to 9, preserving CV order (first 3 are the "active" top 3 sent to scoring)
   if (extractedData.top_skills && Array.isArray(extractedData.top_skills)) {
-    extractedData.top_skills.slice(0, 3).forEach((skill: string, index: number) => {
-      if (skill && index < 3) {
+    extractedData.top_skills.slice(0, 9).forEach((skill: string, index: number) => {
+      if (skill && index < 9) {
         skillsAchievementsData.topSkills[index] = skill;
       }
     });
