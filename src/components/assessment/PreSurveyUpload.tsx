@@ -264,7 +264,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                   </div>
 
                   {isProcessing && (
-                    <div className="flex items-center justify-center space-x-2 text-sm text-blue-600">
+                    <div className="flex items-center justify-center space-x-2 text-sm text-atlas-gold">
                       <Loader2 className="h-4 w-4 animate-spin" />
                       <span>Extracting information...</span>
                     </div>
