@@ -27,19 +27,19 @@ const Footer = () => {
             <h4 className="font-semibold text-white mb-4">{t('footer.quickLinks')}</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#how-it-works" className="hover:text-white transition-colors">{t('nav.howItWorks')}</a>
+                <a href="/#how-it-works" className="hover:text-white transition-colors">{t('nav.howItWorks')}</a>
               </li>
               <li>
-                <a href="#why-atlas" className="hover:text-white transition-colors">{t('nav.whyAtlas')}</a>
+                <a href="/#why-atlas" className="hover:text-white transition-colors">{t('nav.whyAtlas')}</a>
               </li>
               <li>
-                <a href="#pricing" className="hover:text-white transition-colors">{t('nav.pricing')}</a>
+                <a href="/#pricing" className="hover:text-white transition-colors">{t('nav.pricing')}</a>
               </li>
               <li>
-                <a href="#examples" className="hover:text-white transition-colors">{t('footer.examples')}</a>
+                <a href="/#examples" className="hover:text-white transition-colors">{t('footer.examples')}</a>
               </li>
               <li>
-                <a href="#about" className="hover:text-white transition-colors">{t('nav.aboutUs')}</a>
+                <a href="/#about" className="hover:text-white transition-colors">{t('nav.aboutUs')}</a>
               </li>
             </ul>
           </div>
@@ -55,9 +55,9 @@ const Footer = () => {
               </li>
             </ul>
             <div className="mt-6">
-              <button className="btn-primary">
+              <a href="/#pricing" className="btn-primary">
                 {t('nav.getStarted')}
-              </button>
+              </a>
             </div>
           </div>
         </div>

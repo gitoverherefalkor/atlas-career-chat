@@ -23,7 +23,7 @@ const Navbar = () => {
       <div className="container-atlas">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center">
-            <a href="#" className="flex items-center">
+            <a href="/" className="flex items-center">
               <img
                 src="/atlas-logo.png"
                 alt="Atlas Assessment"
@@ -33,16 +33,16 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex space-x-8 items-center">
-            <a href="#how-it-works" className="text-gray-700 hover:text-primary font-medium">
+            <a href="/#how-it-works" className="text-gray-700 hover:text-primary font-medium">
               {t('nav.howItWorks')}
             </a>
-            <a href="#why-atlas" className="text-gray-700 hover:text-primary font-medium">
+            <a href="/#why-atlas" className="text-gray-700 hover:text-primary font-medium">
               {t('nav.whyAtlas')}
             </a>
-            <a href="#pricing" className="text-gray-700 hover:text-primary font-medium">
+            <a href="/#pricing" className="text-gray-700 hover:text-primary font-medium">
               {t('nav.pricing')}
             </a>
-            <a href="#about" className="text-gray-700 hover:text-primary font-medium">
+            <a href="/#about" className="text-gray-700 hover:text-primary font-medium">
               {t('nav.aboutUs')}
             </a>
 
@@ -62,7 +62,7 @@ const Navbar = () => {
                   {t('nav.signIn')}
                 </Button>
                 <Button asChild className="btn-primary">
-                  <a href="#pricing">
+                  <a href="/#pricing">
                     {t('nav.getStarted')}
                   </a>
                 </Button>
@@ -71,8 +71,8 @@ const Navbar = () => {
           </div>
 
           <div className="md:hidden">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="text-gray-700 hover:text-primary"
               onClick={toggleMenu}
             >
@@ -89,16 +89,16 @@ const Navbar = () => {
       {isOpen && (
         <div className="md:hidden bg-white shadow-lg animate-fade-in">
           <div className="container-atlas py-4 space-y-3">
-            <a href="#how-it-works" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
+            <a href="/#how-it-works" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
               {t('nav.howItWorks')}
             </a>
-            <a href="#why-atlas" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
+            <a href="/#why-atlas" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
               {t('nav.whyAtlas')}
             </a>
-            <a href="#pricing" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
+            <a href="/#pricing" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
               {t('nav.pricing')}
             </a>
-            <a href="#about" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
+            <a href="/#about" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
               {t('nav.aboutUs')}
             </a>
 
@@ -118,7 +118,7 @@ const Navbar = () => {
                   {t('nav.signIn')}
                 </Button>
                 <Button asChild className="btn-primary w-full">
-                  <a href="#pricing" onClick={toggleMenu}>
+                  <a href="/#pricing" onClick={toggleMenu}>
                     {t('nav.getStarted')}
                   </a>
                 </Button>
