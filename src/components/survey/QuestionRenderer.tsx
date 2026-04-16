@@ -50,8 +50,13 @@ interface CompanyAchievement {
 }
 
 // Skills & Achievements entry type
+// topSkills preserves the order skills came in from the CV (or user edits).
+// topSkillRanks is a parallel array: 0 = unranked, 1/2/3 = the three slots the
+// user picked as their top 3. At submission we rebuild a 3-item top_skills
+// array from the ranks so n8n keeps its unchanged payload shape.
 interface SkillsAchievementsEntry {
   topSkills: string[];
+  topSkillRanks?: number[];
   certifications: string[];
   achievements: CompanyAchievement[];
 }
@@ -1395,13 +1400,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       );
 
     case 'skills_achievements': {
-      // Skills, certifications, and achievements - extracted from LinkedIn/resume
-      // First 3 skills are the "active" top 3 sent to scoring; slots 4–9 are overflow that
-      // the user can promote into the top 3 via reorder arrows.
+      // Skills, certifications, and achievements - extracted from LinkedIn/resume.
+      // The CV provides up to 9 skills; the user just tags three of them as #1/#2/#3.
+      // No reordering — display order preserves CV order, ranks are stored separately.
       const MAX_TOP_SKILLS = 3;
       const MAX_TOTAL_SKILLS = 9;
       const emptySkillsAchievements: SkillsAchievementsEntry = {
         topSkills: Array(MAX_TOTAL_SKILLS).fill(''),
+        topSkillRanks: Array(MAX_TOTAL_SKILLS).fill(0),
         certifications: ['', '', ''],
         achievements: []
       };
@@ -1448,9 +1454,31 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       const padArray = (arr: string[] | undefined, length: number): string[] =>
         [...(Array.isArray(arr) ? arr : []), ...Array(length).fill('')].slice(0, length);
 
+      const paddedSkills = value && typeof value === 'object'
+        ? padArray(rawSkills, MAX_TOTAL_SKILLS)
+        : Array(MAX_TOTAL_SKILLS).fill('');
+
+      // topSkillRanks lives alongside topSkills. If the stored value doesn't have it yet
+      // (first visit, or legacy data), default to ranking the first 3 non-empty skills
+      // as 1/2/3 — matches the CV's own ordering.
+      const rawRanks: any = value?.topSkillRanks;
+      let paddedRanks: number[];
+      if (Array.isArray(rawRanks) && rawRanks.length === MAX_TOTAL_SKILLS) {
+        paddedRanks = rawRanks.map((r: any) => (r === 1 || r === 2 || r === 3 ? r : 0));
+      } else {
+        paddedRanks = Array(MAX_TOTAL_SKILLS).fill(0);
+        let rank = 1;
+        for (let i = 0; i < paddedSkills.length && rank <= MAX_TOP_SKILLS; i++) {
+          if (paddedSkills[i] && paddedSkills[i].trim()) {
+            paddedRanks[i] = rank++;
+          }
+        }
+      }
+
       const skillsValue: SkillsAchievementsEntry = value && typeof value === 'object'
         ? {
-            topSkills: padArray(rawSkills, MAX_TOTAL_SKILLS),
+            topSkills: paddedSkills,
+            topSkillRanks: paddedRanks,
             certifications: padArray(rawCerts, 3),
             achievements: parsedAchievements
           }
@@ -1460,17 +1488,31 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         const updated = { ...skillsValue };
         updated[field] = [...updated[field]];
         updated[field][index] = newValue;
+
+        // If the user clears a skill that was ranked, drop its rank too.
+        if (field === 'topSkills' && (!newValue || !newValue.trim())) {
+          const ranks = [...(skillsValue.topSkillRanks || Array(MAX_TOTAL_SKILLS).fill(0))];
+          ranks[index] = 0;
+          updated.topSkillRanks = ranks;
+        }
         onChange(updated);
       };
 
-      // Move a skill up or down in the list — lets the user promote an overflow skill (slots 4–9)
-      // into the top 3, or reorder within the top 3 itself.
-      const moveSkill = (index: number, direction: 'up' | 'down') => {
-        const targetIndex = direction === 'up' ? index - 1 : index + 1;
-        if (targetIndex < 0 || targetIndex >= MAX_TOTAL_SKILLS) return;
-        const updated = [...skillsValue.topSkills];
-        [updated[index], updated[targetIndex]] = [updated[targetIndex], updated[index]];
-        onChange({ ...skillsValue, topSkills: updated });
+      // Toggle a rank (1, 2, or 3) on a skill. If the same button is clicked again,
+      // the rank is cleared. Assigning a rank that's already held by another skill
+      // steals it from that other skill (so each rank lives on at most one row).
+      const toggleSkillRank = (index: number, rank: 1 | 2 | 3) => {
+        const current = skillsValue.topSkillRanks || Array(MAX_TOTAL_SKILLS).fill(0);
+        const next = [...current];
+        if (next[index] === rank) {
+          next[index] = 0;
+        } else {
+          for (let i = 0; i < next.length; i++) {
+            if (next[i] === rank) next[i] = 0;
+          }
+          next[index] = rank;
+        }
+        onChange({ ...skillsValue, topSkillRanks: next });
       };
 
       // Update achievement text for a specific company box
@@ -1498,75 +1540,64 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             <div className="p-5 border-2 rounded-xl bg-white shadow-sm">
               <h3 className="text-base font-semibold text-atlas-navy mb-4">Top Skills & Certifications</h3>
 
-              {/* Top Skills - 3 active + up to 6 overflow in a 3×3 grid.
-                  Extra skills are pulled from the CV and greyed out; the user can move any of them
-                  up into the top 3 (which is what the scoring workflow actually uses). */}
+              {/* Flat list of all skills pulled from the CV. The user tags any three
+                  as #1/#2/#3 — no reordering, no overflow distinction. */}
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Your 3 Top Skills</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Your Top 3 Skills</label>
                 <p className="text-xs text-gray-500 mb-3">
-                  The first 3 count as your top skills. Skills below are pulled from your CV — use the arrows to promote any of them into your top 3.
+                  Skills below are pulled from your CV. Tag your top three by clicking 1, 2, and 3.
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-2">
                   {Array.from({ length: MAX_TOTAL_SKILLS }).map((_, index) => {
-                    const isOverflow = index >= MAX_TOP_SKILLS;
-                    const isDividerBefore = index === MAX_TOP_SKILLS;
-                    const placeholder =
-                      index === 0 ? 'e.g., Strategic Planning'
-                      : index === 1 ? 'e.g., Stakeholder Management'
-                      : index === 2 ? 'e.g., Budget Administration'
-                      : 'Additional skill';
+                    const skillText = skillsValue.topSkills[index] || '';
+                    const currentRank = skillsValue.topSkillRanks?.[index] || 0;
+                    const isRanked = currentRank > 0;
+                    const placeholder = index === 0
+                      ? 'e.g., Strategic Planning'
+                      : index === 1
+                        ? 'e.g., Stakeholder Management'
+                        : index === 2
+                          ? 'e.g., Budget Administration'
+                          : 'Additional skill';
 
                     return (
-                      <React.Fragment key={`skill-${index}`}>
-                        {isDividerBefore && (
-                          <div className="md:col-span-3 flex items-center gap-3 pt-2 pb-1">
-                            <div className="flex-1 border-t border-gray-300" />
-                            <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Move up to include</span>
-                            <div className="flex-1 border-t border-gray-300" />
-                          </div>
-                        )}
-                        <div
-                          className={`flex items-center gap-1 rounded-md transition-all duration-200 ${
-                            isOverflow
-                              ? 'bg-gray-50 border border-dotted border-gray-300 opacity-60 p-1'
-                              : ''
-                          }`}
-                        >
-                          {/* Reorder arrows */}
-                          <div className="flex flex-col -space-y-1 flex-shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => moveSkill(index, 'up')}
-                              disabled={index === 0}
-                              className="p-0.5 text-gray-400 hover:text-atlas-teal disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
-                              title="Move up"
-                              aria-label={`Move skill ${index + 1} up`}
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                              </svg>
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => moveSkill(index, 'down')}
-                              disabled={index === MAX_TOTAL_SKILLS - 1}
-                              className="p-0.5 text-gray-400 hover:text-atlas-teal disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
-                              title="Move down"
-                              aria-label={`Move skill ${index + 1} down`}
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                              </svg>
-                            </button>
-                          </div>
-                          <Input
-                            value={skillsValue.topSkills[index] || ''}
-                            onChange={(e) => updateSkillsField('topSkills', index, e.target.value)}
-                            placeholder={placeholder}
-                            className={`w-full ${isOverflow ? 'bg-transparent border-transparent focus-visible:border-gray-300 text-gray-600' : ''}`}
-                          />
+                      <div
+                        key={`skill-${index}`}
+                        className={`flex items-center gap-2 rounded-md transition-all duration-150 ${
+                          isRanked
+                            ? 'bg-atlas-teal/5 border border-atlas-teal/30 p-1.5'
+                            : 'border border-transparent p-1.5'
+                        }`}
+                      >
+                        <Input
+                          value={skillText}
+                          onChange={(e) => updateSkillsField('topSkills', index, e.target.value)}
+                          placeholder={placeholder}
+                          className="flex-1"
+                        />
+                        <div className="flex items-center gap-1 flex-shrink-0" role="group" aria-label={`Rank skill ${index + 1}`}>
+                          {[1, 2, 3].map((rank) => {
+                            const isActive = currentRank === rank;
+                            return (
+                              <button
+                                key={rank}
+                                type="button"
+                                onClick={() => toggleSkillRank(index, rank as 1 | 2 | 3)}
+                                disabled={!skillText.trim() && !isActive}
+                                aria-pressed={isActive}
+                                title={isActive ? `Remove rank #${rank}` : `Set as #${rank}`}
+                                className={`w-8 h-8 rounded-full text-xs font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed ${
+                                  isActive
+                                    ? 'bg-atlas-teal text-white ring-2 ring-atlas-teal/30'
+                                    : 'bg-gray-100 text-gray-500 hover:bg-atlas-teal/10 hover:text-atlas-teal'
+                                }`}
+                              >
+                                {rank}
+                              </button>
+                            );
+                          })}
                         </div>
-                      </React.Fragment>
+                      </div>
                     );
                   })}
                 </div>

@@ -74,16 +74,33 @@ export const useSurveySubmission = ({
     setSubmissionStatus('submitting');
 
     try {
-      // Sanitize payload before submission: the skills UI stores up to 9 skills (3 active + 6
-      // overflow the user can promote), but the scoring workflow only expects the top 3.
-      // Trim topSkills so n8n receives the same shape it always has.
+      // Sanitize payload before submission: the skills UI stores up to 9 CV-order skills
+      // plus a parallel topSkillRanks array marking which three the user tagged as 1/2/3.
+      // n8n's scoring workflow expects a 3-item top_skills list, so we reorder here.
+      // Fallback (no ranks present, legacy data): take first 3 non-empty in array order.
       const SKILLS_ACHIEVEMENTS_ID = '11111111-1111-1111-1111-11111111111f';
       const sanitizedResponses = { ...responses };
       const skillsAnswer = sanitizedResponses[SKILLS_ACHIEVEMENTS_ID];
       if (skillsAnswer && typeof skillsAnswer === 'object' && Array.isArray(skillsAnswer.topSkills)) {
+        const ranks: number[] = Array.isArray(skillsAnswer.topSkillRanks)
+          ? skillsAnswer.topSkillRanks
+          : [];
+
+        let topThree: string[];
+        if (ranks.some(r => r === 1 || r === 2 || r === 3)) {
+          topThree = [1, 2, 3]
+            .map(rank => {
+              const idx = ranks.findIndex(r => r === rank);
+              return idx >= 0 ? skillsAnswer.topSkills[idx] : '';
+            })
+            .filter((s: string) => s && s.trim() !== '');
+        } else {
+          topThree = skillsAnswer.topSkills.slice(0, 3).filter((s: string) => s && s.trim() !== '');
+        }
+
         sanitizedResponses[SKILLS_ACHIEVEMENTS_ID] = {
           ...skillsAnswer,
-          topSkills: skillsAnswer.topSkills.slice(0, 3).filter((s: string) => s && s.trim() !== '')
+          topSkills: topThree
         };
       }
 
