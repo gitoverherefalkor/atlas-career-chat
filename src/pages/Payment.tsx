@@ -25,7 +25,7 @@ export default function Payment() {
   const { data: survey } = useSurvey(surveyId);
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#1A1A1A] py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <div className="relative flex flex-col items-center justify-center min-h-screen bg-[#212121] py-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
       {/* Dynamic teal glow — same warmth as the landing-page hero */}
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-atlas-teal/10 via-transparent to-transparent" />
       <div className="pointer-events-none absolute top-0 right-0 w-[600px] h-[600px] bg-atlas-teal/15 rounded-full blur-[120px] -mr-64 -mt-64" />

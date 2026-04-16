@@ -238,7 +238,7 @@ export function CheckoutForm() {
   }
 
   return (
-    <div className="rounded-xl shadow-2xl bg-[#242424] p-8 border border-white/10 backdrop-blur-sm">
+    <div className="rounded-xl shadow-2xl bg-[#2E2E2E] p-8 border border-white/10 backdrop-blur-sm">
       <div className="mb-6 text-center">
         <h2 className="mt-6 text-2xl font-extrabold tracking-tight text-white">
           Your Information

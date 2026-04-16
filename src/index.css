@@ -54,38 +54,39 @@
   }
 
   .dark {
-    /* Atlas dark palette — matches the warmth of the landing-page hero (#1A1A1A).
-       Not pitch-black, so it reads as "sophisticated dark" not "OLED void".
+    /* Atlas dark palette — "graphite warmth" rather than "void black".
+       Base sits a step up from pure charcoal so cards and modals can lift
+       above it without disappearing into a black hole.
        Titles (--atlas-navy) flip to near-white so text-atlas-navy auto-inverts. */
     --atlas-navy: 245 245 247;
 
-    --background: 0 0% 10%;            /* #1A1A1A — same as landing hero */
+    --background: 0 0% 13%;            /* #212121 — graphite base */
     --foreground: 0 0% 96%;            /* #F5F5F5 */
 
-    --card: 0 0% 14%;                  /* #242424 — subtle lift over bg */
+    --card: 0 0% 18%;                  /* #2E2E2E — clearly lifted from bg */
     --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 17%;               /* #2B2B2B — for dropdowns/modals */
+    --popover: 0 0% 22%;               /* #383838 — modal/dropdown surface */
     --popover-foreground: 0 0% 96%;
 
     /* Teal brightened from #27A1A1 → #34B8B8 so it stays punchy on dark bg. */
     --primary: 180 55% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 25% 18%;          /* deep teal surface */
+    --secondary: 180 25% 20%;          /* deep teal surface */
     --secondary-foreground: 180 55% 80%;
 
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 0% 62%;
+    --muted: 0 0% 20%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 180 25% 18%;
+    --accent: 180 25% 20%;
     --accent-foreground: 180 55% 80%;
 
     --destructive: 0 62.8% 40%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 22%;                /* #383838 — visible but not harsh */
-    --input: 0 0% 22%;
+    --border: 0 0% 28%;                /* #474747 — clearly visible edges */
+    --input: 0 0% 28%;
     --ring: 180 55% 45%;
   }
 }
