@@ -256,7 +256,7 @@ export function CheckoutForm() {
             <FormItem>
               <FormLabel>First Name</FormLabel>
               <FormControl>
-                <Input placeholder="John" {...field} />
+                <Input placeholder="Claire" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -269,7 +269,7 @@ export function CheckoutForm() {
             <FormItem>
               <FormLabel>Last Name</FormLabel>
               <FormControl>
-                <Input placeholder="Doe" {...field} />
+                <Input placeholder="Ritty" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -282,7 +282,7 @@ export function CheckoutForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="john.doe@example.com" {...field} />
+                <Input type="email" placeholder="claire.ritty@email.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
