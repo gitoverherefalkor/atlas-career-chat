@@ -507,10 +507,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         />
 
         <div className="flex-1 max-w-4xl">
-          {/* Header with smaller, grey title */}
           <div className="mb-6 sm:mb-12">
-            <h1 className="text-base sm:text-lg font-light text-gray-600 mb-4 sm:mb-8">{survey.title}</h1>
-
             {/* Progress with section info */}
             <div className="mb-4 sm:mb-8">
               <div className="flex justify-between items-center mb-2">
