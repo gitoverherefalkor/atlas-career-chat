@@ -242,7 +242,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                       {hasProcessed ? (
                         <CheckCircle className="h-8 w-8 text-green-600" />
                       ) : (
-                        <FileText className="h-8 w-8 text-blue-600" />
+                        <FileText className="h-8 w-8 text-atlas-gold" />
                       )}
                       <div>
                         <p className="font-medium">{uploadedFile.name}</p>
