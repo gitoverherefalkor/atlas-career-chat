@@ -60,13 +60,13 @@
        Titles (--atlas-navy) flip to near-white so text-atlas-navy auto-inverts. */
     --atlas-navy: 245 245 247;
 
-    --background: 0 0% 13%;            /* #212121 — graphite base */
+    --background: 0 0% 17%;            /* #2B2B2B — true graphite */
     --foreground: 0 0% 96%;            /* #F5F5F5 */
 
-    --card: 0 0% 18%;                  /* #2E2E2E — clearly lifted from bg */
+    --card: 0 0% 22%;                  /* #383838 — clearly lifted from bg */
     --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 22%;               /* #383838 — modal/dropdown surface */
+    --popover: 0 0% 27%;               /* #454545 — modal/dropdown surface */
     --popover-foreground: 0 0% 96%;
 
     /* Teal brightened from #27A1A1 → #34B8B8 so it stays punchy on dark bg. */
@@ -76,17 +76,17 @@
     --secondary: 180 25% 20%;          /* deep teal surface */
     --secondary-foreground: 180 55% 80%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 0 0% 24%;
+    --muted-foreground: 0 0% 68%;
 
-    --accent: 180 25% 20%;
-    --accent-foreground: 180 55% 80%;
+    --accent: 180 25% 24%;
+    --accent-foreground: 180 55% 82%;
 
     --destructive: 0 62.8% 40%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 0 0% 28%;                /* #474747 — clearly visible edges */
-    --input: 0 0% 28%;
+    --border: 0 0% 33%;                /* #545454 — clearly visible edges */
+    --input: 0 0% 33%;
     --ring: 180 55% 45%;
   }
 }
