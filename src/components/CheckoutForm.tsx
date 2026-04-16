@@ -256,7 +256,7 @@ export function CheckoutForm() {
             <FormItem>
               <FormLabel>First Name</FormLabel>
               <FormControl>
-                <Input placeholder="Claire" {...field} />
+                <Input placeholder="Claire" className="placeholder:text-gray-300" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -269,7 +269,7 @@ export function CheckoutForm() {
             <FormItem>
               <FormLabel>Last Name</FormLabel>
               <FormControl>
-                <Input placeholder="Ritty" {...field} />
+                <Input placeholder="Ritty" className="placeholder:text-gray-300" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -282,7 +282,7 @@ export function CheckoutForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="claire.ritty@email.com" {...field} />
+                <Input type="email" placeholder="claire.ritty@email.com" className="placeholder:text-gray-300" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -320,7 +320,7 @@ export function CheckoutForm() {
                 <FormItem>
                   <FormLabel>Business Name <span className="text-xs text-gray-400">(optional)</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="Atlas Solutions BV" {...field} />
+                    <Input placeholder="Atlas Solutions BV" className="placeholder:text-gray-300" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -333,7 +333,7 @@ export function CheckoutForm() {
                 <FormItem>
                   <FormLabel>VAT Number <span className="text-xs text-gray-400">(optional)</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="NL123456789B01" {...field} />
+                    <Input placeholder="NL123456789B01" className="placeholder:text-gray-300" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
