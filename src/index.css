@@ -184,3 +184,24 @@
    but in dark mode we want them to match the new base. Push them one step
    deeper than the page bg so they still feel like distinct sections. */
 .dark .bg-\[\#1A1A1A\] { background-color: #070709 !important; }
+
+/* ===== Teal-navy palette PREVIEW — appended when body has .palette-teal
+   (activated by adding ?teal to any URL). Keeps teal + mustard accents;
+   swaps the graphite base for a cool cyan-teal undertone. */
+.palette-teal.dark,
+.palette-teal .dark {
+  --background: 198 45% 13%;      /* #122E3B */
+  --card: 199 35% 20%;            /* #213F4F */
+  --popover: 200 30% 27%;         /* #305269 */
+  --muted: 200 28% 22%;
+  --muted-foreground: 200 15% 70%;
+  --border: 200 25% 32%;
+  --input: 200 25% 32%;
+  --secondary: 180 30% 22%;
+  --accent: 180 30% 22%;
+}
+/* Apply teal-navy to the landing page hero + pricing even in light mode,
+   so the "dark sections" on the marketing page also pick up the preview. */
+.palette-teal .bg-\[\#1A1A1A\] {
+  background-color: #122E3B !important;
+}

@@ -63,6 +63,13 @@ const ThemeScopeGuard = () => {
   const location = useLocation();
   React.useEffect(() => {
     const root = document.documentElement;
+
+    // ?teal preview: swap dark-mode base to a cool teal-navy undertone.
+    // Toggled per-URL; no storage. Remove the query param or visit without
+    // it to restore the default graphite palette.
+    const hasTealPreview = new URLSearchParams(location.search).has('teal');
+    root.classList.toggle('palette-teal', hasTealPreview);
+
     if (LIGHT_ONLY_ROUTES.includes(location.pathname)) {
       root.classList.remove('dark');
       return;
@@ -74,7 +81,7 @@ const ThemeScopeGuard = () => {
     } catch {
       root.classList.add('dark');
     }
-  }, [location.pathname]);
+  }, [location.pathname, location.search]);
   return null;
 };
 
