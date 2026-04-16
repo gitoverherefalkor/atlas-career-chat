@@ -4,10 +4,10 @@ import { Lock, User, Briefcase } from 'lucide-react';
 import { chapters } from './reportData';
 
 interface ReportPreviewProps {
-  onStartAssessment?: () => void;
+  onStartAssessment?: () => void; // kept for backwards compat, no longer rendered
 }
 
-const ReportPreview: React.FC<ReportPreviewProps> = ({ onStartAssessment }) => {
+const ReportPreview: React.FC<ReportPreviewProps> = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -82,17 +82,6 @@ const ReportPreview: React.FC<ReportPreviewProps> = ({ onStartAssessment }) => {
         })}
       </div>
 
-      {/* CTA */}
-      {onStartAssessment && (
-        <div className="text-center pt-4">
-          <button
-            onClick={onStartAssessment}
-            className="bg-atlas-teal hover:bg-atlas-teal/90 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition-all hover:shadow-xl"
-          >
-            Start Your Assessment
-          </button>
-        </div>
-      )}
     </div>
   );
 };
