@@ -727,6 +727,10 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       id="other-checkbox"
                       checked={showOther || currentValues.some((v: string) => v.startsWith('Other: '))}
                       onCheckedChange={(checked) => {
+                        const hasOtherResponse = currentValues.some((v: string) => v.startsWith('Other: '));
+                        if (checked && !showOther && !hasOtherResponse && isSelectionLimitReached()) {
+                          return;
+                        }
                         setShowOther(checked as boolean);
                         if (!checked) {
                           handleOtherChange('');

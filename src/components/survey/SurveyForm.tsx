@@ -284,10 +284,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (!survey) return;
 
-    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.altKey) {
-      // Don't trigger on Enter in textarea or other multi-line inputs
+    const isCmdOrCtrlEnter = event.key === 'Enter' && (event.metaKey || event.ctrlKey) && !event.shiftKey && !event.altKey;
+    const isPlainEnter = event.key === 'Enter' && !event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey;
+
+    if (isPlainEnter || isCmdOrCtrlEnter) {
+      // Plain Enter skips textarea (so users can add line breaks); Cmd/Ctrl+Enter works everywhere
       const target = event.target as HTMLElement;
-      if (target.tagName === 'TEXTAREA') {
+      if (isPlainEnter && target.tagName === 'TEXTAREA') {
         return;
       }
 

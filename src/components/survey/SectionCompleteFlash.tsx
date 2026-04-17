@@ -9,9 +9,9 @@ interface SectionCompleteFlashProps {
 export const SectionCompleteFlash: React.FC<SectionCompleteFlashProps> = ({ sectionTitle }) => {
   return (
     <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="animate-in zoom-in-95 fade-in duration-300 text-center">
+      <div className="animate-in zoom-in-95 fade-in duration-300 text-center bg-card rounded-2xl shadow-lg px-10 py-12">
         <CheckCircle2 className="h-16 w-16 text-atlas-teal mx-auto mb-4" />
-        <p className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-3">Section complete</p>
+        <p className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-3">Section complete</p>
         <h2 className="text-2xl font-bold text-atlas-navy">{sectionTitle}</h2>
       </div>
     </div>
