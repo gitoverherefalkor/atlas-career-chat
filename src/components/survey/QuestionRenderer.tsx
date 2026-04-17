@@ -455,7 +455,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -485,7 +485,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -503,7 +503,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -528,7 +528,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return (
           <div>
             <div 
-              className="text-lg font-light mb-2"
+              className="text-lg font-light mb-6"
               dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
             />
             {renderDescription()}
@@ -639,7 +639,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return (
           <div>
             <div 
-              className="text-lg font-light mb-2"
+              className="text-lg font-light mb-6"
               dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
             />
             {renderDescription()}
@@ -786,7 +786,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -816,7 +816,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div 
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -1023,7 +1023,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -1334,7 +1334,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         return (
           <div>
             <div
-              className="text-lg font-light mb-2"
+              className="text-lg font-light mb-6"
               dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
             />
             {renderDescription()}
@@ -1348,7 +1348,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -1534,7 +1534,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -1748,7 +1748,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -1776,7 +1776,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       return (
         <div>
           <div
-            className="text-lg font-light mb-2"
+            className="text-lg font-light mb-6"
             dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
           />
           {renderDescription()}
@@ -1802,7 +1802,7 @@ const LongTextWithVoice: React.FC<{
   return (
     <div>
       <div
-        className="text-lg font-light mb-2"
+        className="text-lg font-light mb-6"
         dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
       />
       {renderDescription()}
