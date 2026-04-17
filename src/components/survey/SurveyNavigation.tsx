@@ -13,6 +13,8 @@ interface SurveyNavigationProps {
   currentSectionIndex: number;
   completedSections: number[];
   onSectionClick: (sectionIndex: number) => void;
+  currentQuestionInSection?: number;
+  totalQuestionsInSection?: number;
 }
 
 // Small reassurance block — tells users their progress is safely stored and they can close
@@ -60,7 +62,9 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
   sections,
   currentSectionIndex,
   completedSections,
-  onSectionClick
+  onSectionClick,
+  currentQuestionInSection,
+  totalQuestionsInSection
 }) => {
   const getSectionStatus = (sectionIndex: number) => {
     // `current` wins over `completed` — the section you're working on shouldn't
@@ -98,11 +102,20 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
             const status = getSectionStatus(index);
             const isClickable = status === 'completed' || status === 'accessible' || status === 'current';
 
+            const showProgress =
+              status === 'current' &&
+              typeof currentQuestionInSection === 'number' &&
+              typeof totalQuestionsInSection === 'number' &&
+              totalQuestionsInSection > 0;
+            const progressPct = showProgress
+              ? Math.min(100, (currentQuestionInSection! / totalQuestionsInSection!) * 100)
+              : 0;
+
             return (
               <div
                 key={section.id}
                 onClick={() => isClickable ? onSectionClick(index) : undefined}
-                className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
+                className={`p-3 rounded-lg transition-colors ${
                   isClickable
                     ? 'cursor-pointer hover:bg-gray-50'
                     : 'cursor-not-allowed'
@@ -110,19 +123,36 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
                   status === 'current' ? 'bg-atlas-teal/10 border border-atlas-teal/20' : ''
                 }`}
               >
-                {getSectionIcon(status)}
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium truncate ${
-                    status === 'locked' ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Section {index + 1}
-                  </p>
-                  <p className={`text-xs truncate ${
-                    status === 'locked' ? 'text-gray-200' : 'text-gray-500'
-                  }`}>
-                    {section.title}
-                  </p>
+                <div className="flex items-center gap-3">
+                  {getSectionIcon(status)}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className={`text-sm font-medium truncate ${
+                        status === 'locked' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        Section {index + 1}
+                      </p>
+                      {showProgress && (
+                        <span className="text-xs font-semibold text-atlas-teal whitespace-nowrap">
+                          Q{currentQuestionInSection} /{totalQuestionsInSection}
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-xs truncate ${
+                      status === 'locked' ? 'text-gray-200' : 'text-gray-500'
+                    }`}>
+                      {section.title}
+                    </p>
+                  </div>
                 </div>
+                {showProgress && (
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white border border-atlas-teal/20">
+                    <div
+                      className="h-full bg-atlas-teal transition-all duration-500 ease-out"
+                      style={{ width: `${progressPct}%` }}
+                    />
+                  </div>
+                )}
               </div>
             );
           })}

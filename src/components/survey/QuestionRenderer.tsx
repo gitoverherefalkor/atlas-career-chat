@@ -1678,7 +1678,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       return (
                         <div key={`achievement-${career.companyName}-${idx}`}>
                           <div className="flex items-center gap-2 mb-1.5">
-                            <div className="w-1 h-4 bg-blue-400 rounded-full" />
+                            <div className="w-1 h-4 bg-atlas-teal rounded-full" />
                             <label className="text-sm font-medium text-gray-700">{label}</label>
                           </div>
                           <textarea

@@ -5,7 +5,6 @@ import { SectionCompleteFlash } from './SectionCompleteFlash';
 import { SurveyNavigation, MobileStepIndicator } from './SurveyNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, Send, Loader2, CheckCircle, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSurveyState } from './hooks/useSurveyState';
@@ -368,10 +367,9 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const filteredQuestions = getFilteredQuestions(currentSection);
   const currentQuestion = filteredQuestions[currentQuestionIndex];
 
-  // Calculate progress within current section only
+  // Calculate progress within current section only (shown in the sidebar)
   const currentQuestionInSection = currentQuestionIndex + 1;
   const totalQuestionsInSection = filteredQuestions.length;
-  const progress = (currentQuestionInSection / totalQuestionsInSection) * 100;
 
   // Calculate global progress across all sections
   const totalQuestions = survey.sections.reduce((acc: number, s: any) =>
@@ -430,6 +428,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             currentSectionIndex={currentSectionIndex}
             completedSections={completedSections}
             onSectionClick={handleSectionNavigation}
+            currentQuestionInSection={currentQuestionInSection}
+            totalQuestionsInSection={totalQuestionsInSection}
           />
           <div className="flex-1">
             <SectionCompleteFlash sectionTitle={completedSectionTitle} />
@@ -461,6 +461,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             currentSectionIndex={currentSectionIndex}
             completedSections={completedSections}
             onSectionClick={handleSectionNavigation}
+            currentQuestionInSection={currentQuestionInSection}
+            totalQuestionsInSection={totalQuestionsInSection}
           />
           <div className="flex-1">
             <SectionIntroduction
@@ -504,24 +506,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           currentSectionIndex={currentSectionIndex}
           completedSections={completedSections}
           onSectionClick={handleSectionNavigation}
+          currentQuestionInSection={currentQuestionInSection}
+          totalQuestionsInSection={totalQuestionsInSection}
         />
 
         <div className="flex-1 max-w-4xl">
-          <div className="mb-6 sm:mb-12">
-            {/* Progress with section info */}
-            <div className="mb-4 sm:mb-8">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-xs sm:text-sm font-bold text-atlas-navy">
-                  Section {currentSectionIndex + 1}. {currentSection.title}
-                </span>
-                <span className="text-xs sm:text-sm font-bold text-atlas-navy">
-                  Q. {currentQuestionInSection} of {totalQuestionsInSection}
-                </span>
-              </div>
-              <Progress value={progress} className="w-full" />
-            </div>
-          </div>
-
           {/* Submission Status Banner */}
           {submissionStatus === 'submitted' && (
             <Card className="mb-6 border-green-200 bg-green-50">
@@ -575,54 +564,54 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             </Card>
           )}
 
-          {/* Navigation — above question on desktop, below on mobile */}
-          <div className="hidden sm:flex justify-between mt-4 mb-4">
-            <Button
-              variant="ghost"
-              onClick={handleBack}
-              disabled={isFirstQuestion() || submissionStatus === 'submitted'}
-              className={isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-            <Button
-              onClick={isLastQuestion() ? handleSubmit : handleNext}
-              disabled={
-                submissionStatus === 'submitted' ||
-                !isCurrentQuestionComplete() ||
-                isLoading ||
-                isSubmitting
-              }
-              className="bg-atlas-teal text-white hover:bg-atlas-teal/90"
-            >
-              {isSubmitting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : isLastQuestion() ? (
-                <>
-                  Submit
-                  <Send className="h-4 w-4 ml-2" />
-                </>
-              ) : (
-                <>
-                  Continue
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </>
-              )}
-            </Button>
-          </div>
-
           {/* Current Question — keyed wrapper triggers slide animation on question change */}
           <div
             key={currentQuestion.id}
-            className={`animate-in duration-300 ${
+            className={`animate-in fade-in-0 duration-500 ease-out ${
               navigationDirection === 'forward'
-                ? 'slide-in-from-right-6'
-                : 'slide-in-from-left-6'
+                ? 'slide-in-from-right-16'
+                : 'slide-in-from-left-16'
             }`}
           >
             <Card>
               <CardContent className="space-y-6 pt-4 sm:pt-6 px-3 sm:px-6">
+                {/* Navigation — top of card on desktop */}
+                <div className="hidden sm:flex justify-between items-center -mt-1">
+                  <Button
+                    variant="ghost"
+                    onClick={handleBack}
+                    disabled={isFirstQuestion() || submissionStatus === 'submitted'}
+                    className={`px-0 hover:bg-transparent ${isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}`}
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={isLastQuestion() ? handleSubmit : handleNext}
+                    disabled={
+                      submissionStatus === 'submitted' ||
+                      !isCurrentQuestionComplete() ||
+                      isLoading ||
+                      isSubmitting
+                    }
+                    className="bg-atlas-teal text-white hover:bg-atlas-teal/90"
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : isLastQuestion() ? (
+                      <>
+                        Submit
+                        <Send className="h-4 w-4 ml-2" />
+                      </>
+                    ) : (
+                      <>
+                        Continue
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+
                 <div className="text-base sm:text-lg font-light text-gray-900">
                   <QuestionRenderer
                     question={currentQuestion}

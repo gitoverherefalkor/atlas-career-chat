@@ -1,5 +1,5 @@
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseSurveyNavigationProps {
   survey: any;
@@ -10,6 +10,7 @@ interface UseSurveyNavigationProps {
   setShowSectionIntro: (show: boolean) => void;
   setCompletedSections: (fn: (prev: number[]) => number[]) => void;
   getFilteredQuestions: (section: any) => any[];
+  onSectionComplete?: (proceed: () => void) => void;
 }
 
 export const useSurveyNavigation = ({
@@ -20,11 +21,13 @@ export const useSurveyNavigation = ({
   setCurrentQuestionIndex,
   setShowSectionIntro,
   setCompletedSections,
-  getFilteredQuestions
+  getFilteredQuestions,
+  onSectionComplete
 }: UseSurveyNavigationProps) => {
 
   // Track if we're navigating programmatically (not via browser back)
   const isNavigatingRef = useRef(false);
+  const [navigationDirection, setNavigationDirection] = useState<'forward' | 'backward'>('forward');
 
   // Push browser history state when position changes
   useEffect(() => {
@@ -72,6 +75,7 @@ export const useSurveyNavigation = ({
   const handleNext = useCallback(() => {
     if (!survey) return;
 
+    setNavigationDirection('forward');
     const filteredQuestions = getFilteredQuestions(survey.sections[currentSectionIndex]);
 
     // If this was the last question in the section, mark section as completed
@@ -92,15 +96,23 @@ export const useSurveyNavigation = ({
     }
     // Move to first question of next section
     else if (currentSectionIndex < survey.sections.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1);
-      setCurrentQuestionIndex(0);
-      setShowSectionIntro(true); // Show intro for next section
+      const proceed = () => {
+        setCurrentSectionIndex(currentSectionIndex + 1);
+        setCurrentQuestionIndex(0);
+        setShowSectionIntro(true);
+      };
+      if (onSectionComplete) {
+        onSectionComplete(proceed);
+      } else {
+        proceed();
+      }
     }
-  }, [survey, currentSectionIndex, currentQuestionIndex, getFilteredQuestions, setCurrentSectionIndex, setCurrentQuestionIndex, setShowSectionIntro, setCompletedSections]);
+  }, [survey, currentSectionIndex, currentQuestionIndex, getFilteredQuestions, setCurrentSectionIndex, setCurrentQuestionIndex, setShowSectionIntro, setCompletedSections, onSectionComplete]);
 
   const handleBack = useCallback(() => {
     if (!survey) return;
 
+    setNavigationDirection('backward');
     isNavigatingRef.current = true;
 
     // Move to previous question in current section
@@ -127,6 +139,7 @@ export const useSurveyNavigation = ({
   return {
     handleNext,
     handleBack,
-    handleSectionNavigation
+    handleSectionNavigation,
+    navigationDirection
   };
 };
