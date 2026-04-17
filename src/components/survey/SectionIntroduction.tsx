@@ -27,13 +27,13 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto">
       <Card>
         <CardContent className="text-center py-12 px-8">
           <h2 className="text-3xl font-bold text-atlas-navy mb-4">
             Section {sectionNumber}
           </h2>
-          <h3 className="text-xl font-semibold text-gray-800 mb-6">
+          <h3 className="text-xl font-semibold text-atlas-teal mb-6">
             {sectionTitle}
           </h3>
           <div 

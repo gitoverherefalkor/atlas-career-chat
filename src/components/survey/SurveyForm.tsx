@@ -280,6 +280,11 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     return response !== undefined && response !== null && response !== '';
   }, [responses]);
 
+  const handleSectionIntroContinue = useCallback(() => {
+    triggerSave();
+    setShowSectionIntro(false);
+  }, [setShowSectionIntro, triggerSave]);
+
   // Keyboard event handler for Enter key
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     if (!survey) return;
@@ -291,6 +296,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       // Plain Enter skips textarea (so users can add line breaks); Cmd/Ctrl+Enter works everywhere
       const target = event.target as HTMLElement;
       if (isPlainEnter && target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      // Section intro screen: Enter / Cmd+Enter advances to the first question
+      if (showSectionIntro) {
+        event.preventDefault();
+        handleSectionIntroContinue();
         return;
       }
 
@@ -311,7 +323,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         }
       }
     }
-  }, [survey, currentSectionIndex, currentQuestionIndex, responses, handleSubmit, handleNext, getFilteredQuestions, checkIfCurrentQuestionComplete]);
+  }, [survey, currentSectionIndex, currentQuestionIndex, responses, handleSubmit, handleNext, getFilteredQuestions, checkIfCurrentQuestionComplete, showSectionIntro, handleSectionIntroContinue]);
 
   const handleResponseChange = useCallback((questionId: string, value: any) => {
     setResponses(prev => ({
@@ -319,11 +331,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       [questionId]: value
     }));
   }, [setResponses]);
-
-  const handleSectionIntroContinue = useCallback(() => {
-    triggerSave();
-    setShowSectionIntro(false);
-  }, [setShowSectionIntro, triggerSave]);
 
   const handleClearSession = useCallback(() => {
     clearSession();
