@@ -179,6 +179,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     survey,
     currentSectionIndex,
     currentQuestionIndex,
+    completedSections,
     setCurrentSectionIndex,
     setCurrentQuestionIndex,
     setShowSectionIntro,

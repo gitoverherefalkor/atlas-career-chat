@@ -5,6 +5,7 @@ interface UseSurveyNavigationProps {
   survey: any;
   currentSectionIndex: number;
   currentQuestionIndex: number;
+  completedSections: number[];
   setCurrentSectionIndex: (index: number) => void;
   setCurrentQuestionIndex: (index: number) => void;
   setShowSectionIntro: (show: boolean) => void;
@@ -17,6 +18,7 @@ export const useSurveyNavigation = ({
   survey,
   currentSectionIndex,
   currentQuestionIndex,
+  completedSections,
   setCurrentSectionIndex,
   setCurrentQuestionIndex,
   setShowSectionIntro,
@@ -130,10 +132,26 @@ export const useSurveyNavigation = ({
   }, [survey, currentSectionIndex, currentQuestionIndex, getFilteredQuestions, setCurrentSectionIndex, setCurrentQuestionIndex, setShowSectionIntro]);
 
   const handleSectionNavigation = (sectionIndex: number) => {
+    if (!survey) return;
     isNavigatingRef.current = true;
+
+    // If the user is jumping to a section they've already completed, drop them on the
+    // last question rather than the intro. This keeps the sidebar progress bar full
+    // (percentage is derived from currentQuestionIndex) and matches the expectation
+    // that "going back" surfaces the end of that section, not a restart.
+    const alreadyCompleted =
+      completedSections?.includes(sectionIndex) && sectionIndex !== currentSectionIndex;
+    const section = survey.sections[sectionIndex];
+    const questions = section ? getFilteredQuestions(section) : [];
+
     setCurrentSectionIndex(sectionIndex);
-    setCurrentQuestionIndex(0);
-    setShowSectionIntro(true);
+    if (alreadyCompleted && questions.length > 0) {
+      setCurrentQuestionIndex(questions.length - 1);
+      setShowSectionIntro(false);
+    } else {
+      setCurrentQuestionIndex(0);
+      setShowSectionIntro(true);
+    }
   };
 
   return {
