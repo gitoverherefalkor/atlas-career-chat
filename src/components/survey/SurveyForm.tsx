@@ -413,10 +413,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     </div>
   );
 
-  // Milestone message banner — shown briefly at key completion thresholds
+  // Milestone message banner — bottom-center toast, shown briefly at key thresholds
   const MilestoneBanner = activeMilestone ? (
-    <div className="fixed top-[3px] left-0 right-0 z-40 flex justify-center pt-3 pointer-events-none px-4">
-      <div className="animate-in fade-in slide-in-from-top-2 duration-300 bg-white border border-gray-200 rounded-full px-5 py-2 text-sm text-gray-600 shadow-sm max-w-lg text-center">
+    <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none px-4 w-full max-w-md">
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 bg-white border border-gray-200 rounded-full px-5 py-2.5 text-sm text-gray-700 shadow-lg text-center">
         {activeMilestone}
       </div>
     </div>
