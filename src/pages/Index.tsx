@@ -801,7 +801,7 @@ const Index = () => {
             {/* Value Side */}
             <div className="p-10 md:p-16 flex-1 text-[#1A1A1A]">
               <div className="text-[#27A1A1] font-black uppercase tracking-[0.2em] text-[10px] mb-4">The Package</div>
-              <h2 className="text-3xl md:text-4xl font-black mb-10 tracking-tighter">Everything you need for your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">next move</span></h2>
+              <h2 className="text-3xl md:text-4xl font-black mb-10 tracking-tighter">Everything you need to find your <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">right path</span></h2>
               <div className="space-y-5">
                 {[
                   "Complete personality and career assessment",
@@ -854,6 +854,7 @@ const Index = () => {
                   "You're questioning whether your current career still fits",
                   "You made career choices based on limited information or others' expectations",
                   "You're facing a career transition and want data-backed options",
+                  "You're open to exploring directions you haven't seriously considered before",
                   "You want concrete next steps, not vague personality insights"
                 ].map((item, i) => (
                   <li key={i} className="flex gap-4 text-gray-700 font-bold leading-snug">
@@ -869,6 +870,7 @@ const Index = () => {
               </h3>
               <ul className="space-y-5">
                 {[
+                  "You're mainly looking to get promoted or advance within your current field (Atlas explores new directions, not optimizes existing ones)",
                   "You need industry-specific technical training (we help you find the right direction first)",
                   "You want validation for a decision you've already made (we give honest assessments, not cheerleading)"
                 ].map((item, i) => (
