@@ -18,8 +18,14 @@ const Navbar = () => {
     setIsOpen(!isOpen);
   };
 
+  // Nav always renders on a white background regardless of dark mode —
+  // the dark mode CSS globally remaps bg-white via !important, so we use
+  // inline styles here to guarantee the nav stays light on all pages.
+  const navStyle = { backgroundColor: '#ffffff' };
+  const linkStyle = { color: '#374151' };
+
   return (
-    <nav className="bg-white shadow-sm sticky top-0 z-50">
+    <nav className="shadow-sm sticky top-0 z-50" style={navStyle}>
       <div className="container-atlas">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center">
@@ -32,17 +38,18 @@ const Navbar = () => {
             </a>
           </div>
 
+          {/* Desktop nav */}
           <div className="hidden md:flex space-x-8 items-center">
-            <a href="/#how-it-works" className="text-gray-700 hover:text-primary font-medium">
+            <a href="/#how-it-works" className="hover:text-primary font-medium transition-colors" style={linkStyle}>
               {t('nav.howItWorks')}
             </a>
-            <a href="/#why-atlas" className="text-gray-700 hover:text-primary font-medium">
+            <a href="/#why-atlas" className="hover:text-primary font-medium transition-colors" style={linkStyle}>
               {t('nav.whyAtlas')}
             </a>
-            <a href="/#pricing" className="text-gray-700 hover:text-primary font-medium">
+            <a href="/#pricing" className="hover:text-primary font-medium transition-colors" style={linkStyle}>
               {t('nav.pricing')}
             </a>
-            <a href="/#about" className="text-gray-700 hover:text-primary font-medium">
+            <a href="/#about" className="hover:text-primary font-medium transition-colors" style={linkStyle}>
               {t('nav.aboutUs')}
             </a>
 
@@ -70,11 +77,14 @@ const Navbar = () => {
             )}
           </div>
 
+          {/* Hamburger */}
           <div className="md:hidden">
             <button
               type="button"
-              className="text-gray-700 hover:text-primary"
+              className="hover:text-primary transition-colors p-2"
+              style={linkStyle}
               onClick={toggleMenu}
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
             >
               {isOpen ? (
                 <X className="h-6 w-6" />
@@ -86,44 +96,74 @@ const Navbar = () => {
         </div>
       </div>
 
+      {/* Mobile dropdown */}
       {isOpen && (
-        <div className="md:hidden bg-white shadow-lg animate-fade-in">
-          <div className="container-atlas py-4 space-y-3">
-            <a href="/#how-it-works" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
+        <div className="md:hidden shadow-lg animate-fade-in border-t border-gray-100" style={navStyle}>
+          <div className="container-atlas py-4 space-y-1">
+            <a
+              href="/#how-it-works"
+              className="block font-medium py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={linkStyle}
+              onClick={toggleMenu}
+            >
               {t('nav.howItWorks')}
             </a>
-            <a href="/#why-atlas" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
+            <a
+              href="/#why-atlas"
+              className="block font-medium py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={linkStyle}
+              onClick={toggleMenu}
+            >
               {t('nav.whyAtlas')}
             </a>
-            <a href="/#pricing" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
+            <a
+              href="/#pricing"
+              className="block font-medium py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={linkStyle}
+              onClick={toggleMenu}
+            >
               {t('nav.pricing')}
             </a>
-            <a href="/#about" className="block text-gray-700 hover:text-primary font-medium py-2" onClick={toggleMenu}>
+            <a
+              href="/#about"
+              className="block font-medium py-3 px-2 rounded-md hover:bg-gray-50 transition-colors"
+              style={linkStyle}
+              onClick={toggleMenu}
+            >
               {t('nav.aboutUs')}
             </a>
 
-            <div className="py-2">
+            <div className="flex items-center gap-3 py-3 px-2">
               <ThemeToggle />
-            <LanguageSwitcher />
+              <LanguageSwitcher />
             </div>
 
-            {user ? (
-              <Button className="btn-primary w-full mt-4" onClick={() => { navigate('/dashboard'); toggleMenu(); }}>
-                <User className="h-4 w-4 mr-2" />
-                {t('nav.dashboard')}
-              </Button>
-            ) : (
-              <div className="space-y-2">
-                <Button variant="outline" className="w-full" onClick={() => { navigate('/auth'); toggleMenu(); }}>
-                  {t('nav.signIn')}
+            <div className="pt-2 pb-2 space-y-2">
+              {user ? (
+                <Button
+                  className="btn-primary w-full"
+                  onClick={() => { navigate('/dashboard'); toggleMenu(); }}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  {t('nav.dashboard')}
                 </Button>
-                <Button asChild className="btn-primary w-full">
-                  <a href="/#pricing" onClick={toggleMenu}>
-                    {t('nav.getStarted')}
-                  </a>
-                </Button>
-              </div>
-            )}
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => { navigate('/auth'); toggleMenu(); }}
+                  >
+                    {t('nav.signIn')}
+                  </Button>
+                  <Button asChild className="btn-primary w-full">
+                    <a href="/#pricing" onClick={toggleMenu}>
+                      {t('nav.getStarted')}
+                    </a>
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
