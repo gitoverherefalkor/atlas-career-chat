@@ -54,11 +54,11 @@ const LanguageSync = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Routes that are forced to light mode regardless of user preference.
-// Empty by default — the warm-paper (dark) palette is the deployed default
-// across all routes, including the homepage. Add a path here only if you
-// have a route that genuinely cannot tolerate dark mode.
-const LIGHT_ONLY_ROUTES: string[] = [];
+// Homepage (/) is always light — it's the bespoke marketing design and has
+// no toggle. Every other route (payment onwards: /payment, /auth, /dashboard,
+// /chat, /survey, /report, …) is dark by default unless the user opted into
+// light via the ThemeToggle.
+const LIGHT_ONLY_ROUTES = ['/'];
 const ThemeScopeGuard = () => {
   const location = useLocation();
   React.useEffect(() => {

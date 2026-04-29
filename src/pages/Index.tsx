@@ -649,10 +649,10 @@ const Index = () => {
       </nav>
 
       {/* ========== HERO ========== */}
-      <section className="relative min-h-screen flex items-center bg-[#1A1A1A] pt-28 pb-20 md:py-20 overflow-hidden">
+      <section className="relative min-h-screen flex items-center bg-[#213F4F] pt-28 pb-20 md:py-20 overflow-hidden">
         {/* Subtle teal gradient overlay for depth */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#27A1A1]/10 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#27A1A1]/15 rounded-full blur-[120px] -mr-96 -mt-96" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#27A1A1]/12 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-[#27A1A1]/20 rounded-full blur-[120px] -mr-96 -mt-96" />
         <CareerPathBg />
         <div className="container mx-auto px-6 relative z-10">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
