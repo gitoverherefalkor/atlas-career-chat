@@ -16,7 +16,6 @@ import { AccessCodeModal } from '@/components/dashboard/AccessCodeModal';
 import { ExecSummaryModal } from '@/components/dashboard/ExecSummaryModal';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
-import ThemeToggle from '@/components/ThemeToggle';
 
 // Helper to get assessment session from localStorage
 const getAssessmentSession = () => {
@@ -220,7 +219,6 @@ const Dashboard = () => {
               <img src="/atlas-logo.png" alt="Atlas Assessment" className="h-9 w-auto" />
             </div>
             <div className="flex items-center space-x-3">
-              <ThemeToggle />
               <Button variant="outline" onClick={() => navigate('/profile')}>
                 <Settings className="h-4 w-4 mr-2" />
                 Profile

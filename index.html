@@ -21,18 +21,11 @@
   </head>
 
   <body>
-    <!-- Apply theme before React renders to avoid flash.
-         Homepage (/) is always light. Every other route (payment, auth, dashboard,
-         chat, survey, report, …) defaults to dark unless user explicitly chose light. -->
+    <!-- Atlas runs on a single editorial palette (teal-navy + warm-paper cream).
+         Apply the .dark class before React mounts so the page never flashes
+         the un-themed default styles. -->
     <script>
-      (function () {
-        try {
-          var path = window.location.pathname;
-          if (path === '/') return; // homepage is single-mode light
-          var saved = localStorage.getItem('atlas_theme');
-          if (saved !== 'light') document.documentElement.classList.add('dark');
-        } catch (e) { /* ignore */ }
-      })();
+      document.documentElement.classList.add('dark');
     </script>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->

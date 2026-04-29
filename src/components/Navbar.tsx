@@ -6,7 +6,6 @@ import { Menu, X, User } from "lucide-react";
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
-import ThemeToggle from '@/components/ThemeToggle';
 
 const Navbar = () => {
   const { t } = useTranslation('common');
@@ -53,7 +52,6 @@ const Navbar = () => {
               {t('nav.aboutUs')}
             </a>
 
-            <ThemeToggle />
             <LanguageSwitcher />
 
             {user ? (
@@ -134,7 +132,6 @@ const Navbar = () => {
             </a>
 
             <div className="flex items-center gap-3 py-3 px-2">
-              <ThemeToggle />
               <LanguageSwitcher />
             </div>
 

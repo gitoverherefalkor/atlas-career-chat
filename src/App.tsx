@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { Loader2 } from "lucide-react";
@@ -54,35 +54,13 @@ const LanguageSync = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Routes forced to light mode regardless of preference. Empty by default —
-// the warm-paper editorial palette (teal-navy canvas + cream cards) is the
-// site-wide default. Add a path here only if a route genuinely cannot
-// tolerate dark mode.
-const LIGHT_ONLY_ROUTES: string[] = [];
+// Atlas runs on a single editorial palette (teal-navy canvas + warm-paper
+// cream cards). The `.dark` class drives that palette via the CSS variables
+// in index.css, so we lock it on permanently and never toggle it off.
 const ThemeScopeGuard = () => {
-  const location = useLocation();
   React.useEffect(() => {
-    const root = document.documentElement;
-
-    // ?beige preview for the homepage — visualizes how the landing page
-    // (normally single-mode light) would look with cream body + teal-navy
-    // hero/pricing sections. Only the homepage is light-only, so this is
-    // the one route where the preview matters.
-    const params = new URLSearchParams(location.search);
-    root.classList.toggle('palette-beige', params.has('beige'));
-
-    if (LIGHT_ONLY_ROUTES.includes(location.pathname)) {
-      root.classList.remove('dark');
-      return;
-    }
-    // Off-homepage: apply user preference (dark is the default).
-    try {
-      const saved = localStorage.getItem('atlas_theme');
-      root.classList.toggle('dark', saved !== 'light');
-    } catch {
-      root.classList.add('dark');
-    }
-  }, [location.pathname, location.search]);
+    document.documentElement.classList.add('dark');
+  }, []);
   return null;
 };
 
