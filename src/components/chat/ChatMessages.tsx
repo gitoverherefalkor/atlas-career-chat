@@ -145,9 +145,18 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             </div>
           )}
 
-          {messages.map((msg, idx) => {
-            const isLastMessage = idx === messages.length - 1;
+          {messages.map((msg, idx, arr) => {
+            const isLastMessage = idx === arr.length - 1;
             const isLastBotMessage = isLastMessage && msg.sender === 'bot';
+            // Most recent bot message in the array — may or may not be the
+            // very last message (user could have typed a reply after it).
+            // Computed inline because the JSX flow doesn't have a clean
+            // place to memoize without restructuring the component.
+            let latestBotIdx = -1;
+            for (let i = arr.length - 1; i >= 0; i--) {
+              if (arr[i].sender === 'bot') { latestBotIdx = i; break; }
+            }
+            const isLatestBotMessage = idx === latestBotIdx;
             // Dream jobs message: collapse all blocks by default, track when all opened
             const isDreamJobsMessage = isLastBotMessage && isDreamJobsSection;
 
@@ -161,7 +170,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   defaultAllCollapsed={isDreamJobsMessage}
                   onAllBlocksOpened={isDreamJobsMessage ? () => { setDreamJobsOpened(true); onDreamJobsRead?.(); } : undefined}
                   sections={sections}
-                  isLatestBotMessage={isLastBotMessage}
+                  isLatestBotMessage={isLatestBotMessage}
                 />
                 {isLastBotMessage && (
                   <QuickReplies
