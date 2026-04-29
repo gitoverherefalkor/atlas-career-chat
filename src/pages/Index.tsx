@@ -572,7 +572,7 @@ const Index = () => {
     <div className="min-h-screen bg-[#fcfdfe] text-[#374151] font-sans selection:bg-[#27A1A1] selection:text-white overflow-x-hidden">
 
       {/* ========== NAVIGATION ========== */}
-      <nav className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-[#1A1A1A]/95 backdrop-blur-xl py-4 shadow-2xl border-b border-white/5' : 'bg-transparent py-8'}`}>
+      <nav className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-[#213F4F]/95 backdrop-blur-xl py-4 shadow-2xl border-b border-white/5' : 'bg-transparent py-8'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <div className="w-10 h-10 bg-gradient-to-tr from-[#27A1A1] to-[#3989AF] rounded-xl flex items-center justify-center shadow-lg">
@@ -612,7 +612,7 @@ const Index = () => {
         </div>
 
         {/* Mobile Sidebar */}
-        <div className={`fixed inset-0 bg-[#1A1A1A] z-[101] transition-transform duration-500 transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} lg:hidden`}>
+        <div className={`fixed inset-0 bg-[#213F4F] z-[101] transition-transform duration-500 transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} lg:hidden`}>
           <div className="p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-10">
               <span className="text-white text-2xl font-black tracking-tighter">ATLAS</span>
@@ -793,7 +793,7 @@ const Index = () => {
       </section>
 
       {/* ========== PRICING ========== */}
-      <section id="pricing" className="relative py-24 md:py-32 bg-[#1A1A1A] text-white scroll-mt-24 overflow-hidden">
+      <section id="pricing" className="relative py-24 md:py-32 bg-[#213F4F] text-white scroll-mt-24 overflow-hidden">
         {/* Subtle teal gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-tl from-[#27A1A1]/8 via-transparent to-transparent pointer-events-none" />
         <div className="container mx-auto px-6 relative z-10">
@@ -937,7 +937,7 @@ const Index = () => {
 
           <div className={`overflow-hidden transition-all duration-700 ${crisisOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <div className="pt-6 pb-4">
-              <div className="bg-[#1A1A1A] rounded-2xl p-8 md:p-12 text-white mb-8">
+              <div className="bg-[#213F4F] rounded-2xl p-8 md:p-12 text-white mb-8">
                 <div className="text-[#27A1A1] font-black uppercase tracking-[0.2em] text-[10px] mb-4">2025 Career Satisfaction Report</div>
                 <h3 className="text-3xl md:text-4xl font-black mb-4 leading-tight">85% Global Disengagement</h3>
                 <p className="text-blue-100/60 font-medium leading-relaxed max-w-lg">Workers report feeling disconnected from their daily purpose and long-term career trajectory.</p>
@@ -971,8 +971,8 @@ const Index = () => {
       </section>
 
       {/* ========== FINAL CTA ========== */}
-      <section className="py-32 md:py-40 bg-[#1A1A1A] text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#1A1A1A] via-transparent to-[#27A1A1]/10 pointer-events-none" />
+      <section className="py-32 md:py-40 bg-[#213F4F] text-center relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#213F4F] via-transparent to-[#27A1A1]/10 pointer-events-none" />
         <div className="container mx-auto px-6 relative z-10">
           <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-tight">Ready to Stop Guessing?</h2>
           <p className="text-lg md:text-xl text-blue-100/70 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
