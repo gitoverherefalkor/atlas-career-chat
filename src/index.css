@@ -64,10 +64,10 @@
     --background: 199 35% 20%;          /* #213F4F — teal-navy canvas */
     --foreground: 0 0% 96%;              /* #F5F5F5 — light text on canvas */
 
-    --card: 40 15% 95%;                  /* #F3F0EA — soft off-white (less yellow than before) */
+    --card: 40 28% 92%;                  /* #ECE4D2 — soft warm paper, middle ground between old cream and bright white */
     --card-foreground: 198 45% 13%;     /* #122E3B — deep teal-navy text */
 
-    --popover: 40 15% 96%;               /* matches card, slightly lighter for modals */
+    --popover: 40 28% 93%;               /* matches card, slightly lighter for modals */
     --popover-foreground: 198 45% 13%;
 
     --primary: 180 55% 45%;              /* teal brightened for contrast */
