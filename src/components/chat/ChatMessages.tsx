@@ -83,7 +83,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
     if (isLoading) {
       return (
         <div className="flex-1 flex items-center justify-center">
-          <div className="flex items-center gap-3 text-gray-400">
+          <div className="flex items-center gap-3 text-blue-100/70">
             <Loader2 className="h-5 w-5 animate-spin" />
             <span className="text-sm">Loading conversation...</span>
           </div>
@@ -99,7 +99,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
       >
         <div className="max-w-[800px] mx-auto px-3 sm:px-6 pt-4 sm:pt-8 pb-[180px] sm:pb-[140px]">
           {messages.length === 0 && !isWaitingForResponse && (
-            <div className="text-center text-gray-400 text-sm py-12">
+            <div className="text-center text-blue-100/70 text-sm py-12">
               Send a message to start your session
             </div>
           )}

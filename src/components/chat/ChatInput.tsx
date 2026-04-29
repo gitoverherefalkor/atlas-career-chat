@@ -93,10 +93,12 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
         }
       `}</style>
       <div className="chat-input-root fixed bottom-0 left-0 z-30">
-        {/* Gradient fade */}
-        <div className="h-8 bg-gradient-to-t from-gray-50 to-transparent pointer-events-none" />
+        {/* Gradient fade — uses the canvas color so it blends seamlessly into
+            the chat scroll area above (Tailwind gradient utilities aren't
+            covered by the .dark bg-gray-50 override, so we color it explicitly). */}
+        <div className="h-8 bg-gradient-to-t from-[#213F4F] to-transparent pointer-events-none" />
 
-        <div className="bg-gray-50 px-3 sm:px-4 pb-3 sm:pb-4">
+        <div className="bg-[#213F4F] px-3 sm:px-4 pb-3 sm:pb-4">
           <div className="max-w-[800px] mx-auto relative">
             <textarea
               ref={textareaRef}
