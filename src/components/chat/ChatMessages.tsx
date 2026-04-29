@@ -99,12 +99,17 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
       );
     }
 
-    // Empty + welcome → render the WelcomeCard (or WelcomeBackCard) as the
-    // empty state, vertically centered. This replaces the old standalone
-    // welcome page so the user sees the chat layout (input + sidebar) right
-    // away. They can either click "I'm Ready!" (auto-fires kickoff message)
-    // or just type their first message manually.
-    if (showWelcome && messages.length === 0 && !isWaitingForResponse) {
+    // Empty chat → render the WelcomeCard (or WelcomeBackCard) as the empty
+    // state, vertically centered. This replaces the old standalone welcome
+    // page so the user sees the chat layout (input + sidebar) right away.
+    // They can either click "I'm Ready!" (auto-fires kickoff message via
+    // autoResumeMessage) or just type their first message manually.
+    //
+    // Gate is purely based on messages.length so the welcome shows for ALL
+    // empty-chat scenarios — new users, testers with a stale localStorage
+    // sessionId, returning users whose stored session has no Supabase
+    // messages yet. Once any message exists, welcome auto-hides.
+    if (messages.length === 0 && !isWaitingForResponse) {
       return (
         <div className="flex-1 overflow-y-auto flex items-center justify-center px-3 sm:px-6 pt-4 pb-[180px] sm:pb-[140px]">
           {isReturningUser ? (
