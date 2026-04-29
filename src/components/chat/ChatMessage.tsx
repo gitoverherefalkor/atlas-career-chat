@@ -16,6 +16,10 @@ interface ChatMessageProps {
   // Career sections from the user's report. Used to lookup match scores
   // for headings that appear inside this message.
   sections?: ReportSection[];
+  // True only for the most recent bot message. When true, big section-reveal
+  // messages (multiple ## sub-headers) get a sequential reveal pattern
+  // instead of dumping all the text at once. Historical messages render flat.
+  isLatestBotMessage?: boolean;
 }
 
 // Section types that have a meaningful score column we want to surface.
@@ -114,6 +118,33 @@ function splitIntoCareerBlocks(markdown: string): SplitContent {
   return { intro, blocks };
 }
 
+interface H2Subsection {
+  title: string;
+  body: string;
+}
+
+// Split a section-reveal message into a preamble (h3 + intro) plus an array
+// of h2 sub-sections. Used to power the sequential-reveal pattern for big
+// "section reveal" messages so the user sees one sub-section at a time.
+function splitIntoH2Subsections(markdown: string): {
+  preamble: string;
+  subsections: H2Subsection[];
+} {
+  const parts = markdown.split(/(?=^## )/m);
+  const preamble = (parts[0] || '').trim();
+  const subsections = parts.slice(1).map((part) => {
+    const firstNewline = part.indexOf('\n');
+    const titleLine = firstNewline >= 0 ? part.slice(0, firstNewline) : part;
+    const title = titleLine
+      .replace(/^##\s*/, '')
+      .replace(/\*\*/g, '')
+      .trim();
+    const body = firstNewline >= 0 ? part.slice(firstNewline + 1).trim() : '';
+    return { title, body };
+  });
+  return { preamble, subsections };
+}
+
 // Check if a heading matches any section in ALL_SECTIONS
 function findSectionIndex(headingText: string): number {
   const normalized = headingText.toLowerCase().trim();
@@ -182,6 +213,54 @@ const markdownComponents = {
       {children}
     </strong>
   ),
+};
+
+// Renders a section-reveal message with sequential sub-section disclosure.
+// Initial render: preamble (h3 + intro) + first h2 sub-section + a chevron
+// that previews the NAME of the next sub-section. Click → next reveals,
+// chevron updates to the one after. Repeat until all are visible.
+//
+// Once revealed, sub-sections stay visible (no auto-collapse). Only applied
+// when this message is the latest bot message — historical messages render
+// flat so users don't have to re-click through content they've already read.
+const SequentialSubsections: React.FC<{
+  preamble: string;
+  subsections: H2Subsection[];
+}> = ({ preamble, subsections }) => {
+  // revealedCount = number of sub-sections currently visible. Starts at 1
+  // so the user sees the preamble + first h2 + first body on first render.
+  const [revealedCount, setRevealedCount] = useState(1);
+
+  return (
+    <div>
+      {preamble && (
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          {preamble}
+        </ReactMarkdown>
+      )}
+      {subsections.slice(0, revealedCount).map((sub, idx) => (
+        <ReactMarkdown
+          key={idx}
+          remarkPlugins={[remarkGfm]}
+          components={markdownComponents}
+        >
+          {`## ${sub.title}\n\n${sub.body}`}
+        </ReactMarkdown>
+      ))}
+      {revealedCount < subsections.length && (
+        <button
+          type="button"
+          onClick={() => setRevealedCount((c) => c + 1)}
+          className="mt-6 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-atlas-teal/30 bg-atlas-teal/5 hover:bg-atlas-teal/10 hover:border-atlas-teal/50 transition-colors text-left group"
+        >
+          <span className="text-lg font-semibold text-atlas-teal">
+            {subsections[revealedCount].title}
+          </span>
+          <ChevronDown className="w-5 h-5 text-atlas-teal shrink-0 group-hover:translate-y-0.5 transition-transform" />
+        </button>
+      )}
+    </div>
+  );
 };
 
 // Renders a multi-career message as collapsible blocks.
@@ -337,6 +416,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onAllBlocksOpened,
   defaultAllCollapsed = false,
   sections,
+  isLatestBotMessage = false,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
 
@@ -375,6 +455,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   // Check if this message has multiple career blocks worth collapsing
   const { intro, blocks } = splitIntoCareerBlocks(sanitized);
   const hasMultipleBlocks = blocks.length >= 2;
+
+  // Section-reveal messages have multiple ## sub-sections (e.g. Approach,
+  // Strengths, Development, Values) — apply sequential reveal so the user
+  // gets one sub-section at a time. Only for the latest bot message; older
+  // messages (already-read history) render flat.
+  const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
+  const useSequentialReveal =
+    isLatestBotMessage && !hasMultipleBlocks && subsections.length >= 2;
 
   // For single-block messages (e.g. top_career_1/2/3), enrich the h3 renderer
   // so the score card appears right under the career title without changing
@@ -423,6 +511,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             defaultAllCollapsed={defaultAllCollapsed}
             onAllBlocksOpened={onAllBlocksOpened}
             sections={sections}
+          />
+        ) : useSequentialReveal ? (
+          <SequentialSubsections
+            preamble={subsectionPreamble}
+            subsections={subsections}
           />
         ) : (
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={enrichedComponents}>

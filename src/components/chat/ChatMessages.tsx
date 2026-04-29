@@ -7,6 +7,7 @@ import { WelcomeBackCard } from './WelcomeBackCard';
 import { Loader2 } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
 import type { ChatMessage as ChatMessageType } from '@/hooks/useChatMessages';
+import type { ReportSection } from '@/hooks/useReportSections';
 
 export interface ChatMessagesHandle {
   scrollToSection: (sectionId: string) => void;
@@ -28,10 +29,13 @@ interface ChatMessagesProps {
   welcomeFirstName?: string;
   welcomeCompletedSectionIndex?: number;
   onWelcomeReady?: () => void;
+  // Career sections from the user's report — used by ChatMessage to render
+  // match scores + AI impact badges next to career titles.
+  sections?: ReportSection[];
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections }, ref) => {
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     const [dreamJobsOpened, setDreamJobsOpened] = useState(false);
 
@@ -156,6 +160,8 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   onSectionDetected={onSectionDetected}
                   defaultAllCollapsed={isDreamJobsMessage}
                   onAllBlocksOpened={isDreamJobsMessage ? () => { setDreamJobsOpened(true); onDreamJobsRead?.(); } : undefined}
+                  sections={sections}
+                  isLatestBotMessage={isLastBotMessage}
                 />
                 {isLastBotMessage && (
                   <QuickReplies
