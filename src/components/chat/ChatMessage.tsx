@@ -125,8 +125,19 @@ function findSectionIndex(headingText: string): number {
   });
 }
 
-// Custom components for react-markdown to style headings with atlas colors
+// Custom components for react-markdown to style headings with atlas colors.
+// The agent emits a mix of heading levels (## for sub-sections like
+// "Personality and Interaction Style", ### for main section titles, etc.),
+// so we style every level rather than only the ones we expect.
 const markdownComponents = {
+  h2: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <h2
+      className="text-lg font-semibold text-atlas-teal mt-6 mb-2 first:mt-0"
+      {...props}
+    >
+      {children}
+    </h2>
+  ),
   h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h3
       className="text-xl font-bold text-atlas-navy mt-8 mb-2 font-heading first:mt-0"
