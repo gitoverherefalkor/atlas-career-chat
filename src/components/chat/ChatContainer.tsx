@@ -20,6 +20,13 @@ interface ChatContainerProps {
   isSessionCompleted: boolean;
   isSidebarCollapsed: boolean;
   autoResumeMessage?: string; // If set, send this message automatically on mount (for session resume)
+  // Welcome card lives inside the chat as the empty state. Parent owns the
+  // showWelcome flag so the page can react (e.g. dismiss on first user send).
+  showWelcome?: boolean;
+  isReturningUser?: boolean;
+  welcomeCompletedSectionIndex?: number;
+  onWelcomeReady?: () => void;
+  onUserSentMessage?: () => void;
 }
 
 export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
@@ -38,6 +45,11 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       isSessionCompleted,
       isSidebarCollapsed,
       autoResumeMessage,
+      showWelcome,
+      isReturningUser,
+      welcomeCompletedSectionIndex = -1,
+      onWelcomeReady,
+      onUserSentMessage,
     },
     ref
   ) => {
@@ -202,6 +214,11 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     const handleSend = async (message: string) => {
       if (isSessionCompleted || isWaitingForResponse) return;
 
+      // Dismiss the in-chat welcome card the moment the user sends anything,
+      // so manually typing a first message has the same effect as clicking
+      // "I'm Ready!".
+      onUserSentMessage?.();
+
       // Add user message immediately
       addMessage('user', message);
       setIsWaitingForResponse(true);
@@ -251,6 +268,11 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           onQuickReply={handleSend}
           onFocusInput={() => inputRef.current?.focus()}
           onDreamJobsRead={onDreamJobsRead}
+          showWelcome={showWelcome}
+          isReturningUser={isReturningUser}
+          welcomeFirstName={firstName}
+          welcomeCompletedSectionIndex={welcomeCompletedSectionIndex}
+          onWelcomeReady={onWelcomeReady}
         />
 
         {/* Mobile-only Complete Session CTA — sidebar button isn't visible on mobile */}

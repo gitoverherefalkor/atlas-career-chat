@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, ArrowLeft, MessageSquare, LayoutDashboard, RefreshCw } from 'lucide-react';
 import type { Tables } from '@/integrations/supabase/types';
-import { WelcomeCard } from '@/components/chat/WelcomeCard';
-import { WelcomeBackCard } from '@/components/chat/WelcomeBackCard';
 import { ClosingCard } from '@/components/chat/ClosingCard';
 import { ReportSidebar, ALL_SECTIONS } from '@/components/chat/ReportSidebar';
 import { ChatContainer } from '@/components/chat/ChatContainer';
@@ -41,7 +39,6 @@ const Chat = () => {
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [showWelcome, setShowWelcome] = useState(!hasExistingSession || sessionIsStale);
   const [showClosing, setShowClosing] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   // Initialize from localStorage to avoid 0/11 flash on session resume
   const [currentSectionIndex, setCurrentSectionIndex] = useState(() => {
@@ -232,16 +229,13 @@ const Chat = () => {
   }, [currentSectionIndex, reportData]);
 
   // Start a new or continued chat session
-  const handleStartSession = () => {
-    if (profileLoading || !profile) {
-      toast({
-        title: "Loading...",
-        description: "Please wait a moment while we load your profile.",
-      });
-      return;
-    }
+  // Auto-initialize sessionId once profile is ready, so the chat layout
+  // (sidebar + input) can mount immediately and the WelcomeCard renders
+  // inside it as the empty state instead of replacing the whole page.
+  useEffect(() => {
+    if (showClosing || sessionId) return;
+    if (profileLoading || !profile) return;
 
-    // Generate or reuse session ID
     let sid = localStorage.getItem('n8n-chat/sessionId');
     const isNewSession = !sid || sessionIsStale;
     if (isNewSession) {
@@ -250,18 +244,29 @@ const Chat = () => {
     }
     localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
 
-    // If this is a returning user starting a fresh session, auto-send a resume prompt
-    // so the bot greets them instead of showing an empty chat
+    // For returning users with a stale session, auto-fire a resume prompt
+    // (this also doubles as the kickoff when they click "I'm Ready" — see
+    // handleWelcomeStart below for the new-user equivalent).
     if (isNewSession && isReturningUser) {
       setAutoResumeMessage("Hi, I'm back! Let's continue where we left off.");
     }
 
     setSessionId(sid);
-    setIsInitializing(true);
-    setShowWelcome(false);
-    setIsInitializing(false);
+  }, [profileLoading, profile, sessionId, sessionIsStale, isReturningUser, showClosing]);
 
-    // Track chat session start for reminder system
+  // Called when the user clicks "I'm Ready!" inside the in-chat WelcomeCard.
+  // Dismisses the welcome state AND fires a kickoff message so the bot
+  // greets them right away, rather than waiting for a manual first message.
+  const handleWelcomeStart = () => {
+    if (profileLoading || !profile) {
+      toast({
+        title: "Loading...",
+        description: "Please wait a moment while we load your profile.",
+      });
+      return;
+    }
+    setShowWelcome(false);
+    setAutoResumeMessage("I'm ready, let's begin!");
     trackChatStart();
   };
 
@@ -395,22 +400,7 @@ const Chat = () => {
       </nav>
 
       {/* Content */}
-      {showWelcome ? (
-        <div className="flex-1 bg-gray-50 overflow-auto flex items-center justify-center">
-          {isReturningUser ? (
-            <WelcomeBackCard
-              onContinue={handleStartSession}
-              firstName={profile?.first_name || undefined}
-              completedSectionIndex={storedProgressIndex}
-            />
-          ) : (
-            <WelcomeCard
-              onReady={handleStartSession}
-              isLoading={isInitializing}
-            />
-          )}
-        </div>
-      ) : showClosing ? (
+      {showClosing ? (
         <div className="flex-1 bg-gray-50 overflow-auto flex items-center justify-center">
           <ClosingCard firstName={profile?.first_name || undefined} />
         </div>
@@ -432,8 +422,11 @@ const Chat = () => {
               </div>
             )}
 
-            {/* Custom Chat — replaces n8n widget */}
-            {sessionId && user && (
+            {/* Custom Chat — replaces n8n widget. WelcomeCard now lives
+                inside the chat (as the empty state) so the input + sidebar
+                are visible from the start; user can either click "I'm
+                Ready!" or just type their first message. */}
+            {sessionId && user ? (
               <ChatContainer
                 ref={chatMessagesRef}
                 reportId={reportData.id}
@@ -449,7 +442,16 @@ const Chat = () => {
                 isSessionCompleted={isSessionCompleted}
                 isSidebarCollapsed={isSidebarCollapsed}
                 autoResumeMessage={autoResumeMessage}
+                showWelcome={showWelcome}
+                isReturningUser={isReturningUser}
+                welcomeCompletedSectionIndex={storedProgressIndex}
+                onWelcomeReady={handleWelcomeStart}
+                onUserSentMessage={() => setShowWelcome(false)}
               />
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-atlas-teal" />
+              </div>
             )}
           </div>
 

@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useCallback, useImperativeHandle, f
 import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
 import { QuickReplies } from './QuickReplies';
+import { WelcomeCard } from './WelcomeCard';
+import { WelcomeBackCard } from './WelcomeBackCard';
 import { Loader2 } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
 import type { ChatMessage as ChatMessageType } from '@/hooks/useChatMessages';
@@ -20,10 +22,16 @@ interface ChatMessagesProps {
   onQuickReply: (message: string) => void;
   onFocusInput: () => void;
   onDreamJobsRead?: () => void;
+  // In-chat welcome card (shown as the empty state when no messages exist).
+  showWelcome?: boolean;
+  isReturningUser?: boolean;
+  welcomeFirstName?: string;
+  welcomeCompletedSectionIndex?: number;
+  onWelcomeReady?: () => void;
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady }, ref) => {
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     const [dreamJobsOpened, setDreamJobsOpened] = useState(false);
 
@@ -87,6 +95,30 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             <Loader2 className="h-5 w-5 animate-spin" />
             <span className="text-sm">Loading conversation...</span>
           </div>
+        </div>
+      );
+    }
+
+    // Empty + welcome → render the WelcomeCard (or WelcomeBackCard) as the
+    // empty state, vertically centered. This replaces the old standalone
+    // welcome page so the user sees the chat layout (input + sidebar) right
+    // away. They can either click "I'm Ready!" (auto-fires kickoff message)
+    // or just type their first message manually.
+    if (showWelcome && messages.length === 0 && !isWaitingForResponse) {
+      return (
+        <div className="flex-1 overflow-y-auto flex items-center justify-center px-3 sm:px-6 pt-4 pb-[180px] sm:pb-[140px]">
+          {isReturningUser ? (
+            <WelcomeBackCard
+              onContinue={onWelcomeReady ?? (() => {})}
+              firstName={welcomeFirstName || undefined}
+              completedSectionIndex={welcomeCompletedSectionIndex}
+            />
+          ) : (
+            <WelcomeCard
+              onReady={onWelcomeReady ?? (() => {})}
+              isLoading={false}
+            />
+          )}
         </div>
       );
     }
