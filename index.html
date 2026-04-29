@@ -23,10 +23,9 @@
   <body>
     <!-- Atlas runs on a single editorial palette (teal-navy + warm-paper cream).
          Apply the .dark class before React mounts so the page never flashes
-         the un-themed default styles. -->
-    <script>
-      document.documentElement.classList.add('dark');
-    </script>
+         the un-themed default styles. External file (loaded sync) because the
+         CSP does not allow 'unsafe-inline' for script-src. -->
+    <script src="/theme-init.js"></script>
     <div id="root"></div>
     <!-- IMPORTANT: DO NOT REMOVE THIS SCRIPT TAG OR THIS VERY COMMENT! -->
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>

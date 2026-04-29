@@ -228,32 +228,6 @@ const Chat = () => {
     }
   }, [currentSectionIndex, reportData]);
 
-  // Start a new or continued chat session
-  // Auto-initialize sessionId once profile is ready, so the chat layout
-  // (sidebar + input) can mount immediately and the WelcomeCard renders
-  // inside it as the empty state instead of replacing the whole page.
-  useEffect(() => {
-    if (showClosing || sessionId) return;
-    if (profileLoading || !profile) return;
-
-    let sid = localStorage.getItem('n8n-chat/sessionId');
-    const isNewSession = !sid || sessionIsStale;
-    if (isNewSession) {
-      sid = crypto.randomUUID();
-      localStorage.setItem('n8n-chat/sessionId', sid);
-    }
-    localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
-
-    // For returning users with a stale session, auto-fire a resume prompt
-    // (this also doubles as the kickoff when they click "I'm Ready" — see
-    // handleWelcomeStart below for the new-user equivalent).
-    if (isNewSession && isReturningUser) {
-      setAutoResumeMessage("Hi, I'm back! Let's continue where we left off.");
-    }
-
-    setSessionId(sid);
-  }, [profileLoading, profile, sessionId, sessionIsStale, isReturningUser, showClosing]);
-
   // Called when the user clicks "I'm Ready!" inside the in-chat WelcomeCard.
   // Dismisses the welcome state AND fires a kickoff message so the bot
   // greets them right away, rather than waiting for a manual first message.
@@ -293,6 +267,32 @@ const Chat = () => {
     : -1;
   const storedProgressIndex = localProgressIndex >= 0 ? localProgressIndex : (serverSectionIndex ?? -1);
   const isReturningUser = (!hasExistingSession || sessionIsStale) && storedProgressIndex >= 0;
+
+  // Auto-initialize sessionId once profile is ready, so the chat layout
+  // (sidebar + input) can mount immediately and the WelcomeCard renders
+  // inside it as the empty state instead of replacing the whole page.
+  // NOTE: This effect must come AFTER `isReturningUser` is declared above —
+  // referencing it earlier puts a const in the temporal dead zone and
+  // throws "Cannot access 'isReturningUser' before initialization".
+  useEffect(() => {
+    if (showClosing || sessionId) return;
+    if (profileLoading || !profile) return;
+
+    let sid = localStorage.getItem('n8n-chat/sessionId');
+    const isNewSession = !sid || sessionIsStale;
+    if (isNewSession) {
+      sid = crypto.randomUUID();
+      localStorage.setItem('n8n-chat/sessionId', sid);
+    }
+    localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
+
+    // For returning users with a stale session, auto-fire a resume prompt.
+    if (isNewSession && isReturningUser) {
+      setAutoResumeMessage("Hi, I'm back! Let's continue where we left off.");
+    }
+
+    setSessionId(sid);
+  }, [profileLoading, profile, sessionId, sessionIsStale, isReturningUser, showClosing]);
 
   const loadUserReport = async () => {
     if (!user) {
