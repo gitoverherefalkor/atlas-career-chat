@@ -291,11 +291,20 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           ref={inputRef}
           onSend={handleSend}
           onTypingChange={setIsUserTyping}
-          disabled={isSessionCompleted || isWaitingForResponse}
+          // Disable typing on the welcome screen so users can't accidentally
+          // start with an off-script message that confuses the bot. They
+          // click "I'm Ready!" to kick off, then type freely from there.
+          disabled={
+            isSessionCompleted ||
+            isWaitingForResponse ||
+            (messages.length === 0 && !isWaitingForResponse)
+          }
           placeholder={
             isSessionCompleted
               ? 'Session completed - your report is ready above'
-              : 'Type here'
+              : messages.length === 0
+                ? "Click 'I'm Ready!' above to begin"
+                : 'Type here'
           }
           isSidebarCollapsed={isSidebarCollapsed}
         />
