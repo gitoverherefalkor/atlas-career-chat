@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, CheckCircle2, Shield } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
+import atlasFigure from '@/logos/Atlas_figure_AA_live.png';
 
 interface WelcomeBackCardProps {
   onContinue: () => void;
@@ -24,21 +25,19 @@ export const WelcomeBackCard: React.FC<WelcomeBackCardProps> = ({
     <div className="max-w-3xl mx-auto px-4 py-8">
       <Card className="border-2 border-atlas-blue/20 shadow-lg">
         <CardHeader className="text-center pb-4">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-atlas-blue to-atlas-teal rounded-full flex items-center justify-center">
-            <MessageSquare className="h-8 w-8 text-white" />
-          </div>
+          <img src={atlasFigure} alt="Atlas" className="mx-auto mb-4 h-40 w-auto" />
           <CardTitle className="text-2xl font-bold text-atlas-navy">
             Welcome Back{firstName ? `, ${firstName}` : ''}!
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 text-center">
           <p className="text-lg text-gray-700 leading-relaxed">
             It's been a while since we last spoke. I'm ready to continue our conversation about your career assessment!
           </p>
 
           {completedSections.length > 0 && (
-            <div className="bg-blue-50 border-l-4 border-atlas-blue p-5 rounded-r-lg">
+            <div className="bg-blue-50 border-l-4 border-atlas-blue p-5 rounded-r-lg text-left">
               <p className="font-semibold text-atlas-navy mb-3">Last time we reviewed:</p>
               <ul className="space-y-2 text-gray-700">
                 {completedSections.map((section) => (
@@ -51,7 +50,7 @@ export const WelcomeBackCard: React.FC<WelcomeBackCardProps> = ({
             </div>
           )}
 
-          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg text-left">
             <Shield className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
             <div className="text-sm text-gray-700">
               <p className="font-semibold text-green-900 mb-1">Your progress is safe</p>

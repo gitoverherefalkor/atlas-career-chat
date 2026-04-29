@@ -1,8 +1,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Award, FileDown, LayoutDashboard, Info, CheckCircle2 } from 'lucide-react';
+import { FileDown, LayoutDashboard, Info, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import atlasFigure from '@/logos/Atlas_figure_AA_live.png';
 
 interface ClosingCardProps {
   firstName?: string;
@@ -26,15 +27,13 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <Card className="border-2 border-green-500/20 shadow-lg">
         <CardHeader className="text-center pb-4">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-            <Award className="h-8 w-8 text-white" />
-          </div>
+          <img src={atlasFigure} alt="Atlas" className="mx-auto mb-4 h-40 w-auto" />
           <CardTitle className="text-2xl font-bold text-atlas-navy">
             Session Complete{firstName ? `, ${firstName}` : ''}!
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 text-center">
           <p className="text-lg text-gray-700 leading-relaxed">
             Thank you for completing your Atlas Career Assessment!
           </p>
@@ -43,7 +42,7 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
             Your session is complete. All your feedback and insights from our conversation have been securely saved and are being incorporated into your final report.
           </p>
 
-          <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-r-lg">
+          <div className="bg-green-50 border-l-4 border-green-500 p-5 rounded-r-lg text-left">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
               <div className="space-y-3">
@@ -66,7 +65,7 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
             </div>
           </div>
 
-          <div className="bg-amber-50 border-l-4 border-amber-400 p-5 rounded-r-lg">
+          <div className="bg-amber-50 border-l-4 border-amber-400 p-5 rounded-r-lg text-left">
             <div className="flex items-start gap-3">
               <Info className="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div className="space-y-2">
@@ -78,7 +77,7 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
             </div>
           </div>
 
-          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+          <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg text-left">
             <p className="text-sm text-gray-700 leading-relaxed">
               <strong>Beta disclaimer:</strong> Atlas Career Path Assessment is in beta. Our recommendations are exploratory guidance, not definitive answers. Use this as a reflection tool alongside your experiences and ongoing career exploration.
             </p>
