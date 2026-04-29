@@ -396,7 +396,7 @@ const Chat = () => {
 
       {/* Content */}
       {showWelcome ? (
-        <div className="flex-1 bg-gray-50 overflow-auto">
+        <div className="flex-1 bg-gray-50 overflow-auto flex items-center justify-center">
           {isReturningUser ? (
             <WelcomeBackCard
               onContinue={handleStartSession}
@@ -411,7 +411,7 @@ const Chat = () => {
           )}
         </div>
       ) : showClosing ? (
-        <div className="flex-1 bg-gray-50 overflow-auto">
+        <div className="flex-1 bg-gray-50 overflow-auto flex items-center justify-center">
           <ClosingCard firstName={profile?.first_name || undefined} />
         </div>
       ) : (
