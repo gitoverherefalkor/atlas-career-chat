@@ -1,9 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
 import { ChevronDown } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
+import type { ReportSection } from '@/hooks/useReportSections';
+import { CareerScoreCard, extractAIImpact } from './CareerScoreCard';
 
 interface ChatMessageProps {
   content: string;
@@ -11,6 +13,50 @@ interface ChatMessageProps {
   onSectionDetected?: (sectionIndex: number) => void;
   onAllBlocksOpened?: () => void;
   defaultAllCollapsed?: boolean;
+  // Career sections from the user's report. Used to lookup match scores
+  // for headings that appear inside this message.
+  sections?: ReportSection[];
+}
+
+// Section types that have a meaningful score column we want to surface.
+const SCORED_SECTION_TYPES = new Set([
+  'top_career_1',
+  'top_career_2',
+  'top_career_3',
+  'runner_ups',
+  'outside_box',
+]);
+
+// Strip basic HTML tags + bold markers from a heading-style string and lowercase it.
+function normalizeTitle(raw: string): string {
+  return raw
+    .replace(/<[^>]+>/g, '')
+    .replace(/\*\*/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+// Match a chat heading text against the report_sections.title field.
+// Heading shape: "Chief People Officer". DB title shape:
+// "<h3><strong>Chief People Officer</strong></h3>". We compare normalized forms.
+function findSectionByTitle(
+  sections: ReportSection[] | undefined,
+  headingText: string
+): ReportSection | null {
+  if (!sections || sections.length === 0) return null;
+  const norm = normalizeTitle(headingText);
+  if (!norm) return null;
+
+  for (const s of sections) {
+    if (!SCORED_SECTION_TYPES.has(s.section_type)) continue;
+    if (!s.title) continue;
+    const sectionTitle = normalizeTitle(s.title);
+    if (!sectionTitle) continue;
+    if (sectionTitle === norm) return s;
+    if (norm.includes(sectionTitle) || sectionTitle.includes(norm)) return s;
+  }
+  return null;
 }
 
 interface CareerBlock {
@@ -83,7 +129,7 @@ function findSectionIndex(headingText: string): number {
 const markdownComponents = {
   h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h3
-      className="text-lg font-bold text-atlas-navy mt-4 mb-2 font-heading"
+      className="text-xl font-bold text-atlas-navy mt-8 mb-2 font-heading first:mt-0"
       {...props}
     >
       {children}
@@ -91,7 +137,7 @@ const markdownComponents = {
   ),
   h4: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h4
-      className="text-base font-semibold text-atlas-blue mt-3 mb-1.5"
+      className="text-lg font-semibold text-atlas-blue mt-6 mb-2 first:mt-0"
       {...props}
     >
       {children}
@@ -99,7 +145,7 @@ const markdownComponents = {
   ),
   h5: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
     <h5
-      className="text-sm font-semibold text-atlas-teal mt-2 mb-1"
+      className="text-base font-semibold text-atlas-teal mt-5 mb-1.5 first:mt-0"
       {...props}
     >
       {children}
@@ -135,11 +181,13 @@ const CollapsibleCareerBlocks: React.FC<{
   blocks: CareerBlock[];
   defaultAllCollapsed?: boolean;
   onAllBlocksOpened?: () => void;
+  sections?: ReportSection[];
 }> = ({
   intro,
   blocks,
   defaultAllCollapsed = false,
   onAllBlocksOpened,
+  sections,
 }) => {
   // Sub-blocks = everything after the first (title) block.
   // The title block is always visible, so only sub-blocks are collapsible.
@@ -191,24 +239,38 @@ const CollapsibleCareerBlocks: React.FC<{
       )}
 
       {/* Career title block — always expanded, no chevron */}
-      {titleBlock && (
-        <div className="mb-3">
-          <h3 className="text-lg font-bold text-atlas-navy font-heading mt-4 mb-2">
-            {titleBlock.title}
-          </h3>
-          {titleBlock.body && (
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-              {titleBlock.body}
-            </ReactMarkdown>
-          )}
-        </div>
-      )}
+      {titleBlock && (() => {
+        const section = findSectionByTitle(sections, titleBlock.title);
+        const score = section?.score != null ? Number(section.score) : null;
+        const aiImpact = extractAIImpact(titleBlock.body || '');
+        return (
+          <div className="mb-3">
+            <h3 className="text-lg font-bold text-atlas-navy font-heading mt-4 mb-2">
+              {titleBlock.title}
+            </h3>
+            <CareerScoreCard
+              score={Number.isFinite(score) ? score : null}
+              aiImpact={aiImpact}
+            />
+            {titleBlock.body && (
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                {titleBlock.body}
+              </ReactMarkdown>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Sub-section blocks — collapsible */}
       {subBlocks.length > 0 && (
         <div className="flex flex-col gap-2">
           {subBlocks.map((block, idx) => {
             const isOpen = openIndices.has(idx);
+            const section = findSectionByTitle(sections, block.title);
+            const score = section?.score != null ? Number(section.score) : null;
+            const aiImpact = extractAIImpact(block.body || '');
+            const hasCard = (Number.isFinite(score) && score != null) || aiImpact;
+
             return (
               <div
                 key={idx}
@@ -217,14 +279,24 @@ const CollapsibleCareerBlocks: React.FC<{
                 {/* Clickable header — always visible */}
                 <button
                   onClick={() => toggle(idx)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-left bg-white hover:bg-gray-50 transition-colors"
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left bg-white hover:bg-gray-50 transition-colors"
                 >
-                  {/* h3 so DOM section-detection still works */}
-                  <h3 className="text-base font-bold text-atlas-navy font-heading m-0 leading-snug">
-                    {block.title}
-                  </h3>
+                  <div className="flex flex-col gap-1.5 min-w-0">
+                    {/* h3 so DOM section-detection still works */}
+                    <h3 className="text-base font-bold text-atlas-navy font-heading m-0 leading-snug">
+                      {block.title}
+                    </h3>
+                    {/* Show score + AI impact in the collapsed header so users
+                        can scan all options without expanding each one. */}
+                    {hasCard && (
+                      <CareerScoreCard
+                        score={Number.isFinite(score) ? score : null}
+                        aiImpact={aiImpact}
+                      />
+                    )}
+                  </div>
                   <ChevronDown
-                    className={`w-4 h-4 text-gray-400 shrink-0 ml-3 transition-transform duration-200 ${
+                    className={`w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200 ${
                       isOpen ? 'rotate-180' : ''
                     }`}
                   />
@@ -253,6 +325,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onSectionDetected,
   onAllBlocksOpened,
   defaultAllCollapsed = false,
+  sections,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
 
@@ -292,6 +365,40 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const { intro, blocks } = splitIntoCareerBlocks(sanitized);
   const hasMultipleBlocks = blocks.length >= 2;
 
+  // For single-block messages (e.g. top_career_1/2/3), enrich the h3 renderer
+  // so the score card appears right under the career title without changing
+  // the surrounding markdown flow.
+  const enrichedComponents = useMemo(() => {
+    if (hasMultipleBlocks) return markdownComponents;
+    return {
+      ...markdownComponents,
+      h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => {
+        const headingText = React.Children.toArray(children)
+          .map((c) => (typeof c === 'string' ? c : ''))
+          .join('')
+          .trim();
+        const section = findSectionByTitle(sections, headingText);
+        const score = section?.score != null ? Number(section.score) : null;
+        // Look for an AI Impact rating anywhere in the message body.
+        const aiImpact = extractAIImpact(sanitized);
+        return (
+          <>
+            <h3
+              className="text-lg font-bold text-atlas-navy mt-4 mb-2 font-heading"
+              {...props}
+            >
+              {children}
+            </h3>
+            <CareerScoreCard
+              score={Number.isFinite(score) ? score : null}
+              aiImpact={section ? aiImpact : null}
+            />
+          </>
+        );
+      },
+    };
+  }, [hasMultipleBlocks, sections, sanitized]);
+
   return (
     <div className="flex justify-start mb-4">
       <div
@@ -304,9 +411,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             blocks={blocks}
             defaultAllCollapsed={defaultAllCollapsed}
             onAllBlocksOpened={onAllBlocksOpened}
+            sections={sections}
           />
         ) : (
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={enrichedComponents}>
             {sanitized}
           </ReactMarkdown>
         )}

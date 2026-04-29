@@ -24,7 +24,7 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="w-full max-w-[800px] mx-auto py-4">
       <Card className="border-2 border-green-500/20 shadow-lg">
         <CardHeader className="text-center pb-4">
           <img src={atlasFigure} alt="Atlas" className="mx-auto mb-4 h-40 w-auto" />
