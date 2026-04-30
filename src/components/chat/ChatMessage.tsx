@@ -478,6 +478,24 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
   const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
 
+  // TEMP DEBUG — printing both raw and sanitized so we can see whether the
+  // h5 -> ## conversion is happening AND whether the split regex is finding
+  // the boundaries. Remove once sequential reveal confirmed working.
+  if (sender === 'bot') {
+    console.log('[SeqReveal]', {
+      rawHasH5: /<h5/i.test(content),
+      rawHasMd2: /^## /m.test(content),
+      sanitizedHasH5: /<h5/i.test(sanitized),
+      sanitizedHasMd2: /^## /m.test(sanitized),
+      rawSnippet: content.slice(0, 300),
+      sanitizedSnippet: sanitized.slice(0, 300),
+      h3BlocksFound: blocks.length,
+      h2SubsectionsFound: subsections.length,
+      subsectionTitles: subsections.map((s) => s.title),
+      useSequentialReveal,
+    });
+  }
+
   // For single-block messages (e.g. top_career_1/2/3), enrich the h3 renderer
   // so the score card appears right under the career title without changing
   // the surrounding markdown flow.

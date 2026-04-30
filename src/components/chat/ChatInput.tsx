@@ -112,11 +112,10 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
               style={{ minHeight: MIN_HEIGHT, maxHeight: MAX_HEIGHT }}
             />
 
-            {/* Buttons container — anchored to the BOTTOM of the textarea so
-                they stay aligned with the typing line as the textarea grows
-                (top-1/2 centering would float them up away from the cursor
-                in multi-line mode and looks "too far down" at single-line). */}
-            <div className="absolute right-2 sm:right-3 bottom-2 sm:bottom-2.5 flex items-center gap-1">
+            {/* Buttons container — vertically centered against the textarea.
+                Tried bottom-anchoring earlier but it visually drifted off-center
+                at the default single-line height. Center is the better default. */}
+            <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
               {/* Mic button — only show if browser supports speech recognition */}
               {hasSpeechRecognition && (
                 <button
