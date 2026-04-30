@@ -458,11 +458,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   // Section-reveal messages have multiple ## sub-sections (e.g. Approach,
   // Strengths, Development, Values) — apply sequential reveal so the user
-  // gets one sub-section at a time. Only for the latest bot message; older
-  // messages (already-read history) render flat.
+  // gets one sub-section at a time. Applied to ALL such messages (not just
+  // the latest) so historical section reveals are also collapsed and the
+  // user can scroll up to a clean, scannable structure.
   const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
-  const useSequentialReveal =
-    isLatestBotMessage && !hasMultipleBlocks && subsections.length >= 2;
+  const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
 
   // For single-block messages (e.g. top_career_1/2/3), enrich the h3 renderer
   // so the score card appears right under the career title without changing
