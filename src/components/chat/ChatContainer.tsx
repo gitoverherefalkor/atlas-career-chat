@@ -157,16 +157,18 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       });
     }, [isLoading, hasMessages, messages]);
 
-    // Reset the unrevealed-subsection count whenever a new bot message
-    // arrives. -1 = "not yet reported" (locked). ChatMessage fires the
-    // reveal-state callback on mount with either (1, total) for messages
-    // with sub-sections or (0, 0) for messages without — so the lock
-    // resolves to the correct state on the very next render.
+    // ChatMessage is the source of truth for the latest bot message's
+    // reveal state — it fires `onSequentialRevealStateChange` on mount
+    // with either (1, total) for sub-section messages or (0, 0) for
+    // discussion replies. We deliberately do NOT reset the count here
+    // when `messages` changes: parent useEffects run AFTER child mount
+    // effects, so a parent reset would clobber the child's correct
+    // report. The ref is kept in case any other code path needs to
+    // detect bot-message changes.
     useEffect(() => {
       const latestBot = [...messages].reverse().find((m) => m.sender === 'bot');
       if (latestBot && latestBot.id !== lastBotMessageIdRef.current) {
         lastBotMessageIdRef.current = latestBot.id;
-        setLatestUnrevealedCount(-1);
       }
     }, [messages]);
 
