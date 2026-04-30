@@ -8,11 +8,14 @@ interface QuickReply {
   icon: React.ReactNode;
   variant?: 'default' | 'primary'; // Visual emphasis
   action?: 'navigate-dashboard'; // Special action instead of sending a message
+  // When set, focusing the input also sets this as the placeholder so the
+  // user knows what kind of feedback we're inviting.
+  inputPlaceholder?: string;
 }
 
 interface QuickRepliesProps {
   onSend: (message: string) => void;
-  onFocusInput: () => void;
+  onFocusInput: (placeholder?: string) => void;
   visible: boolean;
   isLastSection?: boolean; // True when on dream jobs (final section)
   isWrappedUp?: boolean; // True after the user has sent the wrap-up message
@@ -33,16 +36,20 @@ const STANDARD_REPLIES: QuickReply[] = [
     icon: <Search size={14} />,
   },
   {
+    // Focus input + custom placeholder. No bot round-trip needed —
+    // user types their actual feedback and the bot responds to that.
     label: 'I see this differently',
     mobileLabel: 'I disagree',
-    message: 'I see this a bit differently, I have some feedback',
+    message: '',
     icon: <ThumbsDown size={14} />,
+    inputPlaceholder: 'Tell me how you see it…',
   },
   {
     label: 'Something else',
     mobileLabel: 'Something else',
-    message: '', // Empty = focus input
+    message: '',
     icon: <Pencil size={14} />,
+    inputPlaceholder: "Let me know what's on your mind…",
   },
 ];
 
@@ -64,14 +71,16 @@ const FINAL_REPLIES: QuickReply[] = [
   {
     label: 'I see this differently',
     mobileLabel: 'I disagree',
-    message: 'I see this a bit differently, I have some feedback',
+    message: '',
     icon: <ThumbsDown size={14} />,
+    inputPlaceholder: 'Tell me how you see it…',
   },
   {
     label: 'Something else',
     mobileLabel: 'Something else',
-    message: '', // Empty = focus input
+    message: '',
     icon: <Pencil size={14} />,
+    inputPlaceholder: "Let me know what's on your mind…",
   },
 ];
 
@@ -117,8 +126,10 @@ export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput
     if (reply.message) {
       onSend(reply.message);
     } else {
-      // "Something else" — just focus the input so user can type freely
-      onFocusInput();
+      // No message → focus the input so user can type freely. If a custom
+      // placeholder is configured, pass it through so the chat input shows
+      // an inviting prompt ("Tell me how you see it…").
+      onFocusInput(reply.inputPlaceholder);
     }
   };
 

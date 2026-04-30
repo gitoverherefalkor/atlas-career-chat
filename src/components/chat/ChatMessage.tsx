@@ -20,6 +20,57 @@ interface ChatMessageProps {
   // messages (multiple ## sub-headers) get a sequential reveal pattern
   // instead of dumping all the text at once. Historical messages render flat.
   isLatestBotMessage?: boolean;
+  // Used by 'follow-up with options' messages — clicking an option chip
+  // sends it back as a user message (or focuses input for free-text).
+  onChipSend?: (message: string) => void;
+  onChipFocusInput?: (placeholder?: string) => void;
+}
+
+interface ChipOption {
+  display: string;  // What's shown in the chip
+  message: string;  // What's sent if the chip is clicked
+  isFreeText: boolean; // true → focus input instead of sending
+}
+
+// Detect if a bot message is a 'follow-up with options' — i.e. an intro
+// line + a bullet list of bold-leading items. These appear when the user
+// clicks 'Explore more' or 'I see this differently' and the bot offers
+// specific topics to dig into. We render the bullets as clickable chips
+// (Claude-style multiple choice) instead of a plain bullet list, so the
+// user can click to drill in (or use the 'Something else' chip / type
+// freely) without facing the same generic Quick Replies again.
+function detectFollowUpOptions(markdown: string): {
+  intro: string;
+  options: ChipOption[];
+} | null {
+  // Section reveals always have a ### title — those aren't follow-ups.
+  if (/^### /m.test(markdown)) return null;
+
+  const lines = markdown.split('\n');
+  // Bullets with a bold lead like "- **Title** - description" or "- **All bold!**"
+  const bulletRegex = /^\s*-\s*\*\*(.+?)\*\*\s*(.*)$/;
+
+  const introLines: string[] = [];
+  const options: ChipOption[] = [];
+  let seenBullet = false;
+
+  for (const line of lines) {
+    const m = line.match(bulletRegex);
+    if (m) {
+      seenBullet = true;
+      const title = m[1].trim().replace(/[!?.]+$/, '');
+      // "- description" → strip leading dash; otherwise plain text.
+      const rawDesc = (m[2] || '').replace(/^\s*-\s*/, '').trim();
+      const display = rawDesc ? `${title} — ${rawDesc}` : title;
+      const isFreeText = /something else|let me know/i.test(`${title} ${rawDesc}`);
+      options.push({ display, message: title, isFreeText });
+    } else if (!seenBullet && line.trim()) {
+      introLines.push(line);
+    }
+  }
+
+  if (options.length < 2) return null;
+  return { intro: introLines.join('\n').trim(), options };
 }
 
 // Section types that have a meaningful score column we want to surface.
@@ -435,6 +486,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   defaultAllCollapsed = false,
   sections,
   isLatestBotMessage = false,
+  onChipSend,
+  onChipFocusInput,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
 
@@ -481,6 +534,15 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   // user can scroll up to a clean, scannable structure.
   const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
   const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
+
+  // Detect 'follow-up with options' messages (response to Explore More /
+  // I see this differently). Only the latest bot message gets the chip
+  // treatment so old follow-ups stay rendered as plain bullets — clicking
+  // through historical chips wouldn't make sense conversationally.
+  const followUpOptions =
+    isLatestBotMessage && !hasMultipleBlocks && !useSequentialReveal
+      ? detectFollowUpOptions(sanitized)
+      : null;
 
   // For single-block messages (e.g. top_career_1/2/3), enrich the h3 renderer
   // so the score card appears right under the career title without changing
@@ -535,6 +597,32 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             preamble={subsectionPreamble}
             subsections={subsections}
           />
+        ) : followUpOptions ? (
+          <div>
+            {followUpOptions.intro && (
+              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                {followUpOptions.intro}
+              </ReactMarkdown>
+            )}
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mt-3">
+              {followUpOptions.options.map((opt, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => {
+                    if (opt.isFreeText) {
+                      onChipFocusInput?.("Let me know what's on your mind…");
+                    } else {
+                      onChipSend?.(opt.message);
+                    }
+                  }}
+                  className="text-left px-4 py-3 rounded-xl border border-atlas-teal/30 bg-atlas-teal/5 hover:bg-atlas-teal/10 hover:border-atlas-teal/60 transition-colors text-sm font-medium text-atlas-navy"
+                >
+                  {opt.display}
+                </button>
+              ))}
+            </div>
+          </div>
         ) : (
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={enrichedComponents}>
             {sanitized}

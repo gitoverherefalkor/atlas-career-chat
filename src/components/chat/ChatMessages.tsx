@@ -21,7 +21,9 @@ interface ChatMessagesProps {
   currentSectionIndex: number;
   onSectionDetected: (index: number) => void;
   onQuickReply: (message: string) => void;
-  onFocusInput: () => void;
+  // Optional placeholder lets quick-reply / chip clicks customize the input
+  // prompt (e.g. 'Tell me how you see it…') when focusing without sending.
+  onFocusInput: (placeholder?: string) => void;
   onDreamJobsRead?: () => void;
   // In-chat welcome card (shown as the empty state when no messages exist).
   showWelcome?: boolean;
@@ -160,6 +162,18 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             // Dream jobs message: collapse all blocks by default, track when all opened
             const isDreamJobsMessage = isLastBotMessage && isDreamJobsSection;
 
+            // Detect if this latest bot message is a 'follow-up with options'
+            // (response to Explore More / I see this differently). If so we
+            // suppress the standard QuickReplies underneath — those would
+            // create a loop ("Explore more" → bot lists topics → "Explore
+            // more" again → same generic response). The chips inside the
+            // message replace the loopable buttons.
+            const isFollowUp =
+              isLastBotMessage &&
+              msg.sender === 'bot' &&
+              !/^### /m.test(msg.content) &&
+              (msg.content.match(/^\s*-\s*\*\*/gm) || []).length >= 2;
+
             return (
               <React.Fragment key={msg.id}>
                 {isLastMessage && <div ref={lastMessageRef} />}
@@ -171,8 +185,10 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   onAllBlocksOpened={isDreamJobsMessage ? () => { setDreamJobsOpened(true); onDreamJobsRead?.(); } : undefined}
                   sections={sections}
                   isLatestBotMessage={isLatestBotMessage}
+                  onChipSend={onQuickReply}
+                  onChipFocusInput={onFocusInput}
                 />
-                {isLastBotMessage && (
+                {isLastBotMessage && !isFollowUp && (
                   <QuickReplies
                     onSend={onQuickReply}
                     onFocusInput={onFocusInput}

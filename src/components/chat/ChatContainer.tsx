@@ -4,6 +4,7 @@ import { ChatInput, ChatInputHandle } from './ChatInput';
 import { ALL_SECTIONS } from './ReportSidebar';
 import { useN8nWebhook } from '@/hooks/useN8nWebhook';
 import { useChatMessages } from '@/hooks/useChatMessages';
+import { useReportSections } from '@/hooks/useReportSections';
 import { useToast } from '@/hooks/use-toast';
 
 interface ChatContainerProps {
@@ -55,11 +56,19 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
   ) => {
     const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
     const [isUserTyping, setIsUserTyping] = useState(false);
+    // When user clicks a quick-reply that focuses the input ('I see this
+    // differently', 'Something else'), we set this to a custom placeholder
+    // like 'Tell me how you see it…'. Cleared the moment the user actually
+    // sends a message so it doesn't linger across turns.
+    const [inputPlaceholderOverride, setInputPlaceholderOverride] = useState<string | null>(null);
     const inputRef = useRef<ChatInputHandle>(null);
     const { toast } = useToast();
     const { sendMessage, loadPreviousSession } = useN8nWebhook();
     const { messages, isLoading, addMessage, seedFromHistory, hasMessages } =
       useChatMessages({ sessionId, reportId, userId });
+    // Pull career sections from the report so ChatMessage can show match
+    // scores + AI impact next to the career titles the agent presents.
+    const { sections } = useReportSections(reportId);
 
     // Track whether we've attempted to load previous session from n8n
     const migrationAttemptedRef = useRef(false);
@@ -211,6 +220,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       }
     };
 
+    // Called by quick replies that focus the input instead of sending a
+    // message. Optional placeholder overrides the default "Type here" so the
+    // user sees an inviting prompt that matches what we asked them to share.
+    const handleFocusInput = (placeholder?: string) => {
+      setInputPlaceholderOverride(placeholder ?? null);
+      inputRef.current?.focus();
+    };
+
     const handleSend = async (message: string) => {
       if (isSessionCompleted || isWaitingForResponse) return;
 
@@ -218,6 +235,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       // so manually typing a first message has the same effect as clicking
       // "I'm Ready!".
       onUserSentMessage?.();
+      // Clear any custom placeholder set by a previous quick reply.
+      setInputPlaceholderOverride(null);
 
       // Add user message immediately
       addMessage('user', message);
@@ -266,13 +285,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           currentSectionIndex={currentSectionIndex}
           onSectionDetected={onSectionDetected}
           onQuickReply={handleSend}
-          onFocusInput={() => inputRef.current?.focus()}
+          onFocusInput={handleFocusInput}
           onDreamJobsRead={onDreamJobsRead}
           showWelcome={showWelcome}
           isReturningUser={isReturningUser}
           welcomeFirstName={firstName}
           welcomeCompletedSectionIndex={welcomeCompletedSectionIndex}
           onWelcomeReady={onWelcomeReady}
+          sections={sections}
         />
 
         {/* Mobile-only Complete Session CTA — sidebar button isn't visible on mobile */}
@@ -304,7 +324,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
               ? 'Session completed - your report is ready above'
               : messages.length === 0
                 ? "Click 'I'm Ready!' above to begin"
-                : 'Type here'
+                : (inputPlaceholderOverride ?? 'Type here')
           }
           isSidebarCollapsed={isSidebarCollapsed}
         />
