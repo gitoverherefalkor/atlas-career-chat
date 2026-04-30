@@ -240,8 +240,11 @@ const markdownComponents = {
     </h2>
   ),
   h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+    // scroll-mt-[120px] ensures the sticky page navbar (~73px) doesn't
+    // cover the heading when the user clicks a sidebar section to scroll
+    // here. ~50px of breathing room below the navbar feels intentional.
     <h3
-      className="text-xl font-bold text-atlas-navy mt-8 mb-2 font-heading first:mt-0"
+      className="text-xl font-bold text-atlas-navy mt-8 mb-2 font-heading first:mt-0 scroll-mt-[120px]"
       {...props}
     >
       {children}
@@ -348,12 +351,12 @@ const SequentialSubsections: React.FC<{
         // (mt-10 = 40px) so they don't feel cramped against the previous
         // sub-section's last paragraph.
         const headingMargin = idx === 0 ? 'mt-4' : 'mt-10';
-        // scroll-mt-6 leaves 24px of breathing room above the wrapper div
-        // when scrollIntoView fires after chevron click. Without it the new
-        // sub-section's heading lands flush with the chat container top and
-        // visually feels cut off (especially under the sticky navbar).
+        // scroll-mt-[120px] leaves enough room above the wrapper for the
+        // sticky page navbar (~73px) plus ~50px breathing room. Earlier
+        // values were too small and the sub-header landed behind the navbar
+        // — user could see the first sentence but not the heading itself.
         return (
-          <div key={idx} ref={isLastVisible ? lastRevealedRef : undefined} className="scroll-mt-6">
+          <div key={idx} ref={isLastVisible ? lastRevealedRef : undefined} className="scroll-mt-[120px]">
             <h5 className={`text-lg font-semibold text-atlas-teal mb-3 flex items-center gap-2.5 ${headingMargin}`}>
               {Icon && <Icon className="w-5 h-5 shrink-0" strokeWidth={2.25} />}
               <span>{sub.title}</span>

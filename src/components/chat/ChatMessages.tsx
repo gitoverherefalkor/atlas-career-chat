@@ -89,32 +89,19 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
       }
     }, [messages.length, isWaitingForResponse]);
 
-    // Expose scrollToSection for sidebar navigation.
+    // Expose scrollToSection for sidebar navigation. Uses scrollIntoView
+    // (not container.scrollTo) because the page scrolls at the WINDOW
+    // level, not within the chat container — the container's scrollTop
+    // is always 0. scrollIntoView walks ancestors and scrolls whichever
+    // one is actually scrollable. CSS scroll-margin-top on the h3 leaves
+    // breathing room above the heading (set in markdownComponents.h3).
     useImperativeHandle(ref, () => ({
       scrollToSection: (sectionId: string) => {
         const container = scrollContainerRef.current;
-        if (!container) {
-          console.log('[ScrollSection] no container');
-          return;
-        }
-        // Find ALL matching headings and use the first one in DOM order —
-        // the original section reveal, not any later deep-dive that
-        // happens to mention the same name.
-        const headings = container.querySelectorAll(`[data-section-id="${sectionId}"]`);
-        console.log('[ScrollSection]', sectionId, 'matched', headings.length, 'elements');
-        const heading = headings[0] as HTMLElement | undefined;
-        if (!heading) {
-          // Fallback: list all data-section-id elements so we can see what's tagged
-          const allTagged = container.querySelectorAll('[data-section-id]');
-          console.log('[ScrollSection] no match. All tagged:', Array.from(allTagged).map((el) => el.getAttribute('data-section-id')));
-          return;
-        }
-        const containerRect = container.getBoundingClientRect();
-        const headingRect = heading.getBoundingClientRect();
-        const offsetWithinContainer = headingRect.top - containerRect.top + container.scrollTop;
-        const target = Math.max(0, offsetWithinContainer - 16);
-        console.log('[ScrollSection] scrolling to', target, '(currentScrollTop:', container.scrollTop, ')');
-        container.scrollTo({ top: target, behavior: 'smooth' });
+        if (!container) return;
+        const heading = container.querySelector(`[data-section-id="${sectionId}"]`) as HTMLElement | null;
+        if (!heading) return;
+        heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
       },
     }));
 
