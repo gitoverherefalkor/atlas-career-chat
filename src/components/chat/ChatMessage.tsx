@@ -74,19 +74,26 @@ interface SplitContent {
 }
 
 // Convert HTML tags the agent sometimes sends to markdown equivalents.
-// Each replacement also adds surrounding newlines for headings so they
-// land on their own line — required for the markdown ^## regex match in
-// splitIntoH2Subsections (HTML inline like "...text<h2>X</h2>..." would
-// otherwise become "...text## X..." mid-line and never be detected).
+//
+// IMPORTANT — heading mapping is by VISUAL SEMANTIC, not HTML nesting depth.
+// The agent stores teal sub-headers like "Personality and Interaction Style"
+// as <h5> in the report DB (because they're 5 levels deep in the report
+// structure: report > section > sub > block > heading). But visually, those
+// are the "main sub-headers" inside a section reveal — equivalent to an h2
+// in standard markdown. We map them accordingly so:
+//   - downstream styling (h2 in markdownComponents = teal, larger) applies
+//   - the splitIntoH2Subsections regex actually finds them
+//   - section detection (looking at h3 / ###) is unchanged
+//
+// Each replacement adds surrounding newlines so headings land on their own
+// line (required for ^## anchor matching).
 function htmlToMarkdown(text: string): string {
   let result = text;
-  // Convert heading tags to markdown (now includes h1/h2 so the sequential
-  // reveal splitter can detect them).
-  result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n');
-  result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n');
-  result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n');
-  result = result.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n#### $1\n');
-  result = result.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '\n##### $1\n');
+  result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n### $1\n'); // h1 -> section title (rare from agent)
+  result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n### $1\n'); // h2 -> section title
+  result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n'); // h3 -> section title (career names etc.)
+  result = result.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n## $1\n');  // h4 -> sub-header
+  result = result.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '\n## $1\n');  // h5 -> sub-header (most common case)
   // Convert inline tags
   result = result.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
   result = result.replace(/<em>(.*?)<\/em>/gi, '*$1*');
@@ -470,18 +477,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   // user can scroll up to a clean, scannable structure.
   const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
   const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
-
-  // TEMPORARY DEBUG — see what the splitter actually finds in production content.
-  // Remove once sequential reveal is confirmed working.
-  console.log('[SeqReveal]', {
-    contentSnippet: content.slice(0, 200),
-    sanitizedSnippet: sanitized.slice(0, 200),
-    h2Count: (sanitized.match(/^## /gm) || []).length,
-    h3BlocksCount: blocks.length,
-    subsectionsFound: subsections.length,
-    subsectionTitles: subsections.map((s) => s.title),
-    useSequentialReveal,
-  });
 
   // For single-block messages (e.g. top_career_1/2/3), enrich the h3 renderer
   // so the score card appears right under the career title without changing
