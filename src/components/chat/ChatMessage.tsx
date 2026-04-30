@@ -91,6 +91,22 @@ const SCORED_SECTION_TYPES = new Set([
   'outside_box',
 ]);
 
+// Map report_sections.section_type -> position in ALL_SECTIONS. Used as a
+// fallback in section detection: if a heading text doesn't match any
+// altTitle (because the agent skipped the boilerplate "Career 1:" prefix
+// or chapter intro), we try matching the heading against report_sections
+// titles directly. The matched row's section_type tells us which canonical
+// section we're on. Keeps progress tracking accurate even when the agent
+// drops boilerplate.
+const SECTION_TYPE_TO_INDEX: Record<string, number> = {
+  top_career_1: 5,
+  top_career_2: 6,
+  top_career_3: 7,
+  runner_ups: 8,
+  outside_box: 9,
+  dream_jobs: 10,
+};
+
 // Strip basic HTML tags + bold markers from a heading-style string and lowercase it.
 function normalizeTitle(raw: string): string {
   return raw
@@ -633,14 +649,31 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     headings.forEach((h3) => {
       const text = h3.textContent || '';
       console.log('[Section] h3 text:', text);
-      const idx = findSectionIndex(text);
+      let idx = findSectionIndex(text);
+      // Fallback: if the heading doesn't match any altTitle, try matching
+      // it against the user's report_sections data. The agent sometimes
+      // drops the "Career 1:" prefix and just emits "### [career title]",
+      // so a literal title like "Independent Supervisory Board Member"
+      // looks meaningless to findSectionIndex. But that title IS in the
+      // report_sections table with section_type='top_career_1', which
+      // tells us this message is the Primary Career Match (canonical 5).
+      if (idx < 0 && sections && sections.length > 0) {
+        const section = findSectionByTitle(sections, text);
+        if (section) {
+          const fallbackIdx = SECTION_TYPE_TO_INDEX[section.section_type];
+          if (fallbackIdx != null) {
+            idx = fallbackIdx;
+            console.log('[Section] fallback via report_sections:', section.section_type, '→', idx);
+          }
+        }
+      }
       console.log('[Section] findSectionIndex result:', idx, idx >= 0 ? `(${ALL_SECTIONS[idx].title})` : '(no match)');
       if (idx >= 0) {
         onSectionDetected(idx);
         h3.setAttribute('data-section-id', ALL_SECTIONS[idx].id);
       }
     });
-  }, [content, sender, onSectionDetected]);
+  }, [content, sender, onSectionDetected, sections]);
 
   if (sender === 'user') {
     return (
