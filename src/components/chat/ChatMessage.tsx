@@ -74,26 +74,19 @@ interface SplitContent {
 }
 
 // Convert HTML tags the agent sometimes sends to markdown equivalents.
-//
-// IMPORTANT — heading mapping is by VISUAL SEMANTIC, not HTML nesting depth.
-// The agent stores teal sub-headers like "Personality and Interaction Style"
-// as <h5> in the report DB (because they're 5 levels deep in the report
-// structure: report > section > sub > block > heading). But visually, those
-// are the "main sub-headers" inside a section reveal — equivalent to an h2
-// in standard markdown. We map them accordingly so:
-//   - downstream styling (h2 in markdownComponents = teal, larger) applies
-//   - the splitIntoH2Subsections regex actually finds them
-//   - section detection (looking at h3 / ###) is unchanged
-//
-// Each replacement adds surrounding newlines so headings land on their own
-// line (required for ^## anchor matching).
+// The agent's actual output convention (verified from live content):
+//   ### Section Title         (h3 — main section heading)
+//   ##### Sub-Header          (h5 — teal sub-headers inside sections)
+// We mirror that convention when converting from HTML so the splitter
+// downstream finds the right boundaries. Newlines around each heading
+// ensure they land on their own line for ^# regex matching.
 function htmlToMarkdown(text: string): string {
   let result = text;
-  result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n### $1\n'); // h1 -> section title (rare from agent)
-  result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n### $1\n'); // h2 -> section title
-  result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n'); // h3 -> section title (career names etc.)
-  result = result.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n## $1\n');  // h4 -> sub-header
-  result = result.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '\n## $1\n');  // h5 -> sub-header (most common case)
+  result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n### $1\n');
+  result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n### $1\n');
+  result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n');
+  result = result.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n##### $1\n');
+  result = result.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '\n##### $1\n');
   // Convert inline tags
   result = result.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
   result = result.replace(/<em>(.*?)<\/em>/gi, '*$1*');
@@ -137,20 +130,28 @@ interface H2Subsection {
   body: string;
 }
 
-// Split a section-reveal message into a preamble (h3 + intro) plus an array
-// of h2 sub-sections. Used to power the sequential-reveal pattern for big
-// "section reveal" messages so the user sees one sub-section at a time.
+// Split a section-reveal message into a preamble (### section title + intro)
+// plus an array of ##### sub-sections. Powers the sequential reveal so the
+// user sees one sub-section at a time.
+//
+// Agent's actual format (verified from production content):
+//   ### Section Title
+//   intro paragraph
+//   ##### Sub-Header One
+//   body
+//   ##### Sub-Header Two
+//   body
 function splitIntoH2Subsections(markdown: string): {
   preamble: string;
   subsections: H2Subsection[];
 } {
-  const parts = markdown.split(/(?=^## )/m);
+  const parts = markdown.split(/(?=^##### )/m);
   const preamble = (parts[0] || '').trim();
   const subsections = parts.slice(1).map((part) => {
     const firstNewline = part.indexOf('\n');
     const titleLine = firstNewline >= 0 ? part.slice(0, firstNewline) : part;
     const title = titleLine
-      .replace(/^##\s*/, '')
+      .replace(/^#####\s*/, '')
       .replace(/\*\*/g, '')
       .trim();
     const body = firstNewline >= 0 ? part.slice(firstNewline + 1).trim() : '';
@@ -200,8 +201,11 @@ const markdownComponents = {
     </h4>
   ),
   h5: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
+    // The agent uses ##### for the teal sub-headers inside section reveals
+    // ('Personality and Interaction Style', 'Your Conflict Style', etc).
+    // This is what users actually see — give it the prominent styling.
     <h5
-      className="text-base font-semibold text-atlas-teal mt-5 mb-1.5 first:mt-0"
+      className="text-lg font-semibold text-atlas-teal mt-6 mb-2 first:mt-0"
       {...props}
     >
       {children}
@@ -258,7 +262,7 @@ const SequentialSubsections: React.FC<{
           remarkPlugins={[remarkGfm]}
           components={markdownComponents}
         >
-          {`## ${sub.title}\n\n${sub.body}`}
+          {`##### ${sub.title}\n\n${sub.body}`}
         </ReactMarkdown>
       ))}
       {revealedCount < subsections.length && (
@@ -477,30 +481,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   // user can scroll up to a clean, scannable structure.
   const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
   const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
-
-  // TEMP DEBUG — dump the FULL content for the long section-reveal messages
-  // so we can see exactly what heading format the agent is actually using.
-  if (sender === 'bot' && content.length > 500) {
-    console.log('[SeqReveal] === FULL MESSAGE CONTENT ===');
-    console.log(content);
-    console.log('[SeqReveal] === END ===');
-    console.log('[SeqReveal] flags:', {
-      hasH1: /<h1/i.test(content),
-      hasH2: /<h2/i.test(content),
-      hasH3: /<h3/i.test(content),
-      hasH4: /<h4/i.test(content),
-      hasH5: /<h5/i.test(content),
-      hasH6: /<h6/i.test(content),
-      hasMdH1: /^# /m.test(content),
-      hasMdH2: /^## /m.test(content),
-      hasMdH3: /^### /m.test(content),
-      hasMdH4: /^#### /m.test(content),
-      hasMdH5: /^##### /m.test(content),
-      hasBoldStar: /\*\*/.test(content),
-      blocksFound: blocks.length,
-      subsectionsFound: subsections.length,
-    });
-  }
 
   // For single-block messages (e.g. top_career_1/2/3), enrich the h3 renderer
   // so the score card appears right under the career title without changing
