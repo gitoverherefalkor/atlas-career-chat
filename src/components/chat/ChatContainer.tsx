@@ -91,10 +91,12 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     // sends a message so it doesn't linger across turns.
     const [inputPlaceholderOverride, setInputPlaceholderOverride] = useState<string | null>(null);
     // Track how many sub-sections of the LATEST bot message are still hidden
-    // behind a chevron. While > 0, we lock the input + suppress quick replies
-    // so the user can't react to a half-read section. Resets when a new bot
-    // message arrives (handled in the effect below).
-    const [latestUnrevealedCount, setLatestUnrevealedCount] = useState(0);
+    // behind a chevron. -1 = not yet reported (treat as locked); 0 = fully
+    // revealed (unlocked); >0 = locked until reveals happen. New bot messages
+    // reset to -1 so the UI defaults to LOCKED until ChatMessage reports
+    // back, preventing a flash of QuickReplies before the sub-section
+    // structure is registered.
+    const [latestUnrevealedCount, setLatestUnrevealedCount] = useState(-1);
     const lastBotMessageIdRef = useRef<string | null>(null);
     const inputRef = useRef<ChatInputHandle>(null);
     const { toast } = useToast();
@@ -156,13 +158,15 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     }, [isLoading, hasMessages, messages]);
 
     // Reset the unrevealed-subsection count whenever a new bot message
-    // arrives. SequentialSubsections (if rendered) will fire its initial
-    // state callback right after, populating it correctly.
+    // arrives. -1 = "not yet reported" (locked). ChatMessage fires the
+    // reveal-state callback on mount with either (1, total) for messages
+    // with sub-sections or (0, 0) for messages without — so the lock
+    // resolves to the correct state on the very next render.
     useEffect(() => {
       const latestBot = [...messages].reverse().find((m) => m.sender === 'bot');
       if (latestBot && latestBot.id !== lastBotMessageIdRef.current) {
         lastBotMessageIdRef.current = latestBot.id;
-        setLatestUnrevealedCount(0);
+        setLatestUnrevealedCount(-1);
       }
     }, [messages]);
 
@@ -376,7 +380,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           onFocusInput={handleFocusInput}
           onDreamJobsRead={onDreamJobsRead}
           onSequentialRevealStateChange={handleRevealStateChange}
-          hasUnrevealedSubsections={latestUnrevealedCount > 0}
+          hasUnrevealedSubsections={latestUnrevealedCount !== 0}
           showWelcome={showWelcome}
           isReturningUser={isReturningUser}
           welcomeFirstName={firstName}
@@ -411,7 +415,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
             isSessionCompleted ||
             isWaitingForResponse ||
             (messages.length === 0 && !isWaitingForResponse) ||
-            latestUnrevealedCount > 0
+            latestUnrevealedCount !== 0
           }
           placeholder={
             isSessionCompleted

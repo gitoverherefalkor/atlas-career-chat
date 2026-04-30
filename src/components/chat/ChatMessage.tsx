@@ -712,6 +712,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
   const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
 
+  // For messages that don't use sequential reveal (discussion replies,
+  // follow-up option lists, multi-block career bundles), there's no
+  // SequentialSubsections to fire the reveal-state callback. Report
+  // (0, 0) so the parent unlocks input + quick replies for these
+  // messages. SequentialSubsections handles the reporting itself when
+  // useSequentialReveal is true, so we skip in that case to avoid races.
+  useEffect(() => {
+    if (!isLatestBotMessage) return;
+    if (useSequentialReveal) return;
+    onSequentialRevealStateChange?.(0, 0);
+  }, [isLatestBotMessage, useSequentialReveal, onSequentialRevealStateChange]);
+
   // Detect 'follow-up with options' messages (response to Explore More /
   // I see this differently). Only the latest bot message gets the chip
   // treatment so old follow-ups stay rendered as plain bullets — clicking
