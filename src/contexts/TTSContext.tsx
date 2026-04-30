@@ -1,29 +1,28 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
-
-// Web Speech API doesn't expose voice gender, so we match by name. Order
-// matters — earlier entries are preferred when multiple voices are available.
-const FEMALE_VOICE_HINTS = [
-  'samantha', 'karen', 'moira', 'tessa', 'victoria', 'serena', 'kate', 'fiona',
-  'zira', 'aria', 'jenny', 'jessa', 'libby',
-  'google us english', 'google uk english female',
-  'female',
-];
-const MALE_VOICE_HINTS = [
-  'daniel', 'alex', 'fred', 'tom', 'oliver', 'rishi', 'aaron', 'arthur',
-  'david', 'mark', 'guy', 'ryan',
-  'google uk english male',
-  'male',
-];
+import { supabase } from '@/integrations/supabase/client';
 
 export type VoiceGender = 'female' | 'male';
 
 const STORAGE_KEY_GENDER = 'atlas:tts:gender';
 const STORAGE_KEY_READ_ALL = 'atlas:tts:read-all';
 
+// Resolve the TTS edge function URL from the same env var the supabase client
+// uses. Prevents drift between staging/prod.
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const TTS_ENDPOINT = `${SUPABASE_URL}/functions/v1/tts`;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
 interface TTSContextValue {
+  // Always true now — we use OpenAI TTS via the edge function instead of
+  // browser speechSynthesis. Kept on the type so consumers don't break.
   isSupported: boolean;
+  // True while audio is loading or actively playing for `speakingId`.
   isSpeaking: boolean;
   speakingId: string | null;
+  // True while we're fetching the MP3 from the edge function (before
+  // playback starts). Lets the button show a spinner state.
+  isLoading: boolean;
+  loadingId: string | null;
   gender: VoiceGender;
   setGender: (g: VoiceGender) => void;
   readAll: boolean;
@@ -34,8 +33,7 @@ interface TTSContextValue {
 
 const TTSContext = createContext<TTSContextValue | null>(null);
 
-// Strip markdown / HTML so the synthesizer reads natural prose instead of
-// "asterisk asterisk header asterisk asterisk".
+// Strip markdown / HTML so the synthesizer reads natural prose.
 function stripForSpeech(md: string): string {
   return md
     .replace(/```[\s\S]*?```/g, '')
@@ -56,12 +54,10 @@ function stripForSpeech(md: string): string {
 }
 
 export const TTSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const isSupported =
-    typeof window !== 'undefined' && 'speechSynthesis' in window;
-
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const [gender, setGenderState] = useState<VoiceGender>(() => {
     if (typeof window === 'undefined') return 'female';
     return localStorage.getItem(STORAGE_KEY_GENDER) === 'male' ? 'male' : 'female';
@@ -71,78 +67,115 @@ export const TTSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return localStorage.getItem(STORAGE_KEY_READ_ALL) === 'true';
   });
 
-  // Chrome loads voices asynchronously; subscribe to onvoiceschanged.
-  useEffect(() => {
-    if (!isSupported) return;
-    const update = () => setVoices(window.speechSynthesis.getVoices());
-    update();
-    window.speechSynthesis.addEventListener('voiceschanged', update);
-    return () => {
-      window.speechSynthesis.removeEventListener('voiceschanged', update);
-    };
-  }, [isSupported]);
+  // Single shared audio element + abort controller. We re-use them so the
+  // user can spam play/stop on different messages without leaking handles.
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  // Cancel any ongoing utterance if the provider unmounts (e.g. user navigates
-  // away from /chat) — otherwise the voice keeps playing on the next page.
-  useEffect(() => {
-    return () => {
-      if (isSupported) window.speechSynthesis.cancel();
-    };
-  }, [isSupported]);
-
-  const pickVoice = useCallback(
-    (g: VoiceGender): SpeechSynthesisVoice | null => {
-      if (voices.length === 0) return null;
-      const english = voices.filter((v) => v.lang.toLowerCase().startsWith('en'));
-      const pool = english.length > 0 ? english : voices;
-      const hints = g === 'female' ? FEMALE_VOICE_HINTS : MALE_VOICE_HINTS;
-      for (const hint of hints) {
-        const match = pool.find((v) => v.name.toLowerCase().includes(hint));
-        if (match) return match;
-      }
-      return pool[0];
-    },
-    [voices]
-  );
+  const cleanupAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+  }, []);
 
   const stop = useCallback(() => {
-    if (!isSupported) return;
-    window.speechSynthesis.cancel();
+    if (abortRef.current) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+    cleanupAudio();
     setIsSpeaking(false);
     setSpeakingId(null);
-  }, [isSupported]);
+    setIsLoading(false);
+    setLoadingId(null);
+  }, [cleanupAudio]);
+
+  // Stop any playback on unmount (e.g. user navigates away).
+  useEffect(() => {
+    return () => stop();
+  }, [stop]);
 
   const speak = useCallback(
-    (text: string, id: string) => {
-      if (!isSupported) return;
+    async (text: string, id: string) => {
       const cleaned = stripForSpeech(text);
       if (!cleaned) return;
-      // Always cancel anything in progress so the new utterance starts fresh.
-      window.speechSynthesis.cancel();
 
-      const utterance = new SpeechSynthesisUtterance(cleaned);
-      const voice = pickVoice(gender);
-      if (voice) {
-        utterance.voice = voice;
-        utterance.lang = voice.lang;
+      // Cancel any in-flight request + audio before starting fresh.
+      stop();
+
+      const controller = new AbortController();
+      abortRef.current = controller;
+      setIsLoading(true);
+      setLoadingId(id);
+
+      try {
+        // Get the auth token so the request goes through Supabase auth.
+        // Anon key fallback is fine — the function itself is public CORS.
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token ?? SUPABASE_ANON_KEY;
+
+        const response = await fetch(TTS_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'apikey': SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ text: cleaned, voice: gender }),
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          console.error('TTS request failed:', response.status, await response.text());
+          setIsLoading(false);
+          setLoadingId(null);
+          return;
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        audioUrlRef.current = url;
+
+        const audio = new Audio(url);
+        audioRef.current = audio;
+
+        audio.onplay = () => {
+          setIsLoading(false);
+          setLoadingId(null);
+          setIsSpeaking(true);
+          setSpeakingId(id);
+        };
+        audio.onended = () => {
+          cleanupAudio();
+          setIsSpeaking(false);
+          setSpeakingId((current) => (current === id ? null : current));
+        };
+        audio.onerror = () => {
+          cleanupAudio();
+          setIsLoading(false);
+          setLoadingId(null);
+          setIsSpeaking(false);
+          setSpeakingId((current) => (current === id ? null : current));
+        };
+
+        await audio.play();
+      } catch (err) {
+        // AbortError is expected when stop() is called mid-fetch.
+        if ((err as Error)?.name !== 'AbortError') {
+          console.error('TTS speak error:', err);
+        }
+        setIsLoading(false);
+        setLoadingId(null);
       }
-      utterance.rate = 1.0;
-      utterance.pitch = 1.0;
-      utterance.onstart = () => {
-        setIsSpeaking(true);
-        setSpeakingId(id);
-      };
-      utterance.onend = () => {
-        setIsSpeaking(false);
-        setSpeakingId((current) => (current === id ? null : current));
-      };
-      utterance.onerror = () => {
-        setIsSpeaking(false);
-        setSpeakingId((current) => (current === id ? null : current));
-      };
-      window.speechSynthesis.speak(utterance);
     },
-    [isSupported, pickVoice, gender]
+    [gender, stop, cleanupAudio]
   );
 
   const setGender = useCallback((g: VoiceGender) => {
@@ -160,9 +193,11 @@ export const TTSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const value: TTSContextValue = {
-    isSupported,
+    isSupported: true,
     isSpeaking,
     speakingId,
+    isLoading,
+    loadingId,
     gender,
     setGender,
     readAll,
@@ -177,12 +212,12 @@ export const TTSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 export function useTTS(): TTSContextValue {
   const ctx = useContext(TTSContext);
   if (!ctx) {
-    // Fallback no-op implementation — keeps consumers safe if rendered
-    // outside the provider (e.g. unit tests or a stripped-down view).
     return {
       isSupported: false,
       isSpeaking: false,
       speakingId: null,
+      isLoading: false,
+      loadingId: null,
       gender: 'female',
       setGender: () => {},
       readAll: false,

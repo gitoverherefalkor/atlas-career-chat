@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, Square, Settings2, Check } from 'lucide-react';
+import { Volume2, Square, Settings2, Check, Loader2 } from 'lucide-react';
 import { useTTS } from '@/contexts/TTSContext';
 
 interface MessageVoiceButtonProps {
@@ -18,6 +18,7 @@ export const MessageVoiceButton: React.FC<MessageVoiceButtonProps> = ({
   const {
     isSupported,
     speakingId,
+    loadingId,
     speak,
     stop,
     gender,
@@ -44,9 +45,11 @@ export const MessageVoiceButton: React.FC<MessageVoiceButtonProps> = ({
   if (!isSupported) return null;
 
   const isThisSpeaking = speakingId === messageId;
+  const isThisLoading = loadingId === messageId;
+  const isActive = isThisSpeaking || isThisLoading;
 
   const handleToggle = () => {
-    if (isThisSpeaking) {
+    if (isActive) {
       stop();
     } else {
       speak(text, messageId);
@@ -61,20 +64,22 @@ export const MessageVoiceButton: React.FC<MessageVoiceButtonProps> = ({
       <button
         type="button"
         onClick={handleToggle}
-        title={isThisSpeaking ? 'Stop' : 'Read aloud'}
+        title={isActive ? 'Stop' : 'Read aloud'}
         className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
-          isThisSpeaking
+          isActive
             ? 'bg-atlas-teal/10 text-atlas-teal'
             : 'text-gray-500 hover:text-atlas-teal hover:bg-atlas-teal/5'
         }`}
       >
-        {isThisSpeaking ? (
+        {isThisLoading ? (
+          <Loader2 size={13} className="animate-spin" />
+        ) : isThisSpeaking ? (
           <Square size={13} fill="currentColor" />
         ) : (
           <Volume2 size={14} />
         )}
         <span className="font-medium">
-          {isThisSpeaking ? 'Stop' : 'Read aloud'}
+          {isThisLoading ? 'Loading…' : isThisSpeaking ? 'Stop' : 'Read aloud'}
         </span>
       </button>
 
