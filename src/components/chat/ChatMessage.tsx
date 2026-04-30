@@ -332,7 +332,10 @@ const SequentialSubsections: React.FC<{
   // Full sanitized message body — used to extract the AI Impact rating,
   // which can appear in any subsection rather than only in the preamble.
   fullBody?: string;
-}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody }) => {
+  // When true (TTS is reading this message), reveal every sub-section
+  // immediately so the audio narration matches what's visible on screen.
+  forceFullReveal?: boolean;
+}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal }) => {
   // revealedCount = number of sub-sections currently visible. Starts at 1
   // so the user sees the preamble + first h2 + first body on first render.
   const [revealedCount, setRevealedCount] = useState(1);
@@ -346,6 +349,14 @@ const SequentialSubsections: React.FC<{
   useEffect(() => {
     onRevealStateChange?.(revealedCount, subsections.length);
   }, [revealedCount, subsections.length, onRevealStateChange]);
+
+  // When TTS starts narrating this message, expand every remaining
+  // sub-section so what the user hears matches what they see.
+  useEffect(() => {
+    if (forceFullReveal && revealedCount < subsections.length) {
+      setRevealedCount(subsections.length);
+    }
+  }, [forceFullReveal, revealedCount, subsections.length]);
 
   // Scroll the newly revealed sub-section to the top of the viewport when
   // revealedCount grows. Skipped on initial mount so first render doesn't
@@ -767,6 +778,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             // Only the latest message reports state — older messages
             // shouldn't lock the input even if their state is partial.
             onRevealStateChange={isLatestBotMessage ? onSequentialRevealStateChange : undefined}
+            // While TTS is narrating this message, expand every sub-section
+            // so what the user sees matches what they're hearing.
+            forceFullReveal={
+              !!messageId &&
+              (tts.speakingId === messageId || tts.loadingId === messageId)
+            }
           />
         ) : followUpOptions ? (
           <div>
