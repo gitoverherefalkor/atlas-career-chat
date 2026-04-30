@@ -348,8 +348,12 @@ const SequentialSubsections: React.FC<{
         // (mt-10 = 40px) so they don't feel cramped against the previous
         // sub-section's last paragraph.
         const headingMargin = idx === 0 ? 'mt-4' : 'mt-10';
+        // scroll-mt-6 leaves 24px of breathing room above the wrapper div
+        // when scrollIntoView fires after chevron click. Without it the new
+        // sub-section's heading lands flush with the chat container top and
+        // visually feels cut off (especially under the sticky navbar).
         return (
-          <div key={idx} ref={isLastVisible ? lastRevealedRef : undefined}>
+          <div key={idx} ref={isLastVisible ? lastRevealedRef : undefined} className="scroll-mt-6">
             <h5 className={`text-lg font-semibold text-atlas-teal mb-3 flex items-center gap-2.5 ${headingMargin}`}>
               {Icon && <Icon className="w-5 h-5 shrink-0" strokeWidth={2.25} />}
               <span>{sub.title}</span>
