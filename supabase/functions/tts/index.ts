@@ -67,9 +67,11 @@ serve(async (req) => {
       return errorResponse('TTS provider error', 502, corsHeaders);
     }
 
-    const audioBuffer = await openaiResponse.arrayBuffer();
-
-    return new Response(audioBuffer, {
+    // Pipe OpenAI's streaming body straight through to the browser. The
+    // browser's MediaSource layer can start playback as soon as the first
+    // chunk arrives, which makes long section reveals feel instant instead
+    // of "wait 5-10 seconds for the whole file to download".
+    return new Response(openaiResponse.body, {
       status: 200,
       headers: {
         ...corsHeaders,

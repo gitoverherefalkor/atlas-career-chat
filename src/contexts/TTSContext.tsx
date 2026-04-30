@@ -132,18 +132,14 @@ export const TTSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           signal: controller.signal,
         });
 
-        if (!response.ok) {
+        if (!response.ok || !response.body) {
           console.error('TTS request failed:', response.status, await response.text());
           setIsLoading(false);
           setLoadingId(null);
           return;
         }
 
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        audioUrlRef.current = url;
-
-        const audio = new Audio(url);
+        const audio = new Audio();
         audioRef.current = audio;
 
         audio.onplay = () => {
@@ -164,6 +160,71 @@ export const TTSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setIsSpeaking(false);
           setSpeakingId((current) => (current === id ? null : current));
         };
+
+        // Try MediaSource streaming first — playback starts as soon as the
+        // first chunk arrives (~600-800ms) instead of waiting for the full
+        // MP3 (~5-10s for long section reveals). Falls back to a full-blob
+        // download if MSE isn't available or doesn't support audio/mpeg.
+        const canStream =
+          typeof MediaSource !== 'undefined' &&
+          MediaSource.isTypeSupported('audio/mpeg');
+
+        if (canStream) {
+          const mediaSource = new MediaSource();
+          const url = URL.createObjectURL(mediaSource);
+          audioUrlRef.current = url;
+          audio.src = url;
+
+          mediaSource.addEventListener(
+            'sourceopen',
+            () => {
+              const sourceBuffer = mediaSource.addSourceBuffer('audio/mpeg');
+              const reader = response.body!.getReader();
+              const queue: Uint8Array[] = [];
+              let streamDone = false;
+
+              const flush = () => {
+                if (sourceBuffer.updating) return;
+                if (queue.length > 0) {
+                  sourceBuffer.appendBuffer(queue.shift()!);
+                  return;
+                }
+                if (streamDone && mediaSource.readyState === 'open') {
+                  mediaSource.endOfStream();
+                }
+              };
+
+              sourceBuffer.addEventListener('updateend', flush);
+
+              const pump = async () => {
+                try {
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                      streamDone = true;
+                      flush();
+                      break;
+                    }
+                    queue.push(value);
+                    flush();
+                  }
+                } catch (err) {
+                  if ((err as Error)?.name !== 'AbortError') {
+                    console.error('TTS stream pump error:', err);
+                  }
+                }
+              };
+
+              pump();
+            },
+            { once: true }
+          );
+        } else {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          audioUrlRef.current = url;
+          audio.src = url;
+        }
 
         await audio.play();
       } catch (err) {
