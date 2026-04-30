@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { ThumbsDown, ArrowRight, CheckCircle, Search, Pencil, LayoutDashboard } from 'lucide-react';
 
+// `intent` lets the chat container distinguish between message types that
+// look the same in the chat history but mean different things to the
+// platform. 'advance' is a clean "Continue to next section" click — the
+// fast-path edge function can deliver the next section deterministically
+// without invoking the agent. 'wrap_up' is the dream-jobs final click.
+// undefined means the click should flow through the agent like a normal
+// free-text message (explore-more, see-differently followups).
+export type QuickReplyIntent = 'advance' | 'wrap_up';
+
 interface QuickReply {
   label: string;
   mobileLabel: string; // Shorter label for small screens
@@ -8,13 +17,14 @@ interface QuickReply {
   icon: React.ReactNode;
   variant?: 'default' | 'primary'; // Visual emphasis
   action?: 'navigate-dashboard'; // Special action instead of sending a message
+  intent?: QuickReplyIntent; // Routing hint for the chat container
   // When set, focusing the input also sets this as the placeholder so the
   // user knows what kind of feedback we're inviting.
   inputPlaceholder?: string;
 }
 
 interface QuickRepliesProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, intent?: QuickReplyIntent) => void;
   onFocusInput: (placeholder?: string) => void;
   visible: boolean;
   isLastSection?: boolean; // True when on dream jobs (final section)
@@ -33,6 +43,7 @@ const STANDARD_REPLIES: QuickReply[] = [
     mobileLabel: 'Next section',
     message: 'Looks good, let\'s continue to the next section',
     icon: <ArrowRight size={14} />,
+    intent: 'advance',
   },
   {
     label: 'I\'d like to explore this more',
@@ -66,6 +77,7 @@ const FINAL_REPLIES: QuickReply[] = [
     message: 'Looks good, I\'m all done! Let\'s wrap up the session.',
     icon: <CheckCircle size={14} />,
     variant: 'primary',
+    intent: 'wrap_up',
   },
   {
     label: 'I\'d like to explore this more',
@@ -99,6 +111,7 @@ const MINIMAL_REPLIES: QuickReply[] = [
     mobileLabel: 'Next section',
     message: 'Looks good, let\'s continue to the next section',
     icon: <ArrowRight size={14} />,
+    intent: 'advance',
   },
 ];
 
@@ -148,7 +161,7 @@ export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput
     setClicked(true);
 
     if (reply.message) {
-      onSend(reply.message);
+      onSend(reply.message, reply.intent);
     } else {
       // No message → focus the input so user can type freely. If a custom
       // placeholder is configured, pass it through so the chat input shows

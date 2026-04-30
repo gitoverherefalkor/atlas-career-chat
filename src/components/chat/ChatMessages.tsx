@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
-import { QuickReplies } from './QuickReplies';
+import { QuickReplies, type QuickReplyIntent } from './QuickReplies';
 import { WelcomeCard } from './WelcomeCard';
 import { WelcomeBackCard } from './WelcomeBackCard';
 import { Loader2 } from 'lucide-react';
@@ -20,7 +20,7 @@ interface ChatMessagesProps {
   isUserTyping: boolean;
   currentSectionIndex: number;
   onSectionDetected: (index: number) => void;
-  onQuickReply: (message: string) => void;
+  onQuickReply: (message: string, intent?: QuickReplyIntent) => void;
   // Optional placeholder lets quick-reply / chip clicks customize the input
   // prompt (e.g. 'Tell me how you see it…') when focusing without sending.
   onFocusInput: (placeholder?: string) => void;

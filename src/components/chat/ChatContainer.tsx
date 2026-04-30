@@ -2,10 +2,39 @@ import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'rea
 import { ChatMessages, ChatMessagesHandle } from './ChatMessages';
 import { ChatInput, ChatInputHandle } from './ChatInput';
 import { ALL_SECTIONS } from './ReportSidebar';
+import { type QuickReplyIntent } from './QuickReplies';
 import { useN8nWebhook } from '@/hooks/useN8nWebhook';
+import { useDeliverSection, type DeliverableSectionType } from '@/hooks/useDeliverSection';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { useReportSections } from '@/hooks/useReportSections';
 import { useToast } from '@/hooks/use-toast';
+
+// Maps the sidebar section index (0..10) to the section_type used by the
+// `deliver-section` edge function. Indices that aren't delivered via chat
+// (executive-summary at 0) map to null.
+const SECTION_INDEX_TO_TYPE: Record<number, DeliverableSectionType | null> = {
+  0: null, // executive-summary — never delivered via chat
+  1: 'approach',
+  2: 'strengths',
+  3: 'development',
+  4: 'values',
+  5: 'top_career_1',
+  6: 'top_career_2',
+  7: 'top_career_3',
+  8: 'runner_ups',
+  9: 'outside_box',
+  10: 'dream_jobs',
+};
+
+/**
+ * Feature flag for the platform-side fast-path delivery. Enabled when the
+ * URL has `?fast=1`. Read once on first call so it's stable for a session.
+ * Drop the param from the URL → revert to the existing n8n agent flow.
+ */
+function isFastPathEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+  return new URLSearchParams(window.location.search).get('fast') === '1';
+}
 
 interface ChatContainerProps {
   reportId: string;
@@ -70,6 +99,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     const inputRef = useRef<ChatInputHandle>(null);
     const { toast } = useToast();
     const { sendMessage, loadPreviousSession } = useN8nWebhook();
+    const { deliver } = useDeliverSection();
+    const fastPathEnabled = useRef(isFastPathEnabled()).current;
     const { messages, isLoading, addMessage, seedFromHistory, hasMessages } =
       useChatMessages({ sessionId, reportId, userId });
     // Pull career sections from the report so ChatMessage can show match
@@ -251,7 +282,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       inputRef.current?.focus();
     };
 
-    const handleSend = async (message: string) => {
+    const handleSend = async (message: string, intent?: QuickReplyIntent) => {
       if (isSessionCompleted || isWaitingForResponse) return;
 
       // Dismiss the in-chat welcome card the moment the user sends anything,
@@ -265,6 +296,40 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       addMessage('user', message);
       setIsWaitingForResponse(true);
       onUserActivity?.();
+
+      // Fast path: clean "Continue to next section" click with no LLM
+      // reasoning needed. Skip the n8n agent and call the deliver-section
+      // edge function for a deterministic templated delivery.
+      // Gated on `?fast=1` so we can A/B test live without breaking the
+      // existing flow. Falls back to the agent path on any error.
+      const previousType = SECTION_INDEX_TO_TYPE[currentSectionIndex] ?? undefined;
+      const nextType = SECTION_INDEX_TO_TYPE[currentSectionIndex + 1] ?? undefined;
+      const shouldUseFastPath =
+        fastPathEnabled &&
+        intent === 'advance' &&
+        nextType !== undefined &&
+        currentSectionIndex >= 1; // Welcome → approach handled separately
+
+      if (shouldUseFastPath && nextType) {
+        try {
+          const response = await deliver({
+            reportId,
+            sectionType: nextType,
+            previousSectionType: previousType,
+            userMessage: message,
+          });
+
+          addMessage('bot', response);
+          scanForSections(response);
+          setIsWaitingForResponse(false);
+          return;
+        } catch (error) {
+          // Don't toast — silently fall back to the agent path so the
+          // user still gets a response. Log so we notice in dev.
+          console.error('[fast-path] deliver-section failed, falling back to agent:', error);
+          // Fall through to the agent path below.
+        }
+      }
 
       try {
         const response = await sendMessage(sessionId, message, {
