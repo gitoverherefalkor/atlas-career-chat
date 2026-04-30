@@ -98,6 +98,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     // structure is registered.
     const [latestUnrevealedCount, setLatestUnrevealedCount] = useState(-1);
     const lastBotMessageIdRef = useRef<string | null>(null);
+    // Tracks whether the most recent user action was an 'advance' click —
+    // i.e. the next bot reply will be / was a section delivery, not a
+    // discussion turn. The fast-path routing requires this to be TRUE,
+    // otherwise we route Continue clicks through the agent so it can call
+    // fb_unified with the real discussion summary before the platform
+    // delivers the next section. Defaults to TRUE: a fresh page load
+    // with no prior interaction is treated as "ready to advance."
+    const lastTurnWasAdvanceRef = useRef(true);
     const inputRef = useRef<ChatInputHandle>(null);
     const { toast } = useToast();
     const { sendMessage, loadPreviousSession } = useN8nWebhook();
@@ -308,13 +316,21 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       // edge function for a deterministic templated delivery.
       // Gated on `?fast=1` so we can A/B test live without breaking the
       // existing flow. Falls back to the agent path on any error.
+      //
+      // Precondition: the previous turn must also have been an 'advance'.
+      // Otherwise the user has been discussing with the agent and clicked
+      // Continue to wrap up — that needs to flow to the agent so it can
+      // call fb_unified with the real discussion summary. Routing it to
+      // fast path here would silently overwrite the discussion outcome
+      // with the canonical "no changes needed" string.
       const previousType = SECTION_INDEX_TO_TYPE[currentSectionIndex] ?? undefined;
       const nextType = SECTION_INDEX_TO_TYPE[currentSectionIndex + 1] ?? undefined;
       const shouldUseFastPath =
         fastPathEnabled &&
         intent === 'advance' &&
         nextType !== undefined &&
-        currentSectionIndex >= 1; // Welcome → approach handled separately
+        currentSectionIndex >= 1 && // Welcome → approach handled separately
+        lastTurnWasAdvanceRef.current;
 
       if (shouldUseFastPath && nextType) {
         try {
@@ -327,6 +343,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
 
           addMessage('bot', response);
           scanForSections(response);
+          // Successful fast-path delivery — next Continue can also fast-path.
+          lastTurnWasAdvanceRef.current = true;
           setIsWaitingForResponse(false);
           return;
         } catch (error) {
@@ -350,6 +368,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         } else {
           addMessage('bot', 'I didn\'t receive a response. Please try again.');
         }
+        // After an agent turn, the routing precondition flips based on
+        // intent: an 'advance' click that fell through to the agent (e.g.
+        // because the previous turn was a discussion) means the agent
+        // just handled fb_unified — the NEXT Continue is now safe for
+        // fast path. Anything else (free text, Explore, See Differently)
+        // is a discussion and the next Continue must again flow to the
+        // agent.
+        lastTurnWasAdvanceRef.current = intent === 'advance';
       } catch (error) {
         console.error('Failed to send message:', error);
 
