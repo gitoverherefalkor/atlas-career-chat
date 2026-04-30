@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Pencil } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
 import type { ReportSection } from '@/hooks/useReportSections';
 import { CareerScoreCard, extractAIImpact } from './CareerScoreCard';
@@ -24,6 +24,9 @@ interface ChatMessageProps {
   // sends it back as a user message (or focuses input for free-text).
   onChipSend?: (message: string) => void;
   onChipFocusInput?: (placeholder?: string) => void;
+  // Forwarded to SequentialSubsections so the parent can lock the chat
+  // input + quick replies until all sub-sections have been revealed.
+  onSequentialRevealStateChange?: (revealed: number, total: number) => void;
 }
 
 interface ChipOption {
@@ -295,10 +298,18 @@ const markdownComponents = {
 const SequentialSubsections: React.FC<{
   preamble: string;
   subsections: H2Subsection[];
-}> = ({ preamble, subsections }) => {
+  // Called on mount and on every reveal so the parent can lock the chat
+  // input + quick replies until everything's been read.
+  onRevealStateChange?: (revealed: number, total: number) => void;
+}> = ({ preamble, subsections, onRevealStateChange }) => {
   // revealedCount = number of sub-sections currently visible. Starts at 1
   // so the user sees the preamble + first h2 + first body on first render.
   const [revealedCount, setRevealedCount] = useState(1);
+
+  // Notify parent whenever revealed count changes (incl. mount).
+  useEffect(() => {
+    onRevealStateChange?.(revealedCount, subsections.length);
+  }, [revealedCount, subsections.length, onRevealStateChange]);
 
   return (
     <div>
@@ -488,6 +499,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   isLatestBotMessage = false,
   onChipSend,
   onChipFocusInput,
+  onSequentialRevealStateChange,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
 
@@ -596,6 +608,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           <SequentialSubsections
             preamble={subsectionPreamble}
             subsections={subsections}
+            // Only the latest message reports state — older messages
+            // shouldn't lock the input even if their state is partial.
+            onRevealStateChange={isLatestBotMessage ? onSequentialRevealStateChange : undefined}
           />
         ) : followUpOptions ? (
           <div>
@@ -604,23 +619,42 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                 {followUpOptions.intro}
               </ReactMarkdown>
             )}
-            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 mt-3">
-              {followUpOptions.options.map((opt, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => {
-                    if (opt.isFreeText) {
-                      onChipFocusInput?.("Let me know what's on your mind…");
-                    } else {
-                      onChipSend?.(opt.message);
-                    }
-                  }}
-                  className="text-left px-4 py-3 rounded-xl border border-atlas-teal/30 bg-atlas-teal/5 hover:bg-atlas-teal/10 hover:border-atlas-teal/60 transition-colors text-sm font-medium text-atlas-navy"
-                >
-                  {opt.display}
-                </button>
-              ))}
+            {/* Claude-style multiple-choice container: single rounded card,
+                each option a full-width row, thin teal divider between rows.
+                Numbered prefix on regular options; pencil icon on the
+                free-text 'Something else' option. */}
+            <div className="mt-3 rounded-xl border border-atlas-teal/30 overflow-hidden bg-white">
+              {followUpOptions.options.map((opt, i) => {
+                const isLastOption = i === followUpOptions.options.length - 1;
+                const isFreeText = opt.isFreeText;
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => {
+                      if (isFreeText) {
+                        onChipFocusInput?.("Let me know what's on your mind…");
+                      } else {
+                        onChipSend?.(opt.message);
+                      }
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-atlas-teal/5 transition-colors ${
+                      i > 0 ? 'border-t border-atlas-teal/15' : ''
+                    }`}
+                  >
+                    {isFreeText ? (
+                      <Pencil className="w-4 h-4 text-atlas-teal/70 shrink-0" />
+                    ) : (
+                      <span className="w-7 h-7 rounded-full bg-atlas-teal/10 text-atlas-teal flex items-center justify-center text-xs font-bold shrink-0">
+                        {i + 1}
+                      </span>
+                    )}
+                    <span className="text-sm font-medium text-atlas-navy leading-snug">
+                      {opt.display}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         ) : (

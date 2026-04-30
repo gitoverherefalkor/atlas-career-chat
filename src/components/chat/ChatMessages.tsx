@@ -25,6 +25,13 @@ interface ChatMessagesProps {
   // prompt (e.g. 'Tell me how you see it…') when focusing without sending.
   onFocusInput: (placeholder?: string) => void;
   onDreamJobsRead?: () => void;
+  // Forwarded from the latest bot message's SequentialSubsections so the
+  // parent (ChatContainer) can lock the input until everything's read.
+  onSequentialRevealStateChange?: (revealed: number, total: number) => void;
+  // True when the latest section reveal still has hidden sub-sections.
+  // We use this to suppress quick replies until the user has clicked
+  // through every chevron — otherwise they'd react to half a section.
+  hasUnrevealedSubsections?: boolean;
   // In-chat welcome card (shown as the empty state when no messages exist).
   showWelcome?: boolean;
   isReturningUser?: boolean;
@@ -37,7 +44,7 @@ interface ChatMessagesProps {
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false }, ref) => {
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     const [dreamJobsOpened, setDreamJobsOpened] = useState(false);
 
@@ -187,8 +194,9 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   isLatestBotMessage={isLatestBotMessage}
                   onChipSend={onQuickReply}
                   onChipFocusInput={onFocusInput}
+                  onSequentialRevealStateChange={onSequentialRevealStateChange}
                 />
-                {isLastBotMessage && !isFollowUp && (
+                {isLastBotMessage && !isFollowUp && !hasUnrevealedSubsections && (
                   <QuickReplies
                     onSend={onQuickReply}
                     onFocusInput={onFocusInput}

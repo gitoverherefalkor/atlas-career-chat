@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, forwardRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
 import { ChatMessages, ChatMessagesHandle } from './ChatMessages';
 import { ChatInput, ChatInputHandle } from './ChatInput';
 import { ALL_SECTIONS } from './ReportSidebar';
@@ -61,6 +61,12 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     // like 'Tell me how you see it…'. Cleared the moment the user actually
     // sends a message so it doesn't linger across turns.
     const [inputPlaceholderOverride, setInputPlaceholderOverride] = useState<string | null>(null);
+    // Track how many sub-sections of the LATEST bot message are still hidden
+    // behind a chevron. While > 0, we lock the input + suppress quick replies
+    // so the user can't react to a half-read section. Resets when a new bot
+    // message arrives (handled in the effect below).
+    const [latestUnrevealedCount, setLatestUnrevealedCount] = useState(0);
+    const lastBotMessageIdRef = useRef<string | null>(null);
     const inputRef = useRef<ChatInputHandle>(null);
     const { toast } = useToast();
     const { sendMessage, loadPreviousSession } = useN8nWebhook();
@@ -117,6 +123,23 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         }
       });
     }, [isLoading, hasMessages, messages]);
+
+    // Reset the unrevealed-subsection count whenever a new bot message
+    // arrives. SequentialSubsections (if rendered) will fire its initial
+    // state callback right after, populating it correctly.
+    useEffect(() => {
+      const latestBot = [...messages].reverse().find((m) => m.sender === 'bot');
+      if (latestBot && latestBot.id !== lastBotMessageIdRef.current) {
+        lastBotMessageIdRef.current = latestBot.id;
+        setLatestUnrevealedCount(0);
+      }
+    }, [messages]);
+
+    // Callback handed to SequentialSubsections (via ChatMessage). Receives
+    // (revealed, total) — we store the gap as 'unrevealed'.
+    const handleRevealStateChange = useCallback((revealed: number, total: number) => {
+      setLatestUnrevealedCount(Math.max(0, total - revealed));
+    }, []);
 
     // Auto-send a resume message when returning to the chat (e.g. after session restore)
     // This prevents the empty "Send a message to start your session" screen.
@@ -287,6 +310,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           onQuickReply={handleSend}
           onFocusInput={handleFocusInput}
           onDreamJobsRead={onDreamJobsRead}
+          onSequentialRevealStateChange={handleRevealStateChange}
+          hasUnrevealedSubsections={latestUnrevealedCount > 0}
           showWelcome={showWelcome}
           isReturningUser={isReturningUser}
           welcomeFirstName={firstName}
@@ -314,17 +339,23 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           // Disable typing on the welcome screen so users can't accidentally
           // start with an off-script message that confuses the bot. They
           // click "I'm Ready!" to kick off, then type freely from there.
+          // Also disabled while the latest section reveal still has hidden
+          // sub-sections — forces the user to read everything before they
+          // can react.
           disabled={
             isSessionCompleted ||
             isWaitingForResponse ||
-            (messages.length === 0 && !isWaitingForResponse)
+            (messages.length === 0 && !isWaitingForResponse) ||
+            latestUnrevealedCount > 0
           }
           placeholder={
             isSessionCompleted
               ? 'Session completed - your report is ready above'
               : messages.length === 0
                 ? "Click 'I'm Ready!' above to begin"
-                : (inputPlaceholderOverride ?? 'Type here')
+                : latestUnrevealedCount > 0
+                  ? `Click to reveal the next ${latestUnrevealedCount} section${latestUnrevealedCount === 1 ? '' : 's'}…`
+                  : (inputPlaceholderOverride ?? 'Type here')
           }
           isSidebarCollapsed={isSidebarCollapsed}
         />
