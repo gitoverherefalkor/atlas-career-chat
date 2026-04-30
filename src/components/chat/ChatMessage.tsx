@@ -478,21 +478,27 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
   const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
 
-  // TEMP DEBUG — printing both raw and sanitized so we can see whether the
-  // h5 -> ## conversion is happening AND whether the split regex is finding
-  // the boundaries. Remove once sequential reveal confirmed working.
-  if (sender === 'bot') {
-    console.log('[SeqReveal]', {
-      rawHasH5: /<h5/i.test(content),
-      rawHasMd2: /^## /m.test(content),
-      sanitizedHasH5: /<h5/i.test(sanitized),
-      sanitizedHasMd2: /^## /m.test(sanitized),
-      rawSnippet: content.slice(0, 300),
-      sanitizedSnippet: sanitized.slice(0, 300),
-      h3BlocksFound: blocks.length,
-      h2SubsectionsFound: subsections.length,
-      subsectionTitles: subsections.map((s) => s.title),
-      useSequentialReveal,
+  // TEMP DEBUG — dump the FULL content for the long section-reveal messages
+  // so we can see exactly what heading format the agent is actually using.
+  if (sender === 'bot' && content.length > 500) {
+    console.log('[SeqReveal] === FULL MESSAGE CONTENT ===');
+    console.log(content);
+    console.log('[SeqReveal] === END ===');
+    console.log('[SeqReveal] flags:', {
+      hasH1: /<h1/i.test(content),
+      hasH2: /<h2/i.test(content),
+      hasH3: /<h3/i.test(content),
+      hasH4: /<h4/i.test(content),
+      hasH5: /<h5/i.test(content),
+      hasH6: /<h6/i.test(content),
+      hasMdH1: /^# /m.test(content),
+      hasMdH2: /^## /m.test(content),
+      hasMdH3: /^### /m.test(content),
+      hasMdH4: /^#### /m.test(content),
+      hasMdH5: /^##### /m.test(content),
+      hasBoldStar: /\*\*/.test(content),
+      blocksFound: blocks.length,
+      subsectionsFound: subsections.length,
     });
   }
 
