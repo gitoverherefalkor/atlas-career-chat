@@ -73,13 +73,20 @@ interface SplitContent {
   blocks: CareerBlock[];
 }
 
-// Convert HTML tags the agent sometimes sends to markdown equivalents
+// Convert HTML tags the agent sometimes sends to markdown equivalents.
+// Each replacement also adds surrounding newlines for headings so they
+// land on their own line — required for the markdown ^## regex match in
+// splitIntoH2Subsections (HTML inline like "...text<h2>X</h2>..." would
+// otherwise become "...text## X..." mid-line and never be detected).
 function htmlToMarkdown(text: string): string {
   let result = text;
-  // Convert heading tags to markdown
-  result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1');
-  result = result.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1');
-  result = result.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1');
+  // Convert heading tags to markdown (now includes h1/h2 so the sequential
+  // reveal splitter can detect them).
+  result = result.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '\n# $1\n');
+  result = result.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n## $1\n');
+  result = result.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n### $1\n');
+  result = result.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '\n#### $1\n');
+  result = result.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '\n##### $1\n');
   // Convert inline tags
   result = result.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
   result = result.replace(/<em>(.*?)<\/em>/gi, '*$1*');
@@ -463,6 +470,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   // user can scroll up to a clean, scannable structure.
   const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
   const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
+
+  // TEMPORARY DEBUG — see what the splitter actually finds in production content.
+  // Remove once sequential reveal is confirmed working.
+  console.log('[SeqReveal]', {
+    contentSnippet: content.slice(0, 200),
+    sanitizedSnippet: sanitized.slice(0, 200),
+    h2Count: (sanitized.match(/^## /gm) || []).length,
+    h3BlocksCount: blocks.length,
+    subsectionsFound: subsections.length,
+    subsectionTitles: subsections.map((s) => s.title),
+    useSequentialReveal,
+  });
 
   // For single-block messages (e.g. top_career_1/2/3), enrich the h3 renderer
   // so the score card appears right under the career title without changing
