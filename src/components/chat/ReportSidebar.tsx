@@ -21,7 +21,9 @@ const SECTION_I18N_KEY: Record<string, string> = {
 // All sections in order - matches store-report-sections
 // Each section has: id, title (display), altTitles (what agent might output)
 export const ALL_SECTIONS = [
-  { id: 'executive-summary', title: 'Executive Summary', altTitles: ['executive summary'], chapter: 'about-you' },
+  // Executive Summary intentionally omitted — the chat doesn't surface it
+  // any more, so showing it in the sidebar created a permanently-grey
+  // section that confused the user about chat progress.
   { id: 'personality-team', title: 'Your Approach', altTitles: ['your approach', 'understanding your approach', 'personality', 'team dynamics'], chapter: 'about-you' },
   { id: 'strengths', title: 'Your Strengths', altTitles: ['your strengths', 'your core strengths', 'core strengths', 'strengths'], chapter: 'about-you' },
   { id: 'growth', title: 'Development Areas', altTitles: ['development areas', 'areas for development', 'areas of development', 'growth', 'growth opportunities'], chapter: 'about-you' },

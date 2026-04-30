@@ -337,12 +337,21 @@ const SequentialSubsections: React.FC<{
       {subsections.slice(0, revealedCount).map((sub, idx) => {
         // Render the title manually so we can prefix it with an icon.
         // The body still goes through ReactMarkdown for paragraph/list styling.
+        // NOTE: `first:mt-0` would always trigger here because each subsection
+        // is its own wrapper div, so we apply mt-6 unconditionally except on
+        // the very first subsection (where the preamble's bottom margin is
+        // already enough). This restores the breathing room above each h5.
         const Icon = iconForSubsection(sub.title);
         const isLastVisible = idx === revealedCount - 1;
+        // Spacing above each sub-header. First one sits just below the intro
+        // paragraph (modest gap). Subsequent ones get a clear visual break
+        // (mt-10 = 40px) so they don't feel cramped against the previous
+        // sub-section's last paragraph.
+        const headingMargin = idx === 0 ? 'mt-4' : 'mt-10';
         return (
           <div key={idx} ref={isLastVisible ? lastRevealedRef : undefined}>
-            <h5 className="text-lg font-semibold text-atlas-teal mt-6 mb-2 first:mt-0 flex items-center gap-2">
-              {Icon && <Icon className="w-4 h-4 shrink-0" strokeWidth={2.25} />}
+            <h5 className={`text-lg font-semibold text-atlas-teal mb-3 flex items-center gap-2.5 ${headingMargin}`}>
+              {Icon && <Icon className="w-5 h-5 shrink-0" strokeWidth={2.25} />}
               <span>{sub.title}</span>
             </h5>
             <ReactMarkdown
@@ -363,8 +372,8 @@ const SequentialSubsections: React.FC<{
             onClick={() => setRevealedCount((c) => c + 1)}
             className="mt-6 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-atlas-teal/30 bg-atlas-teal/5 hover:bg-atlas-teal/10 hover:border-atlas-teal/50 transition-colors text-left group"
           >
-            <span className="text-lg font-semibold text-atlas-teal flex items-center gap-2">
-              {NextIcon && <NextIcon className="w-4 h-4 shrink-0" strokeWidth={2.25} />}
+            <span className="text-lg font-semibold text-atlas-teal flex items-center gap-2.5">
+              {NextIcon && <NextIcon className="w-5 h-5 shrink-0" strokeWidth={2.25} />}
               <span>{nextTitle}</span>
             </span>
             <ChevronDown className="w-5 h-5 text-atlas-teal shrink-0 group-hover:translate-y-0.5 transition-transform" />

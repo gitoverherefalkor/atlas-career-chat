@@ -89,15 +89,27 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
       }
     }, [messages.length, isWaitingForResponse]);
 
-    // Expose scrollToSection for sidebar navigation
+    // Expose scrollToSection for sidebar navigation. Uses manual offset
+    // calculation rather than scrollIntoView so we land slightly above the
+    // heading (16px buffer) — otherwise the section title kisses the top
+    // of the viewport and feels cramped under the page chrome.
     useImperativeHandle(ref, () => ({
       scrollToSection: (sectionId: string) => {
         const container = scrollContainerRef.current;
         if (!container) return;
-        const heading = container.querySelector(`[data-section-id="${sectionId}"]`);
-        if (heading) {
-          heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+        // Use the FIRST matching heading in DOM order — that's the original
+        // section reveal. If a later deep-dive accidentally tagged the same
+        // id, we still anchor to the canonical reveal at the top.
+        const heading = container.querySelector(`[data-section-id="${sectionId}"]`) as HTMLElement | null;
+        if (!heading) return;
+        const containerRect = container.getBoundingClientRect();
+        const headingRect = heading.getBoundingClientRect();
+        // Element's offset within the container's scrollable area.
+        const offsetWithinContainer = headingRect.top - containerRect.top + container.scrollTop;
+        container.scrollTo({
+          top: Math.max(0, offsetWithinContainer - 16),
+          behavior: 'smooth',
+        });
       },
     }));
 
