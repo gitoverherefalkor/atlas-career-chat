@@ -310,7 +310,13 @@ const SequentialSubsections: React.FC<{
   // Called on mount and on every reveal so the parent can lock the chat
   // input + quick replies until everything's been read.
   onRevealStateChange?: (revealed: number, total: number) => void;
-}> = ({ preamble, subsections, onRevealStateChange }) => {
+  // Career sections from the report so the preamble's h3 (career title)
+  // can be enriched with a match-score gauge + AI-impact badge.
+  sections?: ReportSection[];
+  // Full sanitized message body — used to extract the AI Impact rating,
+  // which can appear in any subsection rather than only in the preamble.
+  fullBody?: string;
+}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody }) => {
   // revealedCount = number of sub-sections currently visible. Starts at 1
   // so the user sees the preamble + first h2 + first body on first render.
   const [revealedCount, setRevealedCount] = useState(1);
@@ -335,10 +341,52 @@ const SequentialSubsections: React.FC<{
     prevRevealedRef.current = revealedCount;
   }, [revealedCount]);
 
+  // Custom h3 for the preamble: looks up the career title in `sections` and
+  // renders a CareerScoreCard right under the heading. AI Impact is parsed
+  // from the entire message body since the rating phrase often lives in a
+  // later sub-section rather than the preamble.
+  const preambleComponents = React.useMemo(() => {
+    if (!sections || sections.length === 0) return markdownComponents;
+    return {
+      ...markdownComponents,
+      h3: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => {
+        const headingText = React.Children.toArray(children)
+          .flatMap((c: any) => {
+            if (typeof c === 'string') return [c];
+            // Markdown wraps emphasized titles in <strong>, so the actual
+            // text sits one level deeper. Recurse one step to recover it.
+            const inner = c?.props?.children;
+            if (typeof inner === 'string') return [inner];
+            if (Array.isArray(inner)) return inner.filter((x) => typeof x === 'string');
+            return [];
+          })
+          .join('')
+          .trim();
+        const section = findSectionByTitle(sections, headingText);
+        const score = section?.score != null ? Number(section.score) : null;
+        const aiImpact = extractAIImpact(fullBody || preamble);
+        return (
+          <>
+            <h3
+              className="text-xl font-bold text-atlas-navy mt-8 mb-2 font-heading first:mt-0"
+              {...props}
+            >
+              {children}
+            </h3>
+            <CareerScoreCard
+              score={Number.isFinite(score) ? score : null}
+              aiImpact={section ? aiImpact : null}
+            />
+          </>
+        );
+      },
+    };
+  }, [sections, fullBody, preamble]);
+
   return (
     <div>
       {preamble && (
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} components={preambleComponents}>
           {preamble}
         </ReactMarkdown>
       )}
@@ -681,6 +729,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           <SequentialSubsections
             preamble={subsectionPreamble}
             subsections={subsections}
+            sections={sections}
+            fullBody={sanitized}
             // Only the latest message reports state — older messages
             // shouldn't lock the input even if their state is partial.
             onRevealStateChange={isLatestBotMessage ? onSequentialRevealStateChange : undefined}
