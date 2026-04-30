@@ -191,8 +191,11 @@ serve(async (req) => {
 
   // 4. Close feedback for the section being left behind, if any.
   //    Equivalent to fb_unified writing the canonical "no discussion"
-  //    string. Only applies when fb_status is not already TRUE — if the
-  //    agent wrote real feedback, we don't overwrite it.
+  //    string. Skip rows where the agent has already written real
+  //    feedback (fb_status = true). Match NULL or FALSE explicitly:
+  //    `.neq('fb_status', true)` does NOT match NULL rows because
+  //    Postgres NULL comparisons always return NULL (falsy), so the
+  //    initial NULL state would be silently skipped.
   if (previous_section_type) {
     const { error: fbErr } = await supabase
       .from('report_sections')
@@ -202,7 +205,7 @@ serve(async (req) => {
       })
       .eq('report_id', report_id)
       .eq('section_type', previous_section_type)
-      .neq('fb_status', true);
+      .or('fb_status.is.null,fb_status.eq.false');
 
     if (fbErr) {
       // Same policy: log, don't fail the request.
