@@ -19,12 +19,17 @@ interface QuickRepliesProps {
   visible: boolean;
   isLastSection?: boolean; // True when on dream jobs (final section)
   isWrappedUp?: boolean; // True after the user has sent the wrap-up message
+  // True when the latest bot message is a deep-dive reply (not a fresh
+  // section reveal). In that mode we show only 'Continue to next section'
+  // — Explore More / I see this differently / Something else would just
+  // loop the conversation. Active chat input handles free-form follow-ups.
+  isDeepDive?: boolean;
 }
 
 // Standard button set for all sections except the last one.
 const STANDARD_REPLIES: QuickReply[] = [
   {
-    label: 'Looks good, next section',
+    label: 'Continue to next section',
     mobileLabel: 'Next section',
     message: 'Looks good, let\'s continue to the next section',
     icon: <ArrowRight size={14} />,
@@ -84,6 +89,19 @@ const FINAL_REPLIES: QuickReply[] = [
   },
 ];
 
+// Deep-dive replies (after the user asked a follow-up question and the
+// bot answered) — only show 'Continue to next section'. The active chat
+// input is the second 'option' for free-form follow-ups. Keeping just one
+// pill prevents the explore-more / I-see-differently loop.
+const MINIMAL_REPLIES: QuickReply[] = [
+  {
+    label: 'Continue to next section',
+    mobileLabel: 'Next section',
+    message: 'Looks good, let\'s continue to the next section',
+    icon: <ArrowRight size={14} />,
+  },
+];
+
 // Post-wrap-up — only option is to leave
 const POST_WRAP_REPLIES: QuickReply[] = [
   {
@@ -96,8 +114,14 @@ const POST_WRAP_REPLIES: QuickReply[] = [
   },
 ];
 
-export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput, visible, isLastSection = false, isWrappedUp = false }) => {
-  const replies = isWrappedUp ? POST_WRAP_REPLIES : isLastSection ? FINAL_REPLIES : STANDARD_REPLIES;
+export const QuickReplies: React.FC<QuickRepliesProps> = ({ onSend, onFocusInput, visible, isLastSection = false, isWrappedUp = false, isDeepDive = false }) => {
+  const replies = isWrappedUp
+    ? POST_WRAP_REPLIES
+    : isLastSection
+      ? FINAL_REPLIES
+      : isDeepDive
+        ? MINIMAL_REPLIES
+        : STANDARD_REPLIES;
   const [show, setShow] = useState(false);
   const [clicked, setClicked] = useState(false);
 

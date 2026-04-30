@@ -306,11 +306,26 @@ const SequentialSubsections: React.FC<{
   // revealedCount = number of sub-sections currently visible. Starts at 1
   // so the user sees the preamble + first h2 + first body on first render.
   const [revealedCount, setRevealedCount] = useState(1);
+  // Ref attached to the most recently revealed sub-section so we can scroll
+  // it into view when the user clicks the chevron — otherwise newly revealed
+  // text appears below the fold and the user has to manually scroll.
+  const lastRevealedRef = useRef<HTMLDivElement | null>(null);
+  const prevRevealedRef = useRef(revealedCount);
 
   // Notify parent whenever revealed count changes (incl. mount).
   useEffect(() => {
     onRevealStateChange?.(revealedCount, subsections.length);
   }, [revealedCount, subsections.length, onRevealStateChange]);
+
+  // Scroll the newly revealed sub-section to the top of the viewport when
+  // revealedCount grows. Skipped on initial mount so first render doesn't
+  // jump the page.
+  useEffect(() => {
+    if (revealedCount > prevRevealedRef.current && lastRevealedRef.current) {
+      lastRevealedRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    prevRevealedRef.current = revealedCount;
+  }, [revealedCount]);
 
   return (
     <div>
@@ -323,8 +338,9 @@ const SequentialSubsections: React.FC<{
         // Render the title manually so we can prefix it with an icon.
         // The body still goes through ReactMarkdown for paragraph/list styling.
         const Icon = iconForSubsection(sub.title);
+        const isLastVisible = idx === revealedCount - 1;
         return (
-          <div key={idx}>
+          <div key={idx} ref={isLastVisible ? lastRevealedRef : undefined}>
             <h5 className="text-lg font-semibold text-atlas-teal mt-6 mb-2 first:mt-0 flex items-center gap-2">
               {Icon && <Icon className="w-4 h-4 shrink-0" strokeWidth={2.25} />}
               <span>{sub.title}</span>

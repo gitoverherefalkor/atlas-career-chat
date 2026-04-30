@@ -169,17 +169,27 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             // Dream jobs message: collapse all blocks by default, track when all opened
             const isDreamJobsMessage = isLastBotMessage && isDreamJobsSection;
 
-            // Detect if this latest bot message is a 'follow-up with options'
-            // (response to Explore More / I see this differently). If so we
-            // suppress the standard QuickReplies underneath — those would
-            // create a loop ("Explore more" → bot lists topics → "Explore
-            // more" again → same generic response). The chips inside the
-            // message replace the loopable buttons.
+            // Detect what KIND of bot message this is so QuickReplies show
+            // the right set (or nothing):
+            //  - Section reveal (### heading present): full replies after
+            //    the user has clicked through every chevron.
+            //  - Follow-up with options (no ###, multiple bold-bulleted
+            //    items): no quick replies — the chips inside the message
+            //    are the choice mechanism.
+            //  - Deep dive (anything else from the bot): only 'Continue to
+            //    next section'. The chat input handles further follow-ups.
+            //    Prevents the explore-more loop reported earlier.
+            const isSectionReveal = msg.sender === 'bot' && /^### /m.test(msg.content);
             const isFollowUp =
               isLastBotMessage &&
               msg.sender === 'bot' &&
-              !/^### /m.test(msg.content) &&
+              !isSectionReveal &&
               (msg.content.match(/^\s*-\s*\*\*/gm) || []).length >= 2;
+            const isDeepDive =
+              isLastBotMessage &&
+              msg.sender === 'bot' &&
+              !isSectionReveal &&
+              !isFollowUp;
 
             return (
               <React.Fragment key={msg.id}>
@@ -203,6 +213,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                     visible={!isWaitingForResponse && !isUserTyping && (!isDreamJobsMessage || dreamJobsOpened)}
                     isLastSection={isDreamJobsSection}
                     isWrappedUp={hasWrappedUp}
+                    isDeepDive={isDeepDive}
                   />
                 )}
               </React.Fragment>
