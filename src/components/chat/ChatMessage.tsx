@@ -778,12 +778,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             // Only the latest message reports state — older messages
             // shouldn't lock the input even if their state is partial.
             onRevealStateChange={isLatestBotMessage ? onSequentialRevealStateChange : undefined}
-            // While TTS is narrating this message, expand every sub-section
-            // so what the user sees matches what they're hearing.
-            forceFullReveal={
-              !!messageId &&
-              (tts.speakingId === messageId || tts.loadingId === messageId)
-            }
           />
         ) : followUpOptions ? (
           <div>
