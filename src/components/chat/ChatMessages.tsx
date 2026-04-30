@@ -199,6 +199,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
               <React.Fragment key={msg.id}>
                 {isLastMessage && <div ref={lastMessageRef} />}
                 <ChatMessage
+                  messageId={msg.id}
                   content={msg.content}
                   sender={msg.sender}
                   onSectionDetected={onSectionDetected}

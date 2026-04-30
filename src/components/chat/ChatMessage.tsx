@@ -7,8 +7,13 @@ import { ALL_SECTIONS } from './ReportSidebar';
 import type { ReportSection } from '@/hooks/useReportSections';
 import { CareerScoreCard, extractAIImpact } from './CareerScoreCard';
 import { iconForSubsection } from './subsectionIcons';
+import { MessageVoiceButton } from './MessageVoiceButton';
+import { useTTS } from '@/contexts/TTSContext';
 
 interface ChatMessageProps {
+  // Stable id for the message — used to drive TTS state (which message is
+  // currently speaking) so per-message buttons don't get out of sync.
+  messageId?: string;
   content: string;
   sender: 'user' | 'bot';
   onSectionDetected?: (sectionIndex: number) => void;
@@ -538,6 +543,7 @@ const CollapsibleCareerBlocks: React.FC<{
 };
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({
+  messageId,
   content,
   sender,
   onSectionDetected,
@@ -550,6 +556,25 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onSequentialRevealStateChange,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
+  const tts = useTTS();
+  // Auto-read this message when readAll is on AND it's the latest bot message.
+  // Track per-message so toggling readAll mid-conversation doesn't re-read
+  // older messages, and so the same message isn't read twice.
+  const autoReadFiredRef = useRef(false);
+  useEffect(() => {
+    if (sender !== 'bot') return;
+    if (!isLatestBotMessage) return;
+    if (!tts.isSupported || !tts.readAll) return;
+    if (!messageId) return;
+    if (autoReadFiredRef.current) return;
+    autoReadFiredRef.current = true;
+    // Small delay so the speech doesn't fire mid-render and step on the
+    // user's own click sounds (e.g. just-tapped a quick reply).
+    const timer = setTimeout(() => {
+      tts.speak(content, messageId);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [sender, isLatestBotMessage, tts, messageId, content]);
 
   // After bot message renders, scan for section headings in the DOM
   useEffect(() => {
@@ -709,6 +734,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={enrichedComponents}>
             {sanitized}
           </ReactMarkdown>
+        )}
+        {messageId && (
+          <MessageVoiceButton
+            messageId={messageId}
+            text={sanitized}
+            showBetaBadge={isLatestBotMessage}
+          />
         )}
       </div>
     </div>

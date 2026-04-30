@@ -11,6 +11,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import { ClosingCard } from '@/components/chat/ClosingCard';
 import { ReportSidebar, ALL_SECTIONS } from '@/components/chat/ReportSidebar';
 import { ChatContainer } from '@/components/chat/ChatContainer';
+import { TTSProvider } from '@/contexts/TTSContext';
 import type { ChatMessagesHandle } from '@/components/chat/ChatMessages';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
@@ -427,6 +428,7 @@ const Chat = () => {
                 are visible from the start; user can either click "I'm
                 Ready!" or just type their first message. */}
             {sessionId && user ? (
+              <TTSProvider>
               <ChatContainer
                 ref={chatMessagesRef}
                 reportId={reportData.id}
@@ -448,6 +450,7 @@ const Chat = () => {
                 onWelcomeReady={handleWelcomeStart}
                 onUserSentMessage={() => setShowWelcome(false)}
               />
+              </TTSProvider>
             ) : (
               <div className="flex-1 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-atlas-teal" />
