@@ -17,6 +17,8 @@ export interface ReportSection {
   feedback: string | null;
   explore: string | null;
   fb_status: boolean | null;
+  // Compatibility score 0-100, stored as text in DB. Present on top_career_1/2/3 and runner_ups.
+  score: string | null;
   created_at: string;
   updated_at: string;
 }

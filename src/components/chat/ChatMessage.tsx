@@ -6,6 +6,7 @@ import { ChevronDown, Pencil } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
 import type { ReportSection } from '@/hooks/useReportSections';
 import { CareerScoreCard, extractAIImpact } from './CareerScoreCard';
+import { iconForSubsection } from './subsectionIcons';
 
 interface ChatMessageProps {
   content: string;
@@ -318,27 +319,42 @@ const SequentialSubsections: React.FC<{
           {preamble}
         </ReactMarkdown>
       )}
-      {subsections.slice(0, revealedCount).map((sub, idx) => (
-        <ReactMarkdown
-          key={idx}
-          remarkPlugins={[remarkGfm]}
-          components={markdownComponents}
-        >
-          {`##### ${sub.title}\n\n${sub.body}`}
-        </ReactMarkdown>
-      ))}
-      {revealedCount < subsections.length && (
-        <button
-          type="button"
-          onClick={() => setRevealedCount((c) => c + 1)}
-          className="mt-6 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-atlas-teal/30 bg-atlas-teal/5 hover:bg-atlas-teal/10 hover:border-atlas-teal/50 transition-colors text-left group"
-        >
-          <span className="text-lg font-semibold text-atlas-teal">
-            {subsections[revealedCount].title}
-          </span>
-          <ChevronDown className="w-5 h-5 text-atlas-teal shrink-0 group-hover:translate-y-0.5 transition-transform" />
-        </button>
-      )}
+      {subsections.slice(0, revealedCount).map((sub, idx) => {
+        // Render the title manually so we can prefix it with an icon.
+        // The body still goes through ReactMarkdown for paragraph/list styling.
+        const Icon = iconForSubsection(sub.title);
+        return (
+          <div key={idx}>
+            <h5 className="text-lg font-semibold text-atlas-teal mt-6 mb-2 first:mt-0 flex items-center gap-2">
+              {Icon && <Icon className="w-4 h-4 shrink-0" strokeWidth={2.25} />}
+              <span>{sub.title}</span>
+            </h5>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownComponents}
+            >
+              {sub.body}
+            </ReactMarkdown>
+          </div>
+        );
+      })}
+      {revealedCount < subsections.length && (() => {
+        const nextTitle = subsections[revealedCount].title;
+        const NextIcon = iconForSubsection(nextTitle);
+        return (
+          <button
+            type="button"
+            onClick={() => setRevealedCount((c) => c + 1)}
+            className="mt-6 w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-atlas-teal/30 bg-atlas-teal/5 hover:bg-atlas-teal/10 hover:border-atlas-teal/50 transition-colors text-left group"
+          >
+            <span className="text-lg font-semibold text-atlas-teal flex items-center gap-2">
+              {NextIcon && <NextIcon className="w-4 h-4 shrink-0" strokeWidth={2.25} />}
+              <span>{nextTitle}</span>
+            </span>
+            <ChevronDown className="w-5 h-5 text-atlas-teal shrink-0 group-hover:translate-y-0.5 transition-transform" />
+          </button>
+        );
+      })()}
     </div>
   );
 };
