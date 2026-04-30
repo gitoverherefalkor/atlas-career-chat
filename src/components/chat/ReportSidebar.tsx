@@ -20,10 +20,14 @@ const SECTION_I18N_KEY: Record<string, string> = {
 
 // All sections in order - matches store-report-sections
 // Each section has: id, title (display), altTitles (what agent might output)
+// Canonical section list — the order here defines the numeric index used
+// throughout the app (localStorage stores `chat_section_index_<reportId>`
+// as a number into this array, so removing or reordering entries breaks
+// stored progress for every existing user). Executive Summary stays in
+// the list to preserve indices; it's filtered out of the sidebar UI via
+// HIDDEN_SECTION_IDS below.
 export const ALL_SECTIONS = [
-  // Executive Summary intentionally omitted — the chat doesn't surface it
-  // any more, so showing it in the sidebar created a permanently-grey
-  // section that confused the user about chat progress.
+  { id: 'executive-summary', title: 'Executive Summary', altTitles: ['executive summary'], chapter: 'about-you' },
   { id: 'personality-team', title: 'Your Approach', altTitles: ['your approach', 'understanding your approach', 'personality', 'team dynamics'], chapter: 'about-you' },
   { id: 'strengths', title: 'Your Strengths', altTitles: ['your strengths', 'your core strengths', 'core strengths', 'strengths'], chapter: 'about-you' },
   { id: 'growth', title: 'Development Areas', altTitles: ['development areas', 'areas for development', 'areas of development', 'growth', 'growth opportunities'], chapter: 'about-you' },
@@ -37,6 +41,18 @@ export const ALL_SECTIONS = [
 ] as const;
 
 export type SectionId = typeof ALL_SECTIONS[number]['id'];
+
+// Sections present in ALL_SECTIONS but intentionally hidden from the
+// sidebar UI + progress count. Currently just Executive Summary, which the
+// chat doesn't surface but stays in the canonical list to keep numeric
+// indices stable for stored progress.
+const HIDDEN_SECTION_IDS: ReadonlySet<string> = new Set(['executive-summary']);
+
+// Total visible section count — used for the "N / M" progress label so it
+// reflects what the user actually sees, not the canonical list length.
+const VISIBLE_SECTIONS_COUNT = ALL_SECTIONS.filter(
+  (s) => !HIDDEN_SECTION_IDS.has(s.id)
+).length;
 
 // Icons for each section in the sidebar
 const SECTION_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -63,11 +79,11 @@ const CAREER_NUMBER: Record<string, string> = {
 // Pre-compute sections by chapter for cleaner rendering
 const ABOUT_YOU_SECTIONS = ALL_SECTIONS
   .map((section, index) => ({ ...section, globalIndex: index }))
-  .filter(s => s.chapter === 'about-you');
+  .filter(s => s.chapter === 'about-you' && !HIDDEN_SECTION_IDS.has(s.id));
 
 const CAREER_SECTIONS = ALL_SECTIONS
   .map((section, index) => ({ ...section, globalIndex: index }))
-  .filter(s => s.chapter === 'career-suggestions');
+  .filter(s => s.chapter === 'career-suggestions' && !HIDDEN_SECTION_IDS.has(s.id));
 
 interface ReportSidebarProps {
   currentSectionIndex: number; // -1 = none started, 0 = first section, etc.
@@ -168,16 +184,20 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         </div>
       )}
 
-      {/* Progress indicator */}
+      {/* Progress indicator. NOTE: currentSectionIndex is the canonical
+          index into ALL_SECTIONS (which still contains Executive Summary
+          at idx 0). For the visible label/bar we treat Exec Summary as
+          shifted-out — so 'Approach' (canonical idx 1) shows as 1/10 in a
+          10-section visible list. */}
       <div className="p-4 border-t border-gray-100 flex-shrink-0">
         <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
           <span>{t('chat:session.progress')}</span>
-          <span>{Math.max(0, currentSectionIndex + 1)} / {ALL_SECTIONS.length}</span>
+          <span>{Math.max(0, currentSectionIndex)} / {VISIBLE_SECTIONS_COUNT}</span>
         </div>
         <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
           <div
             className="h-full bg-atlas-teal rounded-full transition-all duration-500"
-            style={{ width: `${Math.max(0, ((currentSectionIndex + 1) / ALL_SECTIONS.length) * 100)}%` }}
+            style={{ width: `${Math.max(0, (currentSectionIndex / VISIBLE_SECTIONS_COUNT) * 100)}%` }}
           />
         </div>
       </div>
@@ -195,7 +215,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
           className="md:hidden fixed bottom-20 right-3 z-50 flex items-center gap-1.5 bg-white border border-gray-200 shadow-lg rounded-full px-3 py-2 text-xs font-medium text-atlas-navy hover:bg-gray-50 transition-colors"
         >
           <ListOrdered className="h-4 w-4 text-atlas-teal" />
-          <span>{Math.max(0, currentSectionIndex + 1)}/{ALL_SECTIONS.length}</span>
+          <span>{Math.max(0, currentSectionIndex)}/{VISIBLE_SECTIONS_COUNT}</span>
         </button>
       )}
 
@@ -245,6 +265,9 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
             <ChevronLeft className="h-4 w-4 text-atlas-navy" />
           </Button>
           {ALL_SECTIONS.map((section, index) => {
+            // Skip hidden sections (Executive Summary) — kept in
+            // ALL_SECTIONS only to preserve numeric indices.
+            if (HIDDEN_SECTION_IDS.has(section.id)) return null;
             const state = getSectionState(index);
             const clickable = isClickable(index);
 
@@ -262,7 +285,10 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
                 }`}
                 title={translateTitle(section.id, section.title)}
               >
-                {state === 'past' ? <Check className="h-3 w-3" /> : index + 1}
+                {/* Display the VISIBLE 1-indexed position. With Exec Summary
+                    hidden at canonical index 0, the canonical index itself is
+                    already the 1-indexed visible position (Approach=1, etc.). */}
+                {state === 'past' ? <Check className="h-3 w-3" /> : index}
               </button>
             );
           })}
