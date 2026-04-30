@@ -1,71 +1,96 @@
 import React from 'react';
 
 // AI Impact rating scale, ordered low → high.
-// Phrases the n8n prompts produce: "Supporting", "Augmented", "Moderate",
-// "Substantial", "Transforming". "Low"/"High" appear occasionally as
-// shorthand and map to the nearest level.
-const AI_IMPACT_LEVELS = ['Supporting', 'Augmented', 'Moderate', 'Substantial', 'Transforming'] as const;
+// Current prompt produces: "Safe", "Augmented", "Transforming", "At Risk"
+// (with parenthetical labels like "(Low Impact)", "(Severe Impact)").
+// Older messages used: "Supporting", "Moderate", "Substantial",
+// "Low", "High". Aliases below normalize both eras into the new 4-level scale.
+const AI_IMPACT_LEVELS = ['Safe', 'Augmented', 'Transforming', 'At Risk'] as const;
 type AIImpactLevel = typeof AI_IMPACT_LEVELS[number];
 
 const AI_IMPACT_ALIASES: Record<string, AIImpactLevel> = {
-  supporting: 'Supporting',
-  low: 'Supporting',
+  // current scale
+  safe: 'Safe',
   augmented: 'Augmented',
-  moderate: 'Moderate',
-  medium: 'Moderate',
-  substantial: 'Substantial',
-  high: 'Substantial',
   transforming: 'Transforming',
+  'at risk': 'At Risk',
+  'at-risk': 'At Risk',
+  atrisk: 'At Risk',
+  // legacy aliases — older reports used different labels for the same idea
+  supporting: 'Safe',
+  low: 'Safe',
+  moderate: 'Augmented',
+  medium: 'Augmented',
+  substantial: 'Transforming',
+  high: 'Transforming',
   transformative: 'Transforming',
+  severe: 'At Risk',
+};
+
+// Per-level color tokens. Driven by the user-facing meaning:
+//   Safe        → teal/green   (neutral / positive)
+//   Augmented   → blue         (productive collaboration with AI)
+//   Transforming→ amber/orange (significant disruption, but not threatening)
+//   At Risk     → red          (job security genuinely threatened)
+const AI_IMPACT_STYLES: Record<AIImpactLevel, { dot: string; text: string; ring: string; tint: string }> = {
+  Safe:         { dot: 'bg-emerald-500', text: 'text-emerald-700', ring: 'border-emerald-500/30', tint: 'bg-emerald-50' },
+  Augmented:    { dot: 'bg-sky-500',     text: 'text-sky-700',     ring: 'border-sky-500/30',     tint: 'bg-sky-50' },
+  Transforming: { dot: 'bg-amber-500',   text: 'text-amber-700',   ring: 'border-amber-500/30',   tint: 'bg-amber-50' },
+  'At Risk':    { dot: 'bg-red-500',     text: 'text-red-700',     ring: 'border-red-500/30',     tint: 'bg-red-50' },
 };
 
 // Pull an AI Impact rating out of free-text section content.
-// We try multiple shapes the prompt produces:
-//   "Rating: Supporting."
-//   "AI Impact: Moderate"
-//   "carries a Moderate AI impact rating"
-//   "**Substantial:** Generative AI is..."
+// Production phrasings the prompt produces:
+//   "**Safe** (Low Impact)"
+//   "**Augmented** (Moderate Impact)"
+//   "**Transforming** (High Impact)"
+//   "**At Risk** (Severe Impact)"
+//   "AI Impact: Augmented"
+//   "Rating: Safe"
+//   "carries a Moderate AI impact rating"   (legacy)
+const LABEL_GROUP =
+  '(safe|augmented|transforming|at\\s*risk|supporting|moderate|substantial|low|high|severe|transformative)';
+
 export function extractAIImpact(body: string): AIImpactLevel | null {
   if (!body) return null;
   const text = body.replace(/<[^>]+>/g, ' '); // strip any inline html tags
 
   const patterns: RegExp[] = [
-    /(?:ai\s*impact[^.\n]{0,40}?)(supporting|augmented|moderate|substantial|transforming|low|high)/i,
-    /(?:rating)\s*[:\-]\s*(supporting|augmented|moderate|substantial|transforming|low|high)/i,
-    /carries?\s+a\s+(supporting|augmented|moderate|substantial|transforming|low|high)\s+ai\s*impact/i,
-    /\*\*(supporting|augmented|moderate|substantial|transforming):/i,
+    new RegExp(`\\*\\*${LABEL_GROUP}\\*\\*\\s*\\((?:low|moderate|high|severe)\\s*impact\\)`, 'i'),
+    new RegExp(`(?:ai\\s*impact[^.\\n]{0,40}?)${LABEL_GROUP}`, 'i'),
+    new RegExp(`(?:rating)\\s*[:\\-]\\s*${LABEL_GROUP}`, 'i'),
+    new RegExp(`carries?\\s+a\\s+${LABEL_GROUP}\\s+ai\\s*impact`, 'i'),
+    new RegExp(`\\*\\*${LABEL_GROUP}:`, 'i'),
   ];
 
   for (const p of patterns) {
     const m = text.match(p);
     if (m && m[1]) {
-      const key = m[1].toLowerCase();
+      const key = m[1].toLowerCase().replace(/\s+/g, ' ').trim();
       if (AI_IMPACT_ALIASES[key]) return AI_IMPACT_ALIASES[key];
     }
   }
   return null;
 }
 
-// Compact pill showing match score 0-100 with a subtle progress bar.
+// Compact pill showing match score 0-100 with a teal progress bar.
+// All recommended jobs pass the suitability filter, so no warning colors —
+// the bar fill itself communicates how strong the match is.
 const ScoreGauge: React.FC<{ score: number }> = ({ score }) => {
   const safe = Math.max(0, Math.min(100, score));
 
-  // Score color tier — neutral teal for everything; orange for outstanding.
-  const barClass =
-    safe >= 85 ? 'bg-atlas-orange' : safe >= 70 ? 'bg-atlas-teal' : 'bg-atlas-blue';
-
   return (
-    <div className="inline-flex items-center gap-2.5 rounded-full border border-atlas-navy/10 bg-white px-3 py-1.5 shadow-sm">
+    <div className="inline-flex items-center gap-2.5 rounded-full border border-atlas-teal/30 bg-white px-3 py-1.5 shadow-sm">
       <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
         Match
       </span>
       <div className="flex items-baseline gap-0.5">
-        <span className="text-base font-bold text-atlas-navy leading-none">{safe}</span>
+        <span className="text-base font-bold text-atlas-teal leading-none">{safe}</span>
         <span className="text-[10px] text-gray-400 leading-none">/100</span>
       </div>
-      <div className="h-1.5 w-14 bg-gray-100 rounded-full overflow-hidden">
+      <div className="h-1.5 w-14 bg-emerald-50 rounded-full overflow-hidden">
         <div
-          className={`h-full ${barClass} rounded-full transition-all duration-500`}
+          className="h-full bg-gradient-to-r from-atlas-teal to-emerald-500 rounded-full transition-all duration-500"
           style={{ width: `${safe}%` }}
         />
       </div>
@@ -73,24 +98,27 @@ const ScoreGauge: React.FC<{ score: number }> = ({ score }) => {
   );
 };
 
-// 5-step badge: filled dots up to and including the role's level.
+// 4-step badge: dots colored by impact level, only the active level's dot
+// shows that level's color (others stay neutral). The label color also
+// shifts so the pill instantly reads as "fine" vs "watch out".
 const AIImpactBadge: React.FC<{ level: AIImpactLevel }> = ({ level }) => {
   const idx = AI_IMPACT_LEVELS.indexOf(level);
   if (idx < 0) return null;
+  const style = AI_IMPACT_STYLES[level];
 
   return (
-    <div className="inline-flex items-center gap-2.5 rounded-full border border-atlas-navy/10 bg-white px-3 py-1.5 shadow-sm">
+    <div
+      className={`inline-flex items-center gap-2.5 rounded-full border ${style.ring} ${style.tint} px-3 py-1.5 shadow-sm`}
+    >
       <span className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold">
         AI Impact
       </span>
-      <span className="text-xs font-semibold text-atlas-navy">{level}</span>
+      <span className={`text-xs font-semibold ${style.text}`}>{level}</span>
       <div className="flex items-center gap-0.5" aria-hidden="true">
         {AI_IMPACT_LEVELS.map((_, i) => (
           <div
             key={i}
-            className={`h-1.5 w-1.5 rounded-full ${
-              i <= idx ? 'bg-atlas-gold' : 'bg-gray-200'
-            }`}
+            className={`h-1.5 w-1.5 rounded-full ${i === idx ? style.dot : 'bg-gray-200'}`}
           />
         ))}
       </div>
