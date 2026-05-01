@@ -203,11 +203,12 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
           <div className="space-y-1">
             {CAREER_SECTIONS.map((section) => {
               const state = getSectionState(section.globalIndex);
-              // For the CURRENT career section, surface either the
+              // For CURRENT and PAST career sections, surface either the
               // actual career title + size (top-3 single-row) or a count
-              // ("4 alternatives", etc.) for multi-row sections.
+              // ("4 alternatives") for multi-row sections. Past sections
+              // show this as a muted recap; current shows it prominently.
               let careerInfo: { title: string; size: string | null } | null = null;
-              if (state === 'current') {
+              if (state === 'current' || state === 'past') {
                 const topType = CAREER_SIDEBAR_SECTIONS[section.id];
                 const multi = MULTI_ROW_SIDEBAR_SECTIONS[section.id];
                 if (topType) {
@@ -441,20 +442,27 @@ const SectionButton: React.FC<SectionButtonProps> = ({ sectionId, title, state, 
         ) : null
       )}
 
-      {/* Title + optional career subline. min-w-0 lets text truncate. */}
+      {/* Title + optional career subline. min-w-0 lets text truncate.
+          Career subline colors track the button state:
+            current → white/95 + white/70 over teal background
+            past    → atlas-teal + gray-500 over white background (muted recap) */}
       <span className={`flex flex-col gap-0.5 min-w-0 flex-1 ${state === 'upcoming' ? 'opacity-60' : ''}`}>
         <span>{title}</span>
-        {careerInfo && state === 'current' && (
+        {careerInfo && (state === 'current' || state === 'past') && (
           <>
             <span
-              className="text-xs font-medium text-white/95 truncate leading-tight"
+              className={`text-xs font-medium truncate leading-tight ${
+                state === 'current' ? 'text-white/95' : 'text-atlas-teal'
+              }`}
               title={careerInfo.title}
             >
               {careerInfo.title}
             </span>
             {careerInfo.size && (
               <span
-                className="text-[11px] text-white/70 truncate leading-tight"
+                className={`text-[11px] truncate leading-tight ${
+                  state === 'current' ? 'text-white/70' : 'text-gray-500'
+                }`}
                 title={careerInfo.size}
               >
                 {careerInfo.size}
