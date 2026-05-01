@@ -47,29 +47,64 @@ const AI_IMPACT_STYLES: Record<AIImpactLevel, { dot: string; text: string; ring:
 //   "**At Risk** (Severe Impact)"
 //   "AI Impact: Augmented"
 //   "Rating: Safe"
-//   "carries a Moderate AI impact rating"   (legacy)
+//   "carries a Moderate AI impact rating"        (legacy single-label)
+//   "carries a Low to Moderate AI impact rating" (legacy range — pick higher)
 const LABEL_GROUP =
   '(safe|augmented|transforming|at\\s*risk|supporting|moderate|substantial|low|high|severe|transformative)';
+
+// Tier order — used to pick the higher-impact label when a range like
+// "Low to Moderate" produces two matches.
+const IMPACT_TIER: Record<AIImpactLevel, number> = {
+  Safe: 0,
+  Augmented: 1,
+  Transforming: 2,
+  'At Risk': 3,
+};
+
+function aliasFor(raw: string): AIImpactLevel | null {
+  const key = raw.toLowerCase().replace(/\s+/g, ' ').trim();
+  return AI_IMPACT_ALIASES[key] ?? null;
+}
 
 export function extractAIImpact(body: string): AIImpactLevel | null {
   if (!body) return null;
   const text = body.replace(/<[^>]+>/g, ' '); // strip any inline html tags
 
+  // First pass: high-precision patterns that nail a specific phrasing.
   const patterns: RegExp[] = [
     new RegExp(`\\*\\*${LABEL_GROUP}\\*\\*\\s*\\((?:low|moderate|high|severe)\\s*impact\\)`, 'i'),
-    new RegExp(`(?:ai\\s*impact[^.\\n]{0,40}?)${LABEL_GROUP}`, 'i'),
     new RegExp(`(?:rating)\\s*[:\\-]\\s*${LABEL_GROUP}`, 'i'),
     new RegExp(`carries?\\s+a\\s+${LABEL_GROUP}\\s+ai\\s*impact`, 'i'),
     new RegExp(`\\*\\*${LABEL_GROUP}:`, 'i'),
+    new RegExp(`(?:ai\\s*impact[^.\\n]{0,40}?)${LABEL_GROUP}`, 'i'),
   ];
-
   for (const p of patterns) {
     const m = text.match(p);
     if (m && m[1]) {
-      const key = m[1].toLowerCase().replace(/\s+/g, ' ').trim();
-      if (AI_IMPACT_ALIASES[key]) return AI_IMPACT_ALIASES[key];
+      const level = aliasFor(m[1]);
+      if (level) return level;
     }
   }
+
+  // Fallback: find any "AI impact" mention and scan up to ~60 chars on each
+  // side for a label word. Catches ranges like "Low to Moderate AI impact"
+  // and other paraphrased forms. When multiple labels show up in the window,
+  // pick the highest-tier one (more conservative read for the user).
+  const contextMatch = text.match(/(.{0,60})ai\s*impact(.{0,60})/i);
+  if (contextMatch) {
+    const window = `${contextMatch[1]} ${contextMatch[2]}`;
+    const labelRegex = new RegExp(`\\b${LABEL_GROUP}\\b`, 'gi');
+    let best: AIImpactLevel | null = null;
+    let m: RegExpExecArray | null;
+    while ((m = labelRegex.exec(window)) !== null) {
+      const level = aliasFor(m[1]);
+      if (level && (!best || IMPACT_TIER[level] > IMPACT_TIER[best])) {
+        best = level;
+      }
+    }
+    if (best) return best;
+  }
+
   return null;
 }
 
