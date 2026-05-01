@@ -60,7 +60,7 @@ interface ChapterFeedback {
 
 const VALID_QUALITY = new Set([
   'insightful',
-  'just_right',
+  'encouraging',
   'too_obvious',
   'off_the_mark',
   'other',

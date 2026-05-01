@@ -4,7 +4,7 @@ import {
   Sparkles,
   X,
   Lightbulb,
-  ThumbsUp,
+  HandHeart,
   Meh,
   Frown,
   MessageCircle,
@@ -22,7 +22,7 @@ import {
 
 export type ChapterFeedbackQuality =
   | 'insightful'
-  | 'just_right'
+  | 'encouraging'
   | 'too_obvious'
   | 'off_the_mark'
   | 'other';
@@ -65,9 +65,9 @@ const QUALITY_OPTIONS: QualityOption[] = [
     selectedIconClasses: 'text-amber-500',
   },
   {
-    value: 'just_right',
-    label: 'Just right',
-    Icon: ThumbsUp,
+    value: 'encouraging',
+    label: 'Encouraging',
+    Icon: HandHeart,
     selectedClasses: 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm',
     selectedIconClasses: 'text-emerald-500',
   },
