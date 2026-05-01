@@ -63,6 +63,7 @@ const VALID_QUALITY = new Set([
   'just_right',
   'too_obvious',
   'off_the_mark',
+  'other',
 ]);
 const VALID_LENGTH = new Set(['too_long', 'just_right', 'too_short']);
 const VALID_SUBSECTION = new Set([

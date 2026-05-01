@@ -1,13 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, type ComponentType } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { Sparkles, X } from 'lucide-react';
+import {
+  Sparkles,
+  X,
+  Lightbulb,
+  ThumbsUp,
+  Meh,
+  Frown,
+  MessageCircle,
+  ScrollText,
+  Check,
+  Zap,
+  Star,
+  Sprout,
+} from 'lucide-react';
 
 // Chapter feedback modal — shown after the user finishes Chapter 1
 // (Approach → Strengths → Development → Values) and clicks Continue
 // from values. Captures structured feedback before the platform delivers
 // the first career match.
 
-export type ChapterFeedbackQuality = 'insightful' | 'just_right' | 'too_obvious' | 'off_the_mark';
+export type ChapterFeedbackQuality =
+  | 'insightful'
+  | 'just_right'
+  | 'too_obvious'
+  | 'off_the_mark'
+  | 'other';
 export type ChapterFeedbackLength = 'too_long' | 'just_right' | 'too_short';
 export type ChapterFeedbackSubsection = 'approach' | 'strengths' | 'development' | 'values';
 
@@ -28,20 +46,72 @@ interface ChapterFeedbackModalProps {
   onCancel: () => void;
 }
 
-const QUALITY_OPTIONS: { value: ChapterFeedbackQuality; label: string }[] = [
-  { value: 'insightful', label: 'Insightful' },
-  { value: 'just_right', label: 'Just right' },
-  { value: 'too_obvious', label: 'Too obvious' },
-  { value: 'off_the_mark', label: 'Off the mark' },
+// Theme classes per quality option — separate selected vs unselected so
+// each chip has its own personality when chosen but a calm look at rest.
+interface QualityOption {
+  value: ChapterFeedbackQuality;
+  label: string;
+  Icon: ComponentType<{ size?: number; className?: string }>;
+  selectedClasses: string;
+  selectedIconClasses: string;
+}
+
+const QUALITY_OPTIONS: QualityOption[] = [
+  {
+    value: 'insightful',
+    label: 'Insightful',
+    Icon: Lightbulb,
+    selectedClasses: 'bg-amber-50 border-amber-400 text-amber-800 shadow-sm',
+    selectedIconClasses: 'text-amber-500',
+  },
+  {
+    value: 'just_right',
+    label: 'Just right',
+    Icon: ThumbsUp,
+    selectedClasses: 'bg-emerald-50 border-emerald-400 text-emerald-800 shadow-sm',
+    selectedIconClasses: 'text-emerald-500',
+  },
+  {
+    value: 'too_obvious',
+    label: 'Too obvious',
+    Icon: Meh,
+    selectedClasses: 'bg-slate-100 border-slate-400 text-slate-700 shadow-sm',
+    selectedIconClasses: 'text-slate-500',
+  },
+  {
+    value: 'off_the_mark',
+    label: 'Off the mark',
+    Icon: Frown,
+    selectedClasses: 'bg-rose-50 border-rose-400 text-rose-800 shadow-sm',
+    selectedIconClasses: 'text-rose-500',
+  },
+  {
+    value: 'other',
+    label: 'Other',
+    Icon: MessageCircle,
+    selectedClasses: 'bg-indigo-50 border-indigo-400 text-indigo-800 shadow-sm',
+    selectedIconClasses: 'text-indigo-500',
+  },
 ];
 
-const LENGTH_OPTIONS: { value: ChapterFeedbackLength; label: string }[] = [
-  { value: 'too_long', label: 'Too long' },
-  { value: 'just_right', label: 'Just right' },
-  { value: 'too_short', label: 'Too short' },
+interface LengthOption {
+  value: ChapterFeedbackLength;
+  label: string;
+  Icon: ComponentType<{ size?: number; className?: string }>;
+}
+
+const LENGTH_OPTIONS: LengthOption[] = [
+  { value: 'too_long', label: 'Too long', Icon: ScrollText },
+  { value: 'just_right', label: 'Just right', Icon: Check },
+  { value: 'too_short', label: 'Too short', Icon: Zap },
 ];
 
-const SUBSECTION_OPTIONS: { value: ChapterFeedbackSubsection; label: string }[] = [
+interface SubsectionOption {
+  value: ChapterFeedbackSubsection;
+  label: string;
+}
+
+const SUBSECTION_OPTIONS: SubsectionOption[] = [
   { value: 'approach', label: 'Your Approach' },
   { value: 'strengths', label: 'Your Strengths' },
   { value: 'development', label: 'Development Areas' },
@@ -148,7 +218,7 @@ export const ChapterFeedbackModal: React.FC<ChapterFeedbackModalProps> = ({
 
           {/* Body — scrollable on small screens */}
           <div className="px-6 sm:px-8 py-5 max-h-[55vh] overflow-y-auto space-y-6">
-            {/* 1. Quality grid (multi-select) */}
+            {/* 1. Quality grid (multi-select) — icon chips with per-option color theme */}
             <div>
               <label className="block text-sm font-semibold text-atlas-navy mb-2.5">
                 How did this section land?
@@ -156,28 +226,37 @@ export const ChapterFeedbackModal: React.FC<ChapterFeedbackModalProps> = ({
                   pick any
                 </span>
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                 {QUALITY_OPTIONS.map((opt) => {
                   const selected = quality.includes(opt.value);
+                  const Icon = opt.Icon;
                   return (
                     <button
                       key={opt.value}
                       type="button"
                       onClick={() => toggleQuality(opt.value)}
-                      className={`px-4 py-2.5 rounded-lg border text-sm font-medium transition-all ${
+                      className={`group p-3 rounded-xl border-2 transition-all duration-150 flex flex-col items-center justify-center gap-1.5 text-center hover:-translate-y-0.5 active:translate-y-0 ${
                         selected
-                          ? 'border-atlas-teal bg-atlas-teal text-white shadow-sm'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-atlas-teal/50 hover:bg-atlas-teal/5'
+                          ? opt.selectedClasses
+                          : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                       }`}
                     >
-                      {opt.label}
+                      <Icon
+                        size={22}
+                        className={`transition-transform duration-150 group-hover:scale-110 ${
+                          selected ? opt.selectedIconClasses : 'text-gray-400'
+                        }`}
+                      />
+                      <span className="text-xs sm:text-[13px] font-semibold leading-tight">
+                        {opt.label}
+                      </span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {/* 2. Length (single-select) */}
+            {/* 2. Length (single-select) — pills with icons */}
             <div>
               <label className="block text-sm font-semibold text-atlas-navy mb-2.5">
                 Length felt:
@@ -185,17 +264,19 @@ export const ChapterFeedbackModal: React.FC<ChapterFeedbackModalProps> = ({
               <div className="flex gap-2 flex-wrap">
                 {LENGTH_OPTIONS.map((opt) => {
                   const selected = length === opt.value;
+                  const Icon = opt.Icon;
                   return (
                     <button
                       key={opt.value}
                       type="button"
                       onClick={() => setLength(selected ? null : opt.value)}
-                      className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full border-2 text-sm font-medium transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 ${
                         selected
-                          ? 'border-atlas-teal bg-atlas-teal text-white shadow-sm'
+                          ? 'border-atlas-teal bg-atlas-teal text-white shadow-md'
                           : 'border-gray-200 bg-white text-gray-700 hover:border-atlas-teal/50 hover:bg-atlas-teal/5'
                       }`}
                     >
+                      <Icon size={14} className={selected ? 'text-white' : 'text-atlas-teal'} />
                       {opt.label}
                     </button>
                   );
@@ -203,11 +284,12 @@ export const ChapterFeedbackModal: React.FC<ChapterFeedbackModalProps> = ({
               </div>
             </div>
 
-            {/* 3. Strongest subsection (optional) */}
+            {/* 3. Strongest subsection (optional) — green star pills */}
             <div>
-              <label className="block text-sm font-semibold text-atlas-navy mb-2.5">
+              <label className="block text-sm font-semibold text-atlas-navy mb-2.5 inline-flex items-center gap-1.5">
+                <Star size={14} className="text-emerald-500 fill-emerald-500" />
                 Strongest subsection?
-                <span className="ml-1.5 text-xs font-normal text-gray-500">
+                <span className="ml-1 text-xs font-normal text-gray-500">
                   optional
                 </span>
               </label>
@@ -219,10 +301,10 @@ export const ChapterFeedbackModal: React.FC<ChapterFeedbackModalProps> = ({
                       key={opt.value}
                       type="button"
                       onClick={() => toggleSubsection(strongest, setStrongest, opt.value)}
-                      className={`px-3.5 py-1.5 rounded-full border text-sm transition-all ${
+                      className={`px-3.5 py-1.5 rounded-full border-2 text-sm font-medium transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 ${
                         selected
-                          ? 'border-atlas-teal bg-atlas-teal text-white shadow-sm'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-atlas-teal/50 hover:bg-atlas-teal/5'
+                          ? 'border-emerald-400 bg-emerald-50 text-emerald-800 shadow-sm'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-emerald-300 hover:bg-emerald-50/40'
                       }`}
                     >
                       {opt.label}
@@ -232,11 +314,12 @@ export const ChapterFeedbackModal: React.FC<ChapterFeedbackModalProps> = ({
               </div>
             </div>
 
-            {/* 4. Weakest subsection (optional) */}
+            {/* 4. Weakest subsection (optional) — sprout pills (room to grow) */}
             <div>
-              <label className="block text-sm font-semibold text-atlas-navy mb-2.5">
+              <label className="block text-sm font-semibold text-atlas-navy mb-2.5 inline-flex items-center gap-1.5">
+                <Sprout size={14} className="text-rose-400" />
                 Weakest subsection?
-                <span className="ml-1.5 text-xs font-normal text-gray-500">
+                <span className="ml-1 text-xs font-normal text-gray-500">
                   optional
                 </span>
               </label>
@@ -248,10 +331,10 @@ export const ChapterFeedbackModal: React.FC<ChapterFeedbackModalProps> = ({
                       key={opt.value}
                       type="button"
                       onClick={() => toggleSubsection(weakest, setWeakest, opt.value)}
-                      className={`px-3.5 py-1.5 rounded-full border text-sm transition-all ${
+                      className={`px-3.5 py-1.5 rounded-full border-2 text-sm font-medium transition-all duration-150 hover:-translate-y-0.5 active:translate-y-0 ${
                         selected
-                          ? 'border-atlas-teal bg-atlas-teal text-white shadow-sm'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-atlas-teal/50 hover:bg-atlas-teal/5'
+                          ? 'border-rose-400 bg-rose-50 text-rose-800 shadow-sm'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-rose-300 hover:bg-rose-50/40'
                       }`}
                     >
                       {opt.label}
