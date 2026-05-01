@@ -909,9 +909,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             sections={sections}
             deliveryIntro={deliveryIntro}
             deliveryOutro={deliveryOutro}
-            // Only the latest message gets per-card ask buttons —
-            // historical cards shouldn't trigger new agent turns.
-            onAskAboutRole={isLatestBotMessage ? onAskAboutRole : undefined}
+            // All multi-card sections get the per-card ask buttons —
+            // including historical ones, since the user is clicking
+            // NOW and the agent processes the new turn fresh.
+            onAskAboutRole={onAskAboutRole}
           />
         ) : useSequentialReveal ? (
           <SequentialSubsections
