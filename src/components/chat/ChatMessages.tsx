@@ -41,10 +41,13 @@ interface ChatMessagesProps {
   // Career sections from the user's report — used by ChatMessage to render
   // match scores + AI impact badges next to career titles.
   sections?: ReportSection[];
+  // Forwarded to CollapsibleCareerBlocks for the "Ask about this role"
+  // per-card button. Container scopes the next user message to the role.
+  onAskAboutRole?: (roleTitle: string) => void;
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole }, ref) => {
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     const [dreamJobsOpened, setDreamJobsOpened] = useState(false);
 
@@ -210,6 +213,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   onChipSend={onQuickReply}
                   onChipFocusInput={onFocusInput}
                   onSequentialRevealStateChange={onSequentialRevealStateChange}
+                  onAskAboutRole={onAskAboutRole}
                 />
                 {isLastBotMessage && !isFollowUp && !hasUnrevealedSubsections && (
                   <QuickReplies

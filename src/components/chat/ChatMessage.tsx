@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
-import { ChevronDown, Pencil } from 'lucide-react';
+import { ChevronDown, MessageCircle, Pencil } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
 import type { ReportSection } from '@/hooks/useReportSections';
 import { CareerScoreCard, extractAIImpact } from './CareerScoreCard';
@@ -33,6 +33,10 @@ interface ChatMessageProps {
   // Forwarded to SequentialSubsections so the parent can lock the chat
   // input + quick replies until all sub-sections have been revealed.
   onSequentialRevealStateChange?: (revealed: number, total: number) => void;
+  // Click handler for the per-card "Ask about this role" button in
+  // CollapsibleCareerBlocks. The chat container scopes the next user
+  // message to the named role.
+  onAskAboutRole?: (roleTitle: string) => void;
 }
 
 interface ChipOption {
@@ -560,6 +564,10 @@ const CollapsibleCareerBlocks: React.FC<{
   // sub-blocks having been expanded at least once so the user doesn't
   // see the wrap-up before reading.
   deliveryOutro?: string | null;
+  // Click handler for the per-card "Ask about this role" button. Receives
+  // the role title so the chat container can scope the next user message
+  // to that specific career.
+  onAskAboutRole?: (roleTitle: string) => void;
 }> = ({
   intro,
   blocks,
@@ -570,6 +578,7 @@ const CollapsibleCareerBlocks: React.FC<{
   sections,
   deliveryIntro,
   deliveryOutro,
+  onAskAboutRole,
 }) => {
   // All blocks are uniform collapsible cards, all closed by default. User
   // gets a clean scannable list of options (title + size + score + AI
@@ -687,6 +696,22 @@ const CollapsibleCareerBlocks: React.FC<{
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                       {rest}
                     </ReactMarkdown>
+                    {/* Per-card "ask about this role" button — gives the
+                        user a frictionless way to discuss this specific
+                        career without scrolling/copying. The chat
+                        container prefixes the next free-text message
+                        with [About: <role>] so the agent has explicit
+                        context. */}
+                    {onAskAboutRole && (
+                      <button
+                        type="button"
+                        onClick={() => onAskAboutRole(block.title)}
+                        className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-atlas-teal/40 text-atlas-teal text-sm font-medium hover:bg-atlas-teal hover:text-white hover:border-atlas-teal transition-colors"
+                      >
+                        <MessageCircle size={14} />
+                        Ask about this role
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -721,6 +746,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onChipSend,
   onChipFocusInput,
   onSequentialRevealStateChange,
+  onAskAboutRole,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
   const tts = useTTS();
@@ -883,6 +909,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             sections={sections}
             deliveryIntro={deliveryIntro}
             deliveryOutro={deliveryOutro}
+            // Only the latest message gets per-card ask buttons —
+            // historical cards shouldn't trigger new agent turns.
+            onAskAboutRole={isLatestBotMessage ? onAskAboutRole : undefined}
           />
         ) : useSequentialReveal ? (
           <SequentialSubsections

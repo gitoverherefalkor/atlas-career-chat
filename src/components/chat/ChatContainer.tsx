@@ -318,6 +318,21 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       inputRef.current?.focus();
     };
 
+    // Set when the user clicks "Ask about this role" on a specific career
+    // card. The next free-text message they send gets prefixed with
+    // [About <roleTitle>] so the agent has explicit context. Cleared after
+    // one use (next free-text turn) — if the user changes their mind and
+    // does something else (advance click, different button), we let it
+    // stick until they actually type, then it clears on send. Using a ref
+    // (not state) so the prefix doesn't trigger re-renders.
+    const pendingAskRoleRef = useRef<string | null>(null);
+
+    const handleAskAboutRole = (roleTitle: string) => {
+      pendingAskRoleRef.current = roleTitle;
+      setInputPlaceholderOverride(`Ask about ${roleTitle}…`);
+      inputRef.current?.focus();
+    };
+
     const handleSend = async (
       message: string,
       intent?: QuickReplyIntent,
@@ -327,6 +342,15 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       skipChapterFeedback: boolean = false,
     ) => {
       if (isSessionCompleted || isWaitingForResponse) return;
+
+      // Apply the pending "Ask about <role>" prefix on free-text turns
+      // only. Intent-based clicks (advance, wrap_up, etc.) shouldn't get
+      // mangled. Clear the pending role after consuming it.
+      if (pendingAskRoleRef.current && !intent) {
+        const role = pendingAskRoleRef.current;
+        pendingAskRoleRef.current = null;
+        message = `[About ${role}] ${message}`;
+      }
 
       // Dismiss the in-chat welcome card the moment the user sends anything,
       // so manually typing a first message has the same effect as clicking
@@ -537,6 +561,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           onDreamJobsRead={onDreamJobsRead}
           onSequentialRevealStateChange={handleRevealStateChange}
           hasUnrevealedSubsections={latestUnrevealedCount !== 0}
+          onAskAboutRole={handleAskAboutRole}
           showWelcome={showWelcome}
           isReturningUser={isReturningUser}
           welcomeFirstName={firstName}
