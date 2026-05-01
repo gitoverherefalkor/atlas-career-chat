@@ -563,25 +563,21 @@ const CollapsibleCareerBlocks: React.FC<{
 }> = ({
   intro,
   blocks,
-  defaultAllCollapsed = true,
+  // Kept for backward compat with callers that still pass it. Ignored:
+  // we always start with all blocks collapsed now (clean uniform list).
+  defaultAllCollapsed: _defaultAllCollapsed,
   onAllBlocksOpened,
   sections,
   deliveryIntro,
   deliveryOutro,
 }) => {
-  // All blocks are uniform collapsible cards. Default: all closed, so the
-  // user gets a clean scannable list of options (title + size + score +
-  // AI impact). They expand any card to read its body. The previous
-  // "first block always expanded" pattern produced inconsistent rendering
-  // across cards in runner_ups / outside_box / dream_jobs.
-  const [openIndices, setOpenIndices] = useState<Set<number>>(
-    new Set(defaultAllCollapsed ? [] : [0]),
-  );
-  // Track which blocks have EVER been opened (for the "all read" signal
-  // that ungates the outro panel).
-  const [everOpened, setEverOpened] = useState<Set<number>>(
-    new Set(defaultAllCollapsed ? [] : [0]),
-  );
+  // All blocks are uniform collapsible cards, all closed by default. User
+  // gets a clean scannable list of options (title + size + score + AI
+  // impact pills) and expands any card to read its body. The previous
+  // "first block auto-open" pattern made it look like a second-clicked
+  // card was nested inside the first.
+  const [openIndices, setOpenIndices] = useState<Set<number>>(new Set());
+  const [everOpened, setEverOpened] = useState<Set<number>>(new Set());
   const firedRef = useRef(false);
 
   const toggle = (idx: number) => {
