@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback, forwardRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo, forwardRef } from 'react';
 import { ChatMessages, ChatMessagesHandle } from './ChatMessages';
 import { ChatInput, ChatInputHandle } from './ChatInput';
 import { ALL_SECTIONS } from './ReportSidebar';
 import { type QuickReplyIntent } from './QuickReplies';
+import { ChapterFeedbackModal, type ChapterFeedbackPayload } from './ChapterFeedbackModal';
 import { useN8nWebhook } from '@/hooks/useN8nWebhook';
 import { useDeliverSection, type DeliverableSectionType } from '@/hooks/useDeliverSection';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { useReportSections } from '@/hooks/useReportSections';
+import { useSubmitChapterFeedback } from '@/hooks/useSubmitChapterFeedback';
 import { useToast } from '@/hooks/use-toast';
 
 // Maps the sidebar section index (0..10) to the section_type used by the
@@ -110,7 +112,25 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     const { toast } = useToast();
     const { sendMessage, loadPreviousSession } = useN8nWebhook();
     const { deliver } = useDeliverSection();
+    const { submit: submitChapterFeedback } = useSubmitChapterFeedback();
     const fastPathEnabled = useRef(isFastPathEnabled()).current;
+
+    // Chapter feedback modal state. Shown when the user clicks Continue
+    // from the values section AND no chapter_1_feedback row exists yet.
+    // Pending advance args are stashed so the actual fast-path delivery
+    // runs only after modal submit.
+    const [chapterFeedbackOpen, setChapterFeedbackOpen] = useState(false);
+    const [pendingAdvance, setPendingAdvance] = useState<{
+      message: string;
+      intent: QuickReplyIntent;
+    } | null>(null);
+
+    // Already submitted chapter_1_feedback for this report? Skip the modal
+    // if so. Derived from the report_sections query that's already running.
+    const chapterFeedbackAlreadySubmitted = useMemo(
+      () => sections.some((s) => s.section_type === 'chapter_1_feedback'),
+      [sections],
+    );
     const { messages, isLoading, addMessage, seedFromHistory, hasMessages } =
       useChatMessages({ sessionId, reportId, userId });
     // Pull career sections from the report so ChatMessage can show match
@@ -296,7 +316,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       inputRef.current?.focus();
     };
 
-    const handleSend = async (message: string, intent?: QuickReplyIntent) => {
+    const handleSend = async (
+      message: string,
+      intent?: QuickReplyIntent,
+      // Internal flag: bypass the chapter-feedback intercept. Used by the
+      // modal submit handler so the second invocation (after feedback was
+      // captured) doesn't re-open the modal in an infinite loop.
+      skipChapterFeedback: boolean = false,
+    ) => {
       if (isSessionCompleted || isWaitingForResponse) return;
 
       // Dismiss the in-chat welcome card the moment the user sends anything,
@@ -305,6 +332,24 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       onUserSentMessage?.();
       // Clear any custom placeholder set by a previous quick reply.
       setInputPlaceholderOverride(null);
+
+      // Chapter-1 feedback intercept: when the user clicks Continue from
+      // the values section AND we haven't captured chapter feedback yet,
+      // open the modal first. The actual advance fires only after the
+      // modal is submitted (handleChapterFeedbackSubmit below). If the
+      // user soft-cancels (X button), the click is voided — no user
+      // message added, no advance.
+      if (
+        !skipChapterFeedback &&
+        intent === 'advance' &&
+        currentSectionIndex === 4 && // values
+        SECTION_INDEX_TO_TYPE[currentSectionIndex + 1] === 'top_career_1' &&
+        !chapterFeedbackAlreadySubmitted
+      ) {
+        setPendingAdvance({ message, intent });
+        setChapterFeedbackOpen(true);
+        return; // stop here — modal drives the rest
+      }
 
       // Add user message immediately
       addMessage('user', message);
@@ -394,6 +439,36 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       }
     };
 
+    // Modal handlers — bound to ChapterFeedbackModal below.
+    const handleChapterFeedbackSubmit = async (payload: ChapterFeedbackPayload) => {
+      try {
+        await submitChapterFeedback(reportId, payload);
+      } catch (error) {
+        console.error('[chapter-feedback] submit failed:', error);
+        toast({
+          title: 'Could not save your feedback',
+          description: 'Please try again, or click X to skip and continue.',
+          variant: 'destructive',
+        });
+        return; // keep the modal open so the user can retry
+      }
+      setChapterFeedbackOpen(false);
+      // Re-run the original advance with skipChapterFeedback=true so we
+      // don't loop back into the modal.
+      const adv = pendingAdvance;
+      setPendingAdvance(null);
+      if (adv) {
+        await handleSend(adv.message, adv.intent, true);
+      }
+    };
+
+    const handleChapterFeedbackCancel = () => {
+      // Soft cancel — close modal, void the pending advance. User can
+      // keep chatting and click Continue again later.
+      setChapterFeedbackOpen(false);
+      setPendingAdvance(null);
+    };
+
     return (
       <div className="flex-1 flex flex-col h-full bg-gray-50 relative">
         <ChatMessages
@@ -455,6 +530,13 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
                   : (inputPlaceholderOverride ?? 'Type here')
           }
           isSidebarCollapsed={isSidebarCollapsed}
+        />
+
+        <ChapterFeedbackModal
+          open={chapterFeedbackOpen}
+          firstName={firstName}
+          onSubmit={handleChapterFeedbackSubmit}
+          onCancel={handleChapterFeedbackCancel}
         />
       </div>
     );
