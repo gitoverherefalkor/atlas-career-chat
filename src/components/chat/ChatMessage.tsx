@@ -236,6 +236,49 @@ function splitIntoH2Subsections(markdown: string): {
   return { preamble, subsections };
 }
 
+// Pull the section-delivery intro and outro out of a bot message so they can
+// be rendered as visually distinct panels (lighter background, extra spacing).
+// The platform's `deliver-section` always wraps the body in two `---` rules:
+//
+//   intro
+//   ---
+//   body
+//   ---
+//   outro
+//
+// Either side can be empty (top_career_2/3 have no intro; dream_jobs has no
+// outro). When the message doesn't fit the pattern (discussion replies),
+// returns null so callers fall back to plain rendering.
+export function extractIntroOutro(markdown: string): {
+  intro: string | null;
+  body: string;
+  outro: string | null;
+} | null {
+  const lines = markdown.split('\n');
+  const sepIdx: number[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === '---') sepIdx.push(i);
+  }
+  if (sepIdx.length === 0) return null;
+
+  if (sepIdx.length >= 2) {
+    const first = sepIdx[0];
+    const last = sepIdx[sepIdx.length - 1];
+    return {
+      intro: lines.slice(0, first).join('\n').trim() || null,
+      body: lines.slice(first + 1, last).join('\n').trim(),
+      outro: lines.slice(last + 1).join('\n').trim() || null,
+    };
+  }
+  // Single separator — intro + body, no outro (e.g. dream_jobs)
+  const sep = sepIdx[0];
+  return {
+    intro: lines.slice(0, sep).join('\n').trim() || null,
+    body: lines.slice(sep + 1).join('\n').trim(),
+    outro: null,
+  };
+}
+
 // Check if a heading matches any section in ALL_SECTIONS
 function findSectionIndex(headingText: string): number {
   const normalized = headingText.toLowerCase().trim();
@@ -335,7 +378,15 @@ const SequentialSubsections: React.FC<{
   // When true (TTS is reading this message), reveal every sub-section
   // immediately so the audio narration matches what's visible on screen.
   forceFullReveal?: boolean;
-}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal }) => {
+  // Boilerplate intro extracted from the message body. Rendered as a
+  // tinted panel above the section content. Always visible.
+  intro?: string | null;
+  // Boilerplate outro extracted from the message body. Rendered as a
+  // tinted panel below the last subsection. Hidden until all
+  // subsections have been revealed, so the user doesn't see the
+  // wrap-up before they've read the section.
+  outro?: string | null;
+}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal, intro, outro }) => {
   // revealedCount = number of sub-sections currently visible. Starts at 1
   // so the user sees the preamble + first h2 + first body on first render.
   const [revealedCount, setRevealedCount] = useState(1);
@@ -410,8 +461,18 @@ const SequentialSubsections: React.FC<{
     };
   }, [sections, fullBody, preamble]);
 
+  const allRevealed = revealedCount >= subsections.length;
   return (
     <div>
+      {/* Boilerplate intro panel — visually distinct (light teal),
+          extends to the card edges. Always visible when present. */}
+      {intro && (
+        <div className="-mx-4 -mt-3.5 mb-5 px-4 py-3.5 bg-atlas-teal/5 border-b border-atlas-teal/10 rounded-t-2xl">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {intro}
+          </ReactMarkdown>
+        </div>
+      )}
       {preamble && (
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={preambleComponents}>
           {preamble}
@@ -467,6 +528,16 @@ const SequentialSubsections: React.FC<{
           </button>
         );
       })()}
+      {/* Boilerplate outro panel — appears only after all subsections are
+          revealed, with extra top margin so it doesn't feel glued to the
+          last paragraph. */}
+      {allRevealed && outro && (
+        <div className="-mx-4 mt-10 -mb-3.5 px-4 py-3.5 bg-atlas-teal/5 border-t border-atlas-teal/10 rounded-b-2xl">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {outro}
+          </ReactMarkdown>
+        </div>
+      )}
     </div>
   );
 };
@@ -480,12 +551,22 @@ const CollapsibleCareerBlocks: React.FC<{
   defaultAllCollapsed?: boolean;
   onAllBlocksOpened?: () => void;
   sections?: ReportSection[];
+  // Boilerplate intro extracted from the platform-delivery body (rendered
+  // as a tinted panel above the blocks). Distinct from the `intro` above,
+  // which is in-body intro text between the boilerplate and the first card.
+  deliveryIntro?: string | null;
+  // Boilerplate outro — tinted panel below the blocks. Gated on all
+  // sub-blocks having been expanded at least once so the user doesn't
+  // see the wrap-up before reading.
+  deliveryOutro?: string | null;
 }> = ({
   intro,
   blocks,
   defaultAllCollapsed = false,
   onAllBlocksOpened,
   sections,
+  deliveryIntro,
+  deliveryOutro,
 }) => {
   // Sub-blocks = everything after the first (title) block.
   // The title block is always visible, so only sub-blocks are collapsible.
@@ -525,9 +606,19 @@ const CollapsibleCareerBlocks: React.FC<{
   // Remaining blocks (subBlocks) are sub-sections — collapsible.
   const titleBlock = blocks[0];
 
+  const allOpened = subBlocks.length > 0 && everOpened.size >= subBlocks.length;
   return (
     <div>
-      {/* Intro text — always visible */}
+      {/* Boilerplate intro panel (light teal band, full card width) */}
+      {deliveryIntro && (
+        <div className="-mx-4 -mt-3.5 mb-5 px-4 py-3.5 bg-atlas-teal/5 border-b border-atlas-teal/10 rounded-t-2xl">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {deliveryIntro}
+          </ReactMarkdown>
+        </div>
+      )}
+
+      {/* In-body intro text (between boilerplate and first card) */}
       {intro && (
         <div className="mb-3">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
@@ -611,6 +702,17 @@ const CollapsibleCareerBlocks: React.FC<{
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Boilerplate outro panel — appears once every sub-block has been
+          opened at least once. Light teal band, extra top margin so it
+          doesn't sit on top of the last expanded block. */}
+      {allOpened && deliveryOutro && (
+        <div className="-mx-4 mt-10 -mb-3.5 px-4 py-3.5 bg-atlas-teal/5 border-t border-atlas-teal/10 rounded-b-2xl">
+          <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+            {deliveryOutro}
+          </ReactMarkdown>
         </div>
       )}
     </div>
@@ -700,8 +802,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const processedContent = htmlToMarkdown(content);
   const sanitized = DOMPurify.sanitize(processedContent);
 
+  // Pull platform-delivery boilerplate (intro / outro panels) out of the
+  // body so they can be rendered as visually distinct tinted bands.
+  // Returns null for non-section-delivery messages (discussion replies,
+  // follow-ups), in which case we render the message as today.
+  const sectionDelivery = extractIntroOutro(sanitized);
+  const bodyForParsing = sectionDelivery?.body ?? sanitized;
+  const deliveryIntro = sectionDelivery?.intro ?? null;
+  const deliveryOutro = sectionDelivery?.outro ?? null;
+
   // Check if this message has multiple career blocks worth collapsing
-  const { intro, blocks } = splitIntoCareerBlocks(sanitized);
+  const { intro, blocks } = splitIntoCareerBlocks(bodyForParsing);
   const hasMultipleBlocks = blocks.length >= 2;
 
   // Section-reveal messages have multiple ## sub-sections (e.g. Approach,
@@ -709,7 +820,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   // gets one sub-section at a time. Applied to ALL such messages (not just
   // the latest) so historical section reveals are also collapsed and the
   // user can scroll up to a clean, scannable structure.
-  const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(sanitized);
+  const { preamble: subsectionPreamble, subsections } = splitIntoH2Subsections(bodyForParsing);
   const useSequentialReveal = !hasMultipleBlocks && subsections.length >= 2;
 
   // For messages that don't use sequential reveal (discussion replies,
@@ -780,6 +891,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             defaultAllCollapsed={defaultAllCollapsed}
             onAllBlocksOpened={onAllBlocksOpened}
             sections={sections}
+            deliveryIntro={deliveryIntro}
+            deliveryOutro={deliveryOutro}
           />
         ) : useSequentialReveal ? (
           <SequentialSubsections
@@ -787,6 +900,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             subsections={subsections}
             sections={sections}
             fullBody={sanitized}
+            intro={deliveryIntro}
+            outro={deliveryOutro}
             // Only the latest message reports state — older messages
             // shouldn't lock the input even if their state is partial.
             onRevealStateChange={isLatestBotMessage ? onSequentialRevealStateChange : undefined}
