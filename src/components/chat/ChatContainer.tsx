@@ -125,17 +125,18 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       intent: QuickReplyIntent;
     } | null>(null);
 
+    const { messages, isLoading, addMessage, seedFromHistory, hasMessages } =
+      useChatMessages({ sessionId, reportId, userId });
+    // Pull career sections from the report so ChatMessage can show match
+    // scores + AI impact next to the career titles the agent presents.
+    const { sections } = useReportSections(reportId);
+
     // Already submitted chapter_1_feedback for this report? Skip the modal
     // if so. Derived from the report_sections query that's already running.
     const chapterFeedbackAlreadySubmitted = useMemo(
       () => sections.some((s) => s.section_type === 'chapter_1_feedback'),
       [sections],
     );
-    const { messages, isLoading, addMessage, seedFromHistory, hasMessages } =
-      useChatMessages({ sessionId, reportId, userId });
-    // Pull career sections from the report so ChatMessage can show match
-    // scores + AI impact next to the career titles the agent presents.
-    const { sections } = useReportSections(reportId);
 
     // Track whether we've attempted to load previous session from n8n
     const migrationAttemptedRef = useRef(false);
