@@ -497,23 +497,27 @@ const SequentialSubsections: React.FC<{
   const [topAboveNav, setTopAboveNav] = useState(false);
   const [bottomBelowNav, setBottomBelowNav] = useState(false);
   useEffect(() => {
+    console.log('[FloatBar] effect fired, isLatestBotMessage=', isLatestBotMessage);
     if (!isLatestBotMessage) return;
     const topEl = cardTopSentinelRef.current;
     const bottomEl = cardBottomSentinelRef.current;
+    console.log('[FloatBar] sentinels:', { topEl: !!topEl, bottomEl: !!bottomEl, stickyHeader });
     if (!topEl || !bottomEl) return;
-    // rootMargin shifts the observer's effective viewport top down by
-    // NAV_OFFSET, so the callback fires when the sentinel crosses the
-    // nav line (not just the actual viewport edge). Without this, the
-    // observer never fires while the sentinel scrolls between e.g.
-    // 200px → 50px because it stays inside the actual viewport the
-    // whole time and isIntersecting doesn't flip.
     const margin = `-${NAV_OFFSET}px 0px 0px 0px`;
     const topObs = new IntersectionObserver(
-      ([entry]) => setTopAboveNav(entry.boundingClientRect.top < NAV_OFFSET),
+      ([entry]) => {
+        const above = entry.boundingClientRect.top < NAV_OFFSET;
+        console.log('[FloatBar] topObs fired, top=', entry.boundingClientRect.top, 'above=', above);
+        setTopAboveNav(above);
+      },
       { threshold: 0, rootMargin: margin },
     );
     const bottomObs = new IntersectionObserver(
-      ([entry]) => setBottomBelowNav(entry.boundingClientRect.top > NAV_OFFSET),
+      ([entry]) => {
+        const below = entry.boundingClientRect.top > NAV_OFFSET;
+        console.log('[FloatBar] bottomObs fired, top=', entry.boundingClientRect.top, 'below=', below);
+        setBottomBelowNav(below);
+      },
       { threshold: 0, rootMargin: margin },
     );
     topObs.observe(topEl);
@@ -522,7 +526,12 @@ const SequentialSubsections: React.FC<{
       topObs.disconnect();
       bottomObs.disconnect();
     };
-  }, [isLatestBotMessage]);
+  }, [isLatestBotMessage, stickyHeader]);
+
+  // Debug: log when showFloatingBar value changes
+  useEffect(() => {
+    console.log('[FloatBar] showFloatingBar=', showFloatingBar, { isLatestBotMessage, stickyHeader: !!stickyHeader, topAboveNav, bottomBelowNav });
+  });
   const showFloatingBar =
     isLatestBotMessage && stickyHeader && topAboveNav && bottomBelowNav;
 
