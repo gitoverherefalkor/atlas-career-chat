@@ -353,11 +353,6 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         return; // stop here — modal drives the rest
       }
 
-      // Add user message immediately
-      addMessage('user', message);
-      setIsWaitingForResponse(true);
-      onUserActivity?.();
-
       // Fast path: clean "Continue to next section" click. Always fires when
       // the click intent is 'advance' (regardless of whether discussion just
       // happened). When discussion DID happen, we additionally fire the agent
@@ -375,6 +370,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
 
       if (shouldUseFastPath && nextType) {
         const hadDiscussion = !lastTurnWasAdvanceRef.current;
+
+        // Add user message to local state with skipPersist — the edge
+        // function will persist it server-side (atomic with the section
+        // delivery). If the fast path fails and we fall through to the
+        // agent path, we write the user msg to chat_messages there.
+        addMessage('user', message, { skipPersist: true });
+        setIsWaitingForResponse(true);
+        onUserActivity?.();
 
         // Fire agent in background for fb_unified summary capture. We don't
         // display its reply — toast handles user-visible confirmation.
@@ -425,20 +428,47 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
             reportId,
             sectionType: nextType,
             previousSectionType: previousType,
-            // When the agent is also running (discussion case), it'll write
-            // the user message itself. Skip our write to avoid a duplicate.
-            userMessage: hadDiscussion ? undefined : message,
+            userMessage: message,
+            sessionId,
+            userId,
+            // When the agent is also running (discussion case), it writes
+            // the user message to n8n_chat_histories itself via langchain.
+            // Skip the edge function's own n8n_chat_histories user-msg write
+            // to avoid a duplicate. (chat_messages persistence still happens.)
+            skipHistoryUserWrite: hadDiscussion,
           });
 
-          addMessage('bot', response);
+          // Bot message: local state only — the edge function already wrote
+          // the row to chat_messages server-side, so persistence is atomic
+          // with the API response. Refresh-mid-flight is now safe.
+          addMessage('bot', response, { skipPersist: true });
           scanForSections(response);
           lastTurnWasAdvanceRef.current = true;
           setIsWaitingForResponse(false);
           return;
         } catch (error) {
           console.error('[fast-path] deliver-section failed, falling back to agent:', error);
-          // Fall through to the agent path below.
+          // User msg was added with skipPersist=true expecting the edge
+          // function to write it. It didn't. Persist now so refresh is
+          // safe and the agent's eventual reply lands at the right place.
+          supabase.from('chat_messages').insert({
+            session_id: sessionId,
+            report_id: reportId,
+            user_id: userId,
+            sender: 'user',
+            content: message,
+          }).then(({ error: persistErr }) => {
+            if (persistErr) console.error('[fast-path] fallback persist failed:', persistErr);
+          });
+          // Fall through to the agent path below — but DON'T re-call
+          // addMessage('user'), it's already in local state.
         }
+      } else {
+        // Pure agent path (no fast path attempted): standard frontend
+        // persistence via addMessage's fire-and-forget Supabase write.
+        addMessage('user', message);
+        setIsWaitingForResponse(true);
+        onUserActivity?.();
       }
 
       try {

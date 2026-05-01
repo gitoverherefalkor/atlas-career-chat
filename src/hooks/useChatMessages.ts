@@ -60,9 +60,14 @@ export function useChatMessages({ sessionId, reportId, userId }: UseChatMessages
     loadMessages();
   }, [sessionId, reportId, userId]);
 
-  // Add a message to local state and persist to Supabase
+  // Add a message to local state and persist to Supabase.
+  // Pass `{ skipPersist: true }` when the message has already been written
+  // server-side (e.g. by the deliver-section edge function). Local state is
+  // still updated so the user sees the message immediately. This avoids the
+  // race where a user refreshes mid-flight and loses an unpersisted bot
+  // message, since the server-side write is atomic with the API response.
   const addMessage = useCallback(
-    (sender: 'user' | 'bot', content: string) => {
+    (sender: 'user' | 'bot', content: string, options?: { skipPersist?: boolean }) => {
       if (!sessionId || !reportId || !userId) return;
 
       const now = new Date().toISOString();
@@ -80,6 +85,8 @@ export function useChatMessages({ sessionId, reportId, userId }: UseChatMessages
 
       // Add to local state immediately
       setMessages((prev) => [...prev, newMessage]);
+
+      if (options?.skipPersist) return;
 
       // Persist to Supabase in background (fire-and-forget)
       supabase

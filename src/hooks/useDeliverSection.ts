@@ -36,6 +36,21 @@ interface DeliverSectionArgs {
    * sees both turns when it's invoked next.
    */
   userMessage?: string;
+  /**
+   * Frontend session_id and user_id so the edge function can persist
+   * the user msg + delivery to the `chat_messages` table server-side.
+   * This makes persistence atomic with the API response — refreshing
+   * mid-flight no longer loses the bot message.
+   */
+  sessionId?: string;
+  userId?: string;
+  /**
+   * When true, the agent is also handling this advance (post-discussion
+   * case) and will write the user message to n8n_chat_histories itself
+   * via langchain. Tells the edge function to skip its n8n_chat_histories
+   * user-message write to avoid a duplicate. Doesn't affect chat_messages.
+   */
+  skipHistoryUserWrite?: boolean;
 }
 
 export function useDeliverSection() {
@@ -55,6 +70,9 @@ export function useDeliverSection() {
         section_type: args.sectionType,
         previous_section_type: args.previousSectionType,
         user_message: args.userMessage,
+        session_id: args.sessionId,
+        user_id: args.userId,
+        skip_history_user_write: args.skipHistoryUserWrite,
       }),
     });
 

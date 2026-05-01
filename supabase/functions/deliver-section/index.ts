@@ -96,6 +96,9 @@ serve(async (req) => {
     section_type?: string;
     previous_section_type?: string;
     user_message?: string;
+    session_id?: string;
+    user_id?: string;
+    skip_history_user_write?: boolean;
   };
   try {
     body = await req.json();
@@ -103,7 +106,15 @@ serve(async (req) => {
     return errorResponse('Invalid JSON body', 400, corsHeaders);
   }
 
-  const { report_id, section_type, previous_section_type, user_message } = body;
+  const {
+    report_id,
+    section_type,
+    previous_section_type,
+    user_message,
+    session_id,
+    user_id,
+    skip_history_user_write,
+  } = body;
 
   if (!report_id || typeof report_id !== 'string') {
     return errorResponse('report_id required', 400, corsHeaders);
@@ -162,31 +173,65 @@ serve(async (req) => {
     return errorResponse('Failed to render section', 500, corsHeaders);
   }
 
-  // 3. Write user + AI messages to n8n_chat_histories so the agent's memory
-  //    stays coherent. session_id matches what the agent's Postgres memory
-  //    uses (bare report_id). Inserted in two rows so each gets its own id
-  //    and created_at; ordering is preserved by the auto-increment id.
-  const messagesToInsert: Array<{ session_id: string; message: unknown }> = [];
-  if (user_message && typeof user_message === 'string') {
-    messagesToInsert.push({
+  // 3a. Write user + AI messages to n8n_chat_histories (agent memory).
+  //     session_id here = bare report_id (what the agent's Postgres memory
+  //     node uses). When the agent is handling this advance in parallel
+  //     (post-discussion case), it'll write the user msg itself via
+  //     langchain — skip our write to avoid a duplicate.
+  const histRows: Array<{ session_id: string; message: unknown }> = [];
+  if (user_message && typeof user_message === 'string' && !skip_history_user_write) {
+    histRows.push({
       session_id: report_id,
       message: buildHumanChatMessage(user_message),
     });
   }
-  messagesToInsert.push({
+  histRows.push({
     session_id: report_id,
     message: buildAiChatMessage(rendered),
   });
 
   const { error: writeErr } = await supabase
     .from('n8n_chat_histories')
-    .insert(messagesToInsert);
+    .insert(histRows);
 
   if (writeErr) {
-    // Non-fatal: still return the rendered content so the user sees their
-    // section. The agent will fall back to its retrieval tools if memory
-    // diverges. Log loudly so we notice.
     console.error('[deliver-section] history write failed:', writeErr);
+  }
+
+  // 3b. Write user + AI messages to chat_messages (UI persistence).
+  //     This is the table the frontend reads on page load. Server-side
+  //     write here makes persistence atomic with the API response — if
+  //     the user refreshes mid-flight, they still see the bot delivery
+  //     after reload. session_id and user_id required for the row.
+  if (session_id && user_id) {
+    const chatRows: Array<{
+      session_id: string;
+      report_id: string;
+      user_id: string;
+      sender: 'user' | 'bot';
+      content: string;
+    }> = [];
+    if (user_message && typeof user_message === 'string') {
+      chatRows.push({
+        session_id,
+        report_id,
+        user_id,
+        sender: 'user',
+        content: user_message,
+      });
+    }
+    chatRows.push({
+      session_id,
+      report_id,
+      user_id,
+      sender: 'bot',
+      content: rendered,
+    });
+
+    const { error: chatWriteErr } = await supabase.from('chat_messages').insert(chatRows);
+    if (chatWriteErr) {
+      console.error('[deliver-section] chat_messages write failed:', chatWriteErr);
+    }
   }
 
   // 4. Close feedback for the section being left behind, if any.
