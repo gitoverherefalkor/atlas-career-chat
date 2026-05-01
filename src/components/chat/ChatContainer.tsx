@@ -10,6 +10,7 @@ import { useChatMessages } from '@/hooks/useChatMessages';
 import { useReportSections } from '@/hooks/useReportSections';
 import { useSubmitChapterFeedback } from '@/hooks/useSubmitChapterFeedback';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 // Maps the sidebar section index (0..10) to the section_type used by the
 // `deliver-section` edge function. Indices that aren't delivered via chat
@@ -357,45 +358,84 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       setIsWaitingForResponse(true);
       onUserActivity?.();
 
-      // Fast path: clean "Continue to next section" click with no LLM
-      // reasoning needed. Skip the n8n agent and call the deliver-section
-      // edge function for a deterministic templated delivery.
-      // Gated on `?fast=1` so we can A/B test live without breaking the
-      // existing flow. Falls back to the agent path on any error.
-      //
-      // Precondition: the previous turn must also have been an 'advance'.
-      // Otherwise the user has been discussing with the agent and clicked
-      // Continue to wrap up — that needs to flow to the agent so it can
-      // call fb_unified with the real discussion summary. Routing it to
-      // fast path here would silently overwrite the discussion outcome
-      // with the canonical "no changes needed" string.
+      // Fast path: clean "Continue to next section" click. Always fires when
+      // the click intent is 'advance' (regardless of whether discussion just
+      // happened). When discussion DID happen, we additionally fire the agent
+      // in the background so it can call fb_unified with a rich summary —
+      // its text reply isn't shown in chat (a toast confirms feedback saved
+      // when fb_unified completes). User sees the next section immediately
+      // and the feedback save happens concurrently in the background.
       const previousType = SECTION_INDEX_TO_TYPE[currentSectionIndex] ?? undefined;
       const nextType = SECTION_INDEX_TO_TYPE[currentSectionIndex + 1] ?? undefined;
       const shouldUseFastPath =
         fastPathEnabled &&
         intent === 'advance' &&
         nextType !== undefined &&
-        currentSectionIndex >= 1 && // Welcome → approach handled separately
-        lastTurnWasAdvanceRef.current;
+        currentSectionIndex >= 1; // Welcome → approach handled separately
 
       if (shouldUseFastPath && nextType) {
+        const hadDiscussion = !lastTurnWasAdvanceRef.current;
+
+        // Fire agent in background for fb_unified summary capture. We don't
+        // display its reply — toast handles user-visible confirmation.
+        // The agent writes the user message + its reply to chat_histories
+        // itself via langchain's Postgres memory node, so we tell the fast
+        // path NOT to write the user message (avoids duplicate).
+        if (hadDiscussion && previousType) {
+          sendMessage(sessionId, message, {
+            report_id: reportId,
+            first_name: firstName,
+            country,
+          })
+            .then(async () => {
+              // Detect what was captured to tailor the toast.
+              const { data } = await supabase
+                .from('report_sections')
+                .select('feedback, explore')
+                .eq('report_id', reportId)
+                .eq('section_type', previousType)
+                .maybeSingle();
+              if (!data) return;
+              const hasExplore = !!(data.explore && data.explore.length > 0);
+              // Canonical feedback is the platform's "User confirmed accuracy,
+              // no changes needed." string — ~50 chars. Anything substantially
+              // longer is a real summary the agent wrote.
+              const hasRealFeedback = !!(data.feedback && data.feedback.length > 60);
+
+              let description: string | null = null;
+              if (hasRealFeedback && hasExplore) {
+                description =
+                  'Your feedback and information request will be reflected in your final report.';
+              } else if (hasRealFeedback) {
+                description = 'Your feedback will be reflected in your final report.';
+              } else if (hasExplore) {
+                description = 'Your information request will be reflected in your final report.';
+              }
+              if (description) {
+                toast({ title: 'Saved', description });
+              }
+            })
+            .catch((err) => {
+              console.error('[advance] background agent failed:', err);
+            });
+        }
+
         try {
           const response = await deliver({
             reportId,
             sectionType: nextType,
             previousSectionType: previousType,
-            userMessage: message,
+            // When the agent is also running (discussion case), it'll write
+            // the user message itself. Skip our write to avoid a duplicate.
+            userMessage: hadDiscussion ? undefined : message,
           });
 
           addMessage('bot', response);
           scanForSections(response);
-          // Successful fast-path delivery — next Continue can also fast-path.
           lastTurnWasAdvanceRef.current = true;
           setIsWaitingForResponse(false);
           return;
         } catch (error) {
-          // Don't toast — silently fall back to the agent path so the
-          // user still gets a response. Log so we notice in dev.
           console.error('[fast-path] deliver-section failed, falling back to agent:', error);
           // Fall through to the agent path below.
         }
