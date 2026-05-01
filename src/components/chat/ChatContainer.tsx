@@ -380,47 +380,29 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         onUserActivity?.();
 
         // Fire agent in background for fb_unified summary capture. We don't
-        // display its reply — toast handles user-visible confirmation.
-        // The agent writes the user message + its reply to chat_histories
-        // itself via langchain's Postgres memory node, so we tell the fast
-        // path NOT to write the user message (avoids duplicate).
+        // display its reply — the toast (fired immediately below) is the
+        // user-visible confirmation. The agent writes the user message +
+        // its reply to chat_histories itself via langchain's Postgres
+        // memory node, so we tell the fast path NOT to write the user
+        // message (avoids duplicate).
         if (hadDiscussion && previousType) {
+          // Optimistic toast — fires synchronously with the click so the
+          // user sees the confirmation tied to their action, not 10-15s
+          // later when they're already reading the next section. Agent
+          // runs to completion in the background; failures are logged
+          // but don't surface (rare, and the discussion itself is still
+          // preserved in chat history).
+          toast({
+            title: 'Saved',
+            description: 'Your feedback will be reflected in your final report.',
+          });
           sendMessage(sessionId, message, {
             report_id: reportId,
             first_name: firstName,
             country,
-          })
-            .then(async () => {
-              // Detect what was captured to tailor the toast.
-              const { data } = await supabase
-                .from('report_sections')
-                .select('feedback, explore')
-                .eq('report_id', reportId)
-                .eq('section_type', previousType)
-                .maybeSingle();
-              if (!data) return;
-              const hasExplore = !!(data.explore && data.explore.length > 0);
-              // Canonical feedback is the platform's "User confirmed accuracy,
-              // no changes needed." string — ~50 chars. Anything substantially
-              // longer is a real summary the agent wrote.
-              const hasRealFeedback = !!(data.feedback && data.feedback.length > 60);
-
-              let description: string | null = null;
-              if (hasRealFeedback && hasExplore) {
-                description =
-                  'Your feedback and information request will be reflected in your final report.';
-              } else if (hasRealFeedback) {
-                description = 'Your feedback will be reflected in your final report.';
-              } else if (hasExplore) {
-                description = 'Your information request will be reflected in your final report.';
-              }
-              if (description) {
-                toast({ title: 'Saved', description });
-              }
-            })
-            .catch((err) => {
-              console.error('[advance] background agent failed:', err);
-            });
+          }).catch((err) => {
+            console.error('[advance] background agent failed:', err);
+          });
         }
 
         try {
