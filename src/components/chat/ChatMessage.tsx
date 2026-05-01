@@ -501,13 +501,20 @@ const SequentialSubsections: React.FC<{
     const topEl = cardTopSentinelRef.current;
     const bottomEl = cardBottomSentinelRef.current;
     if (!topEl || !bottomEl) return;
+    // rootMargin shifts the observer's effective viewport top down by
+    // NAV_OFFSET, so the callback fires when the sentinel crosses the
+    // nav line (not just the actual viewport edge). Without this, the
+    // observer never fires while the sentinel scrolls between e.g.
+    // 200px → 50px because it stays inside the actual viewport the
+    // whole time and isIntersecting doesn't flip.
+    const margin = `-${NAV_OFFSET}px 0px 0px 0px`;
     const topObs = new IntersectionObserver(
-      ([entry]) => setTopAboveNav(entry.boundingClientRect.top <= NAV_OFFSET),
-      { threshold: 0 },
+      ([entry]) => setTopAboveNav(entry.boundingClientRect.top < NAV_OFFSET),
+      { threshold: 0, rootMargin: margin },
     );
     const bottomObs = new IntersectionObserver(
       ([entry]) => setBottomBelowNav(entry.boundingClientRect.top > NAV_OFFSET),
-      { threshold: 0 },
+      { threshold: 0, rootMargin: margin },
     );
     topObs.observe(topEl);
     bottomObs.observe(bottomEl);
