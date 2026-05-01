@@ -11,6 +11,7 @@ import type { Tables } from '@/integrations/supabase/types';
 import { ClosingCard } from '@/components/chat/ClosingCard';
 import { ReportSidebar, ALL_SECTIONS } from '@/components/chat/ReportSidebar';
 import { ChatContainer } from '@/components/chat/ChatContainer';
+import { useReportSections } from '@/hooks/useReportSections';
 import { TTSProvider } from '@/contexts/TTSContext';
 import type { ChatMessagesHandle } from '@/components/chat/ChatMessages';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
@@ -38,6 +39,10 @@ const Chat = () => {
   // Core state
   const [isLoading, setIsLoading] = useState(true);
   const [reportData, setReportData] = useState<ReportData | null>(null);
+
+  // Career section data — used by the sidebar to surface the actual
+  // career title + company size for the current top-career section.
+  const { sections: reportSections } = useReportSections(reportData?.id);
   const [showWelcome, setShowWelcome] = useState(!hasExistingSession || sessionIsStale);
   const [showClosing, setShowClosing] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -466,6 +471,7 @@ const Chat = () => {
             onSectionClick={handleSectionClick}
             onCompleteSession={() => setShowClosing(true)}
             isSessionCompleted={isSessionCompleted}
+            reportSections={reportSections}
           />
         </div>
       )}

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight, FileText, Check, Circle, Lock, PartyPopper, X, ListOrdered, ClipboardList, Compass, Zap, TrendingUp, Heart, Trophy, Award, Lightbulb, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { ReportSection } from '@/hooks/useReportSections';
 
 // Map section IDs to translation keys in report.json
 const SECTION_I18N_KEY: Record<string, string> = {
@@ -85,6 +86,31 @@ const CAREER_SECTIONS = ALL_SECTIONS
   .map((section, index) => ({ ...section, globalIndex: index }))
   .filter(s => s.chapter === 'career-suggestions' && !HIDDEN_SECTION_IDS.has(s.id));
 
+// Map sidebar section ids to the matching report_sections section_type for
+// the top-career sections (single-row, single career per section). Sidebar
+// shows the actual career title + company size as a small subline under the
+// current section's button when the user is on one of these.
+// Multi-row sections (runner_ups, outside_box, dream_jobs) are intentionally
+// excluded — surfacing one career name doesn't fairly represent the whole
+// group.
+const CAREER_SIDEBAR_SECTIONS: Record<string, string> = {
+  'first-career': 'top_career_1',
+  'second-career': 'top_career_2',
+  'third-career': 'top_career_3',
+};
+
+// Strip HTML tags + leaked markdown bold tokens from a stored field.
+// `report_sections.title` is `<h3><strong>X</strong></h3>` style;
+// `company_size_type` is `<h4><strong>Y</strong></h4>`. We just want the
+// readable text for the sidebar.
+function cleanField(raw: string | null | undefined): string {
+  if (!raw) return '';
+  return raw
+    .replace(/<[^>]+>/g, '')
+    .replace(/\*\*/g, '')
+    .trim();
+}
+
 interface ReportSidebarProps {
   currentSectionIndex: number; // -1 = none started, 0 = first section, etc.
   isCollapsed: boolean;
@@ -92,6 +118,9 @@ interface ReportSidebarProps {
   onSectionClick: (sectionId: string, index: number) => void;
   onCompleteSession?: () => void; // Called when user clicks "Complete Session"
   isSessionCompleted?: boolean; // True when edge function has marked session complete
+  // Career rows from `report_sections`. Used to surface the actual career
+  // title + company size next to the current top-career section button.
+  reportSections?: ReportSection[];
 }
 
 export const ReportSidebar: React.FC<ReportSidebarProps> = ({
@@ -100,7 +129,8 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
   onToggleCollapse,
   onSectionClick,
   onCompleteSession,
-  isSessionCompleted = false
+  isSessionCompleted = false,
+  reportSections,
 }) => {
   const { t } = useTranslation(['report', 'chat']);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -157,16 +187,33 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         <div className="px-4 py-2 mt-2">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">{t('chapters.careerSuggestions')}</p>
           <div className="space-y-1">
-            {CAREER_SECTIONS.map((section) => (
-              <SectionButton
-                key={section.id}
-                sectionId={section.id}
-                title={translateTitle(section.id, section.title)}
-                state={getSectionState(section.globalIndex)}
-                onClick={() => handleClick(section.id, section.globalIndex)}
-                disabled={!isClickable(section.globalIndex)}
-              />
-            ))}
+            {CAREER_SECTIONS.map((section) => {
+              const state = getSectionState(section.globalIndex);
+              // For the CURRENT top-career section, surface the actual
+              // career title + company size from report_sections so the
+              // user has a reminder of which role they're discussing.
+              let careerInfo: { title: string; size: string | null } | null = null;
+              if (state === 'current') {
+                const sectionType = CAREER_SIDEBAR_SECTIONS[section.id];
+                const row = sectionType
+                  ? reportSections?.find((r) => r.section_type === sectionType)
+                  : null;
+                const title = cleanField(row?.title);
+                const size = cleanField(row?.company_size_type) || null;
+                if (title) careerInfo = { title, size };
+              }
+              return (
+                <SectionButton
+                  key={section.id}
+                  sectionId={section.id}
+                  title={translateTitle(section.id, section.title)}
+                  state={state}
+                  onClick={() => handleClick(section.id, section.globalIndex)}
+                  disabled={!isClickable(section.globalIndex)}
+                  careerInfo={careerInfo}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
@@ -325,9 +372,13 @@ interface SectionButtonProps {
   state: 'past' | 'current' | 'upcoming';
   onClick: () => void;
   disabled: boolean;
+  // When present (current top-career section), shows a small subline
+  // under the section title with the actual career title + company size
+  // so the user has a reminder of what they're reading.
+  careerInfo?: { title: string; size: string | null } | null;
 }
 
-const SectionButton: React.FC<SectionButtonProps> = ({ sectionId, title, state, onClick, disabled }) => {
+const SectionButton: React.FC<SectionButtonProps> = ({ sectionId, title, state, onClick, disabled, careerInfo }) => {
   const SectionIcon = SECTION_ICONS[sectionId];
   const careerNumber = CAREER_NUMBER[sectionId];
 
@@ -335,7 +386,7 @@ const SectionButton: React.FC<SectionButtonProps> = ({ sectionId, title, state, 
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
+      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-all flex items-start gap-2 ${
         state === 'current'
           ? 'bg-atlas-teal text-white shadow-sm cursor-pointer hover:bg-atlas-teal/90'
           : state === 'past'
@@ -343,8 +394,9 @@ const SectionButton: React.FC<SectionButtonProps> = ({ sectionId, title, state, 
             : 'text-gray-400 cursor-not-allowed'
       }`}
     >
-      {/* Status icon */}
-      <span className={`flex-shrink-0 ${
+      {/* Status icon — pinned to top so the row aligns when a careerInfo
+          subline pushes the content to two-or-more lines. */}
+      <span className={`flex-shrink-0 mt-0.5 ${
         state === 'current' ? 'text-white' : state === 'past' ? 'text-atlas-teal' : 'text-gray-300'
       }`}>
         {state === 'past' && <Check className="h-4 w-4" />}
@@ -355,20 +407,40 @@ const SectionButton: React.FC<SectionButtonProps> = ({ sectionId, title, state, 
       {/* Section icon or number badge */}
       {state !== 'past' && (
         careerNumber ? (
-          <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 ${
+          <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 ${
             state === 'current' ? 'bg-white/20 text-white' : 'bg-atlas-teal/15 text-atlas-teal'
           }`}>
             {careerNumber}
           </span>
         ) : SectionIcon ? (
-          <SectionIcon className={`h-3.5 w-3.5 flex-shrink-0 ${
+          <SectionIcon className={`h-3.5 w-3.5 flex-shrink-0 mt-1 ${
             state === 'current' ? 'text-white' : state === 'upcoming' ? 'text-gray-300' : 'text-atlas-teal'
           }`} />
         ) : null
       )}
 
-      {/* Title */}
-      <span className={state === 'upcoming' ? 'opacity-60' : ''}>{title}</span>
+      {/* Title + optional career subline. min-w-0 lets text truncate. */}
+      <span className={`flex flex-col gap-0.5 min-w-0 flex-1 ${state === 'upcoming' ? 'opacity-60' : ''}`}>
+        <span>{title}</span>
+        {careerInfo && state === 'current' && (
+          <>
+            <span
+              className="text-xs font-medium text-white/95 truncate leading-tight"
+              title={careerInfo.title}
+            >
+              {careerInfo.title}
+            </span>
+            {careerInfo.size && (
+              <span
+                className="text-[11px] text-white/70 truncate leading-tight"
+                title={careerInfo.size}
+              >
+                {careerInfo.size}
+              </span>
+            )}
+          </>
+        )}
+      </span>
     </button>
   );
 };
