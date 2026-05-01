@@ -386,10 +386,7 @@ const SequentialSubsections: React.FC<{
   // subsections have been revealed, so the user doesn't see the
   // wrap-up before they've read the section.
   outro?: string | null;
-  // Only the latest bot message gets the floating title bar — older
-  // messages shouldn't compete for the "what am I reading" indicator.
-  isLatestBotMessage?: boolean;
-}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal, intro, outro, isLatestBotMessage }) => {
+}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal, intro, outro }) => {
   // revealedCount = number of sub-sections currently visible. Starts at 1
   // so the user sees the preamble + first h2 + first body on first render.
   const [revealedCount, setRevealedCount] = useState(1);
@@ -466,75 +463,6 @@ const SequentialSubsections: React.FC<{
 
   const allRevealed = revealedCount >= subsections.length;
 
-  // Extract a compact title + subtitle from the preamble for the floating
-  // header. Title comes from `### `, subtitle from `#### ` (career size).
-  // For personality sections (no #### line), subtitle is null.
-  const stickyHeader = (() => {
-    if (!preamble) return null;
-    const titleMatch = preamble.match(/^###\s+(.+)$/m);
-    if (!titleMatch) return null;
-    const subtitleMatch = preamble.match(/^####\s+(.+)$/m);
-    return {
-      title: titleMatch[1].replace(/\*\*/g, '').trim(),
-      subtitle: subtitleMatch ? subtitleMatch[1].replace(/\*\*/g, '').trim() : null,
-    };
-  })();
-
-  // Floating title bar visibility — show only when the user is currently
-  // scrolled INSIDE this card's reading region. Two sentinels:
-  //   - cardTopSentinel: just after the preamble title. Once its top is
-  //     above the nav line, the user has scrolled past the title and a
-  //     reminder is useful.
-  //   - cardBottomSentinel: just before the outro. Once its top is also
-  //     above the nav line, the user has scrolled past the card entirely
-  //     (or up past it) and the bar should disappear.
-  // Bar shows when: cardTop is above nav AND cardBottom is below nav.
-  // Equivalent to "card occupies the nav line right now."
-  // Only the latest bot message gets this treatment.
-  const NAV_OFFSET = 80;
-  const cardTopSentinelRef = useRef<HTMLDivElement | null>(null);
-  const cardBottomSentinelRef = useRef<HTMLDivElement | null>(null);
-  const [topAboveNav, setTopAboveNav] = useState(false);
-  const [bottomBelowNav, setBottomBelowNav] = useState(false);
-  useEffect(() => {
-    console.log('[FloatBar] effect fired, isLatestBotMessage=', isLatestBotMessage);
-    if (!isLatestBotMessage) return;
-    const topEl = cardTopSentinelRef.current;
-    const bottomEl = cardBottomSentinelRef.current;
-    console.log('[FloatBar] sentinels:', { topEl: !!topEl, bottomEl: !!bottomEl, stickyHeader });
-    if (!topEl || !bottomEl) return;
-    const margin = `-${NAV_OFFSET}px 0px 0px 0px`;
-    const topObs = new IntersectionObserver(
-      ([entry]) => {
-        const above = entry.boundingClientRect.top < NAV_OFFSET;
-        console.log('[FloatBar] topObs fired, top=', entry.boundingClientRect.top, 'above=', above);
-        setTopAboveNav(above);
-      },
-      { threshold: 0, rootMargin: margin },
-    );
-    const bottomObs = new IntersectionObserver(
-      ([entry]) => {
-        const below = entry.boundingClientRect.top > NAV_OFFSET;
-        console.log('[FloatBar] bottomObs fired, top=', entry.boundingClientRect.top, 'below=', below);
-        setBottomBelowNav(below);
-      },
-      { threshold: 0, rootMargin: margin },
-    );
-    topObs.observe(topEl);
-    bottomObs.observe(bottomEl);
-    return () => {
-      topObs.disconnect();
-      bottomObs.disconnect();
-    };
-  }, [isLatestBotMessage, stickyHeader]);
-
-  // Debug: log when showFloatingBar value changes
-  useEffect(() => {
-    console.log('[FloatBar] showFloatingBar=', showFloatingBar, { isLatestBotMessage, stickyHeader: !!stickyHeader, topAboveNav, bottomBelowNav });
-  });
-  const showFloatingBar =
-    isLatestBotMessage && stickyHeader && topAboveNav && bottomBelowNav;
-
   return (
     <div>
       {/* Boilerplate intro panel — visually distinct (light teal),
@@ -550,35 +478,6 @@ const SequentialSubsections: React.FC<{
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={preambleComponents}>
           {preamble}
         </ReactMarkdown>
-      )}
-      {/* Sentinel placed AFTER the preamble title — once it scrolls
-          above the nav line, the user has passed the title and the
-          floating bar becomes useful. */}
-      <div ref={cardTopSentinelRef} aria-hidden className="h-px" />
-      {/* Floating compact title bar — fixed-position, only renders when
-          the user has scrolled past the original preamble title AND the
-          card is still in view. Tied to the latest bot message only.
-          Pointer-events:none so it's a passive label, not interactive.
-          Outer wrapper mirrors the chat content area (max-w-[800px]
-          mx-auto px-3 sm:px-6) and constrains to the bot card's 85%
-          column so the pill visually centers above the card. */}
-      {showFloatingBar && stickyHeader && (
-        <div className="fixed top-[80px] left-0 right-0 z-30 pointer-events-none animate-in fade-in slide-in-from-top-2 duration-200">
-          <div className="max-w-[800px] mx-auto px-3 sm:px-6">
-            <div className="max-w-[85%] flex justify-center">
-              <div className="bg-white/95 backdrop-blur-sm border border-gray-200 rounded-full px-5 py-2 shadow-md max-w-full">
-                <div className="text-sm font-bold text-atlas-navy truncate leading-tight">
-                  {stickyHeader.title}
-                </div>
-                {stickyHeader.subtitle && (
-                  <div className="text-xs text-gray-500 truncate leading-tight">
-                    {stickyHeader.subtitle}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
       )}
       {subsections.slice(0, revealedCount).map((sub, idx) => {
         // Render the title manually so we can prefix it with an icon.
@@ -630,11 +529,6 @@ const SequentialSubsections: React.FC<{
           </button>
         );
       })()}
-      {/* Sentinel for the floating-bar visibility check (card bottom).
-          Placed before the outro so the floating bar disappears as the
-          user scrolls into the outro region — at that point the card is
-          essentially done and the title reminder isn't needed. */}
-      <div ref={cardBottomSentinelRef} aria-hidden className="h-px" />
       {/* Boilerplate outro panel — appears only after all subsections are
           revealed, with extra top margin so it doesn't feel glued to the
           last paragraph. */}
@@ -669,22 +563,24 @@ const CollapsibleCareerBlocks: React.FC<{
 }> = ({
   intro,
   blocks,
-  defaultAllCollapsed = false,
+  defaultAllCollapsed = true,
   onAllBlocksOpened,
   sections,
   deliveryIntro,
   deliveryOutro,
 }) => {
-  // Sub-blocks = everything after the first (title) block.
-  // The title block is always visible, so only sub-blocks are collapsible.
-  const subBlocks = blocks.slice(1);
-
+  // All blocks are uniform collapsible cards. Default: all closed, so the
+  // user gets a clean scannable list of options (title + size + score +
+  // AI impact). They expand any card to read its body. The previous
+  // "first block always expanded" pattern produced inconsistent rendering
+  // across cards in runner_ups / outside_box / dream_jobs.
   const [openIndices, setOpenIndices] = useState<Set<number>>(
-    new Set(defaultAllCollapsed ? [] : [0])
+    new Set(defaultAllCollapsed ? [] : [0]),
   );
-  // Track which sub-blocks have EVER been opened (for the "all read" signal)
+  // Track which blocks have EVER been opened (for the "all read" signal
+  // that ungates the outro panel).
   const [everOpened, setEverOpened] = useState<Set<number>>(
-    new Set(defaultAllCollapsed ? [] : [0])
+    new Set(defaultAllCollapsed ? [] : [0]),
   );
   const firedRef = useRef(false);
 
@@ -694,14 +590,11 @@ const CollapsibleCareerBlocks: React.FC<{
       next.has(idx) ? next.delete(idx) : next.add(idx);
       return next;
     });
-
-    // Track that this sub-block was opened at least once
     setEverOpened((prev) => {
       if (prev.has(idx)) return prev;
       const next = new Set(prev);
       next.add(idx);
-      // Check if all sub-blocks have now been opened at least once
-      if (next.size >= subBlocks.length && !firedRef.current && onAllBlocksOpened) {
+      if (next.size >= blocks.length && !firedRef.current && onAllBlocksOpened) {
         firedRef.current = true;
         onAllBlocksOpened();
       }
@@ -709,11 +602,20 @@ const CollapsibleCareerBlocks: React.FC<{
     });
   };
 
-  // First block is the career title + intro — always expanded, never collapsible.
-  // Remaining blocks (subBlocks) are sub-sections — collapsible.
-  const titleBlock = blocks[0];
+  const allOpened = blocks.length > 0 && everOpened.size >= blocks.length;
 
-  const allOpened = subBlocks.length > 0 && everOpened.size >= subBlocks.length;
+  // Pull the company-size line ("#### Small (11–50) / Boutique") out of
+  // each block's body so we can show it in the collapsed header next
+  // to the title. Returns the body without the size line so it doesn't
+  // double-render when the block is expanded.
+  const splitSizeFromBody = (body: string): { size: string | null; rest: string } => {
+    const m = body.match(/^####\s+(.+)$/m);
+    if (!m) return { size: null, rest: body };
+    const size = m[1].replace(/\*\*/g, '').trim();
+    const rest = body.replace(/^####\s+.+$\n*/m, '').trim();
+    return { size, rest };
+  };
+
   return (
     <div>
       {/* Boilerplate intro panel (light teal band, full card width) */}
@@ -734,38 +636,16 @@ const CollapsibleCareerBlocks: React.FC<{
         </div>
       )}
 
-      {/* Career title block — always expanded, no chevron */}
-      {titleBlock && (() => {
-        const section = findSectionByTitle(sections, titleBlock.title);
-        const score = section?.score != null ? Number(section.score) : null;
-        const aiImpact = extractAIImpact(titleBlock.body || '');
-        return (
-          <div className="mb-3">
-            <h3 className="text-lg font-bold text-atlas-navy font-heading mt-4 mb-2">
-              {titleBlock.title}
-            </h3>
-            <CareerScoreCard
-              score={Number.isFinite(score) ? score : null}
-              aiImpact={aiImpact}
-            />
-            {titleBlock.body && (
-              <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                {titleBlock.body}
-              </ReactMarkdown>
-            )}
-          </div>
-        );
-      })()}
-
-      {/* Sub-section blocks — collapsible */}
-      {subBlocks.length > 0 && (
+      {/* All career blocks render uniformly as collapsible cards */}
+      {blocks.length > 0 && (
         <div className="flex flex-col gap-2">
-          {subBlocks.map((block, idx) => {
+          {blocks.map((block, idx) => {
             const isOpen = openIndices.has(idx);
             const section = findSectionByTitle(sections, block.title);
             const score = section?.score != null ? Number(section.score) : null;
             const aiImpact = extractAIImpact(block.body || '');
             const hasCard = (Number.isFinite(score) && score != null) || aiImpact;
+            const { size, rest } = splitSizeFromBody(block.body || '');
 
             return (
               <div
@@ -782,8 +662,14 @@ const CollapsibleCareerBlocks: React.FC<{
                     <h3 className="text-base font-bold text-atlas-navy font-heading m-0 leading-snug">
                       {block.title}
                     </h3>
-                    {/* Show score + AI impact in the collapsed header so users
-                        can scan all options without expanding each one. */}
+                    {/* Company size — small subhead under the title */}
+                    {size && (
+                      <div className="text-xs text-atlas-teal font-medium leading-tight">
+                        {size}
+                      </div>
+                    )}
+                    {/* Match score + AI impact pills in the collapsed header
+                        so users can scan all options without expanding each. */}
                     {hasCard && (
                       <CareerScoreCard
                         score={Number.isFinite(score) ? score : null}
@@ -798,11 +684,12 @@ const CollapsibleCareerBlocks: React.FC<{
                   />
                 </button>
 
-                {/* Collapsible body */}
+                {/* Collapsible body — size already shown in header,
+                    so render the size-stripped `rest` instead of full body */}
                 {isOpen && (
                   <div className="px-4 pb-4 pt-2 border-t border-gray-100 text-[0.9375rem]">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                      {block.body}
+                      {rest}
                     </ReactMarkdown>
                   </div>
                 )}
@@ -1009,7 +896,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             fullBody={sanitized}
             intro={deliveryIntro}
             outro={deliveryOutro}
-            isLatestBotMessage={isLatestBotMessage}
             // Only the latest message reports state — older messages
             // shouldn't lock the input even if their state is partial.
             onRevealStateChange={isLatestBotMessage ? onSequentialRevealStateChange : undefined}
