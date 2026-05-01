@@ -90,13 +90,27 @@ const CAREER_SECTIONS = ALL_SECTIONS
 // the top-career sections (single-row, single career per section). Sidebar
 // shows the actual career title + company size as a small subline under the
 // current section's button when the user is on one of these.
-// Multi-row sections (runner_ups, outside_box, dream_jobs) are intentionally
-// excluded — surfacing one career name doesn't fairly represent the whole
-// group.
 const CAREER_SIDEBAR_SECTIONS: Record<string, string> = {
   'first-career': 'top_career_1',
   'second-career': 'top_career_2',
   'third-career': 'top_career_3',
+};
+
+// Multi-row career sections — sidebar shows a count + label so the user
+// knows how many cards they're working through.
+const MULTI_ROW_SIDEBAR_SECTIONS: Record<string, { sectionType: string; label: (n: number) => string }> = {
+  'runner-up': {
+    sectionType: 'runner_ups',
+    label: (n) => `${n} alternative${n === 1 ? '' : 's'}`,
+  },
+  'outside-box': {
+    sectionType: 'outside_box',
+    label: (n) => `${n} unconventional path${n === 1 ? '' : 's'}`,
+  },
+  'dream-jobs': {
+    sectionType: 'dream_jobs',
+    label: (n) => `${n} dream job${n === 1 ? '' : 's'}`,
+  },
 };
 
 // Strip HTML tags + leaked markdown bold tokens from a stored field.
@@ -189,18 +203,26 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
           <div className="space-y-1">
             {CAREER_SECTIONS.map((section) => {
               const state = getSectionState(section.globalIndex);
-              // For the CURRENT top-career section, surface the actual
-              // career title + company size from report_sections so the
-              // user has a reminder of which role they're discussing.
+              // For the CURRENT career section, surface either the
+              // actual career title + size (top-3 single-row) or a count
+              // ("4 alternatives", etc.) for multi-row sections.
               let careerInfo: { title: string; size: string | null } | null = null;
               if (state === 'current') {
-                const sectionType = CAREER_SIDEBAR_SECTIONS[section.id];
-                const row = sectionType
-                  ? reportSections?.find((r) => r.section_type === sectionType)
-                  : null;
-                const title = cleanField(row?.title);
-                const size = cleanField(row?.company_size_type) || null;
-                if (title) careerInfo = { title, size };
+                const topType = CAREER_SIDEBAR_SECTIONS[section.id];
+                const multi = MULTI_ROW_SIDEBAR_SECTIONS[section.id];
+                if (topType) {
+                  const row = reportSections?.find((r) => r.section_type === topType);
+                  const title = cleanField(row?.title);
+                  const size = cleanField(row?.company_size_type) || null;
+                  if (title) careerInfo = { title, size };
+                } else if (multi) {
+                  const count = (reportSections ?? []).filter(
+                    (r) => r.section_type === multi.sectionType,
+                  ).length;
+                  if (count > 0) {
+                    careerInfo = { title: multi.label(count), size: null };
+                  }
+                }
               }
               return (
                 <SectionButton
