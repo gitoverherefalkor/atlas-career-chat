@@ -462,6 +462,21 @@ const SequentialSubsections: React.FC<{
   }, [sections, fullBody, preamble]);
 
   const allRevealed = revealedCount >= subsections.length;
+
+  // Extract a compact title + subtitle from the preamble for the sticky
+  // header. Title comes from `### `, subtitle from `#### ` (career size).
+  // For personality sections (no #### line), subtitle is null.
+  const stickyHeader = (() => {
+    if (!preamble) return null;
+    const titleMatch = preamble.match(/^###\s+(.+)$/m);
+    if (!titleMatch) return null;
+    const subtitleMatch = preamble.match(/^####\s+(.+)$/m);
+    return {
+      title: titleMatch[1].replace(/\*\*/g, '').trim(),
+      subtitle: subtitleMatch ? subtitleMatch[1].replace(/\*\*/g, '').trim() : null,
+    };
+  })();
+
   return (
     <div>
       {/* Boilerplate intro panel — visually distinct (light teal),
@@ -471,6 +486,22 @@ const SequentialSubsections: React.FC<{
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
             {intro}
           </ReactMarkdown>
+        </div>
+      )}
+      {/* Sticky compact title bar — pins to top of chat scroll viewport
+          while the user reads through long subsections. Reminds them
+          which career/section they're inside without taking up the
+          full preamble's worth of space at every scroll position. */}
+      {stickyHeader && (
+        <div className="sticky top-0 z-10 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-200/80 -mb-1">
+          <div className="text-sm font-bold text-atlas-navy truncate leading-tight">
+            {stickyHeader.title}
+          </div>
+          {stickyHeader.subtitle && (
+            <div className="text-xs text-gray-500 truncate leading-tight mt-0.5">
+              {stickyHeader.subtitle}
+            </div>
+          )}
         </div>
       )}
       {preamble && (
