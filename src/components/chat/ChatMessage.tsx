@@ -386,7 +386,10 @@ const SequentialSubsections: React.FC<{
   // subsections have been revealed, so the user doesn't see the
   // wrap-up before they've read the section.
   outro?: string | null;
-}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal, intro, outro }) => {
+  // Only the latest bot message gets the floating title bar — older
+  // messages shouldn't compete for the "what am I reading" indicator.
+  isLatestBotMessage?: boolean;
+}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal, intro, outro, isLatestBotMessage }) => {
   // revealedCount = number of sub-sections currently visible. Starts at 1
   // so the user sees the preamble + first h2 + first body on first render.
   const [revealedCount, setRevealedCount] = useState(1);
@@ -463,7 +466,7 @@ const SequentialSubsections: React.FC<{
 
   const allRevealed = revealedCount >= subsections.length;
 
-  // Extract a compact title + subtitle from the preamble for the sticky
+  // Extract a compact title + subtitle from the preamble for the floating
   // header. Title comes from `### `, subtitle from `#### ` (career size).
   // For personality sections (no #### line), subtitle is null.
   const stickyHeader = (() => {
@@ -477,6 +480,51 @@ const SequentialSubsections: React.FC<{
     };
   })();
 
+  // Floating title bar visibility — uses two IntersectionObservers:
+  //   1. titleSentinel: tracks whether the original preamble title is
+  //      visible in the viewport. When it scrolls above the top, we
+  //      activate the floating bar.
+  //   2. cardBottomSentinel: tracks whether the message card's bottom
+  //      edge is still below the viewport top. Once the user scrolls
+  //      past the entire card, we hide the bar so it doesn't linger
+  //      while they're reading the next message.
+  // Combined: floating bar shows when title is OUT of view AND card is
+  // still partially visible. Only the latest bot message gets this
+  // treatment — older messages don't compete.
+  const titleSentinelRef = useRef<HTMLDivElement | null>(null);
+  const cardBottomSentinelRef = useRef<HTMLDivElement | null>(null);
+  const [titleVisible, setTitleVisible] = useState(true);
+  const [cardStillInView, setCardStillInView] = useState(true);
+  useEffect(() => {
+    if (!isLatestBotMessage) return;
+    const titleEl = titleSentinelRef.current;
+    const bottomEl = cardBottomSentinelRef.current;
+    if (!titleEl || !bottomEl) return;
+    const titleObs = new IntersectionObserver(
+      ([entry]) => setTitleVisible(entry.isIntersecting),
+      // rootMargin top: -80px accounts for the page navbar (~73px) so
+      // the title is considered "out of view" when it slides under the nav.
+      { threshold: 0, rootMargin: '-80px 0px 0px 0px' },
+    );
+    const bottomObs = new IntersectionObserver(
+      ([entry]) => {
+        // Card bottom still below viewport top → card is still relevant
+        // (user is reading inside it). Once it's above viewport top,
+        // hide the floating bar.
+        setCardStillInView(entry.boundingClientRect.top > 80);
+      },
+      { threshold: 0 },
+    );
+    titleObs.observe(titleEl);
+    bottomObs.observe(bottomEl);
+    return () => {
+      titleObs.disconnect();
+      bottomObs.disconnect();
+    };
+  }, [isLatestBotMessage]);
+  const showFloatingBar =
+    isLatestBotMessage && stickyHeader && !titleVisible && cardStillInView;
+
   return (
     <div>
       {/* Boilerplate intro panel — visually distinct (light teal),
@@ -488,26 +536,33 @@ const SequentialSubsections: React.FC<{
           </ReactMarkdown>
         </div>
       )}
-      {/* Sticky compact title bar — pins to top of chat scroll viewport
-          while the user reads through long subsections. Reminds them
-          which career/section they're inside without taking up the
-          full preamble's worth of space at every scroll position. */}
-      {stickyHeader && (
-        <div className="sticky top-0 z-10 -mx-4 px-4 py-2 bg-white/95 backdrop-blur-sm border-b border-gray-200/80 -mb-1">
-          <div className="text-sm font-bold text-atlas-navy truncate leading-tight">
-            {stickyHeader.title}
-          </div>
-          {stickyHeader.subtitle && (
-            <div className="text-xs text-gray-500 truncate leading-tight mt-0.5">
-              {stickyHeader.subtitle}
-            </div>
-          )}
-        </div>
-      )}
+      {/* Sentinel placed where the preamble title sits in the flow. The
+          IntersectionObserver above watches it to decide when to show
+          the floating title bar. */}
+      <div ref={titleSentinelRef} aria-hidden className="h-px" />
       {preamble && (
         <ReactMarkdown remarkPlugins={[remarkGfm]} components={preambleComponents}>
           {preamble}
         </ReactMarkdown>
+      )}
+      {/* Floating compact title bar — fixed-position, only renders when
+          the user has scrolled past the original preamble title AND the
+          card is still in view. Tied to the latest bot message only.
+          Pointer-events:none so it's a passive label, not an interactive
+          element that catches clicks. */}
+      {showFloatingBar && stickyHeader && (
+        <div
+          className="fixed top-[80px] left-1/2 -translate-x-1/2 z-30 max-w-[min(92vw,720px)] bg-white/95 backdrop-blur-sm border border-gray-200 rounded-full px-5 py-2 shadow-md animate-in fade-in slide-in-from-top-2 duration-200 pointer-events-none"
+        >
+          <div className="text-sm font-bold text-atlas-navy truncate leading-tight">
+            {stickyHeader.title}
+          </div>
+          {stickyHeader.subtitle && (
+            <div className="text-xs text-gray-500 truncate leading-tight">
+              {stickyHeader.subtitle}
+            </div>
+          )}
+        </div>
       )}
       {subsections.slice(0, revealedCount).map((sub, idx) => {
         // Render the title manually so we can prefix it with an icon.
@@ -559,6 +614,11 @@ const SequentialSubsections: React.FC<{
           </button>
         );
       })()}
+      {/* Sentinel for the floating-bar visibility check (card bottom).
+          Placed before the outro so the floating bar disappears as the
+          user scrolls into the outro region — at that point the card is
+          essentially done and the title reminder isn't needed. */}
+      <div ref={cardBottomSentinelRef} aria-hidden className="h-px" />
       {/* Boilerplate outro panel — appears only after all subsections are
           revealed, with extra top margin so it doesn't feel glued to the
           last paragraph. */}
@@ -933,6 +993,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             fullBody={sanitized}
             intro={deliveryIntro}
             outro={deliveryOutro}
+            isLatestBotMessage={isLatestBotMessage}
             // Only the latest message reports state — older messages
             // shouldn't lock the input even if their state is partial.
             onRevealStateChange={isLatestBotMessage ? onSequentialRevealStateChange : undefined}
