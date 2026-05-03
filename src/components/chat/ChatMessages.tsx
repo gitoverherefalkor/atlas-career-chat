@@ -202,11 +202,20 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             //    next section'. The chat input handles further follow-ups.
             //    Prevents the explore-more loop reported earlier.
             const isSectionReveal = msg.sender === 'bot' && /^### /m.test(msg.content);
+            // A follow-up message has 2+ bullets and ends with a "something
+            // else / let me know" escape hatch — that's the unique signal
+            // the WF5.3 prompt produces, regardless of whether each bullet
+            // uses a bold lead. (Earlier this required `- **` on every
+            // bullet; the current prompt example uses plain bullets, so
+            // chips silently stopped rendering.)
+            const bulletCount = (msg.content.match(/^\s*-\s+/gm) || []).length;
+            const hasEscapeHatch = /something else|let me know|on your mind/i.test(msg.content);
             const isFollowUp =
               isLastBotMessage &&
               msg.sender === 'bot' &&
               !isSectionReveal &&
-              (msg.content.match(/^\s*-\s*\*\*/gm) || []).length >= 2;
+              bulletCount >= 2 &&
+              hasEscapeHatch;
             const isDeepDive =
               isLastBotMessage &&
               msg.sender === 'bot' &&

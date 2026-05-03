@@ -60,8 +60,12 @@ function detectFollowUpOptions(markdown: string): {
   if (/^### /m.test(markdown)) return null;
 
   const lines = markdown.split('\n');
-  // Bullets with a bold lead like "- **Title** - description" or "- **All bold!**"
-  const bulletRegex = /^\s*-\s*\*\*(.+?)\*\*\s*(.*)$/;
+  // Bullets in either of two shapes the WF5.3 prompt produces:
+  //   - **Title** - description           (bold lead, em-dash or hyphen)
+  //   - **All bold!**                     (whole bullet bold — "Something else…")
+  //   - Plain sentence as a single line   (current prompt example uses this)
+  // Capture group 1+2: bold-lead form. Group 3: plain bullet.
+  const bulletRegex = /^\s*-\s*(?:\*\*(.+?)\*\*\s*(.*)|(.+))$/;
 
   const introLines: string[] = [];
   const options: ChipOption[] = [];
@@ -71,11 +75,18 @@ function detectFollowUpOptions(markdown: string): {
     const m = line.match(bulletRegex);
     if (m) {
       seenBullet = true;
-      const title = m[1].trim().replace(/[!?.]+$/, '');
-      // "- description" → strip leading dash; otherwise plain text.
-      const rawDesc = (m[2] || '').replace(/^\s*-\s*/, '').trim();
-      const display = rawDesc ? `${title} — ${rawDesc}` : title;
-      const isFreeText = /something else|let me know/i.test(`${title} ${rawDesc}`);
+      let title: string;
+      let display: string;
+      if (m[1] !== undefined) {
+        title = m[1].trim().replace(/[!?.]+$/, '');
+        const rawDesc = (m[2] || '').replace(/^\s*-\s*/, '').trim();
+        display = rawDesc ? `${title} — ${rawDesc}` : title;
+      } else {
+        const plain = (m[3] || '').trim();
+        title = plain.replace(/[!?.]+$/, '');
+        display = plain;
+      }
+      const isFreeText = /something else|let me know|on your mind/i.test(display);
       options.push({ display, message: title, isFreeText });
     } else if (!seenBullet && line.trim()) {
       introLines.push(line);
