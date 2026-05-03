@@ -171,6 +171,16 @@ function htmlToMarkdown(text: string): string {
   result = result.replace(/<strong>(.*?)<\/strong>/gi, '**$1**');
   result = result.replace(/<em>(.*?)<\/em>/gi, '*$1*');
   result = result.replace(/<br\s*\/?>/gi, '\n');
+  // Auto-bold numbered section headings ("1. Personality & Energy Fit",
+  // "2. The Executive Version Suggestion", etc.) for legacy dream-job
+  // content where the WF4 Parse Dream node stripped the **...** markers
+  // before storing. Pattern: line starts with N., a space, then a
+  // capitalized phrase, and is followed by a blank line or a bullet —
+  // distinguishing it from inline numbered lists.
+  result = result.replace(
+    /^(\d+\.\s+[A-Z][^\n]{0,120})$(?=\n\s*\n|\n\s*[-*])/gm,
+    '**$1**',
+  );
   return result;
 }
 
