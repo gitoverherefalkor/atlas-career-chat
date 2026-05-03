@@ -18,6 +18,10 @@ interface ChatMessagesProps {
   isLoading: boolean;
   isWaitingForResponse: boolean;
   isUserTyping: boolean;
+  // 'delivery' = platform fast-path is loading a section (~200ms);
+  // 'agent'    = WF5.3 LLM is composing a reply (3-30s).
+  // Drives the typing indicator's copy. Defaults to 'agent' upstream.
+  loadingMode?: 'delivery' | 'agent';
   currentSectionIndex: number;
   onSectionDetected: (index: number) => void;
   onQuickReply: (message: string, intent?: QuickReplyIntent) => void;
@@ -47,7 +51,7 @@ interface ChatMessagesProps {
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, loadingMode = 'agent', currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole }, ref) => {
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     // Tracks "every card opened at least once" for ALL multi-card sections
     // (runner_ups, outside_box, dream_jobs). Keyed by message id so navigating
@@ -257,8 +261,8 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
           })}
 
           <TypingIndicator
-            currentSectionIndex={currentSectionIndex}
             isVisible={isWaitingForResponse}
+            mode={loadingMode}
           />
 
           {/* Invisible anchor for auto-scrolling */}

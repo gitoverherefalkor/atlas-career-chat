@@ -87,6 +87,10 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     ref
   ) => {
     const [isWaitingForResponse, setIsWaitingForResponse] = useState(false);
+    // 'delivery' for fast-path section loads (just a Supabase SELECT + render,
+    // ~200ms), 'agent' for LLM replies. Drives the typing indicator's copy
+    // so it doesn't claim to be doing analysis when it's just rendering.
+    const [loadingMode, setLoadingMode] = useState<'delivery' | 'agent'>('agent');
     const [isUserTyping, setIsUserTyping] = useState(false);
     // When user clicks a quick-reply that focuses the input ('I see this
     // differently', 'Something else'), we set this to a custom placeholder
@@ -400,6 +404,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         // delivery). If the fast path fails and we fall through to the
         // agent path, we write the user msg to chat_messages there.
         addMessage('user', message, { skipPersist: true });
+        setLoadingMode('delivery');
         setIsWaitingForResponse(true);
         onUserActivity?.();
 
@@ -467,12 +472,16 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
             if (persistErr) console.error('[fast-path] fallback persist failed:', persistErr);
           });
           // Fall through to the agent path below — but DON'T re-call
-          // addMessage('user'), it's already in local state.
+          // addMessage('user'), it's already in local state. Flip the
+          // indicator to 'agent' so the user sees honest copy for the
+          // longer LLM wait that's about to happen.
+          setLoadingMode('agent');
         }
       } else {
         // Pure agent path (no fast path attempted): standard frontend
         // persistence via addMessage's fire-and-forget Supabase write.
         addMessage('user', message);
+        setLoadingMode('agent');
         setIsWaitingForResponse(true);
         onUserActivity?.();
       }
@@ -553,6 +562,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           messages={messages}
           isLoading={isLoading}
           isWaitingForResponse={isWaitingForResponse}
+          loadingMode={loadingMode}
           isUserTyping={isUserTyping}
           currentSectionIndex={currentSectionIndex}
           onSectionDetected={onSectionDetected}
