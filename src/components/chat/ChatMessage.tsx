@@ -390,7 +390,12 @@ const SequentialSubsections: React.FC<{
   // subsections have been revealed, so the user doesn't see the
   // wrap-up before they've read the section.
   outro?: string | null;
-}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal, intro, outro }) => {
+  // When set, render an "Ask about this role" pill below the last
+  // subsection (after all are revealed). Career title is parsed from
+  // the preamble's ### heading so the chat container can scope the
+  // next user message to that role.
+  onAskAboutRole?: (roleTitle: string) => void;
+}> = ({ preamble, subsections, onRevealStateChange, sections, fullBody, forceFullReveal, intro, outro, onAskAboutRole }) => {
   // revealedCount = number of sub-sections currently visible. Starts at 1
   // so the user sees the preamble + first h2 + first body on first render.
   const [revealedCount, setRevealedCount] = useState(1);
@@ -530,6 +535,31 @@ const SequentialSubsections: React.FC<{
               <span>{nextTitle}</span>
             </span>
             <ChevronDown className="w-5 h-5 text-atlas-teal shrink-0 group-hover:translate-y-0.5 transition-transform" />
+          </button>
+        );
+      })()}
+      {/* Per-card "ask about this role" pill — same UX as multi-card
+          collapsibles. Appears once every subsection has been revealed
+          so it doesn't distract during reading. Career title comes from
+          the ### heading at the top of the preamble. */}
+      {allRevealed && onAskAboutRole && (() => {
+        const titleMatch = (preamble || '').match(/^###\s+(.+)$/m);
+        const roleTitle = titleMatch
+          ? titleMatch[1].replace(/\*\*/g, '').trim()
+          : null;
+        if (!roleTitle) return null;
+        return (
+          <button
+            type="button"
+            onClick={() => onAskAboutRole(roleTitle)}
+            // Inline backgroundColor beats the global
+            // `.dark .bg-white { background-color: ...!important }`
+            // override that otherwise repaints `bg-white` cream.
+            style={{ backgroundColor: '#ffffff' }}
+            className="mt-6 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-atlas-teal text-atlas-teal text-sm font-medium shadow-md hover:bg-atlas-teal hover:text-white transition-colors"
+          >
+            <MessageCircle size={14} />
+            Ask about this role
           </button>
         );
       })()}
@@ -706,7 +736,11 @@ const CollapsibleCareerBlocks: React.FC<{
                       <button
                         type="button"
                         onClick={() => onAskAboutRole(block.title)}
-                        className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-atlas-teal text-atlas-teal text-sm font-medium shadow-sm hover:bg-atlas-teal hover:text-white transition-colors"
+                        // Inline backgroundColor beats the global
+                        // `.dark .bg-white { background-color: ...!important }`
+                        // override that otherwise repaints `bg-white` cream.
+                        style={{ backgroundColor: '#ffffff' }}
+                        className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-atlas-teal text-atlas-teal text-sm font-medium shadow-md hover:bg-atlas-teal hover:text-white transition-colors"
                       >
                         <MessageCircle size={14} />
                         Ask about this role
@@ -925,6 +959,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             // Only the latest message reports state — older messages
             // shouldn't lock the input even if their state is partial.
             onRevealStateChange={isLatestBotMessage ? onSequentialRevealStateChange : undefined}
+            // Single-card career sections (top_career_1/2/3, dream_jobs)
+            // also get the per-card ask button so users can scope a
+            // follow-up to that specific role.
+            onAskAboutRole={onAskAboutRole}
           />
         ) : followUpOptions ? (
           <div>
