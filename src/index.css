@@ -157,6 +157,16 @@
    Components that use these classes inherit the right surface without
    per-file refactors. */
 .dark .bg-white { background-color: hsl(var(--card)) !important; }
+
+/* "Ask about this role" pill — needs to stay pure white in dark/beige themes
+   AND keep a working hover transition. The .dark .bg-white !important rule
+   above otherwise repaints it cream, and any inline backgroundColor used to
+   beat that override blocks the Tailwind hover utility from kicking in.
+   Centralizing both states here keeps the React side className-only. */
+.ask-pill { background-color: #ffffff !important; }
+.ask-pill:hover { background-color: #27A1A1 !important; color: #ffffff !important; }
+.dark .ask-pill { background-color: #ffffff !important; }
+.dark .ask-pill:hover { background-color: #27A1A1 !important; color: #ffffff !important; }
 .dark .bg-gray-50 { background-color: hsl(var(--background)) !important; }
 .dark .bg-gray-100 { background-color: hsl(var(--background)) !important; }
 .dark .bg-gray-200 { background-color: hsl(var(--muted)) !important; }

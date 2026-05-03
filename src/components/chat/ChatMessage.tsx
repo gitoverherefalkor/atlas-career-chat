@@ -565,11 +565,11 @@ const SequentialSubsections: React.FC<{
           <button
             type="button"
             onClick={() => onAskAboutRole(roleTitle)}
-            // Inline backgroundColor beats the global
-            // `.dark .bg-white { background-color: ...!important }`
-            // override that otherwise repaints `bg-white` cream.
-            style={{ backgroundColor: '#ffffff' }}
-            className="mt-6 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-atlas-teal text-atlas-teal text-sm font-medium shadow-md hover:bg-atlas-teal hover:text-white transition-colors"
+            // .ask-pill in index.css keeps the pill pure white over the
+            // global .dark .bg-white !important override, and runs the
+            // teal-fill + white-text hover transition. Inline style was
+            // blocking the hover from kicking in.
+            className="ask-pill mt-6 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-atlas-teal text-atlas-teal text-sm font-medium shadow-md transition-colors"
           >
             <MessageCircle size={14} />
             Ask about this role
@@ -749,11 +749,10 @@ const CollapsibleCareerBlocks: React.FC<{
                       <button
                         type="button"
                         onClick={() => onAskAboutRole(block.title)}
-                        // Inline backgroundColor beats the global
-                        // `.dark .bg-white { background-color: ...!important }`
-                        // override that otherwise repaints `bg-white` cream.
-                        style={{ backgroundColor: '#ffffff' }}
-                        className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-atlas-teal text-atlas-teal text-sm font-medium shadow-md hover:bg-atlas-teal hover:text-white transition-colors"
+                        // See .ask-pill in index.css — handles both the
+                        // dark-mode bg-white override AND the hover
+                        // transition without inline style getting in the way.
+                        className="ask-pill mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-atlas-teal text-atlas-teal text-sm font-medium shadow-md transition-colors"
                       >
                         <MessageCircle size={14} />
                         Ask about this role

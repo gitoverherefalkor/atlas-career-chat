@@ -17,6 +17,7 @@ const AI_IMPACT_ALIASES: Record<string, AIImpactLevel> = {
   'at-risk': 'At Risk',
   atrisk: 'At Risk',
   // legacy aliases — older reports used different labels for the same idea
+  minimal: 'Safe',
   supporting: 'Safe',
   low: 'Safe',
   moderate: 'Augmented',
@@ -50,7 +51,7 @@ const AI_IMPACT_STYLES: Record<AIImpactLevel, { dot: string; text: string; ring:
 //   "carries a Moderate AI impact rating"        (legacy single-label)
 //   "carries a Low to Moderate AI impact rating" (legacy range — pick higher)
 const LABEL_GROUP =
-  '(safe|augmented|transforming|at\\s*risk|supporting|moderate|substantial|low|high|severe|transformative)';
+  '(safe|augmented|transforming|at\\s*risk|minimal|supporting|moderate|substantial|low|high|severe|transformative)';
 
 // Tier order — used to pick the higher-impact label when a range like
 // "Low to Moderate" produces two matches.
