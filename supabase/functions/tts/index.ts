@@ -58,6 +58,9 @@ serve(async (req) => {
         voice: openaiVoice,
         input: text,
         response_format: 'mp3',
+        // 1.1 = 10% faster than default. Pitch stays natural; just snappier
+        // delivery, which matches how a coach would actually speak aloud.
+        speed: 1.1,
       }),
     });
 
