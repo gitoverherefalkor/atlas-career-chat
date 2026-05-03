@@ -706,7 +706,7 @@ const CollapsibleCareerBlocks: React.FC<{
                       <button
                         type="button"
                         onClick={() => onAskAboutRole(block.title)}
-                        className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-atlas-teal/40 text-atlas-teal text-sm font-medium hover:bg-atlas-teal hover:text-white hover:border-atlas-teal transition-colors"
+                        className="mt-4 inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-atlas-teal text-atlas-teal text-sm font-medium shadow-sm hover:bg-atlas-teal hover:text-white transition-colors"
                       >
                         <MessageCircle size={14} />
                         Ask about this role
