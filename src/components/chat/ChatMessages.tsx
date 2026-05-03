@@ -49,7 +49,12 @@ interface ChatMessagesProps {
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
   ({ messages, isLoading, isWaitingForResponse, isUserTyping, currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole }, ref) => {
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
-    const [dreamJobsOpened, setDreamJobsOpened] = useState(false);
+    // Tracks "every card opened at least once" for ALL multi-card sections
+    // (runner_ups, outside_box, dream_jobs). Keyed by message id so navigating
+    // back/forward doesn't unlock QuickReplies on a different message that
+    // hasn't been fully read. CollapsibleCareerBlocks fires the parent's
+    // onAllBlocksOpened callback once everOpened reaches blocks.length.
+    const [openedByMessageId, setOpenedByMessageId] = useState<Record<string, boolean>>({});
 
     // Detect if the user has already sent a wrap-up message
     const hasWrappedUp = messages.some(
@@ -175,6 +180,16 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             const isLatestBotMessage = idx === latestBotIdx;
             // Dream jobs message: collapse all blocks by default, track when all opened
             const isDreamJobsMessage = isLastBotMessage && isDreamJobsSection;
+            // Multi-card section detection: any bot message with 2+ ###
+            // headings is a multi-card delivery (runner_ups / outside_box /
+            // dream_jobs). The QuickReplies underneath should stay hidden
+            // until the user has expanded every card at least once — same
+            // gating logic that already existed for dream_jobs only.
+            const headingCount = msg.sender === 'bot'
+              ? (msg.content.match(/^### /gm) || []).length
+              : 0;
+            const isMultiCardMessage = isLastBotMessage && headingCount >= 2;
+            const allCardsOpened = openedByMessageId[msg.id] === true;
 
             // Detect what KIND of bot message this is so QuickReplies show
             // the right set (or nothing):
@@ -206,8 +221,11 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   content={msg.content}
                   sender={msg.sender}
                   onSectionDetected={onSectionDetected}
-                  defaultAllCollapsed={isDreamJobsMessage}
-                  onAllBlocksOpened={isDreamJobsMessage ? () => { setDreamJobsOpened(true); onDreamJobsRead?.(); } : undefined}
+                  defaultAllCollapsed={isMultiCardMessage}
+                  onAllBlocksOpened={isMultiCardMessage ? () => {
+                    setOpenedByMessageId((prev) => prev[msg.id] ? prev : { ...prev, [msg.id]: true });
+                    if (isDreamJobsMessage) onDreamJobsRead?.();
+                  } : undefined}
                   sections={sections}
                   isLatestBotMessage={isLatestBotMessage}
                   onChipSend={onQuickReply}
@@ -219,7 +237,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   <QuickReplies
                     onSend={onQuickReply}
                     onFocusInput={onFocusInput}
-                    visible={!isWaitingForResponse && !isUserTyping && (!isDreamJobsMessage || dreamJobsOpened)}
+                    visible={!isWaitingForResponse && !isUserTyping && (!isMultiCardMessage || allCardsOpened)}
                     isLastSection={isDreamJobsSection}
                     isWrappedUp={hasWrappedUp}
                     isDeepDive={isDeepDive}

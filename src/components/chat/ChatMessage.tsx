@@ -177,26 +177,39 @@ function htmlToMarkdown(text: string): string {
 // Split a message into an intro + career blocks, based on ### headings.
 // Only meaningful when a message contains 2+ ### sections (e.g. runner_ups,
 // outside_box, dream_jobs). Single-### messages are returned as-is.
+//
+// Uses matchAll over a global, multi-line regex rather than `split(lookahead)`.
+// The split-lookahead approach was producing inconsistent results when the
+// body contained interleaved `---` separators between cards (specifically
+// the doubled `---\n---` pattern outside_box rows produce — one from each
+// row's trailing horizontal rule plus one from the wrap join). The matchAll
+// approach is position-based and immune to whatever the body looks like
+// between headings.
 function splitIntoCareerBlocks(markdown: string): SplitContent {
-  const parts = markdown.split(/(?=^### )/m);
-  // Strip trailing horizontal rule from intro (SOP wraps content in ---)
-  const intro = (parts[0] || '').replace(/\n?\s*---\s*$/, '').trim();
+  const headerRegex = /^### (.+)$/gm;
+  const matches = [...markdown.matchAll(headerRegex)];
 
-  const blocks: CareerBlock[] = parts.slice(1).map((block) => {
-    const firstNewline = block.indexOf('\n');
-    const titleLine = firstNewline >= 0 ? block.slice(0, firstNewline) : block;
+  if (matches.length === 0) {
+    return { intro: markdown.trim(), blocks: [] };
+  }
 
-    // Clean title: strip ### prefix and any ** bold markers
-    const title = titleLine
-      .replace(/^###\s*/, '')
-      .replace(/\*\*/g, '')
-      .trim();
+  const introRaw = markdown.slice(0, matches[0].index ?? 0);
+  const intro = introRaw.replace(/\n?\s*---\s*$/, '').trim();
 
-    const rawBody = firstNewline >= 0 ? block.slice(firstNewline + 1) : '';
-    // Strip decorative --- separators at start/end of each block
+  const blocks: CareerBlock[] = matches.map((match, idx) => {
+    const headerEnd = (match.index ?? 0) + match[0].length;
+    const nextStart = idx + 1 < matches.length
+      ? matches[idx + 1].index ?? markdown.length
+      : markdown.length;
+
+    const title = match[1].replace(/\*\*/g, '').trim();
+    const rawBody = markdown.slice(headerEnd, nextStart);
+    // Strip leading newlines + any --- separators that bracket each card body
     const body = rawBody
+      .replace(/^\s*\n/, '')
       .replace(/^\s*---\s*\n?/, '')
       .replace(/\n?\s*---\s*$/, '')
+      .replace(/\n?\s*---\s*$/, '') // a second pass — outside_box rows produce doubled ---
       .trim();
 
     return { title, body };
