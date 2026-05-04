@@ -19,11 +19,20 @@ import { CareerSignatureCard } from './CareerSignatureCard';
 // feels like the natural end of the conversation rather than an
 // interruption.
 
+interface SavedResponse {
+  content: string;
+  saved_at?: string | null;
+}
+
 interface WrapUpCardProps {
   reportId: string;
   // Called once the user has saved (or skipped) so the parent can lock
   // the chat input + show the post-wrap quick replies.
   onCompleted: () => void;
+  // Bot replies the user bookmarked inline via the message-footer
+  // "Save" pill. Sent verbatim to wrap-up-save and appended to the
+  // chat_highlights row under a "Saved Responses" subsection.
+  savedResponses?: SavedResponse[];
 }
 
 type Phase = 'loading' | 'review' | 'saving' | 'saved' | 'error';
@@ -54,7 +63,7 @@ const markdownComponents = {
   ),
 };
 
-export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted }) => {
+export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, savedResponses = [] }) => {
   const { extractHighlights, saveHighlights } = useWrapUp();
   const { toast } = useToast();
 
@@ -116,7 +125,12 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted })
 
     setPhase('saving');
     try {
-      await saveHighlights(reportId, body, addendum.trim() || null);
+      await saveHighlights(
+        reportId,
+        body,
+        addendum.trim() || null,
+        savedResponses,
+      );
       setPhase('saved');
       toast({
         title: 'Saved',
@@ -149,8 +163,12 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted })
             Here's what we captured from our conversation
           </h3>
           <p className="text-sm text-gray-600 mt-1 leading-relaxed">
-            These highlights will be added to your final report so the
-            specific strategies and angles we discussed don't get lost.
+            Your conversation won't be saved word-for-word. These highlights
+            {savedResponses.length > 0
+              ? `, plus the ${savedResponses.length} ${savedResponses.length === 1 ? 'response' : 'responses'} you bookmarked,`
+              : ''}{' '}
+            become part of your report. If there's a specific reply you want
+            preserved, click <strong>Save</strong> on it before closing.
           </p>
         </div>
 
@@ -219,9 +237,15 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted })
             </div>
           )}
 
-          {/* Footer actions */}
+          {/* Footer actions. The teaser to the left of the button hints
+              at the Career Signature reveal that lands after save — pulls
+              the user through the close ritual instead of leaving the
+              click feeling administrative. */}
           {phase !== 'saved' && (
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
+              <span className="text-xs text-atlas-teal italic">
+                One last click. Save to reveal your Career Signature.
+              </span>
               <button
                 type="button"
                 onClick={handleSave}

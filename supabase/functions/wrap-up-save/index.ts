@@ -1,7 +1,9 @@
 // wrap-up-save — persist the user-approved Discussion Highlights to
 // `report_sections` so they land in the formal report. The user just
 // reviewed the extracted bullets in the WrapUpCard and optionally added
-// an addendum (a "anything else you want flagged?" free-text field).
+// an addendum (a "anything else you want flagged?" free-text field) plus
+// any specific bot responses they bookmarked during the session for
+// verbatim preservation.
 //
 // Inputs:
 //   {
@@ -9,6 +11,10 @@
 //     highlights: string,        // markdown bullets from wrap-up-extract,
 //                                // possibly edited by the user
 //     addendum?: string | null,  // optional free-text the user added
+//     saved_responses?: Array<{  // bot replies the user bookmarked inline
+//       content: string,         // markdown body of the message
+//       saved_at?: string | null // ISO timestamp the bookmark was set
+//     }>,
 //   }
 //
 // Output: { ok: true }
@@ -54,14 +60,24 @@ serve(async (req) => {
     return errorResponse('Method not allowed', 405, corsHeaders);
   }
 
-  let body: { report_id?: string; highlights?: string; addendum?: string | null };
+  interface SavedResponseInput {
+    content?: string;
+    saved_at?: string | null;
+  }
+
+  let body: {
+    report_id?: string;
+    highlights?: string;
+    addendum?: string | null;
+    saved_responses?: SavedResponseInput[];
+  };
   try {
     body = await req.json();
   } catch {
     return errorResponse('Invalid JSON body', 400, corsHeaders);
   }
 
-  const { report_id, highlights, addendum } = body;
+  const { report_id, highlights, addendum, saved_responses } = body;
   if (!report_id || typeof report_id !== 'string') {
     return errorResponse('report_id required', 400, corsHeaders);
   }
@@ -75,10 +91,38 @@ serve(async (req) => {
       ? addendum.trim().slice(0, 4_000)
       : null;
 
-  // Compose the final markdown stored on the section row. The addendum
-  // (if present) gets its own subsection so it's clearly the user's own
-  // words, not part of the extracted highlights.
+  // Sanitize the saved-responses list. Each one is a verbatim bot reply
+  // the user bookmarked in-chat. Cap individual length AND total count
+  // so a runaway client can't blow up the row.
+  const cleanedSaved: { content: string; saved_at: string | null }[] = [];
+  if (Array.isArray(saved_responses)) {
+    for (const entry of saved_responses.slice(0, 50)) {
+      if (!entry || typeof entry.content !== 'string') continue;
+      const c = entry.content.trim();
+      if (!c) continue;
+      cleanedSaved.push({
+        content: c.slice(0, 8_000),
+        saved_at:
+          typeof entry.saved_at === 'string' && entry.saved_at.trim().length > 0
+            ? entry.saved_at.trim().slice(0, 64)
+            : null,
+      });
+    }
+  }
+
+  // Compose the final markdown stored on the section row. Order:
+  //   1. Auto-extracted highlights (the LLM bullets).
+  //   2. "Saved Responses" subsection — verbatim bot replies the user
+  //      bookmarked inline. Preserves the deep-dive recipes that the
+  //      summarizer would otherwise compress to a theme.
+  //   3. Addendum — the user's own typed note from the wrap-up card.
   const parts: string[] = [trimmedHighlights];
+  if (cleanedSaved.length > 0) {
+    parts.push('\n\n##### Saved Responses\n');
+    cleanedSaved.forEach((s, i) => {
+      parts.push(`\n\n**Saved response ${i + 1}**\n\n${s.content}`);
+    });
+  }
   if (trimmedAddendum) {
     parts.push(`\n\n##### Also flagged by you\n\n${trimmedAddendum}`);
   }

@@ -100,6 +100,37 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     // on this mount, so we don't loop-set state every time messages or
     // sections change later in the session.
     const wrapUpRehydratedRef = useRef(false);
+    // IDs of bot messages the user bookmarked via the inline "Save"
+    // button. Persisted to localStorage so a refresh mid-session
+    // doesn't drop selections. Sent to wrap-up-save as verbatim
+    // "Saved Responses" appended to the chat_highlights row.
+    const BOOKMARK_STORAGE_KEY = `atlas_chat_bookmarks_${reportId}`;
+    const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => {
+      if (typeof window === 'undefined') return [];
+      try {
+        const raw = window.localStorage.getItem(BOOKMARK_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.filter((x) => typeof x === 'string') : [];
+      } catch {
+        return [];
+      }
+    });
+    useEffect(() => {
+      if (typeof window === 'undefined') return;
+      try {
+        window.localStorage.setItem(BOOKMARK_STORAGE_KEY, JSON.stringify(bookmarkedIds));
+      } catch {
+        // Storage full / disabled — bookmarks just won't survive refresh.
+      }
+    }, [bookmarkedIds, BOOKMARK_STORAGE_KEY]);
+    const handleBookmarkToggle = useCallback((messageId: string) => {
+      setBookmarkedIds((prev) =>
+        prev.includes(messageId)
+          ? prev.filter((id) => id !== messageId)
+          : [...prev, messageId],
+      );
+    }, []);
     // Map of user-message-id -> the original send args, populated when the
     // agent path throws. Lets us render a small retry icon next to the
     // failed message instead of forcing the user to retype. Cleared per
@@ -716,6 +747,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           onWrapUpCompleted={() => setWrapUpState('completed')}
           failedMessageIds={Object.keys(failedSends)}
           onRetryMessage={handleRetry}
+          bookmarkedMessageIds={bookmarkedIds}
+          onBookmarkToggle={handleBookmarkToggle}
         />
 
         {/* Mobile-only Complete Session CTA — sidebar button isn't visible on mobile */}

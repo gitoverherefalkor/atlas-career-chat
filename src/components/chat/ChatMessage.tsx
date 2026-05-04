@@ -42,6 +42,14 @@ interface ChatMessageProps {
   // Bot messages ignore both fields.
   failed?: boolean;
   onRetry?: (messageId: string) => void;
+  // Bookmark mechanic: bot messages within the saveable window get a
+  // "Save" button in the footer. Marked messages are appended verbatim
+  // to the chat_highlights row at wrap-up time. State lives in the
+  // ChatContainer (with localStorage persistence) so refreshes don't
+  // drop the user's selections.
+  bookmarkable?: boolean;
+  bookmarked?: boolean;
+  onBookmarkToggle?: (messageId: string) => void;
 }
 
 interface ChipOption {
@@ -821,6 +829,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onAskAboutRole,
   failed = false,
   onRetry,
+  bookmarkable = false,
+  bookmarked = false,
+  onBookmarkToggle,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
   const tts = useTTS();
@@ -1076,6 +1087,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             messageId={messageId}
             text={sanitized}
             showBetaBadge={isLatestBotMessage}
+            bookmarkable={bookmarkable}
+            bookmarked={bookmarked}
+            onBookmarkToggle={
+              onBookmarkToggle ? () => onBookmarkToggle(messageId) : undefined
+            }
           />
         )}
       </div>

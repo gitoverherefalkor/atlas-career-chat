@@ -61,11 +61,17 @@ interface ChatMessagesProps {
   // onRetryMessage(id) and the parent re-runs the send.
   failedMessageIds?: string[];
   onRetryMessage?: (messageId: string) => void;
+  // Bot messages the user has bookmarked for verbatim preservation.
+  // Renders a "Save"/"Saved" pill in the message footer. Excluded from
+  // the very first welcome bubble (where Save would be meaningless).
+  bookmarkedMessageIds?: string[];
+  onBookmarkToggle?: (messageId: string) => void;
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, loadingMode = 'agent', currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole, reportId, wrapUpState = 'idle', onWrapUpCompleted, failedMessageIds, onRetryMessage }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, loadingMode = 'agent', currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole, reportId, wrapUpState = 'idle', onWrapUpCompleted, failedMessageIds, onRetryMessage, bookmarkedMessageIds, onBookmarkToggle }, ref) => {
     const failedSet = new Set(failedMessageIds ?? []);
+    const bookmarkedSet = new Set(bookmarkedMessageIds ?? []);
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     // Tracks "every card opened at least once" for ALL multi-card sections
     // (runner_ups, outside_box, dream_jobs). Keyed by message id so navigating
@@ -261,6 +267,9 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   onAskAboutRole={onAskAboutRole}
                   failed={failedSet.has(msg.id)}
                   onRetry={onRetryMessage}
+                  bookmarkable={msg.sender === 'bot' && !!onBookmarkToggle}
+                  bookmarked={bookmarkedSet.has(msg.id)}
+                  onBookmarkToggle={onBookmarkToggle}
                 />
                 {isLastBotMessage && !isFollowUp && !hasUnrevealedSubsections && wrapUpState !== 'pending' && (
                   <QuickReplies
@@ -284,6 +293,9 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             <WrapUpCard
               reportId={reportId}
               onCompleted={() => onWrapUpCompleted?.()}
+              savedResponses={messages
+                .filter((m) => m.sender === 'bot' && bookmarkedSet.has(m.id))
+                .map((m) => ({ content: m.content, saved_at: m.created_at }))}
             />
           )}
 

@@ -54,16 +54,21 @@ function stripFormatting(text: string): string {
     .trim();
 }
 
-const SYSTEM_PROMPT = `You distill a career-coaching chat conversation into a tight set of "Discussion Highlights" that will be added to the user's formal report.
+const SYSTEM_PROMPT = `You distill a career-coaching chat conversation into a tight set of "Discussion Highlights" that will be added to the user's formal report. The verbatim chat is NOT preserved — these highlights are the only memory of the discussion that survives.
 
-Your job is to surface the things the formal report would otherwise lose: specific strategies the user found valuable, pivots in their thinking, custom angles the conversation produced, things they explicitly said resonated.
+Your job: surface the specific tactical advice and concrete strategies the formal report would otherwise lose. NOT high-level themes. NOT polite summaries. Specific recipes the coach proposed.
 
 Rules:
-- Return 4-8 bullets, no more.
+- Return 5-9 bullets, no more.
 - Each bullet starts with a bold lead phrase, then a clarifying sentence. Markdown format: "- **Lead phrase.** Clarifying sentence."
-- Lead phrases are concrete and specific to THIS conversation — not generic. "Substack-corporate IP hybrid" beats "Content strategy ideas."
+- Lead phrases name the specific recipe or strategy, not the topic. Examples:
+  - GOOD: "Substack-and-corporate-IP hybrid for the writing pivot." (names the actual approach)
+  - BAD: "Hybrid writing strategies." (generic)
+  - GOOD: "Toggl-style fractional CPO model as the bridge."
+  - BAD: "Career path options."
+- The clarifying sentence should preserve the concrete numbers, names, mechanics, or sequencing the coach gave (€-ranges, specific cohort sizes, named playbooks, "first do X then Y" steps). If the coach gave a multi-step recipe, summarise the steps in one sentence rather than collapsing them into a theme.
 - Skip small talk, navigation messages ("ready to continue?"), and content that just restates the report.
-- Skip anything the user pushed back on or rejected.
+- Skip anything the user explicitly pushed back on or rejected.
 - Use second person ("you"). No em-dashes; use commas, colons, or parentheses.
 - Output ONLY the bullet list. No intro, no outro, no headings.`;
 
@@ -145,7 +150,7 @@ serve(async (req) => {
       Authorization: `Bearer ${openaiKey}`,
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'gpt-5.4-mini',
       temperature: 0.4,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },

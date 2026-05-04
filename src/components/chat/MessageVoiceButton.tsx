@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Volume2, Square, Settings2, Check, Loader2 } from 'lucide-react';
+import { Volume2, Square, Settings2, Check, Loader2, Bookmark } from 'lucide-react';
 import { useTTS } from '@/contexts/TTSContext';
 
 interface MessageVoiceButtonProps {
@@ -8,12 +8,22 @@ interface MessageVoiceButtonProps {
   // Latest bot message gets the BETA pill so users discover the feature
   // without it being repeated on every historical bubble.
   showBetaBadge?: boolean;
+  // Bookmark state for the parent's "save this verbatim to dashboard"
+  // mechanic. Optional so messages outside the saveable set (e.g.
+  // welcome card, historical bubbles where the feature wasn't enabled)
+  // simply don't get the icon.
+  bookmarkable?: boolean;
+  bookmarked?: boolean;
+  onBookmarkToggle?: () => void;
 }
 
 export const MessageVoiceButton: React.FC<MessageVoiceButtonProps> = ({
   messageId,
   text,
   showBetaBadge = false,
+  bookmarkable = false,
+  bookmarked = false,
+  onBookmarkToggle,
 }) => {
   const {
     isSupported,
@@ -87,6 +97,27 @@ export const MessageVoiceButton: React.FC<MessageVoiceButtonProps> = ({
         <span className="px-1.5 py-0.5 rounded bg-atlas-teal/10 text-atlas-teal text-[10px] font-bold tracking-wide uppercase">
           Beta
         </span>
+      )}
+
+      {bookmarkable && onBookmarkToggle && (
+        <button
+          type="button"
+          onClick={onBookmarkToggle}
+          title={
+            bookmarked
+              ? 'Saved to your report — click to unsave'
+              : 'Save this response to your report'
+          }
+          aria-pressed={bookmarked}
+          className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
+            bookmarked
+              ? 'bg-atlas-teal/10 text-atlas-teal'
+              : 'text-gray-500 hover:text-atlas-teal hover:bg-atlas-teal/5'
+          }`}
+        >
+          <Bookmark size={13} fill={bookmarked ? 'currentColor' : 'none'} />
+          <span className="font-medium">{bookmarked ? 'Saved' : 'Save'}</span>
+        </button>
       )}
 
       <div className="relative ml-auto">

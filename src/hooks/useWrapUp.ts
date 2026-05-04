@@ -42,11 +42,17 @@ export function useWrapUp() {
     reportId: string,
     highlights: string,
     addendum: string | null,
+    savedResponses: Array<{ content: string; saved_at?: string | null }> = [],
   ): Promise<void> => {
     const res = await fetch(SAVE_ENDPOINT, {
       method: 'POST',
       headers: await authHeaders(),
-      body: JSON.stringify({ report_id: reportId, highlights, addendum }),
+      body: JSON.stringify({
+        report_id: reportId,
+        highlights,
+        addendum,
+        saved_responses: savedResponses,
+      }),
     });
     if (!res.ok) {
       const errText = await res.text().catch(() => '');
