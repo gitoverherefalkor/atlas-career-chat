@@ -14,6 +14,7 @@ import ReportDisplay from '@/components/ReportDisplay';
 import ReportPreview from '@/components/report/ReportPreview';
 import { AccessCodeModal } from '@/components/dashboard/AccessCodeModal';
 import { ExecSummaryModal } from '@/components/dashboard/ExecSummaryModal';
+import { CareerQuadrant } from '@/components/dashboard/CareerQuadrant';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
@@ -324,6 +325,14 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Career Map — at-a-glance visualization of every recommended
+                career, plotted by Match score vs AI Impact tier. Only renders
+                when the report is finished and we have at least 2 scored
+                careers with extractable AI impact. */}
+            {latestReport && latestReport.status === 'completed' && (
+              <CareerQuadrant sections={reportSections} className="mb-8" />
             )}
 
             {/* Show assessment start card if user hasn't verified access yet */}
