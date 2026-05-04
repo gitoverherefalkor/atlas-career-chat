@@ -287,6 +287,22 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
             />
           )}
 
+          {/* Post-wrap pill ("Exit to Dashboard"). Rendered OUTSIDE the
+              messages loop because the wrap-up click leaves a user
+              message as the last message — the in-loop QuickReplies
+              wrapper is gated on isLastBotMessage and would skip,
+              leaving the user with no exit affordance after refresh. */}
+          {wrapUpState === 'completed' && (
+            <QuickReplies
+              onSend={onQuickReply}
+              onFocusInput={onFocusInput}
+              visible={!isWaitingForResponse && !isUserTyping}
+              isLastSection
+              isWrappedUp
+              isDeepDive={false}
+            />
+          )}
+
           <TypingIndicator
             isVisible={isWaitingForResponse}
             mode={loadingMode}

@@ -96,6 +96,10 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     // instead. While 'pending' we hide the regular QuickReplies; on
     // completion we surface the POST_WRAP_REPLIES (Exit to Dashboard).
     const [wrapUpState, setWrapUpState] = useState<'idle' | 'pending' | 'completed'>('idle');
+    // Track whether we've already rehydrated wrapUpState from chat history
+    // on this mount, so we don't loop-set state every time messages or
+    // sections change later in the session.
+    const wrapUpRehydratedRef = useRef(false);
     // Map of user-message-id -> the original send args, populated when the
     // agent path throws. Lets us render a small retry icon next to the
     // failed message instead of forcing the user to retype. Cleared per
@@ -243,6 +247,56 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       }, 300);
       return () => clearTimeout(timer);
     }, [isLoading, hasMessages, autoResumeMessage]);
+
+    // Rehydrate wrapUpState on chat load. Without this, refreshing mid-
+    // wrap-up loses the WrapUpCard AND leaves the user with no Exit
+    // pill (last message is the user's "wrap up" click — no bot message
+    // follows, so the in-loop QuickReplies wrapper doesn't render).
+    //
+    // - If the most recent user message looks like a wrap-up click AND
+    //   no bot message follows it, derive state from report_sections:
+    //     - chat_highlights row exists -> 'completed' (show Exit pill)
+    //     - no chat_highlights row     -> 'pending'   (re-show WrapUpCard)
+    // - Otherwise leave wrapUpState as 'idle'.
+    //
+    // Only runs once per mount (the ref) so legitimate state transitions
+    // during the session aren't second-guessed.
+    useEffect(() => {
+      if (wrapUpRehydratedRef.current) return;
+      if (isLoading) return;
+      if (!messages.length) return;
+      if (sections === undefined) return;
+
+      let mostRecentWrapUpIdx = -1;
+      for (let i = messages.length - 1; i >= 0; i--) {
+        const m = messages[i];
+        if (m.sender === 'user' && /wrap up/i.test(m.content)) {
+          mostRecentWrapUpIdx = i;
+          break;
+        }
+      }
+      if (mostRecentWrapUpIdx === -1) {
+        wrapUpRehydratedRef.current = true;
+        return;
+      }
+
+      // If a bot message arrived AFTER the wrap-up click, the user
+      // either typed "wrap up" mid-conversation or the agent responded
+      // somehow. Don't re-show the card in that case.
+      const botAfter = messages
+        .slice(mostRecentWrapUpIdx + 1)
+        .some((m) => m.sender === 'bot');
+      if (botAfter) {
+        wrapUpRehydratedRef.current = true;
+        return;
+      }
+
+      const hasHighlightsRow = sections.some(
+        (s) => s.section_type === 'chat_highlights',
+      );
+      setWrapUpState(hasHighlightsRow ? 'completed' : 'pending');
+      wrapUpRehydratedRef.current = true;
+    }, [isLoading, messages, sections]);
 
     // Exact boilerplate intro phrases from the agent's BOILERPLATE QUICK REFERENCE.
     // ONLY used as fallback when heading-based detection misses.
