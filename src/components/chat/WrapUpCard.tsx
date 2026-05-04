@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Sparkles, Check, AlertCircle } from 'lucide-react';
+import { Sparkles, Check, AlertCircle, LayoutDashboard } from 'lucide-react';
 import { useWrapUp } from '@/hooks/useWrapUp';
 import { useToast } from '@/hooks/use-toast';
 import { CareerSignatureCard } from './CareerSignatureCard';
@@ -66,6 +67,7 @@ const markdownComponents = {
 export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, savedResponses = [] }) => {
   const { extractHighlights, saveHighlights } = useWrapUp();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const [phase, setPhase] = useState<Phase>('loading');
   const [highlights, setHighlights] = useState<string>('');
@@ -136,7 +138,11 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
         title: 'Saved',
         description: 'Your discussion highlights are now part of your report.',
       });
-      onCompleted();
+      // NOTE: we deliberately do NOT call onCompleted() here. The saved
+      // phase shows the Career Signature reveal — if onCompleted fires
+      // immediately, the parent flips wrapUpState to 'completed' and
+      // unmounts this card before the user ever sees the signature.
+      // onCompleted is invoked when the user explicitly exits below.
     } catch (err) {
       console.error('[WrapUpCard] save failed:', err);
       toast({
@@ -282,7 +288,8 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
             <div className="flex gap-2 items-center text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2.5">
               <Check size={16} className="text-emerald-600 shrink-0" />
               <span>
-                Saved to your report. You can close this chat now.
+                Saved to your report. Take a moment with your Career
+                Signature below, then exit to your dashboard.
               </span>
             </div>
           )}
@@ -295,6 +302,24 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
       {phase === 'saved' && (
         <div className="mt-6">
           <CareerSignatureCard reportId={reportId} />
+          {/* In-card exit: keeps the saved-state mounted (so the user
+              actually sees the signature) until they explicitly leave.
+              Calls onCompleted to flip wrapUpState to 'completed' AND
+              navigates to /dashboard so they don't have to find an
+              additional pill. */}
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                onCompleted();
+                navigate('/dashboard', { state: { fromChat: true } });
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-atlas-teal text-white text-sm font-semibold hover:bg-atlas-teal/90 transition-colors shadow-sm"
+            >
+              <LayoutDashboard size={14} />
+              Exit to Dashboard
+            </button>
+          </div>
         </div>
       )}
     </div>
