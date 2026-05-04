@@ -155,6 +155,7 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
   };
 
   return (
+    <>
     <div className="flex justify-start mb-4">
       <div className="max-w-[85%] bg-white border border-atlas-teal/30 rounded-2xl overflow-hidden shadow-sm">
         {/* Tinted header */}
@@ -296,17 +297,20 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
         </div>
       </div>
 
-      {/* Career Signature — closing artifact rendered AFTER save so the
-          user gets the closure feeling first, then the share-worthy card.
-          Also lives on the dashboard for return visits. */}
-      {phase === 'saved' && (
-        <div className="mt-6">
+      {/* Career Signature is rendered BELOW the wrap-up card (outside this
+          flex row) so it gets full message-width instead of being squeezed
+          into the leftover horizontal space. See the Fragment below. */}
+    </div>
+
+    {/* Career Signature — share-worthy closing artifact. Sits in its own
+        message row, full chat-message width, so the hero title doesn't
+        wrap into 6 lines next to the wrap-up card. The Exit-to-Dashboard
+        CTA lives inside this block so the user can leave the moment they
+        see the signature. */}
+    {phase === 'saved' && (
+      <div className="flex justify-start mb-4">
+        <div className="w-full max-w-[85%]">
           <CareerSignatureCard reportId={reportId} />
-          {/* In-card exit: keeps the saved-state mounted (so the user
-              actually sees the signature) until they explicitly leave.
-              Calls onCompleted to flip wrapUpState to 'completed' AND
-              navigates to /dashboard so they don't have to find an
-              additional pill. */}
           <div className="mt-4 flex justify-end">
             <button
               type="button"
@@ -321,7 +325,8 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
             </button>
           </div>
         </div>
-      )}
-    </div>
+      </div>
+    )}
+    </>
   );
 };
