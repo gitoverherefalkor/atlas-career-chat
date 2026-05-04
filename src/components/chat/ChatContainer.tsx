@@ -777,16 +777,21 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
             isSessionCompleted ||
             isWaitingForResponse ||
             (messages.length === 0 && !isWaitingForResponse) ||
-            latestUnrevealedCount !== 0
+            latestUnrevealedCount !== 0 ||
+            wrapUpState !== 'idle'
           }
           placeholder={
             isSessionCompleted
               ? 'Session completed - your report is ready above'
-              : messages.length === 0
-                ? "Click 'I'm Ready!' above to begin"
-                : latestUnrevealedCount > 0
-                  ? `Click to reveal the next ${latestUnrevealedCount} section${latestUnrevealedCount === 1 ? '' : 's'}…`
-                  : (inputPlaceholderOverride ?? 'Type here')
+              : wrapUpState === 'pending'
+                ? 'Wrapping up — finish your highlights above to close out'
+                : wrapUpState === 'completed'
+                  ? 'Session closed - click Exit to Dashboard above'
+                  : messages.length === 0
+                    ? "Click 'I'm Ready!' above to begin"
+                    : latestUnrevealedCount > 0
+                      ? `Click to reveal the next ${latestUnrevealedCount} section${latestUnrevealedCount === 1 ? '' : 's'}…`
+                      : (inputPlaceholderOverride ?? 'Type here')
           }
           isSidebarCollapsed={isSidebarCollapsed}
         />

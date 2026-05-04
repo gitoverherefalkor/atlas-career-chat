@@ -217,7 +217,12 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
             </div>
           )}
 
-          {/* Last-chance input — always visible, even on error */}
+          {/* Last-chance input — always visible, even on error.
+              Copy avoids the word "question" because nothing answers
+              this in chat: it's a one-way note that lands in the
+              report alongside the highlights. The helper text below
+              the textarea makes that explicit so users don't expect
+              a reply. */}
           {phase !== 'saved' && (
             <div className="mt-2">
               <label
@@ -233,12 +238,16 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
                 id="wrap-up-addendum"
                 value={addendum}
                 onChange={(e) => setAddendum(e.target.value)}
-                placeholder="A specific takeaway, follow-up question, or anything we didn't capture..."
+                placeholder="A specific takeaway, a note for future-you, or anything we didn't capture..."
                 rows={3}
                 disabled={phase === 'saving'}
                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:border-atlas-teal focus:ring-1 focus:ring-atlas-teal outline-none resize-none disabled:opacity-60"
                 maxLength={4000}
               />
+              <p className="mt-1.5 text-xs text-gray-500 leading-snug">
+                This is a one-way note that gets saved with your report.
+                It won't be answered here, the chat closes after Save.
+              </p>
             </div>
           )}
 
