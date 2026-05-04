@@ -91,6 +91,11 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     // ~200ms), 'agent' for LLM replies. Drives the typing indicator's copy
     // so it doesn't claim to be doing analysis when it's just rendering.
     const [loadingMode, setLoadingMode] = useState<'delivery' | 'agent'>('agent');
+    // Wrap-up flow state. When the user clicks "All done, wrap up session"
+    // we intercept (don't route to the agent) and show the WrapUpCard
+    // instead. While 'pending' we hide the regular QuickReplies; on
+    // completion we surface the POST_WRAP_REPLIES (Exit to Dashboard).
+    const [wrapUpState, setWrapUpState] = useState<'idle' | 'pending' | 'completed'>('idle');
     const [isUserTyping, setIsUserTyping] = useState(false);
     // When user clicks a quick-reply that focuses the input ('I see this
     // differently', 'Something else'), we set this to a custom placeholder
@@ -363,6 +368,17 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       // Clear any custom placeholder set by a previous quick reply.
       setInputPlaceholderOverride(null);
 
+      // Wrap-up intercept: don't route the click to the agent. Persist the
+      // user message (so they see their click registered in the chat),
+      // then flip wrapUpState to 'pending' — ChatMessages renders the
+      // WrapUpCard inline, which calls wrap-up-extract / wrap-up-save.
+      // QuickReplies stay hidden until the card completes.
+      if (intent === 'wrap_up') {
+        addMessage('user', message);
+        setWrapUpState('pending');
+        return;
+      }
+
       // Chapter-1 feedback intercept: when the user clicks Continue from
       // the values section AND we haven't captured chapter feedback yet,
       // open the modal first. The actual advance fires only after the
@@ -578,6 +594,9 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           welcomeCompletedSectionIndex={welcomeCompletedSectionIndex}
           onWelcomeReady={onWelcomeReady}
           sections={sections}
+          reportId={reportId}
+          wrapUpState={wrapUpState}
+          onWrapUpCompleted={() => setWrapUpState('completed')}
         />
 
         {/* Mobile-only Complete Session CTA — sidebar button isn't visible on mobile */}

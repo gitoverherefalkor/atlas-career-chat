@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
+import { WrapUpCard } from './WrapUpCard';
 import { QuickReplies, type QuickReplyIntent } from './QuickReplies';
 import { WelcomeCard } from './WelcomeCard';
 import { WelcomeBackCard } from './WelcomeBackCard';
@@ -48,10 +49,17 @@ interface ChatMessagesProps {
   // Forwarded to CollapsibleCareerBlocks for the "Ask about this role"
   // per-card button. Container scopes the next user message to the role.
   onAskAboutRole?: (roleTitle: string) => void;
+  // Wrap-up flow. When state is 'pending' we render the WrapUpCard
+  // after the last message and suppress QuickReplies. When 'completed'
+  // we surface the post-wrap pill (Exit to Dashboard) via the existing
+  // hasWrappedUp branch.
+  reportId?: string;
+  wrapUpState?: 'idle' | 'pending' | 'completed';
+  onWrapUpCompleted?: () => void;
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, loadingMode = 'agent', currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, loadingMode = 'agent', currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole, reportId, wrapUpState = 'idle', onWrapUpCompleted }, ref) => {
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     // Tracks "every card opened at least once" for ALL multi-card sections
     // (runner_ups, outside_box, dream_jobs). Keyed by message id so navigating
@@ -246,7 +254,7 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   onSequentialRevealStateChange={onSequentialRevealStateChange}
                   onAskAboutRole={onAskAboutRole}
                 />
-                {isLastBotMessage && !isFollowUp && !hasUnrevealedSubsections && (
+                {isLastBotMessage && !isFollowUp && !hasUnrevealedSubsections && wrapUpState !== 'pending' && (
                   <QuickReplies
                     onSend={onQuickReply}
                     onFocusInput={onFocusInput}
@@ -259,6 +267,17 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
               </React.Fragment>
             );
           })}
+
+          {/* Wrap-up card — replaces the QuickReplies area while the user
+              reviews + saves the extracted Discussion Highlights. Anchors
+              after the last chat message so it reads as the end of the
+              conversation, not a separate dialog. */}
+          {wrapUpState === 'pending' && reportId && (
+            <WrapUpCard
+              reportId={reportId}
+              onCompleted={() => onWrapUpCompleted?.()}
+            />
+          )}
 
           <TypingIndicator
             isVisible={isWaitingForResponse}
