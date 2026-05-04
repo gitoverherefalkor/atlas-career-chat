@@ -59,7 +59,7 @@ const SYSTEM_PROMPT = `You distill a career-coaching chat conversation into a ti
 Your job: surface the specific tactical advice and concrete strategies the formal report would otherwise lose. NOT high-level themes. NOT polite summaries. Specific recipes the coach proposed.
 
 Rules:
-- Return 5-9 bullets, no more.
+- Return 0-9 bullets. NO floor. If there were only two genuine moments worth preserving, return two. If there were none, return a single line: "_(No substantive discussion to highlight beyond the report sections themselves.)_". Padding the list to look thorough is worse than honesty.
 - Each bullet starts with a bold lead phrase, then a clarifying sentence. Markdown format: "- **Lead phrase.** Clarifying sentence."
 - Lead phrases name the specific recipe or strategy, not the topic. Examples:
   - GOOD: "Substack-and-corporate-IP hybrid for the writing pivot." (names the actual approach)
@@ -70,7 +70,7 @@ Rules:
 - Skip small talk, navigation messages ("ready to continue?"), and content that just restates the report.
 - Skip anything the user explicitly pushed back on or rejected.
 - Use second person ("you"). No em-dashes; use commas, colons, or parentheses.
-- Output ONLY the bullet list. No intro, no outro, no headings.`;
+- Output ONLY the bullet list (or the no-substance fallback line). No intro, no outro, no headings.`;
 
 interface ChatMessageRow {
   sender: 'user' | 'bot';
@@ -126,6 +126,42 @@ serve(async (req) => {
   }
   if (!messages || messages.length === 0) {
     return errorResponse('No chat messages found for this report', 404, corsHeaders);
+  }
+
+  // Pre-flight: was there enough USER discussion to warrant an LLM call?
+  // The threshold filters two specific things:
+  //   1. Quick-reply clicks ("Looks good, let's continue to the next
+  //      section.") — short, formulaic, no real signal.
+  //   2. Sessions where the user advanced through every section without
+  //      typing anything substantive — the LLM would otherwise pad to
+  //      reach a target and end up paraphrasing the report itself.
+  // We sum the *non-formulaic* user message length. Anything below
+  // ~200 chars total skips the model and writes a placeholder so the
+  // report still gets a chat_highlights row (avoids special-casing
+  // downstream).
+  const QUICK_REPLY_PATTERNS = [
+    /looks good,?\s*let'?s continue/i,
+    /looks good,?\s*i'?m all done/i,
+    /^i'?d like to explore this section a bit more$/i,
+    /^let'?s wrap up/i,
+  ];
+  let userSubstantiveChars = 0;
+  for (const m of messages) {
+    if (m.sender !== 'user') continue;
+    const text = stripFormatting(m.content);
+    if (QUICK_REPLY_PATTERNS.some((re) => re.test(text))) continue;
+    userSubstantiveChars += text.length;
+  }
+  const SUBSTANCE_THRESHOLD = 200;
+  if (userSubstantiveChars < SUBSTANCE_THRESHOLD) {
+    return new Response(
+      JSON.stringify({
+        highlights:
+          '_(No substantive discussion to highlight beyond the report sections themselves.)_',
+        skipped_llm: true,
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   }
 
   // Format the transcript compactly. Cap at ~80k chars (well under any
