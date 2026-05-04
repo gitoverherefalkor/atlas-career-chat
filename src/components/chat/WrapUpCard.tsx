@@ -206,6 +206,11 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
 
           {(phase === 'review' || phase === 'saving' || phase === 'saved') && highlights && (
             <div className="mb-4">
+              {/* Subtle subtitle so the bullet list doesn't begin abruptly
+                  right after the descriptive paragraph above. */}
+              <p className="text-xs font-semibold text-atlas-teal uppercase tracking-wider mb-2">
+                Specific strategies from our conversation
+              </p>
               <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                 {highlights}
               </ReactMarkdown>
