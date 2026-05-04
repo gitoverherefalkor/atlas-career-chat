@@ -56,10 +56,16 @@ interface ChatMessagesProps {
   reportId?: string;
   wrapUpState?: 'idle' | 'pending' | 'completed';
   onWrapUpCompleted?: () => void;
+  // IDs of user messages whose agent call threw. ChatMessage renders a
+  // small retry affordance to the right of these bubbles. Click hits
+  // onRetryMessage(id) and the parent re-runs the send.
+  failedMessageIds?: string[];
+  onRetryMessage?: (messageId: string) => void;
 }
 
 export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
-  ({ messages, isLoading, isWaitingForResponse, isUserTyping, loadingMode = 'agent', currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole, reportId, wrapUpState = 'idle', onWrapUpCompleted }, ref) => {
+  ({ messages, isLoading, isWaitingForResponse, isUserTyping, loadingMode = 'agent', currentSectionIndex, onSectionDetected, onQuickReply, onFocusInput, onDreamJobsRead, showWelcome, isReturningUser, welcomeFirstName, welcomeCompletedSectionIndex = -1, onWelcomeReady, sections, onSequentialRevealStateChange, hasUnrevealedSubsections = false, onAskAboutRole, reportId, wrapUpState = 'idle', onWrapUpCompleted, failedMessageIds, onRetryMessage }, ref) => {
+    const failedSet = new Set(failedMessageIds ?? []);
     const isDreamJobsSection = currentSectionIndex >= ALL_SECTIONS.length - 1;
     // Tracks "every card opened at least once" for ALL multi-card sections
     // (runner_ups, outside_box, dream_jobs). Keyed by message id so navigating
@@ -253,6 +259,8 @@ export const ChatMessages = forwardRef<ChatMessagesHandle, ChatMessagesProps>(
                   onChipFocusInput={onFocusInput}
                   onSequentialRevealStateChange={onSequentialRevealStateChange}
                   onAskAboutRole={onAskAboutRole}
+                  failed={failedSet.has(msg.id)}
+                  onRetry={onRetryMessage}
                 />
                 {isLastBotMessage && !isFollowUp && !hasUnrevealedSubsections && wrapUpState !== 'pending' && (
                   <QuickReplies

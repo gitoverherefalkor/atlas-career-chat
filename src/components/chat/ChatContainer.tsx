@@ -96,6 +96,14 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     // instead. While 'pending' we hide the regular QuickReplies; on
     // completion we surface the POST_WRAP_REPLIES (Exit to Dashboard).
     const [wrapUpState, setWrapUpState] = useState<'idle' | 'pending' | 'completed'>('idle');
+    // Map of user-message-id -> the original send args, populated when the
+    // agent path throws. Lets us render a small retry icon next to the
+    // failed message instead of forcing the user to retype. Cleared per
+    // entry on successful retry. Lost on refresh — that's fine; the failed
+    // user message is still in chat history, the user can just re-send.
+    const [failedSends, setFailedSends] = useState<
+      Record<string, { message: string; intent?: QuickReplyIntent }>
+    >({});
     const [isUserTyping, setIsUserTyping] = useState(false);
     // When user clicks a quick-reply that focuses the input ('I see this
     // differently', 'Something else'), we set this to a custom placeholder
@@ -110,6 +118,9 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     // structure is registered.
     const [latestUnrevealedCount, setLatestUnrevealedCount] = useState(-1);
     const lastBotMessageIdRef = useRef<string | null>(null);
+    // Set every time we add a user message via handleSend. Used as the
+    // anchor for the failed-send retry icon when the agent call throws.
+    const lastUserMessageIdRef = useRef<string | null>(null);
     // Tracks whether the most recent user action was an 'advance' click —
     // i.e. the next bot reply will be / was a section delivery, not a
     // discussion turn. The fast-path routing requires this to be TRUE,
@@ -419,7 +430,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         // function will persist it server-side (atomic with the section
         // delivery). If the fast path fails and we fall through to the
         // agent path, we write the user msg to chat_messages there.
-        addMessage('user', message, { skipPersist: true });
+        const newId = addMessage('user', message, { skipPersist: true });
+        if (newId) lastUserMessageIdRef.current = newId;
         setLoadingMode('delivery');
         setIsWaitingForResponse(true);
         onUserActivity?.();
@@ -496,7 +508,10 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       } else {
         // Pure agent path (no fast path attempted): standard frontend
         // persistence via addMessage's fire-and-forget Supabase write.
-        addMessage('user', message);
+        // Capture the new message id so we can pin a retry affordance
+        // to it if the agent call fails below.
+        const newId = addMessage('user', message);
+        if (newId) lastUserMessageIdRef.current = newId;
         setLoadingMode('agent');
         setIsWaitingForResponse(true);
         onUserActivity?.();
@@ -529,13 +544,61 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
         const errorMessage =
           error instanceof DOMException && error.name === 'AbortError'
             ? 'The request timed out. The AI is taking longer than usual. Please try again.'
-            : 'Something went wrong. Please try sending your message again.';
+            : 'Something went wrong. Tap the retry icon next to your message, or try again.';
 
         toast({
           title: 'Message failed',
           description: errorMessage,
           variant: 'destructive',
         });
+
+        // Pin the retry button to the user message we just added so the
+        // user can click instead of retyping. Use the most recent user
+        // message id from local state — works for both the pure-agent
+        // path and the fast-path-fallback path (where the message was
+        // added with skipPersist before falling through).
+        const failedId = lastUserMessageIdRef.current;
+        if (failedId) {
+          setFailedSends((prev) => ({ ...prev, [failedId]: { message, intent } }));
+        }
+      } finally {
+        setIsWaitingForResponse(false);
+      }
+    };
+
+    const handleRetry = async (messageId: string) => {
+      const entry = failedSends[messageId];
+      if (!entry || !sessionId) return;
+      // Remove the failed marker optimistically so the icon disappears
+      // while we retry. Re-add it on second failure.
+      setFailedSends((prev) => {
+        const next = { ...prev };
+        delete next[messageId];
+        return next;
+      });
+      setLoadingMode('agent');
+      setIsWaitingForResponse(true);
+      try {
+        const response = await sendMessage(sessionId, entry.message, {
+          report_id: reportId,
+          first_name: firstName,
+          country,
+        });
+        if (response) {
+          addMessage('bot', response);
+          scanForSections(response);
+        } else {
+          addMessage('bot', "I didn't receive a response. Please try again.");
+        }
+        lastTurnWasAdvanceRef.current = entry.intent === 'advance';
+      } catch (error) {
+        console.error('Retry failed:', error);
+        toast({
+          title: 'Still failing',
+          description: 'Network or server might still be down. Try again in a moment.',
+          variant: 'destructive',
+        });
+        setFailedSends((prev) => ({ ...prev, [messageId]: entry }));
       } finally {
         setIsWaitingForResponse(false);
       }
@@ -597,6 +660,8 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           reportId={reportId}
           wrapUpState={wrapUpState}
           onWrapUpCompleted={() => setWrapUpState('completed')}
+          failedMessageIds={Object.keys(failedSends)}
+          onRetryMessage={handleRetry}
         />
 
         {/* Mobile-only Complete Session CTA — sidebar button isn't visible on mobile */}

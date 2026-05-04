@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import DOMPurify from 'dompurify';
-import { ChevronDown, MessageCircle, Pencil } from 'lucide-react';
+import { ChevronDown, MessageCircle, Pencil, RotateCw } from 'lucide-react';
 import { ALL_SECTIONS } from './ReportSidebar';
 import type { ReportSection } from '@/hooks/useReportSections';
 import { CareerScoreCard, extractAIImpact } from './CareerScoreCard';
@@ -37,6 +37,11 @@ interface ChatMessageProps {
   // CollapsibleCareerBlocks. The chat container scopes the next user
   // message to the named role.
   onAskAboutRole?: (roleTitle: string) => void;
+  // True when this user message's agent call failed. ChatMessage renders
+  // a small retry icon to the right of the bubble that calls onRetry.
+  // Bot messages ignore both fields.
+  failed?: boolean;
+  onRetry?: (messageId: string) => void;
 }
 
 interface ChipOption {
@@ -814,6 +819,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   onChipFocusInput,
   onSequentialRevealStateChange,
   onAskAboutRole,
+  failed = false,
+  onRetry,
 }) => {
   const messageRef = useRef<HTMLDivElement>(null);
   const tts = useTTS();
@@ -873,8 +880,25 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
   if (sender === 'user') {
     return (
-      <div className="flex justify-end mb-4">
-        <div className="max-w-[75%] bg-atlas-teal text-white rounded-2xl px-4 py-3.5 text-[0.9375rem] leading-relaxed">
+      <div className="flex justify-end items-center gap-2 mb-4">
+        {/* Subtle retry affordance for messages whose agent call failed.
+            Sits to the LEFT of the bubble (still on the right side of the
+            chat) so it doesn't push vertical scroll. Only shows on the
+            failed message itself. */}
+        {failed && onRetry && messageId && (
+          <button
+            type="button"
+            onClick={() => onRetry(messageId)}
+            title="Retry sending this message"
+            aria-label="Retry sending this message"
+            className="text-gray-400 hover:text-atlas-teal transition-colors p-1 rounded-full"
+          >
+            <RotateCw size={14} />
+          </button>
+        )}
+        <div className={`max-w-[75%] bg-atlas-teal text-white rounded-2xl px-4 py-3.5 text-[0.9375rem] leading-relaxed ${
+          failed ? 'opacity-70' : ''
+        }`}>
           {content}
         </div>
       </div>

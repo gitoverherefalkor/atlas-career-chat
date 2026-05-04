@@ -67,8 +67,8 @@ export function useChatMessages({ sessionId, reportId, userId }: UseChatMessages
   // race where a user refreshes mid-flight and loses an unpersisted bot
   // message, since the server-side write is atomic with the API response.
   const addMessage = useCallback(
-    (sender: 'user' | 'bot', content: string, options?: { skipPersist?: boolean }) => {
-      if (!sessionId || !reportId || !userId) return;
+    (sender: 'user' | 'bot', content: string, options?: { skipPersist?: boolean }): string | null => {
+      if (!sessionId || !reportId || !userId) return null;
 
       const now = new Date().toISOString();
       const tempId = crypto.randomUUID();
@@ -86,23 +86,28 @@ export function useChatMessages({ sessionId, reportId, userId }: UseChatMessages
       // Add to local state immediately
       setMessages((prev) => [...prev, newMessage]);
 
-      if (options?.skipPersist) return;
+      if (!options?.skipPersist) {
+        // Persist to Supabase in background (fire-and-forget)
+        supabase
+          .from('chat_messages')
+          .insert({
+            session_id: sessionId,
+            report_id: reportId,
+            user_id: userId,
+            sender,
+            content,
+          })
+          .then(({ error }) => {
+            if (error) {
+              console.error('Failed to persist message:', error);
+            }
+          });
+      }
 
-      // Persist to Supabase in background (fire-and-forget)
-      supabase
-        .from('chat_messages')
-        .insert({
-          session_id: sessionId,
-          report_id: reportId,
-          user_id: userId,
-          sender,
-          content,
-        })
-        .then(({ error }) => {
-          if (error) {
-            console.error('Failed to persist message:', error);
-          }
-        });
+      // Returned so callers (e.g. ChatContainer's send-failure handling)
+      // can remember which message just got added and offer retry
+      // affordances against that specific row.
+      return tempId;
     },
     [sessionId, reportId, userId]
   );
