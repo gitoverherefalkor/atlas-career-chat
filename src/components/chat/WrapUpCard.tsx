@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import { Sparkles, Check, AlertCircle } from 'lucide-react';
 import { useWrapUp } from '@/hooks/useWrapUp';
 import { useToast } from '@/hooks/use-toast';
+import { CareerSignatureCard } from './CareerSignatureCard';
 
 // WrapUpCard — closure ritual at the end of the chat.
 //
@@ -249,6 +250,15 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted })
           )}
         </div>
       </div>
+
+      {/* Career Signature — closing artifact rendered AFTER save so the
+          user gets the closure feeling first, then the share-worthy card.
+          Also lives on the dashboard for return visits. */}
+      {phase === 'saved' && (
+        <div className="mt-6">
+          <CareerSignatureCard reportId={reportId} />
+        </div>
+      )}
     </div>
   );
 };

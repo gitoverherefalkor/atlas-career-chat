@@ -15,6 +15,7 @@ import ReportPreview from '@/components/report/ReportPreview';
 import { AccessCodeModal } from '@/components/dashboard/AccessCodeModal';
 import { ExecSummaryModal } from '@/components/dashboard/ExecSummaryModal';
 import { CareerQuadrant } from '@/components/dashboard/CareerQuadrant';
+import { CareerSignatureCard } from '@/components/chat/CareerSignatureCard';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
@@ -325,6 +326,13 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Career Signature — share-friendly closing artifact, top of
+                the dashboard so it greets returning users with a punchy
+                summary of where they fit. */}
+            {latestReport && latestReport.status === 'completed' && (
+              <CareerSignatureCard reportId={latestReport.id} className="mb-6" />
             )}
 
             {/* Career Map — at-a-glance visualization of every recommended
