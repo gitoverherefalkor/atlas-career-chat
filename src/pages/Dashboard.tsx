@@ -16,6 +16,8 @@ import { AccessCodeModal } from '@/components/dashboard/AccessCodeModal';
 import { ExecSummaryModal } from '@/components/dashboard/ExecSummaryModal';
 import { CareerQuadrant } from '@/components/dashboard/CareerQuadrant';
 import { CareerSignatureCard } from '@/components/chat/CareerSignatureCard';
+import { CareerSignatureModal } from '@/components/dashboard/CareerSignatureModal';
+import { PersonalityRadar } from '@/components/dashboard/PersonalityRadar';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 
@@ -35,6 +37,9 @@ const Dashboard = () => {
   const { reports, isLoading: reportsLoading } = useReports();
   const [isReportSectionExpanded, setIsReportSectionExpanded] = useState(false);
   const [showAccessCodeModal, setShowAccessCodeModal] = useState(false);
+  // Career Signature opens in a modal when the user clicks the compact
+  // dashboard card. Modal renders the full standalone version of the card.
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [showExecSummaryModal, setShowExecSummaryModal] = useState(false);
   const [userAccessCode, setUserAccessCode] = useState<string | null>(null);
 
@@ -358,19 +363,20 @@ const Dashboard = () => {
               </Card>
             )}
 
-            {/* Career Signature — share-friendly closing artifact, top of
-                the dashboard so it greets returning users with a punchy
-                summary of where they fit. */}
+            {/* Hero row — three at-a-glance visuals: Signature, Career Map,
+                Personality Radar. Stacks on small screens, 3-column on lg+.
+                Each block self-renders a placeholder if its data isn't ready
+                yet, so the row stays balanced during fb_feedback processing. */}
             {latestReport && latestReport.status === 'completed' && (
-              <CareerSignatureCard reportId={latestReport.id} className="mb-6" />
-            )}
-
-            {/* Career Map — at-a-glance visualization of every recommended
-                career, plotted by Match score vs AI Impact tier. Only renders
-                when the report is finished and we have at least 2 scored
-                careers with extractable AI impact. */}
-            {latestReport && latestReport.status === 'completed' && (
-              <CareerQuadrant sections={reportSections} className="mb-8" />
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+                <CareerSignatureCard
+                  reportId={latestReport.id}
+                  variant="compact"
+                  onClick={() => setShowSignatureModal(true)}
+                />
+                <CareerQuadrant sections={reportSections} variant="compact" />
+                <PersonalityRadar sections={reportSections} />
+              </div>
             )}
 
             {/* Show assessment start card if user hasn't verified access yet */}
@@ -419,6 +425,17 @@ const Dashboard = () => {
         <AccessCodeModal
           accessCode={userAccessCode}
           onClose={() => setShowAccessCodeModal(false)}
+        />
+      )}
+
+      {/* Career Signature Modal — full-size card on click of the compact
+          hero block. Mounted unconditionally so the close animation can
+          play; component returns null when open=false. */}
+      {latestReport?.id && (
+        <CareerSignatureModal
+          reportId={latestReport.id}
+          open={showSignatureModal}
+          onClose={() => setShowSignatureModal(false)}
         />
       )}
 

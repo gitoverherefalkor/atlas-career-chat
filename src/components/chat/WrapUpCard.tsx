@@ -5,7 +5,6 @@ import remarkGfm from 'remark-gfm';
 import { Sparkles, Check, AlertCircle, LayoutDashboard } from 'lucide-react';
 import { useWrapUp } from '@/hooks/useWrapUp';
 import { useToast } from '@/hooks/use-toast';
-import { CareerSignatureCard } from './CareerSignatureCard';
 
 // WrapUpCard — closure ritual at the end of the chat.
 //
@@ -259,13 +258,13 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
           )}
 
           {/* Footer actions. The teaser to the left of the button hints
-              at the Career Signature reveal that lands after save — pulls
-              the user through the close ritual instead of leaving the
-              click feeling administrative. */}
+              at what's waiting on the dashboard — pulls the user through
+              the close ritual instead of leaving the click feeling
+              administrative. */}
           {phase !== 'saved' && (
             <div className="mt-4 flex flex-wrap items-center justify-end gap-3">
               <span className="text-xs text-atlas-teal italic">
-                One last click. Save to reveal your Career Signature.
+                Save to unlock your dashboard.
               </span>
               <button
                 type="button"
@@ -302,28 +301,27 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
           into the leftover horizontal space. See the Fragment below. */}
     </div>
 
-    {/* Career Signature — share-worthy closing artifact. Sits in its own
-        message row, full chat-message width, so the hero title doesn't
-        wrap into 6 lines next to the wrap-up card. The Exit-to-Dashboard
-        CTA lives inside this block so the user can leave the moment they
-        see the signature. */}
+    {/* Post-save action — single CTA that closes the chat and takes the
+        user to the dashboard, where the Career Signature, Career Map and
+        Personality Radar live. No signature reveal in chat — it didn't
+        add new info here, and the dashboard is the proper home. */}
     {phase === 'saved' && (
       <div className="flex justify-start mb-4">
-        <div className="w-full max-w-[85%]">
-          <CareerSignatureCard reportId={reportId} />
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={() => {
-                onCompleted();
-                navigate('/dashboard', { state: { fromChat: true } });
-              }}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-atlas-teal text-white text-sm font-semibold hover:bg-atlas-teal/90 transition-colors shadow-sm"
-            >
-              <LayoutDashboard size={14} />
-              Exit to Dashboard
-            </button>
-          </div>
+        <div className="w-full max-w-[85%] flex items-center justify-between gap-4 px-1">
+          <p className="text-sm text-atlas-navy/70">
+            Your dashboard now has your Career Signature, Career Map and Personality Radar.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              onCompleted();
+              navigate('/dashboard', { state: { fromChat: true } });
+            }}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-atlas-teal text-white text-sm font-semibold hover:bg-atlas-teal/90 transition-colors shadow-sm shrink-0"
+          >
+            <LayoutDashboard size={14} />
+            Open Dashboard
+          </button>
         </div>
       </div>
     )}

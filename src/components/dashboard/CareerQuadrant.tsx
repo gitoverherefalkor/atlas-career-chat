@@ -128,16 +128,36 @@ const QuadrantDot: React.FC<any> = (props) => {
 interface CareerQuadrantProps {
   sections: ReportSection[] | undefined;
   className?: string;
+  // 'compact' = sized to fit a hero-row column, smaller chart, condensed
+  // legend. 'full' = standalone-section size with the full intro copy.
+  variant?: 'full' | 'compact';
 }
 
 // Single chart that shows every recommended career on a Match × AI Impact
 // grid. Top Careers render larger; tooltip surfaces full title + rank.
-export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, className }) => {
+export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, className, variant = 'full' }) => {
   const points = useMemo(() => buildPoints(sections), [sections]);
+  const isCompact = variant === 'compact';
 
   if (points.length < 2) {
-    // Not enough data to make a meaningful chart yet — the dashboard parent
-    // can decide to render nothing or a placeholder around it.
+    // Compact slot keeps a placeholder so the hero row stays balanced
+    // while sections are still being processed.
+    if (isCompact) {
+      return (
+        <div className={className}>
+          <div className="rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col">
+            <div className="flex items-center gap-2 mb-2 text-atlas-teal">
+              <span className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+                Career Map
+              </span>
+            </div>
+            <div className="flex-1 flex items-center justify-center text-xs text-gray-400 italic min-h-[180px]">
+              Mapping your matches…
+            </div>
+          </div>
+        </div>
+      );
+    }
     return null;
   }
 
@@ -148,18 +168,37 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
 
   return (
     <div className={className}>
-      <div className="rounded-2xl border border-atlas-navy/10 bg-white p-4 sm:p-6 shadow-sm">
+      <div className={`rounded-2xl border border-atlas-navy/10 bg-white shadow-sm h-full flex flex-col ${
+        isCompact ? 'p-4' : 'p-4 sm:p-6'
+      }`}>
         <div className="flex items-baseline justify-between mb-1">
-          <h3 className="text-base sm:text-lg font-semibold text-atlas-navy font-heading">
-            Your Career Map
-          </h3>
-          <span className="text-xs text-gray-500">{points.length} roles</span>
+          {isCompact ? (
+            <div className="flex items-center gap-2 text-atlas-teal">
+              <span className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+                Career Map
+              </span>
+            </div>
+          ) : (
+            <h3 className="text-base sm:text-lg font-semibold text-atlas-navy font-heading">
+              Your Career Map
+            </h3>
+          )}
+          <span className={`text-gray-500 ${isCompact ? 'text-[10px] uppercase tracking-wider font-semibold text-atlas-navy/40' : 'text-xs'}`}>
+            {points.length} roles
+          </span>
         </div>
-        <p className="text-xs text-gray-500 mb-4">
-          Every recommendation plotted by how well it fits you and how AI is reshaping it.
-        </p>
+        {!isCompact && (
+          <p className="text-xs text-gray-500 mb-4">
+            Every recommendation plotted by how well it fits you and how AI is reshaping it.
+          </p>
+        )}
+        {isCompact && (
+          <p className="text-[11px] text-gray-500 mb-3">
+            Match score vs AI impact, every recommended role.
+          </p>
+        )}
 
-        <div className="w-full" style={{ height: 360 }}>
+        <div className="w-full flex-1" style={{ height: isCompact ? 240 : 360 }}>
           <ResponsiveContainer>
             <ScatterChart margin={{ top: 16, right: 24, bottom: 32, left: 8 }}>
               <CartesianGrid stroke="#E5E7EB" strokeDasharray="2 4" />
@@ -213,8 +252,9 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
         </div>
 
         {/* Legend — kept inline so the chart is self-explanatory without
-            needing a separate doc / tooltip hunt. */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 text-xs">
+            needing a separate doc / tooltip hunt. Compact variant uses
+            tighter spacing + smaller dots to fit the hero column. */}
+        <div className={`flex flex-wrap items-center gap-x-3 gap-y-1.5 ${isCompact ? 'mt-2 text-[10px]' : 'mt-4 text-xs'}`}>
           {AI_IMPACT_LEVELS.map((level) => (
             <div key={level} className="flex items-center gap-1.5">
               <span
