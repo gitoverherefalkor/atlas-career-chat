@@ -311,6 +311,36 @@ const Dashboard = () => {
               </div>
             )}
 
+            {/* Resume chat — when the user navigated to the dashboard from
+                an in-progress chat session (status === 'pending_review' and
+                cameFromChat suppresses the auto-redirect). Without this card
+                the page is empty except for the welcome heading. */}
+            {latestReport?.status === 'pending_review' && (
+              <Card
+                className="hover:shadow-lg transition-shadow cursor-pointer mb-8"
+                onClick={() => navigate('/chat')}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-atlas-teal/10 p-3 rounded-full">
+                        <Play className="h-6 w-6 text-atlas-teal" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">Pick up where you left off</h3>
+                        <p className="text-sm text-gray-600">
+                          Your chat session is still in progress. Finish it to unlock your full report and Career Signature.
+                        </p>
+                      </div>
+                    </div>
+                    <Button variant="outline" onClick={(e) => { e.stopPropagation(); navigate('/chat'); }}>
+                      Resume Chat
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Continue Assessment Card - Only show if there's meaningful progress AND no report exists */}
             {hasMeaningfulProgress() && !latestReport && (
               <Card className="hover:shadow-lg transition-shadow cursor-pointer mb-8" onClick={() => navigate('/assessment')}>
