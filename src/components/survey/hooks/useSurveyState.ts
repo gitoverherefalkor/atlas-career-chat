@@ -64,15 +64,16 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
       try {
         const { data } = await supabase
           .from('answers')
-          .select('payload')
+          .select('payload, status')
           .eq('access_code_id', accessCodeId)
-          .order('submitted_at', { ascending: false })
-          .limit(1)
           .maybeSingle();
 
         if (data?.payload && typeof data.payload === 'object') {
           const savedResponses = data.payload as Record<string, any>;
           setResponses(savedResponses);
+          if (data.status === 'submitted') {
+            setSubmissionStatus('submitted');
+          }
 
           // Find the first unanswered question to resume from
           let resumeSectionIdx = 0;
@@ -140,6 +141,36 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
       saveSession(session);
     }
   }, [responses, currentSectionIndex, currentQuestionIndex, showSectionIntro, completedSections, submissionStatus, survey, saveSession, isSessionLoaded]);
+
+  // Debounced autosave to Supabase answers table (status='draft').
+  // Skipped when status is already 'submitted' so we don't downgrade a finalized row.
+  useEffect(() => {
+    if (!isSessionLoaded || !accessCodeId || !survey) return;
+    if (submissionStatus === 'submitted' || submissionStatus === 'submitting') return;
+    if (Object.keys(responses).length === 0) return;
+
+    const timeout = setTimeout(async () => {
+      try {
+        const { error } = await supabase
+          .from('answers')
+          .upsert(
+            {
+              access_code_id: accessCodeId,
+              survey_id: surveyId,
+              payload: responses,
+              status: 'draft',
+              submitted_at: null,
+            },
+            { onConflict: 'access_code_id' }
+          );
+        if (error) console.error('Autosave to Supabase failed:', error);
+      } catch (err) {
+        console.error('Autosave to Supabase error:', err);
+      }
+    }, 1500);
+
+    return () => clearTimeout(timeout);
+  }, [responses, isSessionLoaded, accessCodeId, surveyId, survey, submissionStatus]);
 
   return {
     // Data
