@@ -160,6 +160,23 @@ serve(async (req) => {
     return errorResponse('Failed to save highlights', 500, corsHeaders);
   }
 
+  // Flip the report from pending_review → completed so the dashboard
+  // surfaces the Career Signature / Career Map / Personality Radar and
+  // ReportDisplay, instead of the "Resume Chat" card. Scoped to the
+  // pending_review state so we don't accidentally overwrite a 'failed'
+  // or already-'completed' status (e.g. on a second wrap-up).
+  const { error: statusErr } = await supabase
+    .from('reports')
+    .update({ status: 'completed' })
+    .eq('id', report_id)
+    .eq('status', 'pending_review');
+
+  if (statusErr) {
+    // Non-fatal: highlights are saved, the user can still see them on
+    // the dashboard. Log and move on rather than blocking the response.
+    console.error('[wrap-up-save] status update error:', statusErr);
+  }
+
   return new Response(JSON.stringify({ ok: true }), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
