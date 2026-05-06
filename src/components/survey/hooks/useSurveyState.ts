@@ -35,12 +35,17 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
     if (!survey || isSessionLoaded) return;
 
     const storedSession = getStoredSession();
-    if (storedSession) {
+    const hasLocalProgress =
+      storedSession &&
+      storedSession.responses &&
+      Object.keys(storedSession.responses).length > 0;
+
+    if (hasLocalProgress) {
       setResponses(storedSession.responses);
-      setCurrentSectionIndex(storedSession.currentSectionIndex);
-      setCurrentQuestionIndex(storedSession.currentQuestionIndex);
-      setShowSectionIntro(storedSession.showSectionIntro);
-      setCompletedSections(storedSession.completedSections);
+      setCurrentSectionIndex(storedSession.currentSectionIndex || 0);
+      setCurrentQuestionIndex(storedSession.currentQuestionIndex || 0);
+      setShowSectionIntro(storedSession.showSectionIntro ?? true);
+      setCompletedSections(storedSession.completedSections || []);
       const submissionData = storedSession as any;
       if (submissionData.submissionStatus) {
         setSubmissionStatus(submissionData.submissionStatus);
@@ -49,7 +54,7 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
       return;
     }
 
-    // No localStorage session — try to restore from Supabase answers table
+    // localStorage is empty or has no actual responses — try Supabase answers table
     if (!accessCodeId) {
       setIsSessionLoaded(true);
       return;
