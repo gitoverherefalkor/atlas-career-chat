@@ -137,11 +137,16 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
         title: 'Saved',
         description: 'Your discussion highlights are now part of your report.',
       });
-      // NOTE: we deliberately do NOT call onCompleted() here. The saved
-      // phase shows the Career Signature reveal — if onCompleted fires
-      // immediately, the parent flips wrapUpState to 'completed' and
-      // unmounts this card before the user ever sees the signature.
-      // onCompleted is invoked when the user explicitly exits below.
+      // Send the user straight to the dashboard. They already clicked
+      // Save & Close — making them click another "Open Dashboard" pill is
+      // pure friction. The Career Signature, Career Map and Personality
+      // Radar all live on the dashboard, so that's where the reward is.
+      // The QuickReplies "Exit to Dashboard" pill remains as a fallback
+      // for users who refresh the chat after wrap-up has already
+      // completed (since WrapUpCard is transient, not persisted in chat
+      // history).
+      onCompleted();
+      navigate('/dashboard', { state: { fromChat: true } });
     } catch (err) {
       console.error('[WrapUpCard] save failed:', err);
       toast({
@@ -301,30 +306,13 @@ export const WrapUpCard: React.FC<WrapUpCardProps> = ({ reportId, onCompleted, s
           into the leftover horizontal space. See the Fragment below. */}
     </div>
 
-    {/* Post-save action — single CTA that closes the chat and takes the
-        user to the dashboard, where the Career Signature, Career Map and
-        Personality Radar live. No signature reveal in chat — it didn't
-        add new info here, and the dashboard is the proper home. */}
-    {phase === 'saved' && (
-      <div className="flex justify-start mb-4">
-        <div className="w-full max-w-[85%] flex items-center justify-between gap-4 px-1">
-          <p className="text-sm text-atlas-navy/70">
-            Your dashboard now has your Career Signature, Career Map and Personality Radar.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              onCompleted();
-              navigate('/dashboard', { state: { fromChat: true } });
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-atlas-teal text-white text-sm font-semibold hover:bg-atlas-teal/90 transition-colors shadow-sm shrink-0"
-          >
-            <LayoutDashboard size={14} />
-            Open Dashboard
-          </button>
-        </div>
-      </div>
-    )}
+    {/* Post-save state intentionally unmounts immediately — handleSave
+        navigates to /dashboard the moment the save succeeds. The 'saved'
+        confirmation banner inside the card flashes briefly during the
+        navigation but the user lands on the dashboard within ~100ms.
+        The QuickReplies "Exit to Dashboard" pill outside this card is
+        the persistent fallback for refresh / re-entry after the wrap-up
+        has already completed. */}
     </>
   );
 };
