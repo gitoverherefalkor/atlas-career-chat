@@ -24,7 +24,7 @@ const SearchProgress: React.FC<SearchProgressProps> = ({ results, currentIndex }
             <div className="shrink-0">
               {result.status === 'searching' && (
                 <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Loader2 className="h-4 w-4 text-atlas-blue animate-spin" />
+                  <Loader2 className="h-4 w-4 text-atlas-teal animate-spin" />
                 </div>
               )}
               {result.status === 'done' && (
@@ -47,7 +47,7 @@ const SearchProgress: React.FC<SearchProgressProps> = ({ results, currentIndex }
             {/* Career info */}
             <div className="flex-1 min-w-0">
               <p className={`text-sm font-medium truncate ${
-                result.status === 'searching' ? 'text-atlas-blue' :
+                result.status === 'searching' ? 'text-atlas-teal' :
                 result.status === 'done' ? 'text-gray-900' :
                 result.status === 'error' ? 'text-red-600' :
                 'text-gray-400'
@@ -75,7 +75,7 @@ const SearchProgress: React.FC<SearchProgressProps> = ({ results, currentIndex }
       <div className="mt-4 pt-3 border-t border-gray-100">
         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-atlas-blue rounded-full transition-all duration-500"
+            className="h-full bg-atlas-teal rounded-full transition-all duration-500"
             style={{
               width: `${(results.filter(r => r.status === 'done' || r.status === 'error').length / results.length) * 100}%`
             }}

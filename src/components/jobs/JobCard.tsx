@@ -126,7 +126,7 @@ const JobCard: React.FC<JobCardProps> = ({ job, isSaved, onSave, onUnsave }) => 
             href={job.apply_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-atlas-blue hover:text-atlas-navy transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-atlas-teal hover:text-atlas-teal/80 transition-colors"
           >
             View & Apply
             <ExternalLink className="h-3.5 w-3.5" />

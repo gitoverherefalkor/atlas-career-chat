@@ -149,7 +149,7 @@ const Jobs = () => {
   if (isPageLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-atlas-blue" />
+        <Loader2 className="h-8 w-8 animate-spin text-atlas-teal" />
       </div>
     );
   }
@@ -166,7 +166,7 @@ const Jobs = () => {
           </p>
           <button
             onClick={() => navigate('/dashboard')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-atlas-blue text-white rounded-lg hover:bg-atlas-navy transition-colors font-medium"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-atlas-teal text-white rounded-lg hover:bg-atlas-teal/90 transition-colors font-medium"
           >
             Go to Dashboard
           </button>
@@ -203,7 +203,7 @@ const Jobs = () => {
             className={`
               px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2
               ${activeTab === 'search'
-                ? 'border-atlas-blue text-atlas-blue'
+                ? 'border-atlas-teal text-atlas-teal'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
               }
             `}
@@ -216,7 +216,7 @@ const Jobs = () => {
             className={`
               px-4 py-3 text-sm font-medium border-b-2 transition-colors flex items-center gap-2
               ${activeTab === 'saved'
-                ? 'border-atlas-blue text-atlas-blue'
+                ? 'border-atlas-teal text-atlas-teal'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
               }
             `}
@@ -262,7 +262,7 @@ const Jobs = () => {
                 w-full sm:w-auto px-6 py-3 rounded-lg font-medium text-white transition-all flex items-center justify-center gap-2
                 ${selectedCareers.length === 0 || isSearching
                   ? 'bg-gray-300 cursor-not-allowed'
-                  : 'bg-atlas-blue hover:bg-atlas-navy shadow-sm hover:shadow'
+                  : 'bg-atlas-teal hover:bg-atlas-teal/90 shadow-sm hover:shadow'
                 }
               `}
             >

@@ -47,7 +47,7 @@ const CareerSelector: React.FC<CareerSelectorProps> = ({
               className={`
                 relative text-left p-4 rounded-xl border-2 transition-all
                 ${active
-                  ? 'border-atlas-blue bg-blue-50 shadow-sm'
+                  ? 'border-atlas-teal bg-blue-50 shadow-sm'
                   : cantSelect
                     ? 'border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed'
                     : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
@@ -58,7 +58,7 @@ const CareerSelector: React.FC<CareerSelectorProps> = ({
               {/* Selection indicator */}
               <div className={`
                 absolute top-3 right-3 w-6 h-6 rounded-full flex items-center justify-center
-                ${active ? 'bg-atlas-blue text-white' : 'border-2 border-gray-300'}
+                ${active ? 'bg-atlas-teal text-white' : 'border-2 border-gray-300'}
               `}>
                 {active && <Check className="h-4 w-4" />}
               </div>

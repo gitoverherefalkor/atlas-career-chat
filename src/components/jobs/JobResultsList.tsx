@@ -29,7 +29,7 @@ const JobResultsList: React.FC<JobResultsListProps> = ({
         <div key={result.sectionType}>
           {/* Career heading */}
           <div className="flex items-center gap-2 mb-4">
-            <Briefcase className="h-5 w-5 text-atlas-blue" />
+            <Briefcase className="h-5 w-5 text-atlas-teal" />
             <h3 className="text-lg font-semibold text-gray-900">{result.careerTitle}</h3>
             <span className="text-sm text-gray-500">
               ({result.totalCount} {result.totalCount === 1 ? 'job' : 'jobs'})

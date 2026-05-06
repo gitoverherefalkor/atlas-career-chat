@@ -77,7 +77,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
           value={country}
           onChange={(e) => onCountryChange(e.target.value)}
           disabled={disabled}
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-atlas-blue focus:border-transparent disabled:opacity-50"
+          className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-atlas-teal focus:border-transparent disabled:opacity-50"
         >
           {COUNTRIES.map(c => (
             <option key={c.code} value={c.code}>{c.label}</option>
@@ -90,7 +90,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
           onChange={(e) => onCityChange(e.target.value)}
           placeholder="City (optional)"
           disabled={disabled}
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-atlas-blue focus:border-transparent disabled:opacity-50"
+          className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-atlas-teal focus:border-transparent disabled:opacity-50"
         />
       </div>
     </div>
