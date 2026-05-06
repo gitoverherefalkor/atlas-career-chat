@@ -50,7 +50,7 @@ export const CareerSignatureModal: React.FC<CareerSignatureModalProps> = ({ repo
         >
           <X size={16} />
         </button>
-        <CareerSignatureCard reportId={reportId} variant="full" />
+        <CareerSignatureCard reportId={reportId} variant="full" decorative />
       </div>
     </div>
   );

@@ -108,6 +108,11 @@ interface CareerSignatureCardProps {
   // 'compact' renders a tighter card sized to fit a dashboard hero column.
   // 'full' is the standalone closing-screen / modal expansion.
   variant?: 'full' | 'compact';
+  // When true, renders with the warm-paper radial gradient hero treatment
+  // (used by the modal for share-screenshot punch). When false (default
+  // for inline dashboard use), renders on plain white so it matches the
+  // other dashboard cards.
+  decorative?: boolean;
   // Optional click handler — when set, the whole card becomes interactive
   // (cursor pointer + hover lift). Used by the dashboard to open a modal
   // with the full-size version.
@@ -118,6 +123,7 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
   reportId,
   className,
   variant = 'full',
+  decorative = false,
   onClick,
 }) => {
   const isCompact = variant === 'compact';
@@ -156,22 +162,28 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
               }
             : undefined
         }
-        // Warm-paper card that pops on the dark teal-navy chat background.
-        // The radial highlight on top creates a soft "spotlight" feel without
-        // overwhelming the editorial palette.
+        // Decorative variant uses the warm-paper radial hero gradient
+        // (modal / share-screenshot context). Default plain white so the
+        // inline dashboard card sits in visual rhythm with the rest.
         className={`relative overflow-hidden rounded-lg border border-atlas-navy/10 shadow-sm ${
+          decorative ? '' : 'bg-white'
+        } ${
           onClick ? 'cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-md' : ''
         }`}
-        style={{
-          background:
-            'radial-gradient(120% 80% at 50% -10%, #ffffff 0%, #FAF6EC 45%, #ECE4D2 100%)',
-        }}
+        style={
+          decorative
+            ? {
+                background:
+                  'radial-gradient(120% 80% at 50% -10%, #ffffff 0%, #FAF6EC 45%, #ECE4D2 100%)',
+              }
+            : undefined
+        }
       >
         {/* Header */}
         <div className={`flex items-center justify-between ${isCompact ? 'px-4 pt-4 pb-3' : 'px-5 sm:px-7 pt-6 pb-4'}`}>
           <div className="flex items-center gap-2 text-atlas-teal">
-            <Sparkles className={isCompact ? 'w-3.5 h-3.5' : 'w-4 h-4'} strokeWidth={2.25} />
-            <span className={`uppercase tracking-[0.18em] font-semibold ${isCompact ? 'text-[10px]' : 'text-[11px]'}`}>
+            <Sparkles className={isCompact ? 'w-4 h-4' : 'w-[18px] h-[18px]'} strokeWidth={2.25} />
+            <span className={`uppercase tracking-[0.16em] font-semibold ${isCompact ? 'text-xs' : 'text-sm'}`}>
               Your Career Signature
             </span>
           </div>

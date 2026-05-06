@@ -284,7 +284,7 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
         <div className={placeholderWrapperClass}>
           <div className="flex items-center gap-2 mb-2 text-atlas-teal">
             <Activity className="w-4 h-4" strokeWidth={2.25} />
-            <span className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+            <span className="text-xs uppercase tracking-[0.16em] font-semibold">
               Personality Radar
             </span>
           </div>
@@ -302,7 +302,7 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2 text-atlas-teal">
             <Activity className="w-4 h-4" strokeWidth={2.25} />
-            <span className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+            <span className="text-xs uppercase tracking-[0.16em] font-semibold">
               Personality Radar
             </span>
           </div>

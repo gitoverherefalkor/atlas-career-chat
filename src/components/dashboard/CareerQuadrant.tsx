@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { Map as MapIcon } from 'lucide-react';
 import {
   ResponsiveContainer,
   ScatterChart,
@@ -151,7 +152,8 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
         <div className={className}>
           <div className={bare ? 'p-5 h-full flex flex-col' : 'rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col'}>
             <div className="flex items-center gap-2 mb-2 text-atlas-teal">
-              <span className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+              <MapIcon className="w-4 h-4" strokeWidth={2.25} />
+              <span className="text-xs uppercase tracking-[0.16em] font-semibold">
                 Career Map
               </span>
             </div>
@@ -173,9 +175,11 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
   // Wrapper varies on `bare`: when set, drop the rounded-border so the
   // chart can sit inside another card without a double frame. Bare mode
   // also drops h-full because the parent has no fixed height — Recharts
-  // would measure 0 and bail. Use min-height instead.
+  // would measure 0 and bail. Use min-height instead. Padding matches
+  // PersonalityRadar (p-5) so the divider line at the bottom of both
+  // chart cards aligns horizontally across the two columns.
   const wrapperBase = bare
-    ? `bg-white min-h-[320px] flex flex-col ${isCompact ? 'p-4' : 'p-4 sm:p-6'}`
+    ? 'bg-white min-h-[320px] flex flex-col p-5'
     : `rounded-2xl border border-atlas-navy/10 bg-white shadow-sm h-full flex flex-col ${isCompact ? 'p-4' : 'p-4 sm:p-6'}`;
 
   return (
@@ -184,7 +188,8 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
         <div className="flex items-baseline justify-between mb-1">
           {isCompact ? (
             <div className="flex items-center gap-2 text-atlas-teal">
-              <span className="text-[10px] uppercase tracking-[0.18em] font-semibold">
+              <MapIcon className="w-4 h-4" strokeWidth={2.25} />
+              <span className="text-xs uppercase tracking-[0.16em] font-semibold">
                 Career Map
               </span>
             </div>
