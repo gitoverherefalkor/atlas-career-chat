@@ -80,18 +80,24 @@ export const ExecSummaryModal: React.FC<ExecSummaryModalProps> = ({
 
       {/* Modal */}
       <div className="relative z-10 w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-8 pb-4 border-b border-gray-100">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Your Executive Summary</h2>
-            <p className="text-sm text-gray-500 mt-1">A snapshot of your career profile and direction.</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors shrink-0 ml-4"
-          >
-            <X className="h-5 w-5 text-gray-600" />
-          </button>
+        {/* Floating close button — same pattern as CareerSignatureModal so
+            modals across the app share the same dismiss affordance. */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white border border-atlas-navy/10 shadow-sm flex items-center justify-center text-atlas-navy/70 hover:bg-gray-50 hover:text-atlas-navy transition-colors"
+        >
+          <X size={16} />
+        </button>
+
+        {/* Light-teal header — matches the WrapUpCard tinted-header pattern
+            so the "intro to a section" feel is consistent across the app. */}
+        <div className="bg-atlas-teal/5 px-8 pt-7 pb-5 border-b border-atlas-teal/15">
+          <h2 className="text-2xl font-bold text-atlas-navy font-heading">Your Executive Summary</h2>
+          <p className="text-sm text-gray-600 mt-1 leading-relaxed">
+            A snapshot of your career profile and direction.
+          </p>
         </div>
 
         {/* Scrollable content */}
