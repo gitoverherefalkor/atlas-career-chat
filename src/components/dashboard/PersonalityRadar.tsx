@@ -110,10 +110,24 @@ function buildRadarData(sections: ReportSection[] | undefined): RadarPoint[] {
 interface PersonalityRadarProps {
   sections: ReportSection[] | undefined;
   className?: string;
+  // 'bare' = strip the outer rounded-border wrapper so the chart can sit
+  // inside another card (e.g. as a ChapterCard customHeader) without a
+  // double border. The inner content (label, chart, legend) stays the
+  // same — only the wrapping <div> changes.
+  bare?: boolean;
 }
 
-export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, className }) => {
+export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, className, bare = false }) => {
   const data = useMemo(() => buildRadarData(sections), [sections]);
+
+  // Tailwind classes for the wrapping element. When `bare`, drop the
+  // border + shadow + radius so the parent card owns the visual frame.
+  const wrapperClass = bare
+    ? 'p-5 h-full flex flex-col'
+    : 'rounded-2xl border border-atlas-navy/10 bg-white p-5 shadow-sm h-full flex flex-col';
+  const placeholderWrapperClass = bare
+    ? 'p-5 h-full flex flex-col'
+    : 'rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col';
 
   if (data.length < 3) {
     // Not enough axes parsed to make the radar meaningful — render a soft
@@ -122,7 +136,7 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
     // state should be brief.
     return (
       <div className={className}>
-        <div className="rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col">
+        <div className={placeholderWrapperClass}>
           <div className="flex items-center gap-2 mb-2 text-atlas-teal">
             <Activity className="w-4 h-4" strokeWidth={2.25} />
             <span className="text-[10px] uppercase tracking-[0.18em] font-semibold">
@@ -139,7 +153,7 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
 
   return (
     <div className={className}>
-      <div className="rounded-2xl border border-atlas-navy/10 bg-white p-5 shadow-sm h-full flex flex-col">
+      <div className={wrapperClass}>
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2 text-atlas-teal">
             <Activity className="w-4 h-4" strokeWidth={2.25} />

@@ -256,35 +256,25 @@ const Dashboard = () => {
         {/* Welcome Section - Only show when report section is not expanded */}
         {!isReportSectionExpanded && (
           <>
-            {/* Welcome Header */}
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            {/* Welcome Header — `text-foreground` resolves to cream
+                (#F5F5F5) in the editorial dark mode so the heading is
+                readable on the teal-navy canvas. */}
+            <h2 className="text-3xl font-bold text-foreground mb-6">
               {isReturningUser() ? 'Welcome back' : 'Welcome'}{profile?.first_name ? `, ${profile.first_name}` : ''}
             </h2>
 
-            {/* Hero row — first thing users see after the welcome heading.
-                Three at-a-glance visuals: Signature, Career Map, Personality
-                Radar. Stacks on small screens, 3-column on lg+. Each block
-                self-renders a placeholder if its data isn't ready yet, so
-                the row stays balanced during fb_feedback processing. */}
-            {latestReport && latestReport.status === 'completed' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-                <CareerSignatureCard
-                  reportId={latestReport.id}
-                  variant="compact"
-                  onClick={() => setShowSignatureModal(true)}
-                />
-                <CareerQuadrant sections={reportSections} variant="compact" />
-                <PersonalityRadar sections={reportSections} />
-              </div>
-            )}
-
-            {/* Dashboard Grid - Report Status & Quick Actions */}
+            {/* Top row — two columns. Left: Career Report card with the
+                Quick Actions list folded inside. Right: full-size Career
+                Signature (the data-card replaces the old Quick Actions
+                slot). Personality Radar / Career Map have moved DOWN
+                onto the chapter columns where they act as section
+                headers. */}
             {latestReport && latestReport.status === 'completed' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {/* Report Status Card */}
+                {/* Career Report + Quick Actions merged */}
                 <Card>
                   <CardContent className="p-6">
-                    <div className="flex items-start space-x-4">
+                    <div className="flex items-start space-x-4 mb-5">
                       <div className="bg-atlas-teal/10 p-3 rounded-full">
                         <FileText className="h-6 w-6 text-atlas-teal" />
                       </div>
@@ -296,52 +286,48 @@ const Dashboard = () => {
                         </p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
 
-                {/* Quick Actions Card */}
-                <Card>
-                  <CardContent className="p-6">
-                    <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
-                    <div className="space-y-3">
-                      {/* Download Summary - Active */}
-                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-400 cursor-not-allowed">
-                        <Download className="h-5 w-5" />
-                        <div>
+                    {/* Quick Actions list — folded into the Career Report
+                        card per the dashboard restructure. Items are still
+                        Coming Soon, just shown more compactly. */}
+                    <div className="border-t border-gray-100 pt-4">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5">
+                        Quick Actions
+                      </h4>
+                      <div className="space-y-1.5">
+                        <button className="w-full flex items-center gap-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
+                          <Download className="h-4 w-4 shrink-0" />
                           <span className="text-sm font-medium">Download Recruiter Summary</span>
-                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
-                        </div>
-                      </button>
-
-                      {/* CV Optimizer - Coming Soon */}
-                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
-                        <Briefcase className="h-5 w-5" />
-                        <div>
+                          <span className="text-xs text-gray-400 ml-auto">Coming soon</span>
+                        </button>
+                        <button className="w-full flex items-center gap-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
+                          <Briefcase className="h-4 w-4 shrink-0" />
                           <span className="text-sm font-medium">CV Optimizer</span>
-                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
-                        </div>
-                      </button>
-
-                      {/* Job Openings - Coming Soon (route still accessible via /jobs for testers) */}
-                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
-                        <Search className="h-5 w-5" />
-                        <div>
+                          <span className="text-xs text-gray-400 ml-auto">Coming soon</span>
+                        </button>
+                        <button className="w-full flex items-center gap-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
+                          <Search className="h-4 w-4 shrink-0" />
                           <span className="text-sm font-medium">Check Job Openings</span>
-                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
-                        </div>
-                      </button>
-
-                      {/* More Assessments - Coming Soon */}
-                      <button className="w-full flex items-center space-x-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
-                        <PlusCircle className="h-5 w-5" />
-                        <div>
+                          <span className="text-xs text-gray-400 ml-auto">Coming soon</span>
+                        </button>
+                        <button className="w-full flex items-center gap-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
+                          <PlusCircle className="h-4 w-4 shrink-0" />
                           <span className="text-sm font-medium">More Assessments</span>
-                          <span className="text-xs text-gray-400 ml-2">Coming soon</span>
-                        </div>
-                      </button>
+                          <span className="text-xs text-gray-400 ml-auto">Coming soon</span>
+                        </button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
+
+                {/* Career Signature — full-size inline. Click still opens
+                    the modal for an even bigger version (handy on large
+                    screens for sharing screenshots). */}
+                <CareerSignatureCard
+                  reportId={latestReport.id}
+                  variant="full"
+                  onClick={() => setShowSignatureModal(true)}
+                />
               </div>
             )}
 
@@ -424,12 +410,26 @@ const Dashboard = () => {
                 The id is the scroll anchor for the ExecSummaryModal's
                 "Explore Your Report" button — landing here drops the user
                 right at the chapter cards instead of leaving them at the
-                top of the dashboard. */}
+                top of the dashboard.
+
+                customChapterHeaders plug the Personality Radar and Career
+                Map directly into each chapter column as the visual header,
+                replacing the old striped/circle banners. `bare` strips the
+                charts' own outer card wrapper so they nest cleanly inside
+                ChapterCard's outer Card. */}
             {latestReport.status === 'completed' && (
               <div id="report-display-anchor">
                 <ReportDisplay
                   userEmail={profile?.email}
                   onSectionExpanded={setIsReportSectionExpanded}
+                  customChapterHeaders={{
+                    'about-you': (
+                      <PersonalityRadar sections={reportSections} bare />
+                    ),
+                    'career-suggestions': (
+                      <CareerQuadrant sections={reportSections} bare />
+                    ),
+                  }}
                 />
               </div>
             )}

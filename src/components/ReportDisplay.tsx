@@ -23,6 +23,11 @@ const isEmptyFeedback = (text: string): boolean => {
 interface ReportDisplayProps {
   userEmail?: string;
   onSectionExpanded?: (expanded: boolean) => void;
+  // Optional per-chapter header overrides keyed by chapter.id ("about-you",
+  // "career-suggestions"). When set, replaces the default decorative image
+  // header — used by the dashboard to plug the dataviz cards (Personality
+  // Radar / Career Map) directly into each chapter column.
+  customChapterHeaders?: Record<string, React.ReactNode>;
 }
 
 // Group sections by their UI section ID
@@ -30,7 +35,7 @@ interface GroupedSections {
   [uiSectionId: string]: ReportSection[];
 }
 
-const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpanded }) => {
+const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpanded, customChapterHeaders }) => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
   const [expandedCareerSection, setExpandedCareerSection] = useState<string | null>(null);
   const { reports } = useReports();
@@ -317,6 +322,7 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
               onCareerExpand={handleCareerExpand}
               onSectionExpand={handleSectionExpand}
               readSections={readSections}
+              customHeader={customChapterHeaders?.[chapter.id]}
             />
           ))}
         </div>

@@ -131,11 +131,15 @@ interface CareerQuadrantProps {
   // 'compact' = sized to fit a hero-row column, smaller chart, condensed
   // legend. 'full' = standalone-section size with the full intro copy.
   variant?: 'full' | 'compact';
+  // 'bare' = strip the outer rounded-border wrapper so the chart can sit
+  // inside another card (e.g. as a ChapterCard customHeader) without a
+  // double border.
+  bare?: boolean;
 }
 
 // Single chart that shows every recommended career on a Match × AI Impact
 // grid. Top Careers render larger; tooltip surfaces full title + rank.
-export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, className, variant = 'full' }) => {
+export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, className, variant = 'full', bare = false }) => {
   const points = useMemo(() => buildPoints(sections), [sections]);
   const isCompact = variant === 'compact';
 
@@ -145,7 +149,7 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
     if (isCompact) {
       return (
         <div className={className}>
-          <div className="rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col">
+          <div className={bare ? 'p-5 h-full flex flex-col' : 'rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col'}>
             <div className="flex items-center gap-2 mb-2 text-atlas-teal">
               <span className="text-[10px] uppercase tracking-[0.18em] font-semibold">
                 Career Map
@@ -166,11 +170,15 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
   const minScore = Math.min(...points.map((p) => p.score));
   const yMin = Math.min(50, Math.floor(minScore / 5) * 5);
 
+  // Wrapper varies on `bare`: when set, drop the rounded-border so the
+  // chart can sit inside another card without a double frame.
+  const wrapperBase = bare
+    ? `bg-white h-full flex flex-col ${isCompact ? 'p-4' : 'p-4 sm:p-6'}`
+    : `rounded-2xl border border-atlas-navy/10 bg-white shadow-sm h-full flex flex-col ${isCompact ? 'p-4' : 'p-4 sm:p-6'}`;
+
   return (
     <div className={className}>
-      <div className={`rounded-2xl border border-atlas-navy/10 bg-white shadow-sm h-full flex flex-col ${
-        isCompact ? 'p-4' : 'p-4 sm:p-6'
-      }`}>
+      <div className={wrapperBase}>
         <div className="flex items-baseline justify-between mb-1">
           {isCompact ? (
             <div className="flex items-center gap-2 text-atlas-teal">

@@ -38,6 +38,12 @@ interface ChapterCardProps {
   onCareerExpand: (careerId: string) => void;
   onSectionExpand: (sectionId: string) => void;
   readSections?: Set<string>;
+  // When provided, replaces the default striped/circle image header.
+  // The dashboard passes the matching dataviz card (Personality Radar
+  // for "About You", Career Map for "Career Suggestions for You") so
+  // each chapter column is led by an at-a-glance visual of its content
+  // instead of decorative chrome.
+  customHeader?: React.ReactNode;
 }
 
 const ChapterCard: React.FC<ChapterCardProps> = ({
@@ -47,30 +53,37 @@ const ChapterCard: React.FC<ChapterCardProps> = ({
   onCareerSectionToggle,
   onCareerExpand,
   onSectionExpand,
-  readSections
+  readSections,
+  customHeader,
 }) => {
   const IconComponent = chapter.icon;
 
   return (
     <Card className="overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-atlas-blue to-atlas-navy text-white p-0">
-        <div className="relative h-48">
-          <img
-            src={chapter.imageUrl}
-            alt={chapter.title}
-            className="w-full h-full object-cover opacity-80"
-          />
-          <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
-            <div className="p-6 text-white">
-              <div className="flex items-center space-x-3">
-                <IconComponent className="h-8 w-8" />
-                <CardTitle className="text-xl">{chapter.title}</CardTitle>
+      {customHeader ? (
+        // Custom header (e.g. Personality Radar / Career Map). Rendered
+        // raw — the caller is responsible for styling.
+        customHeader
+      ) : (
+        <CardHeader className="bg-gradient-to-r from-atlas-blue to-atlas-navy text-white p-0">
+          <div className="relative h-48">
+            <img
+              src={chapter.imageUrl}
+              alt={chapter.title}
+              className="w-full h-full object-cover opacity-80"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-end">
+              <div className="p-6 text-white">
+                <div className="flex items-center space-x-3">
+                  <IconComponent className="h-8 w-8" />
+                  <CardTitle className="text-xl">{chapter.title}</CardTitle>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </CardHeader>
-      
+        </CardHeader>
+      )}
+
       <CardContent className="p-0">
         <div className="space-y-0">
           {chapter.sections.map((section) => (
