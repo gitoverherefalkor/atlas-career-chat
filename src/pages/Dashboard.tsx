@@ -256,10 +256,12 @@ const Dashboard = () => {
         {/* Welcome Section - Only show when report section is not expanded */}
         {!isReportSectionExpanded && (
           <>
-            {/* Welcome Header — `text-foreground` resolves to cream
-                (#F5F5F5) in the editorial dark mode so the heading is
-                readable on the teal-navy canvas. */}
-            <h2 className="text-3xl font-bold text-foreground mb-6">
+            {/* Welcome Header — hardcoded cream because the editorial
+                palette is applied via custom CSS rather than Tailwind's
+                dark-mode class strategy, so `text-foreground` would resolve
+                to the LIGHT-mode dark navy and stay illegible on the
+                teal-navy canvas. */}
+            <h2 className="text-3xl font-bold text-[#F5F5F5] mb-6">
               {isReturningUser() ? 'Welcome back' : 'Welcome'}{profile?.first_name ? `, ${profile.first_name}` : ''}
             </h2>
 
@@ -274,7 +276,7 @@ const Dashboard = () => {
                 {/* Career Report + Quick Actions merged */}
                 <Card>
                   <CardContent className="p-6">
-                    <div className="flex items-start space-x-4 mb-5">
+                    <div className="flex items-start space-x-4 mb-4">
                       <div className="bg-atlas-teal/10 p-3 rounded-full">
                         <FileText className="h-6 w-6 text-atlas-teal" />
                       </div>
@@ -287,10 +289,17 @@ const Dashboard = () => {
                       </div>
                     </div>
 
+                    {/* Provenance line — was floating in dark space between
+                        the top row and the chapter columns where it was
+                        illegible. Lives here now as a subtle subtitle. */}
+                    <p className="text-xs text-gray-500 italic border-t border-gray-100 pt-3 mb-4">
+                      These insights are adjusted based on feedback provided in the chat where relevant.
+                    </p>
+
                     {/* Quick Actions list — folded into the Career Report
                         card per the dashboard restructure. Items are still
                         Coming Soon, just shown more compactly. */}
-                    <div className="border-t border-gray-100 pt-4">
+                    <div>
                       <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5">
                         Quick Actions
                       </h4>
@@ -427,7 +436,11 @@ const Dashboard = () => {
                       <PersonalityRadar sections={reportSections} bare />
                     ),
                     'career-suggestions': (
-                      <CareerQuadrant sections={reportSections} bare />
+                      // variant="compact" gives the small uppercase
+                      // "CAREER MAP" tag instead of the verbose h3
+                      // "Your Career Map" — matches the Personality Radar
+                      // header style on the left column.
+                      <CareerQuadrant sections={reportSections} variant="compact" bare />
                     ),
                   }}
                 />

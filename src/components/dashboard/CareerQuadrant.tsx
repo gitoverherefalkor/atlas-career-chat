@@ -171,9 +171,11 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
   const yMin = Math.min(50, Math.floor(minScore / 5) * 5);
 
   // Wrapper varies on `bare`: when set, drop the rounded-border so the
-  // chart can sit inside another card without a double frame.
+  // chart can sit inside another card without a double frame. Bare mode
+  // also drops h-full because the parent has no fixed height — Recharts
+  // would measure 0 and bail. Use min-height instead.
   const wrapperBase = bare
-    ? `bg-white h-full flex flex-col ${isCompact ? 'p-4' : 'p-4 sm:p-6'}`
+    ? `bg-white min-h-[320px] flex flex-col ${isCompact ? 'p-4' : 'p-4 sm:p-6'}`
     : `rounded-2xl border border-atlas-navy/10 bg-white shadow-sm h-full flex flex-col ${isCompact ? 'p-4' : 'p-4 sm:p-6'}`;
 
   return (
@@ -206,7 +208,9 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
           </p>
         )}
 
-        <div className="w-full flex-1" style={{ height: isCompact ? 240 : 360 }}>
+        {/* Explicit height only — flex-1 fought the inline height when
+            parent didn't constrain, leading to 0-height SVG. */}
+        <div className="w-full" style={{ height: isCompact ? 240 : 360 }}>
           <ResponsiveContainer>
             <ScatterChart margin={{ top: 16, right: 12, bottom: 32, left: 8 }}>
               <CartesianGrid stroke="#E5E7EB" strokeDasharray="2 4" />

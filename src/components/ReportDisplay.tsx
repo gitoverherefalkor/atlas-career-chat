@@ -291,7 +291,11 @@ const ReportDisplay: React.FC<ReportDisplayProps> = ({ userEmail, onSectionExpan
 
   return (
     <div className="space-y-6">
-      <ReportHeader latestReport={latestReport} />
+      {/* ReportHeader was the "These insights are adjusted based on
+          feedback…" subtitle. It lived here in dark space between the
+          dashboard top row and the chapter columns where it was
+          illegible. Moved into the Career Report card on Dashboard.tsx
+          as a small italic line under the report title. */}
 
       {/* Expanded Section View */}
       {expandedSection && (

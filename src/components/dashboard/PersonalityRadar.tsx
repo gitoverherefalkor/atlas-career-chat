@@ -122,11 +122,14 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
 
   // Tailwind classes for the wrapping element. When `bare`, drop the
   // border + shadow + radius so the parent card owns the visual frame.
+  // Bare mode CANNOT use h-full / flex-1 because the parent ChapterCard
+  // has no fixed height — Recharts' ResponsiveContainer would measure 0
+  // and bail. Use an explicit min-height instead.
   const wrapperClass = bare
-    ? 'p-5 h-full flex flex-col'
+    ? 'p-5 min-h-[320px] flex flex-col'
     : 'rounded-2xl border border-atlas-navy/10 bg-white p-5 shadow-sm h-full flex flex-col';
   const placeholderWrapperClass = bare
-    ? 'p-5 h-full flex flex-col'
+    ? 'p-5 min-h-[320px] flex flex-col'
     : 'rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col';
 
   if (data.length < 3) {
@@ -168,7 +171,10 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
         <p className="text-[11px] text-gray-500 mb-3">
           How you operate, plotted across five core dimensions.
         </p>
-        <div className="flex-1 min-h-[240px]">
+        {/* Explicit height so Recharts' ResponsiveContainer has something
+            to measure. flex-1 broke when the parent ChapterCard didn't
+            constrain height — measured 0 and silently rendered nothing. */}
+        <div className="w-full" style={{ height: 260 }}>
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={data} cx="50%" cy="50%" outerRadius="78%">
               {/* Bumped to a darker neutral so the polar grid actually shows
