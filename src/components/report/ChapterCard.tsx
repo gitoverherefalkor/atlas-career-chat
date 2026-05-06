@@ -62,8 +62,12 @@ const ChapterCard: React.FC<ChapterCardProps> = ({
     <Card className="overflow-hidden">
       {customHeader ? (
         // Custom header (e.g. Personality Radar / Career Map). Rendered
-        // raw — the caller is responsible for styling.
-        customHeader
+        // raw — the caller is responsible for styling. Subtle divider
+        // below so the chart and the section list don't bleed into each
+        // other visually.
+        <div className="border-b border-atlas-navy/10">
+          {customHeader}
+        </div>
       ) : (
         <CardHeader className="bg-gradient-to-r from-atlas-blue to-atlas-navy text-white p-0">
           <div className="relative h-48">
