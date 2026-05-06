@@ -29,19 +29,19 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
     return section.questions.filter((q: any) => !shouldSkipQuestion(q));
   }, [shouldSkipQuestion]);
 
-  // Load session on mount - ONLY ONCE
-  // Priority: localStorage (fast, same device) → Supabase answers table (cross-device fallback)
+  // Load session on mount - ONLY ONCE.
+  // Source of truth is the Supabase answers row (because autosave keeps it ahead).
+  // localStorage is only used when DB has fewer responses (or DB is unreachable).
   useEffect(() => {
     if (!survey || isSessionLoaded) return;
 
     const storedSession = getStoredSession();
-    const hasLocalProgress =
-      storedSession &&
-      storedSession.responses &&
-      Object.keys(storedSession.responses).length > 0;
+    const localResponses: Record<string, any> = storedSession?.responses || {};
+    const localKeyCount = Object.keys(localResponses).length;
 
-    if (hasLocalProgress) {
-      setResponses(storedSession.responses);
+    const applyFromLocal = () => {
+      if (!storedSession) return;
+      setResponses(localResponses);
       setCurrentSectionIndex(storedSession.currentSectionIndex || 0);
       setCurrentQuestionIndex(storedSession.currentQuestionIndex || 0);
       setShowSectionIntro(storedSession.showSectionIntro ?? true);
@@ -50,12 +50,57 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
       if (submissionData.submissionStatus) {
         setSubmissionStatus(submissionData.submissionStatus);
       }
-      setIsSessionLoaded(true);
-      return;
-    }
+    };
 
-    // localStorage is empty or has no actual responses — try Supabase answers table
+    const applyFromDb = (savedResponses: Record<string, any>, status?: string) => {
+      setResponses(savedResponses);
+      if (status === 'submitted') {
+        setSubmissionStatus('submitted');
+      }
+
+      let resumeSectionIdx = 0;
+      let resumeQIdx = 0;
+      let found = false;
+      const completed: number[] = [];
+
+      for (let sIdx = 0; sIdx < survey.sections.length; sIdx++) {
+        const section = survey.sections[sIdx];
+        const questions = getFilteredQuestions(section);
+        const allAnswered = questions.every(
+          (q: any) => savedResponses[q.id] !== undefined && savedResponses[q.id] !== null && savedResponses[q.id] !== ''
+        );
+        if (allAnswered) completed.push(sIdx);
+
+        if (!found) {
+          for (let qIdx = 0; qIdx < questions.length; qIdx++) {
+            const q = questions[qIdx];
+            const ans = savedResponses[q.id];
+            if (ans === undefined || ans === null || ans === '') {
+              resumeSectionIdx = sIdx;
+              resumeQIdx = qIdx;
+              found = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!found && survey.sections.length > 0) {
+        resumeSectionIdx = survey.sections.length - 1;
+        const lastSection = survey.sections[resumeSectionIdx];
+        const lastQuestions = getFilteredQuestions(lastSection);
+        resumeQIdx = Math.max(0, lastQuestions.length - 1);
+      }
+
+      setCurrentSectionIndex(resumeSectionIdx);
+      setCurrentQuestionIndex(resumeQIdx);
+      setShowSectionIntro(resumeQIdx === 0);
+      setCompletedSections(completed);
+    };
+
+    // No access code → can only use localStorage
     if (!accessCodeId) {
+      if (localKeyCount > 0) applyFromLocal();
       setIsSessionLoaded(true);
       return;
     }
@@ -68,59 +113,20 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
           .eq('access_code_id', accessCodeId)
           .maybeSingle();
 
-        if (data?.payload && typeof data.payload === 'object') {
-          const savedResponses = data.payload as Record<string, any>;
-          setResponses(savedResponses);
-          if (data.status === 'submitted') {
-            setSubmissionStatus('submitted');
-          }
+        const dbResponses =
+          data?.payload && typeof data.payload === 'object'
+            ? (data.payload as Record<string, any>)
+            : null;
+        const dbKeyCount = dbResponses ? Object.keys(dbResponses).length : 0;
 
-          // Find the first unanswered question to resume from
-          let resumeSectionIdx = 0;
-          let resumeQIdx = 0;
-          let found = false;
-          const completed: number[] = [];
-
-          for (let sIdx = 0; sIdx < survey.sections.length; sIdx++) {
-            const section = survey.sections[sIdx];
-            const questions = getFilteredQuestions(section);
-            const allAnswered = questions.every(
-              (q: any) => savedResponses[q.id] !== undefined && savedResponses[q.id] !== null && savedResponses[q.id] !== ''
-            );
-
-            if (allAnswered) {
-              completed.push(sIdx);
-            }
-
-            if (!found) {
-              for (let qIdx = 0; qIdx < questions.length; qIdx++) {
-                const q = questions[qIdx];
-                const ans = savedResponses[q.id];
-                if (ans === undefined || ans === null || ans === '') {
-                  resumeSectionIdx = sIdx;
-                  resumeQIdx = qIdx;
-                  found = true;
-                  break;
-                }
-              }
-            }
-          }
-
-          // If all questions answered, land on the last question of the last section
-          if (!found && survey.sections.length > 0) {
-            resumeSectionIdx = survey.sections.length - 1;
-            const lastSection = survey.sections[resumeSectionIdx];
-            const lastQuestions = getFilteredQuestions(lastSection);
-            resumeQIdx = Math.max(0, lastQuestions.length - 1);
-          }
-
-          setCurrentSectionIndex(resumeSectionIdx);
-          setCurrentQuestionIndex(resumeQIdx);
-          setShowSectionIntro(resumeQIdx === 0);
-          setCompletedSections(completed);
+        if (dbResponses && dbKeyCount >= localKeyCount) {
+          applyFromDb(dbResponses, data?.status);
+        } else if (localKeyCount > 0) {
+          applyFromLocal();
         }
       } catch (err) {
         console.error('Failed to restore survey session from database:', err);
+        if (localKeyCount > 0) applyFromLocal();
       } finally {
         setIsSessionLoaded(true);
       }
