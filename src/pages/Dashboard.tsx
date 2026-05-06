@@ -272,7 +272,7 @@ const Dashboard = () => {
                 onto the chapter columns where they act as section
                 headers. */}
             {latestReport && latestReport.status === 'completed' && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 {/* Career Report + Quick Actions merged */}
                 <Card>
                   <CardContent className="p-6">
@@ -329,13 +329,15 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
 
-                {/* Career Signature — full-size inline. Click still opens
-                    the modal for an even bigger version (handy on large
-                    screens for sharing screenshots). */}
+                {/* Career Signature — full-size inline. The click-to-modal
+                    behavior was redundant (modal showed the same card)
+                    and was removed. The footer Share CTA will eventually
+                    open a dedicated share flow (LinkedIn, PNG export);
+                    for now it's wired to the modal as a placeholder. */}
                 <CareerSignatureCard
                   reportId={latestReport.id}
                   variant="full"
-                  onClick={() => setShowSignatureModal(true)}
+                  onShare={() => setShowSignatureModal(true)}
                 />
               </div>
             )}

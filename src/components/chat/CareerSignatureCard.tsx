@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Share2 } from 'lucide-react';
 import { useReportSections, type ReportSection } from '@/hooks/useReportSections';
 import { useProfile } from '@/hooks/useProfile';
 import { extractAIImpact } from './CareerScoreCard';
@@ -91,10 +91,15 @@ interface CareerSignatureCardProps {
   // for inline dashboard use), renders on plain white so it matches the
   // other dashboard cards.
   decorative?: boolean;
-  // Optional click handler — when set, the whole card becomes interactive
-  // (cursor pointer + hover lift). Used by the dashboard to open a modal
-  // with the full-size version.
+  // Optional click handler on the whole card (cursor pointer + hover
+  // lift). Was previously used to open a modal that just re-rendered
+  // this same card, which the dashboard restructure made redundant.
   onClick?: () => void;
+  // Click handler for the Share CTA in the footer. When provided,
+  // replaces the static "atlas-assessments.com" URL with a "Share →"
+  // button. Real share logic (LinkedIn, PNG export, etc.) lives in
+  // a separate feature design.
+  onShare?: () => void;
 }
 
 export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
@@ -103,6 +108,7 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
   variant = 'full',
   decorative = false,
   onClick,
+  onShare,
 }) => {
   const isCompact = variant === 'compact';
   const { sections } = useReportSections(reportId);
@@ -160,8 +166,8 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
         {/* Header */}
         <div className={`flex items-center justify-between ${isCompact ? 'px-4 pt-4 pb-3' : 'px-5 sm:px-7 pt-6 pb-4'}`}>
           <div className="flex items-center gap-2 text-atlas-teal">
-            <Sparkles className={isCompact ? 'w-4 h-4' : 'w-[18px] h-[18px]'} strokeWidth={2.25} />
-            <span className={`uppercase tracking-[0.16em] font-semibold ${isCompact ? 'text-xs' : 'text-sm'}`}>
+            <Sparkles className="w-4 h-4" strokeWidth={2.25} />
+            <span className="uppercase tracking-[0.16em] font-semibold text-xs">
               Your Career Signature
             </span>
           </div>
@@ -247,9 +253,24 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
               ? `${totalScored} roles analyzed`
               : 'From your Atlas Assessment'}
           </span>
-          <span className="text-[10px] uppercase tracking-wider font-semibold text-atlas-teal">
-            {isCompact ? 'View →' : 'atlas-assessments.com'}
-          </span>
+          {onShare ? (
+            <button
+              type="button"
+              onClick={(e) => {
+                // Prevent any parent onClick (card-level handler) from firing.
+                e.stopPropagation();
+                onShare();
+              }}
+              className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-atlas-teal hover:text-atlas-teal/80 transition-colors"
+            >
+              <Share2 className="w-3 h-3" strokeWidth={2.5} />
+              Share
+            </button>
+          ) : (
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-atlas-teal">
+              {isCompact ? 'View →' : 'atlas-assessments.com'}
+            </span>
+          )}
         </div>
       </div>
     </div>

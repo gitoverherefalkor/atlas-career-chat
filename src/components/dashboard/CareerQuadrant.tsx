@@ -150,7 +150,7 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
     if (isCompact) {
       return (
         <div className={className}>
-          <div className={bare ? 'p-5 h-full flex flex-col' : 'rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col'}>
+          <div className={bare ? 'p-5 h-[380px] flex flex-col' : 'rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col'}>
             <div className="flex items-center gap-2 mb-2 text-atlas-teal">
               <MapIcon className="w-4 h-4" strokeWidth={2.25} />
               <span className="text-xs uppercase tracking-[0.16em] font-semibold">
@@ -173,13 +173,14 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
   const yMin = Math.min(50, Math.floor(minScore / 5) * 5);
 
   // Wrapper varies on `bare`: when set, drop the rounded-border so the
-  // chart can sit inside another card without a double frame. Bare mode
-  // also drops h-full because the parent has no fixed height — Recharts
-  // would measure 0 and bail. Use min-height instead. Padding matches
-  // PersonalityRadar (p-5) so the divider line at the bottom of both
-  // chart cards aligns horizontally across the two columns.
+  // chart can sit inside another card without a double frame.
+  // Locked to h-[380px] so this column-header lines up exactly with
+  // PersonalityRadar's bare wrapper across the two columns — that puts
+  // the divider underneath both cards on the same horizontal line.
+  // Avoid h-full because ChapterCard has no fixed height — Recharts
+  // would measure 0 and bail.
   const wrapperBase = bare
-    ? 'bg-white min-h-[320px] flex flex-col p-5'
+    ? 'bg-white h-[380px] flex flex-col p-5'
     : `rounded-2xl border border-atlas-navy/10 bg-white shadow-sm h-full flex flex-col ${isCompact ? 'p-4' : 'p-4 sm:p-6'}`;
 
   return (
