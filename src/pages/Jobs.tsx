@@ -8,7 +8,7 @@ import { useReports } from '@/hooks/useReports';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import { useJobSearch } from '@/hooks/useJobSearch';
 import { useSavedJobs } from '@/hooks/useSavedJobs';
-import CareerSelector from '@/components/jobs/CareerSelector';
+import CareerSelector, { CareerTier } from '@/components/jobs/CareerSelector';
 import LocationInput, { profileCountryToCode } from '@/components/jobs/LocationInput';
 import SearchProgress from '@/components/jobs/SearchProgress';
 import JobResultsList from '@/components/jobs/JobResultsList';
@@ -17,16 +17,17 @@ import SavedJobsList from '@/components/jobs/SavedJobsList';
 // Strip HTML tags (same util as CareerSection)
 const stripHtml = (html: string): string => html.replace(/<[^>]*>/g, '').trim();
 
-// Career section IDs that represent actual career recommendations
+// Career section IDs that represent actual career recommendations.
+// Order is preserved when building the cards so the user sees Top 1→3, then Runner-ups, then Outside-the-box.
 const CAREER_SECTION_IDS = ['first-career', 'second-career', 'third-career', 'runner-up', 'outside-box'];
 
-// Descriptions for career types
-const CAREER_DESCRIPTIONS: Record<string, string> = {
-  'first-career': 'Your top career match',
-  'second-career': 'Strong alternative career',
-  'third-career': 'Another well-suited option',
-  'runner-up': 'Worth considering',
-  'outside-box': 'Creative career path',
+// Map a UI section ID to the tier label/icon used by CareerSelector
+const SECTION_TO_TIER: Record<string, CareerTier> = {
+  'first-career': 'top-1',
+  'second-career': 'top-2',
+  'third-career': 'top-3',
+  'runner-up': 'runner-up',
+  'outside-box': 'outside-box',
 };
 
 type Tab = 'search' | 'saved';
@@ -54,7 +55,7 @@ const Jobs = () => {
 
   // Build career options from report sections
   const careerOptions = useMemo(() => {
-    const options: { sectionType: string; title: string; description: string }[] = [];
+    const options: { sectionType: string; title: string; tier: CareerTier }[] = [];
 
     for (const sectionId of CAREER_SECTION_IDS) {
       const sectionData = sections.filter(s => {
@@ -64,6 +65,8 @@ const Jobs = () => {
 
       if (sectionData.length === 0) continue;
 
+      const tier = SECTION_TO_TIER[sectionId];
+
       if (['runner-up', 'outside-box'].includes(sectionId)) {
         // Multi-career sections: each section becomes a separate option
         sectionData.forEach((s) => {
@@ -72,7 +75,7 @@ const Jobs = () => {
             options.push({
               sectionType: `${sectionId}__${s.id}`,
               title,
-              description: CAREER_DESCRIPTIONS[sectionId] || '',
+              tier,
             });
           }
         });
@@ -83,7 +86,7 @@ const Jobs = () => {
           options.push({
             sectionType: sectionId,
             title,
-            description: CAREER_DESCRIPTIONS[sectionId] || '',
+            tier,
           });
         }
       }
@@ -159,9 +162,9 @@ const Jobs = () => {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="max-w-2xl mx-auto text-center py-16">
-          <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Complete your assessment first</h2>
-          <p className="text-gray-600 mb-6">
+          <Briefcase className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">Complete your assessment first</h2>
+          <p className="text-muted-foreground mb-6">
             You need a completed career report before searching for jobs.
           </p>
           <button
@@ -184,9 +187,9 @@ const Jobs = () => {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
           <button
             onClick={() => navigate('/dashboard')}
-            className="w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+            className="w-9 h-9 rounded-full bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
           >
-            <ArrowLeft className="h-5 w-5 text-gray-600" />
+            <ArrowLeft className="h-5 w-5 text-muted-foreground" />
           </button>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Find Job Openings</h1>
@@ -224,7 +227,7 @@ const Jobs = () => {
             <Heart className="h-4 w-4" />
             Saved Jobs
             {savedJobs.length > 0 && (
-              <span className="bg-gray-100 text-gray-600 text-xs px-1.5 py-0.5 rounded-full">
+              <span className="bg-muted text-muted-foreground text-xs px-1.5 py-0.5 rounded-full">
                 {savedJobs.length}
               </span>
             )}

@@ -30,8 +30,8 @@ const JobResultsList: React.FC<JobResultsListProps> = ({
           {/* Career heading */}
           <div className="flex items-center gap-2 mb-4">
             <Briefcase className="h-5 w-5 text-atlas-teal" />
-            <h3 className="text-lg font-semibold text-gray-900">{result.careerTitle}</h3>
-            <span className="text-sm text-gray-500">
+            <h3 className="text-lg font-semibold text-foreground">{result.careerTitle}</h3>
+            <span className="text-sm text-muted-foreground">
               ({result.totalCount} {result.totalCount === 1 ? 'job' : 'jobs'})
             </span>
           </div>
@@ -50,9 +50,9 @@ const JobResultsList: React.FC<JobResultsListProps> = ({
               ))}
             </div>
           ) : (
-            <div className="text-center py-8 border border-dashed border-gray-200 rounded-xl">
-              <p className="text-gray-500 text-sm">No job openings found for this career in your area.</p>
-              <p className="text-gray-400 text-xs mt-1">Try expanding your search location or check back later.</p>
+            <div className="text-center py-8 border border-dashed border-border rounded-xl">
+              <p className="text-muted-foreground text-sm">No job openings found for this career in your area.</p>
+              <p className="text-muted-foreground/70 text-xs mt-1">Try expanding your search location or check back later.</p>
             </div>
           )}
         </div>
