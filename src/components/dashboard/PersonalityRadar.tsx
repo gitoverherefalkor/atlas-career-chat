@@ -133,14 +133,33 @@ function parseAxis(content: string, axis: AxisV1): number | null {
   return null;
 }
 
-// V2 path: read AI-judged scores from approach.metadata.personality_scores.
+// V2 path: read AI-judged scores from any personality section's
+// metadata.personality_scores. Scoring is holistic so the prompt allows
+// recalibration on feedback to any of the 4 personality sections. The
+// scores end up on whichever row was last edited; we pick the most
+// recent so the latest feedback wins.
 // 1-10 scale — divide by 2 to land on the same 0-5 axis as V1 so the chart
 // rendering doesn't have to branch on data source.
+const PERSONALITY_SECTION_TYPES = new Set([
+  'approach',
+  'strengths',
+  'development',
+  'values',
+]);
+
 function buildRadarDataV2(sections: ReportSection[] | undefined): RadarPoint[] {
   if (!sections) return [];
-  const approach = sections.find((s) => s.section_type === 'approach');
-  const scores = approach?.metadata?.personality_scores;
-  if (!scores || typeof scores !== 'object') return [];
+  const candidates = sections
+    .filter(
+      (s) =>
+        PERSONALITY_SECTION_TYPES.has(s.section_type) &&
+        s.metadata?.personality_scores &&
+        typeof s.metadata.personality_scores === 'object',
+    )
+    .sort((a, b) => (b.updated_at || '').localeCompare(a.updated_at || ''));
+  const winner = candidates[0];
+  const scores = winner?.metadata?.personality_scores;
+  if (!scores) return [];
 
   const out: RadarPoint[] = [];
   for (const axis of V2_AXIS_ORDER) {
