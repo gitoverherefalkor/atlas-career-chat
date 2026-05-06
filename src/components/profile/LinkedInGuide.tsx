@@ -55,7 +55,7 @@ export const LinkedInGuide = () => {
 
             <div className="mt-4 p-3 bg-white rounded border">
               <img 
-                src="/lovable-uploads/ad38b517-4c3f-47bd-b4f4-546e532e34cf.png" 
+                src="/uploads/ad38b517-4c3f-47bd-b4f4-546e532e34cf.png" 
                 alt="LinkedIn profile export options showing Save to PDF button"
                 className="w-full max-w-sm mx-auto rounded shadow-sm"
               />

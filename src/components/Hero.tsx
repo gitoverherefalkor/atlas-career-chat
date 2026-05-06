@@ -39,7 +39,7 @@ const Hero = () => {
           <div className={`flex flex-col transition-all duration-1000 transform ${heroVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`} style={{ transitionDelay: '400ms' }}>
             <div className="relative rounded-lg overflow-hidden group">
               <img 
-                src="/lovable-uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" 
+                src="/uploads/e7ac5431-129d-4524-81ab-eb01d34a3b11.png" 
                 alt="Woman at career crossroads" 
                 className="w-full object-cover rounded-lg shadow-md transition-transform duration-500 group-hover:scale-105" 
               />

@@ -368,7 +368,7 @@ export const PreSurveyUpload: React.FC<PreSurveyUploadProps> = ({ onContinue }) 
                     </div>
                     <div className="mt-3 pt-3 border-t border-gray-200">
                       <img
-                        src="/lovable-uploads/ad38b517-4c3f-47bd-b4f4-546e532e34cf.png"
+                        src="/uploads/ad38b517-4c3f-47bd-b4f4-546e532e34cf.png"
                         alt="LinkedIn Resources menu showing Save to PDF option"
                         className="w-48 mx-auto rounded shadow-sm"
                       />
