@@ -24,6 +24,9 @@ interface SignatureCareer {
   title: string;
   score: number;
   aiImpact: AIImpactLevel | null;
+  // Company size + type, e.g. "Medium (51–200) / Scale-up". Stripped of
+  // the HTML wrapping the n8n prompt outputs around it.
+  context: string | null;
 }
 
 function stripHtml(raw: string): string {
@@ -35,11 +38,13 @@ function getCareer(sections: ReportSection[], type: string, rank: 1 | 2 | 3): Si
   if (!s) return null;
   const score = s.score != null ? Number(s.score) : NaN;
   if (!Number.isFinite(score)) return null;
+  const rawContext = s.company_size_type ? stripHtml(s.company_size_type) : '';
   return {
     rank,
     title: stripHtml(s.title || 'Untitled'),
     score,
     aiImpact: extractAIImpact(s.content || ''),
+    context: rawContext || null,
   };
 }
 
@@ -183,12 +188,17 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
           <h2
             className={`font-heading leading-tight font-bold text-atlas-navy ${
               isCompact
-                ? 'text-[1.15rem] mb-2 line-clamp-2'
-                : 'text-[1.65rem] sm:text-[2rem] mb-3'
+                ? 'text-[1.15rem] mb-1 line-clamp-2'
+                : 'text-[1.65rem] sm:text-[2rem] mb-1'
             }`}
           >
             {hero.title}
           </h2>
+          {hero.context && (
+            <div className={`text-atlas-teal font-semibold ${isCompact ? 'text-[10px] uppercase tracking-wider mb-2' : 'text-sm mb-3'}`}>
+              {hero.context}
+            </div>
+          )}
           <div className="flex flex-wrap items-center gap-2">
             <MatchPill score={hero.score} size={isCompact ? 'sm' : 'lg'} />
             {hero.aiImpact && <ImpactPill level={hero.aiImpact} size={isCompact ? 'sm' : 'lg'} />}
@@ -208,11 +218,16 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
                 </div>
                 <div
                   className={`font-heading leading-snug font-semibold text-atlas-navy line-clamp-2 ${
-                    isCompact ? 'text-[0.9rem] mb-1.5' : 'text-[1.05rem] sm:text-[1.15rem] mb-2.5'
+                    isCompact ? 'text-[0.9rem] mb-0.5' : 'text-[1.05rem] sm:text-[1.15rem] mb-0.5'
                   }`}
                 >
                   {c.title}
                 </div>
+                {c.context && (
+                  <div className={`text-atlas-teal font-medium line-clamp-1 ${isCompact ? 'text-[10px] mb-1.5' : 'text-xs mb-2.5'}`}>
+                    {c.context}
+                  </div>
+                )}
                 <div className="flex flex-wrap items-center gap-1.5">
                   <MatchPill score={c.score} />
                   {c.aiImpact && <ImpactPill level={c.aiImpact} />}

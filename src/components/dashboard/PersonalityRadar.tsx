@@ -15,7 +15,11 @@ import type { ReportSection } from '@/hooks/useReportSections';
 // survey response to a 1-5 numeric value. The chart renders nothing if
 // fewer than 4 axes can be parsed reliably.
 
-type Axis = 'Decisiveness' | 'Social Energy' | 'Autonomy' | 'Risk Tolerance' | 'Structure' | 'Action Bias';
+// Five real axes — each maps to a distinct survey field. We had a sixth
+// "Structure" axis briefly but it was just the inverse of Autonomy, so
+// the chart was mathematically redundant. Adding a sixth real signal
+// requires a new survey field; keeping it at 5 honest axes for now.
+type Axis = 'Decisiveness' | 'Social Energy' | 'Autonomy' | 'Risk Tolerance' | 'Action Bias';
 
 // Phrase → 1-5 mapping. Lower-case + trim during lookup. Phrases here are
 // the verbatim option labels the survey produces, mirrored in the
@@ -49,17 +53,6 @@ const AXIS_VOCAB: Record<Axis, Array<{ match: RegExp; value: number }>> = {
     { match: /cautious/i, value: 2 },
     { match: /very cautious/i, value: 1 },
   ],
-  Structure: [
-    // Inverse of Autonomy — higher = more structure preference. Kept as a
-    // separate axis because users with high autonomy may still want some
-    // structural anchors. Currently derived from the same field with
-    // inverted mapping; will split once intake provides a separate signal.
-    { match: /highly structured/i, value: 5 },
-    { match: /leaning structure/i, value: 4 },
-    { match: /balanced/i, value: 3 },
-    { match: /leaning flexible/i, value: 2 },
-    { match: /highly flexible/i, value: 1 },
-  ],
   'Action Bias': [
     { match: /leaning action/i, value: 4 },
     { match: /\baction\b/i, value: 5 },
@@ -77,7 +70,6 @@ const AXIS_SOURCE: Record<Axis, RegExp> = {
   'Social Energy': /social energy[^:]*:\s*([^[\n]+?)(?:\s*\[|\n|$)/i,
   Autonomy: /environment structure[^:]*:\s*([^[\n]+?)(?:\s*\[|\n|$)/i,
   'Risk Tolerance': /risk tolerance[^:]*:\s*([^[\n]+?)(?:\s*\[|\n|$)/i,
-  Structure: /environment structure[^:]*:\s*([^[\n]+?)(?:\s*\[|\n|$)/i,
   'Action Bias': /stress response[^:]*:\s*([^[\n]+?)(?:\s*\[|\n|$)/i,
 };
 
@@ -101,7 +93,7 @@ function buildRadarData(sections: ReportSection[] | undefined): RadarPoint[] {
   const init = sections.find((s) => s.section_type === 'init_summary');
   if (!init) return [];
   const text = (init.content || '').replace(/<[^>]+>/g, ' ');
-  const axes: Axis[] = ['Decisiveness', 'Social Energy', 'Autonomy', 'Risk Tolerance', 'Structure', 'Action Bias'];
+  const axes: Axis[] = ['Decisiveness', 'Social Energy', 'Autonomy', 'Risk Tolerance', 'Action Bias'];
   const out: RadarPoint[] = [];
   for (const axis of axes) {
     const v = parseAxis(text, axis);
@@ -118,7 +110,7 @@ interface PersonalityRadarProps {
 export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, className }) => {
   const data = useMemo(() => buildRadarData(sections), [sections]);
 
-  if (data.length < 4) {
+  if (data.length < 3) {
     // Not enough axes parsed to make the radar meaningful — render a soft
     // placeholder so the dashboard hero row stays balanced. The init_summary
     // is usually populated within seconds of the report completing, so this
@@ -151,16 +143,19 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
             </span>
           </div>
           <span className="text-[10px] uppercase tracking-wider font-semibold text-atlas-navy/40">
-            6 axes
+            5 axes
           </span>
         </div>
         <p className="text-[11px] text-gray-500 mb-3">
-          How you operate, plotted across six core dimensions.
+          How you operate, plotted across five core dimensions.
         </p>
         <div className="flex-1 min-h-[240px]">
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart data={data} cx="50%" cy="50%" outerRadius="78%">
-              <PolarGrid stroke="#E5E7EB" />
+              {/* Bumped to a darker neutral so the polar grid actually shows
+                  on the warm-paper background. Previously #E5E7EB
+                  disappeared into the card. */}
+              <PolarGrid stroke="#9CA3AF" strokeOpacity={0.45} strokeWidth={1} />
               <PolarAngleAxis
                 dataKey="axis"
                 tick={{ fontSize: 10, fill: '#374151', fontWeight: 600 }}
