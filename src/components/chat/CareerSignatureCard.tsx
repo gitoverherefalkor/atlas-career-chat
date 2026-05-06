@@ -48,56 +48,34 @@ function getCareer(sections: ReportSection[], type: string, rank: 1 | 2 | 3): Si
   };
 }
 
-// Small pill — Match score with teal→emerald fill bar.
-const MatchPill: React.FC<{ score: number; size?: 'sm' | 'lg' }> = ({ score, size = 'sm' }) => {
-  const isLg = size === 'lg';
-  return (
-    <div
-      className={`inline-flex items-center gap-2 rounded-full border border-atlas-teal/30 bg-white shadow-sm ${
-        isLg ? 'px-3.5 py-2' : 'px-2.5 py-1'
-      }`}
-    >
-      <span
-        className={`uppercase tracking-wider font-semibold text-gray-500 ${
-          isLg ? 'text-[10px]' : 'text-[9px]'
-        }`}
-      >
-        Match
-      </span>
-      <span
-        className={`font-bold text-atlas-teal leading-none ${isLg ? 'text-xl' : 'text-sm'}`}
-      >
-        {score}
-      </span>
-      <span className={`text-gray-400 ${isLg ? 'text-[10px]' : 'text-[9px]'}`}>/100</span>
-    </div>
-  );
-};
+// Pills are deliberately uniform: same border, same white bg, same
+// padding, same font sizes. Only the value's color and the trailing
+// indicator change. One visual rhythm across the card instead of two
+// (was lg + sm with different backgrounds + different scales).
+const PILL_BASE =
+  'inline-flex items-center gap-2 rounded-full border border-atlas-navy/15 bg-white px-2.5 py-1';
+const PILL_TAG = 'text-[10px] uppercase tracking-wider font-semibold text-gray-500';
 
-// Small pill — AI Impact tier.
-const ImpactPill: React.FC<{ level: AIImpactLevel; size?: 'sm' | 'lg' }> = ({ level, size = 'sm' }) => {
+const MatchPill: React.FC<{ score: number }> = ({ score }) => (
+  <div className={PILL_BASE}>
+    <span className={PILL_TAG}>Match</span>
+    <span className="text-sm font-bold text-atlas-teal leading-none">{score}</span>
+    <span className="text-[10px] text-gray-400 leading-none">/100</span>
+  </div>
+);
+
+const ImpactPill: React.FC<{ level: AIImpactLevel }> = ({ level }) => {
   const c = IMPACT_COLOR[level];
-  const isLg = size === 'lg';
   return (
-    <div
-      className={`inline-flex items-center gap-2 rounded-full border ${c.bg} shadow-sm ${
-        isLg ? 'px-3.5 py-2' : 'px-2.5 py-1'
-      }`}
-      style={{ borderColor: `${c.hex}55` }}
-    >
-      <span
-        className={`uppercase tracking-wider font-semibold text-gray-500 ${
-          isLg ? 'text-[10px]' : 'text-[9px]'
-        }`}
-      >
-        AI Impact
-      </span>
-      <span
-        className={`font-bold ${c.text} leading-none ${isLg ? 'text-sm' : 'text-xs'}`}
-      >
+    <div className={PILL_BASE}>
+      <span className={PILL_TAG}>AI Impact</span>
+      <span className="text-sm font-semibold leading-none" style={{ color: c.hex }}>
         {level}
       </span>
-      <span className="inline-block rounded-full" style={{ background: c.hex, width: 8, height: 8 }} />
+      <span
+        className="inline-block rounded-full"
+        style={{ background: c.hex, width: 8, height: 8 }}
+      />
     </div>
   );
 };
@@ -192,28 +170,32 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
           </span>
         </div>
 
+        {/* Unified typography helpers — every uppercase tag uses the
+            same class so the card has one tag rhythm, not three. Every
+            size/type subtitle uses the same teal style. */}
+        {/* Tag class: text-[10px] uppercase tracking-wider muted gray
+            Subtitle class: text-xs teal medium */}
+
         {/* Hero — top career #1 */}
         <div className={isCompact ? 'px-4 pb-4' : 'px-5 sm:px-7 pb-6'}>
-          <div className={`uppercase tracking-[0.2em] font-semibold text-gray-500 ${isCompact ? 'text-[9px] mb-1.5' : 'text-[10px] mb-2'}`}>
+          <div className="text-[10px] uppercase tracking-wider font-semibold text-gray-500 mb-2">
             Strongest Match {firstName ? `· ${firstName}` : ''}
           </div>
           <h2
-            className={`font-heading leading-tight font-bold text-atlas-navy ${
-              isCompact
-                ? 'text-[1.15rem] mb-1 line-clamp-2'
-                : 'text-[1.65rem] sm:text-[2rem] mb-1'
+            className={`font-heading leading-tight font-bold text-atlas-navy mb-1 ${
+              isCompact ? 'text-[1.15rem] line-clamp-2' : 'text-2xl'
             }`}
           >
             {hero.title}
           </h2>
           {hero.context && (
-            <div className={`text-atlas-teal font-semibold ${isCompact ? 'text-[10px] uppercase tracking-wider mb-2' : 'text-sm mb-3'}`}>
+            <div className="text-xs text-atlas-teal font-medium mb-3">
               {hero.context}
             </div>
           )}
           <div className="flex flex-wrap items-center gap-2">
-            <MatchPill score={hero.score} size={isCompact ? 'sm' : 'lg'} />
-            {hero.aiImpact && <ImpactPill level={hero.aiImpact} size={isCompact ? 'sm' : 'lg'} />}
+            <MatchPill score={hero.score} />
+            {hero.aiImpact && <ImpactPill level={hero.aiImpact} />}
           </div>
         </div>
 
@@ -221,34 +203,30 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
         <div className="border-t border-atlas-navy/10" />
 
         {/* Top 2 + 3 grid */}
-        <div className={`grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-atlas-navy/10 ${isCompact ? '[&>*]:px-4 [&>*]:py-3' : ''}`}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-atlas-navy/10">
           {[second, third].map((c, i) =>
             c ? (
-              <div key={c.rank} className={isCompact ? '' : 'px-5 sm:px-7 py-5'}>
-                <div className={`uppercase tracking-[0.2em] font-semibold text-gray-500 ${isCompact ? 'text-[9px] mb-1' : 'text-[10px] mb-1.5'}`}>
+              <div key={c.rank} className={isCompact ? 'px-4 py-3' : 'px-5 sm:px-7 py-5'}>
+                <div className="text-[10px] uppercase tracking-wider font-semibold text-gray-500 mb-1.5">
                   {c.rank === 2 ? 'Top Career #2' : 'Top Career #3'}
                 </div>
-                <div
-                  className={`font-heading leading-snug font-semibold text-atlas-navy line-clamp-2 ${
-                    isCompact ? 'text-[0.9rem] mb-0.5' : 'text-[1.05rem] sm:text-[1.15rem] mb-0.5'
-                  }`}
-                >
+                <div className="font-heading leading-snug font-semibold text-atlas-navy line-clamp-2 text-base mb-1">
                   {c.title}
                 </div>
                 {c.context && (
-                  <div className={`text-atlas-teal font-medium line-clamp-1 ${isCompact ? 'text-[10px] mb-1.5' : 'text-xs mb-2.5'}`}>
+                  <div className="text-xs text-atlas-teal font-medium line-clamp-1 mb-2.5">
                     {c.context}
                   </div>
                 )}
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-2">
                   <MatchPill score={c.score} />
                   {c.aiImpact && <ImpactPill level={c.aiImpact} />}
                 </div>
               </div>
             ) : (
               // Empty cell keeps layout balanced if WF4 hasn't filled this rank yet.
-              <div key={`empty-${i}`} className={`opacity-50 ${isCompact ? '' : 'px-5 sm:px-7 py-5'}`}>
-                <div className={`uppercase tracking-[0.2em] font-semibold text-gray-400 ${isCompact ? 'text-[9px] mb-1' : 'text-[10px] mb-1.5'}`}>
+              <div key={`empty-${i}`} className={`opacity-50 ${isCompact ? 'px-4 py-3' : 'px-5 sm:px-7 py-5'}`}>
+                <div className="text-[10px] uppercase tracking-wider font-semibold text-gray-400 mb-1.5">
                   {i === 0 ? 'Top Career #2' : 'Top Career #3'}
                 </div>
                 <div className="text-sm text-gray-400 italic">Pending</div>
@@ -257,18 +235,19 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
           )}
         </div>
 
-        {/* Footer */}
+        {/* Footer — matches the tag rhythm used throughout: text-[10px]
+            with consistent muted/teal pairing. */}
         <div
-          className={`border-t border-atlas-navy/10 flex items-center justify-between bg-white/40 ${
-            isCompact ? 'px-4 py-2.5' : 'px-5 sm:px-7 py-3.5'
+          className={`border-t border-atlas-navy/10 flex items-center justify-between ${
+            isCompact ? 'px-4 py-2.5' : 'px-5 sm:px-7 py-3'
           }`}
         >
-          <span className={`text-atlas-navy/60 ${isCompact ? 'text-[10px]' : 'text-[11px]'}`}>
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">
             {totalScored > 0
-              ? `${totalScored} role${totalScored === 1 ? '' : 's'} analyzed`
+              ? `${totalScored} roles analyzed`
               : 'From your Atlas Assessment'}
           </span>
-          <span className={`font-semibold text-atlas-teal ${isCompact ? 'text-[10px]' : 'text-[11px]'}`}>
+          <span className="text-[10px] uppercase tracking-wider font-semibold text-atlas-teal">
             {isCompact ? 'View →' : 'atlas-assessments.com'}
           </span>
         </div>
