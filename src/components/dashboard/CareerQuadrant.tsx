@@ -200,7 +200,7 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
 
         <div className="w-full flex-1" style={{ height: isCompact ? 240 : 360 }}>
           <ResponsiveContainer>
-            <ScatterChart margin={{ top: 16, right: 24, bottom: 32, left: 8 }}>
+            <ScatterChart margin={{ top: 16, right: 12, bottom: 32, left: 8 }}>
               <CartesianGrid stroke="#E5E7EB" strokeDasharray="2 4" />
               <XAxis
                 type="number"
@@ -240,9 +240,14 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
                 stroke="#27A1A1"
                 strokeOpacity={0.35}
                 strokeDasharray="4 4"
+                // 'insideTopRight' keeps the label inside the plot area so
+                // it can't get clipped by the chart's right margin like
+                // position='right' did. Slight offset so it doesn't sit
+                // directly on the line.
                 label={{
                   value: 'Outstanding',
-                  position: 'right',
+                  position: 'insideTopRight',
+                  offset: 4,
                   style: { fontSize: 10, fill: '#27A1A1', fontWeight: 600 },
                 }}
               />

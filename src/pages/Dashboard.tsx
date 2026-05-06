@@ -261,6 +261,23 @@ const Dashboard = () => {
               {isReturningUser() ? 'Welcome back' : 'Welcome'}{profile?.first_name ? `, ${profile.first_name}` : ''}
             </h2>
 
+            {/* Hero row — first thing users see after the welcome heading.
+                Three at-a-glance visuals: Signature, Career Map, Personality
+                Radar. Stacks on small screens, 3-column on lg+. Each block
+                self-renders a placeholder if its data isn't ready yet, so
+                the row stays balanced during fb_feedback processing. */}
+            {latestReport && latestReport.status === 'completed' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+                <CareerSignatureCard
+                  reportId={latestReport.id}
+                  variant="compact"
+                  onClick={() => setShowSignatureModal(true)}
+                />
+                <CareerQuadrant sections={reportSections} variant="compact" />
+                <PersonalityRadar sections={reportSections} />
+              </div>
+            )}
+
             {/* Dashboard Grid - Report Status & Quick Actions */}
             {latestReport && latestReport.status === 'completed' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -375,21 +392,6 @@ const Dashboard = () => {
               </Card>
             )}
 
-            {/* Hero row — three at-a-glance visuals: Signature, Career Map,
-                Personality Radar. Stacks on small screens, 3-column on lg+.
-                Each block self-renders a placeholder if its data isn't ready
-                yet, so the row stays balanced during fb_feedback processing. */}
-            {latestReport && latestReport.status === 'completed' && (
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-                <CareerSignatureCard
-                  reportId={latestReport.id}
-                  variant="compact"
-                  onClick={() => setShowSignatureModal(true)}
-                />
-                <CareerQuadrant sections={reportSections} variant="compact" />
-                <PersonalityRadar sections={reportSections} />
-              </div>
-            )}
 
             {/* Show assessment start card if user hasn't verified access yet */}
             {!hasVerifiedAccess() && (

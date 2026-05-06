@@ -24,19 +24,24 @@ type Axis = 'Decisiveness' | 'Social Energy' | 'Autonomy' | 'Risk Tolerance' | '
 // Phrase → 1-5 mapping. Lower-case + trim during lookup. Phrases here are
 // the verbatim option labels the survey produces, mirrored in the
 // init_summary section content.
+//
+// IMPORTANT: order specific BEFORE broad. The first matching pattern
+// wins, so "Leaning Decisive" must be checked before "Decisive" (which
+// would otherwise match "Leaning Decisive" via the \bdecisive\b regex).
 const AXIS_VOCAB: Record<Axis, Array<{ match: RegExp; value: number }>> = {
   Decisiveness: [
-    { match: /\bdecisive\b/i, value: 5 },
     { match: /leaning decisive/i, value: 4 },
+    { match: /\bdecisive\b/i, value: 5 },
     { match: /balanced/i, value: 3 },
+    { match: /very cautious/i, value: 1 },
     { match: /cautious/i, value: 2 },
     { match: /hesitant/i, value: 1 },
   ],
   'Social Energy': [
-    { match: /\benergized\b(?!\s*\(somewhat)/i, value: 5 },
     { match: /somewhat energized/i, value: 4 },
+    { match: /\benergized\b/i, value: 5 },
     { match: /neutral/i, value: 3 },
-    { match: /limited energy|drained \(some/i, value: 2 },
+    { match: /somewhat drained|limited energy/i, value: 2 },
     { match: /\bdrained\b/i, value: 1 },
   ],
   Autonomy: [
@@ -48,10 +53,10 @@ const AXIS_VOCAB: Record<Axis, Array<{ match: RegExp; value: number }>> = {
   ],
   'Risk Tolerance': [
     { match: /very comfortable/i, value: 5 },
-    { match: /comfortable/i, value: 4 },
+    { match: /\bcomfortable\b/i, value: 4 },
     { match: /neutral/i, value: 3 },
-    { match: /cautious/i, value: 2 },
     { match: /very cautious/i, value: 1 },
+    { match: /\bcautious\b/i, value: 2 },
   ],
   'Action Bias': [
     { match: /leaning action/i, value: 4 },
