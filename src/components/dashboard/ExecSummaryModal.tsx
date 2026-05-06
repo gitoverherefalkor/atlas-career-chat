@@ -70,6 +70,17 @@ export const ExecSummaryModal: React.FC<ExecSummaryModalProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  // Lock body scroll while the modal is open so the dashboard underneath
+  // can't drift when the user scrolls inside the modal. Same pattern as
+  // CareerSignatureModal.
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop — click to dismiss */}

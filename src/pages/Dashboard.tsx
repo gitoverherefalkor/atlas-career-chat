@@ -86,6 +86,18 @@ const Dashboard = () => {
     }
   };
 
+  // Same dismiss + flag set, but also scroll the user to the report
+  // chapter cards. Wrapped in setTimeout so the modal's exit unmounts
+  // before we scroll — otherwise the body-scroll-lock useEffect cleanup
+  // races the scroll and lands you back at the top.
+  const handleExploreReport = () => {
+    handleDismissExecSummary();
+    setTimeout(() => {
+      const target = document.getElementById('report-display-anchor');
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+  };
+
   // Check if user has an access code in metadata or localStorage (social signup fallback)
   useEffect(() => {
     if (user && !authLoading && !profileLoading && !reportsLoading) {
@@ -406,12 +418,18 @@ const Dashboard = () => {
           <>
             {/* Note: 'processing' redirects to /report-processing, 'pending_review' redirects to /chat */}
 
-            {/* Only show full report if status is completed */}
+            {/* Only show full report if status is completed.
+                The id is the scroll anchor for the ExecSummaryModal's
+                "Explore Your Report" button — landing here drops the user
+                right at the chapter cards instead of leaving them at the
+                top of the dashboard. */}
             {latestReport.status === 'completed' && (
-              <ReportDisplay
-                userEmail={profile?.email}
-                onSectionExpanded={setIsReportSectionExpanded}
-              />
+              <div id="report-display-anchor">
+                <ReportDisplay
+                  userEmail={profile?.email}
+                  onSectionExpanded={setIsReportSectionExpanded}
+                />
+              </div>
             )}
           </>
         ) : (
@@ -444,7 +462,7 @@ const Dashboard = () => {
         <ExecSummaryModal
           content={execSummarySection.content}
           onClose={handleDismissExecSummary}
-          onViewReport={handleDismissExecSummary}
+          onViewReport={handleExploreReport}
         />
       )}
     </div>
