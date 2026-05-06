@@ -19,6 +19,11 @@ export interface ReportSection {
   fb_status: boolean | null;
   // Compatibility score 0-100, stored as text in DB. Present on top_career_1/2/3 and runner_ups.
   score: string | null;
+  // Structured data attached to a section. Currently used for the
+  // approach section's personality_scores (5-dim AI-judged 1-10 ratings
+  // that drive the Personality Radar). May be extended with other
+  // structured fields per section_type in the future.
+  metadata: { personality_scores?: Record<string, number> } | null;
   created_at: string;
   updated_at: string;
 }

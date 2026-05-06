@@ -19,7 +19,45 @@ import type { ReportSection } from '@/hooks/useReportSections';
 // "Structure" axis briefly but it was just the inverse of Autonomy, so
 // the chart was mathematically redundant. Adding a sixth real signal
 // requires a new survey field; keeping it at 5 honest axes for now.
-type Axis = 'Decisiveness' | 'Social Energy' | 'Autonomy' | 'Risk Tolerance' | 'Action Bias';
+// Two flavors of axis depending on data source:
+//   - V2 (preferred): 5 AI-judged dimensions stored in
+//     report_sections.metadata.personality_scores on the approach row.
+//     Each is 1-10 and represents an interpretive judgment over the full
+//     personality picture, not a regurgitation of survey answers.
+//   - V1 (fallback): 5 categorical survey answers parsed from
+//     init_summary content via regex. Used when V2 metadata isn't
+//     present (older reports generated before WF1 emitted scores).
+type AxisV2 =
+  | 'Strategic Depth'
+  | 'Execution'
+  | 'People Intuition'
+  | 'Ambiguity Tolerance'
+  | 'Recognition Pull';
+
+type AxisV1 = 'Decisiveness' | 'Social Energy' | 'Autonomy' | 'Risk Tolerance' | 'Action Bias';
+
+type Axis = AxisV1 | AxisV2;
+
+// Map the snake_case keys the AI emits to the human-readable axis labels
+// shown on the radar.
+const V2_KEY_TO_LABEL: Record<string, AxisV2> = {
+  strategic_depth: 'Strategic Depth',
+  execution_bias: 'Execution',
+  people_intuition: 'People Intuition',
+  ambiguity_tolerance: 'Ambiguity Tolerance',
+  recognition_pull: 'Recognition Pull',
+};
+
+// Order of V2 axes around the radar. Chosen so opposing dimensions sit
+// across from each other when possible (recognition vs depth, action vs
+// reflection-adjacent).
+const V2_AXIS_ORDER: AxisV2[] = [
+  'Strategic Depth',
+  'Execution',
+  'People Intuition',
+  'Ambiguity Tolerance',
+  'Recognition Pull',
+];
 
 // Phrase → 1-5 mapping. Lower-case + trim during lookup. Phrases here are
 // the verbatim option labels the survey produces, mirrored in the
@@ -28,7 +66,7 @@ type Axis = 'Decisiveness' | 'Social Energy' | 'Autonomy' | 'Risk Tolerance' | '
 // IMPORTANT: order specific BEFORE broad. The first matching pattern
 // wins, so "Leaning Decisive" must be checked before "Decisive" (which
 // would otherwise match "Leaning Decisive" via the \bdecisive\b regex).
-const AXIS_VOCAB: Record<Axis, Array<{ match: RegExp; value: number }>> = {
+const AXIS_VOCAB: Record<AxisV1, Array<{ match: RegExp; value: number }>> = {
   Decisiveness: [
     { match: /leaning decisive/i, value: 4 },
     { match: /\bdecisive\b/i, value: 5 },
@@ -70,7 +108,7 @@ const AXIS_VOCAB: Record<Axis, Array<{ match: RegExp; value: number }>> = {
 // Source-line patterns inside init_summary. Each axis is keyed off a
 // distinct prefix the agent uses verbatim ("Decision speed:", "Social
 // energy:" etc.).
-const AXIS_SOURCE: Record<Axis, RegExp> = {
+const AXIS_SOURCE: Record<AxisV1, RegExp> = {
   Decisiveness: /decision speed[^:]*:\s*([^[\n]+?)(?:\s*\[|\n|$)/i,
   'Social Energy': /social energy[^:]*:\s*([^[\n]+?)(?:\s*\[|\n|$)/i,
   Autonomy: /environment structure[^:]*:\s*([^[\n]+?)(?:\s*\[|\n|$)/i,
@@ -80,10 +118,12 @@ const AXIS_SOURCE: Record<Axis, RegExp> = {
 
 interface RadarPoint {
   axis: Axis;
+  // V2 scores are 1-10; V1 are 1-5. We normalize both to a 0-5 scale
+  // for the chart so the polar grid + filled polygon look consistent.
   value: number;
 }
 
-function parseAxis(content: string, axis: Axis): number | null {
+function parseAxis(content: string, axis: AxisV1): number | null {
   const sourceMatch = content.match(AXIS_SOURCE[axis]);
   if (!sourceMatch) return null;
   const phrase = sourceMatch[1];
@@ -93,18 +133,49 @@ function parseAxis(content: string, axis: Axis): number | null {
   return null;
 }
 
-function buildRadarData(sections: ReportSection[] | undefined): RadarPoint[] {
+// V2 path: read AI-judged scores from approach.metadata.personality_scores.
+// 1-10 scale — divide by 2 to land on the same 0-5 axis as V1 so the chart
+// rendering doesn't have to branch on data source.
+function buildRadarDataV2(sections: ReportSection[] | undefined): RadarPoint[] {
+  if (!sections) return [];
+  const approach = sections.find((s) => s.section_type === 'approach');
+  const scores = approach?.metadata?.personality_scores;
+  if (!scores || typeof scores !== 'object') return [];
+
+  const out: RadarPoint[] = [];
+  for (const axis of V2_AXIS_ORDER) {
+    const key = Object.keys(V2_KEY_TO_LABEL).find((k) => V2_KEY_TO_LABEL[k] === axis);
+    if (!key) continue;
+    const raw = scores[key];
+    if (typeof raw !== 'number' || !Number.isFinite(raw)) continue;
+    out.push({ axis, value: Math.max(0, Math.min(5, raw / 2)) });
+  }
+  return out;
+}
+
+// V1 path: regex-parse init_summary for the canonical survey-answer phrases.
+// Used as a fallback when V2 metadata isn't present (older reports
+// generated before WF1 emitted scores).
+function buildRadarDataV1(sections: ReportSection[] | undefined): RadarPoint[] {
   if (!sections) return [];
   const init = sections.find((s) => s.section_type === 'init_summary');
   if (!init) return [];
   const text = (init.content || '').replace(/<[^>]+>/g, ' ');
-  const axes: Axis[] = ['Decisiveness', 'Social Energy', 'Autonomy', 'Risk Tolerance', 'Action Bias'];
+  const axes: AxisV1[] = ['Decisiveness', 'Social Energy', 'Autonomy', 'Risk Tolerance', 'Action Bias'];
   const out: RadarPoint[] = [];
   for (const axis of axes) {
     const v = parseAxis(text, axis);
     if (v != null) out.push({ axis, value: v });
   }
   return out;
+}
+
+function buildRadarData(sections: ReportSection[] | undefined): RadarPoint[] {
+  // V2 wins when present — interpretive AI scoring is more meaningful
+  // than survey-direct categorical answers.
+  const v2 = buildRadarDataV2(sections);
+  if (v2.length >= 3) return v2;
+  return buildRadarDataV1(sections);
 }
 
 interface PersonalityRadarProps {
