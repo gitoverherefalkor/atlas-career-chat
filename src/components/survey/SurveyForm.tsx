@@ -73,7 +73,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL LOGIC
   // Custom hooks for state management
-  const surveyState = useSurveyState(surveyId);
+  const surveyState = useSurveyState(surveyId, accessCodeData?.id);
   const {
     survey,
     isLoading,
