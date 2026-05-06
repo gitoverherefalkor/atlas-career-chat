@@ -159,8 +159,8 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
         // Warm-paper card that pops on the dark teal-navy chat background.
         // The radial highlight on top creates a soft "spotlight" feel without
         // overwhelming the editorial palette.
-        className={`relative overflow-hidden rounded-3xl border border-atlas-navy/10 shadow-xl ${
-          onClick ? 'cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-2xl' : ''
+        className={`relative overflow-hidden rounded-lg border border-atlas-navy/10 shadow-sm ${
+          onClick ? 'cursor-pointer transition-transform hover:-translate-y-0.5 hover:shadow-md' : ''
         }`}
         style={{
           background:

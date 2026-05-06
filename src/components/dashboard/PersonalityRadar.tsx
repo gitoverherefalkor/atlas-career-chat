@@ -7,8 +7,31 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
+  Tooltip,
 } from 'recharts';
 import type { ReportSection } from '@/hooks/useReportSections';
+
+// Plain-English descriptions for each radar axis. Shown in the hover
+// tooltip so users don't have to guess what "Recognition Pull" means.
+const AXIS_HELP: Record<string, string> = {
+  // V2 (AI-judged)
+  'Strategic Depth':
+    'How much you naturally think in long arcs and systems vs in the moment.',
+  Execution:
+    'How fast you ship vs how much you deliberate before committing.',
+  'People Intuition':
+    'How well you read social dynamics, politics, and interpersonal subtext.',
+  'Ambiguity Tolerance':
+    'How comfortably you operate when the path is unclear or undefined.',
+  'Recognition Pull':
+    'How much you draw motivation from external visibility vs internal craft.',
+  // V1 (survey-direct fallback)
+  Decisiveness: 'How quickly you commit to decisions when the call needs to be made.',
+  'Social Energy': 'Whether time with people charges or drains you.',
+  Autonomy: 'How much independence you need to perform at your best.',
+  'Risk Tolerance': 'How comfortable you are taking calculated risks.',
+  'Action Bias': 'Whether your default under pressure is to act or to reflect.',
+};
 
 // Personality Radar — 6-axis snapshot built from the canonical labels the
 // agent surfaces in the init_summary section. Each axis maps a categorical
@@ -197,6 +220,35 @@ function buildRadarData(sections: ReportSection[] | undefined): RadarPoint[] {
   return buildRadarDataV1(sections);
 }
 
+// Hover tooltip for radar points. Shows the axis name, the score in
+// human-readable form (out of 10), and a one-line plain-English
+// description so the labels themselves don't have to carry the load.
+//
+// Note: V1 scores live on a 1-5 scale and V2 on a 1-10 scale, but we
+// normalize both to 0-5 for the chart's polar axis. The tooltip undoes
+// that normalization for V2 so the user sees the raw "/10" rating.
+const RadarTooltip: React.FC<{ active?: boolean; payload?: any[] }> = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  const point = payload[0].payload as RadarPoint;
+  const v2Axes: AxisV2[] = [...V2_AXIS_ORDER];
+  const isV2 = v2Axes.includes(point.axis as AxisV2);
+  const displayScore = isV2 ? Math.round(point.value * 2) : Math.round(point.value);
+  const max = isV2 ? 10 : 5;
+  const help = AXIS_HELP[point.axis as string];
+  return (
+    <div className="rounded-lg border border-atlas-navy/10 bg-white px-3 py-2 shadow-lg max-w-[260px]">
+      <div className="flex items-baseline justify-between gap-3 mb-1">
+        <span className="font-semibold text-atlas-navy text-sm">{point.axis}</span>
+        <span className="text-atlas-teal font-bold text-sm">
+          {displayScore}
+          <span className="text-gray-400 font-normal text-xs">/{max}</span>
+        </span>
+      </div>
+      {help && <p className="text-[11px] text-gray-600 leading-snug">{help}</p>}
+    </div>
+  );
+};
+
 interface PersonalityRadarProps {
   sections: ReportSection[] | undefined;
   className?: string;
@@ -276,6 +328,7 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
                 tick={{ fontSize: 10, fill: '#374151', fontWeight: 600 }}
               />
               <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
+              <Tooltip content={<RadarTooltip />} cursor={false} />
               <Radar
                 dataKey="value"
                 stroke="#27A1A1"
