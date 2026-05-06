@@ -59,7 +59,7 @@ const PILL_TAG = 'text-[10px] uppercase tracking-wider font-semibold text-gray-5
 const MatchPill: React.FC<{ score: number }> = ({ score }) => (
   <div className={PILL_BASE}>
     <span className={PILL_TAG}>Match</span>
-    <span className="text-sm font-bold text-atlas-teal leading-none">{score}</span>
+    <span className="text-[10px] font-bold text-atlas-teal leading-none">{score}</span>
     <span className="text-[10px] text-gray-400 leading-none">/100</span>
   </div>
 );
@@ -69,12 +69,12 @@ const ImpactPill: React.FC<{ level: AIImpactLevel }> = ({ level }) => {
   return (
     <div className={PILL_BASE}>
       <span className={PILL_TAG}>AI Impact</span>
-      <span className="text-sm font-semibold leading-none" style={{ color: c.hex }}>
+      <span className="text-[10px] font-bold leading-none" style={{ color: c.hex }}>
         {level}
       </span>
       <span
         className="inline-block rounded-full"
-        style={{ background: c.hex, width: 8, height: 8 }}
+        style={{ background: c.hex, width: 6, height: 6 }}
       />
     </div>
   );
