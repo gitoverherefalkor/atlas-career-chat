@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { X, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ExecSummaryModalProps {
@@ -80,16 +80,9 @@ export const ExecSummaryModal: React.FC<ExecSummaryModalProps> = ({
 
       {/* Modal */}
       <div className="relative z-10 w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-        {/* Floating close button — same pattern as CareerSignatureModal so
-            modals across the app share the same dismiss affordance. */}
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute top-4 right-4 z-20 w-9 h-9 rounded-full bg-white border border-atlas-navy/10 shadow-sm flex items-center justify-center text-atlas-navy/70 hover:bg-gray-50 hover:text-atlas-navy transition-colors"
-        >
-          <X size={16} />
-        </button>
+        {/* No floating close X — the footer already has a Close link
+            and Esc / backdrop click also dismiss, so an extra X would
+            be redundant. */}
 
         {/* Light-teal header — matches the WrapUpCard tinted-header pattern
             so the "intro to a section" feel is consistent across the app. */}
