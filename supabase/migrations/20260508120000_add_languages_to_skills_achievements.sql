@@ -17,7 +17,7 @@ SET
       'Spanish',
       'French',
       'Arabic',
-      'Bengali'
+      'German'
     ),
     'languages_proficiency_levels', jsonb_build_array(
       jsonb_build_object('value', 'native', 'label', 'Native'),
@@ -26,7 +26,7 @@ SET
       jsonb_build_object('value', 'basic', 'label', 'Basic')
     ),
     'languages_other', jsonb_build_array(
-      'Russian','Portuguese','German','Japanese','Korean','Italian','Turkish',
+      'Russian','Portuguese','Bengali','Japanese','Korean','Italian','Turkish',
       'Dutch','Swedish','Polish','Vietnamese','Indonesian','Thai','Greek',
       'Hebrew','Ukrainian','Persian (Farsi)','Urdu','Punjabi','Tamil','Telugu',
       'Marathi','Gujarati','Malay','Filipino (Tagalog)','Romanian','Czech',

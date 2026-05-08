@@ -1527,7 +1527,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         { value: 'basic', label: 'Basic' },
       ];
       const DEFAULT_LANG_PRESETS = [
-        'English', 'Mandarin Chinese', 'Hindi', 'Spanish', 'French', 'Arabic', 'Bengali',
+        'English', 'Mandarin Chinese', 'Hindi', 'Spanish', 'French', 'Arabic', 'German',
       ];
       const langPresets: string[] = Array.isArray(question.config?.languages_presets)
         ? question.config.languages_presets
