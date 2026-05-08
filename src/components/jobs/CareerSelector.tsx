@@ -65,7 +65,11 @@ const CareerSelector: React.FC<CareerSelectorProps> = ({
               className={`
                 relative text-left p-4 rounded-xl border-2 transition-all
                 ${active
-                  ? 'border-atlas-teal bg-blue-50 shadow-sm'
+                  // bg-teal-50 / dark:bg-teal-100 give a light teal-tinted surface
+                  // in both modes so text-atlas-navy stays readable. We avoid
+                  // bg-blue-50 here because the global CSS remaps it to a 10%
+                  // teal tint on the dark canvas (still dark = unreadable).
+                  ? 'border-atlas-teal bg-teal-50 dark:bg-teal-100 shadow-sm'
                   : cantSelect
                     ? 'border-gray-200 bg-white opacity-50 cursor-not-allowed'
                     : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm'
