@@ -982,7 +982,7 @@ const Index = () => {
               Get Your Cairnly Assessment - €39
             </Button>
           </div>
-          <p className="text-blue-100/30 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Beta access. Full refund if you're not satisfied.</p>
+          <p className="text-blue-100/70 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Beta access. Full refund if you're not satisfied.</p>
         </div>
       </section>
 
@@ -993,7 +993,7 @@ const Index = () => {
             <div className="cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
               <img src={CairnlyWordmark} alt="Cairnly" className="h-28 w-auto" />
             </div>
-            <p className="text-gray-300 font-bold text-[10px] tracking-[0.3em] uppercase">© 2026 CAIRNLY</p>
+            <p className="text-gray-500 font-bold text-[10px] tracking-[0.3em] uppercase">© 2026 CAIRNLY</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">
             <a href="/privacy-policy" className="hover:text-[#27A1A1] transition-colors">Privacy Policy</a>
