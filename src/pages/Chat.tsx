@@ -132,11 +132,18 @@ const Chat = () => {
       });
   }, [reportData]);
 
-  // Auto-restore session when returning with existing (non-stale) session
+  // Auto-restore session when returning with existing (non-stale) session.
+  // Gated on the per-report engagement flag so a stale sessionId from a
+  // drive-by visit doesn't trigger a "Hi, I'm back!" prompt for a user
+  // who hasn't actually started chatting.
   useEffect(() => {
     if (!reportData || profileLoading || !profile) return;
     if (!hasExistingSession || sessionIsStale) return;
     if (!showWelcome) return; // Already past welcome
+    // Real engagement check — only auto-resume if the user has actually
+    // chatted before for this report.
+    const engaged = localStorage.getItem(`chat_engaged_${reportData.id}`) === '1';
+    if (!engaged) return;
 
     // Update session timestamp
     localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
@@ -336,7 +343,11 @@ const Chat = () => {
     localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
 
     // For returning users with a stale session, auto-fire a resume prompt.
-    if (isNewSession && isReturningUser) {
+    // Gated on engagement flag so drive-by visits don't trigger the prompt.
+    const engaged =
+      reportData &&
+      localStorage.getItem(`chat_engaged_${reportData.id}`) === '1';
+    if (isNewSession && isReturningUser && engaged) {
       setAutoResumeMessage("Hi, I'm back! Let's continue where we left off.");
     }
 
