@@ -46,8 +46,8 @@ const CareerSelector: React.FC<CareerSelectorProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Select careers to explore</h3>
-        <span className="text-sm text-gray-500 dark:text-gray-300">{selected.length} / {maxSelections} selected</span>
+        <h3 className="text-lg font-semibold text-foreground">Select careers to explore</h3>
+        <span className="text-sm text-muted-foreground">{selected.length} / {maxSelections} selected</span>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

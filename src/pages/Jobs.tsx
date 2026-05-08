@@ -162,9 +162,9 @@ const Jobs = () => {
     return (
       <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="max-w-2xl mx-auto text-center py-16">
-          <Briefcase className="h-12 w-12 text-gray-300 dark:text-gray-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Complete your assessment first</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">
+          <Briefcase className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-foreground mb-2">Complete your assessment first</h2>
+          <p className="text-muted-foreground mb-6">
             You need a completed career report before searching for jobs.
           </p>
           <button

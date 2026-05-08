@@ -77,7 +77,11 @@
     --secondary-foreground: 180 61% 22%;
 
     --muted: 40 20% 82%;                 /* dusty beige for input bg in cards */
-    --muted-foreground: 199 30% 30%;     /* readable teal on cream */
+    /* --muted-foreground is the GLOBAL fallback for text-muted-foreground.
+       It must be readable on the dark canvas (since bare-canvas usage hits this
+       value). Cream-surface usage gets overridden to a darker teal further down
+       (`.dark .bg-card .text-muted-foreground` etc.) so cards stay tidy. */
+    --muted-foreground: 200 15% 70%;     /* light teal-gray, readable on canvas */
 
     --accent: 180 40% 85%;
     --accent-foreground: 180 61% 22%;
@@ -196,72 +200,72 @@
    We use compound selectors covering all four surface classes so every
    cream region (cards, modals, cookie banner, etc.) behaves consistently. */
 
+/* IMPORTANT: these rules are scoped to ACTUAL cream surfaces (.bg-card,
+   .bg-popover, .bg-white). They were previously also scoped to .bg-gray-50,
+   but in dark mode .bg-gray-50 is remapped to the dark teal-navy CANVAS
+   (line 170 above), not a cream surface. Including it here forced bare-canvas
+   text to dark cream-card colors, producing dark-on-dark across the site. */
+
 /* Base text color on cream */
 .dark .bg-card,
 .dark .bg-popover,
-.dark .bg-white,
-.dark .bg-gray-50 {
+.dark .bg-white {
   color: hsl(var(--card-foreground));
 }
 
 /* gray-900/800 → deepest text */
 .dark .bg-card .text-gray-900, .dark .bg-card .text-gray-800,
 .dark .bg-popover .text-gray-900, .dark .bg-popover .text-gray-800,
-.dark .bg-white .text-gray-900, .dark .bg-white .text-gray-800,
-.dark .bg-gray-50 .text-gray-900, .dark .bg-gray-50 .text-gray-800 {
+.dark .bg-white .text-gray-900, .dark .bg-white .text-gray-800 {
   color: hsl(198 45% 13%) !important;
 }
 /* gray-700 → deep body text */
 .dark .bg-card .text-gray-700,
 .dark .bg-popover .text-gray-700,
-.dark .bg-white .text-gray-700,
-.dark .bg-gray-50 .text-gray-700 {
+.dark .bg-white .text-gray-700 {
   color: hsl(198 40% 22%) !important;
 }
 /* gray-600 → body / description */
 .dark .bg-card .text-gray-600,
 .dark .bg-popover .text-gray-600,
-.dark .bg-white .text-gray-600,
-.dark .bg-gray-50 .text-gray-600 {
+.dark .bg-white .text-gray-600 {
   color: hsl(199 32% 30%) !important;
 }
 /* gray-500 → muted hint */
 .dark .bg-card .text-gray-500,
 .dark .bg-popover .text-gray-500,
-.dark .bg-white .text-gray-500,
-.dark .bg-gray-50 .text-gray-500 {
+.dark .bg-white .text-gray-500 {
   color: hsl(200 22% 40%) !important;
 }
 /* gray-400 → fainter hint */
 .dark .bg-card .text-gray-400,
 .dark .bg-popover .text-gray-400,
-.dark .bg-white .text-gray-400,
-.dark .bg-gray-50 .text-gray-400 {
+.dark .bg-white .text-gray-400 {
   color: hsl(200 18% 50%) !important;
 }
 /* gray-300 / gray-200 → locked/disabled states (survey sidebar) */
 .dark .bg-card .text-gray-300, .dark .bg-popover .text-gray-300,
-.dark .bg-white .text-gray-300, .dark .bg-gray-50 .text-gray-300 {
+.dark .bg-white .text-gray-300 {
   color: hsl(199 25% 48%) !important;
 }
 .dark .bg-card .text-gray-200, .dark .bg-popover .text-gray-200,
-.dark .bg-white .text-gray-200, .dark .bg-gray-50 .text-gray-200 {
+.dark .bg-white .text-gray-200 {
   color: hsl(199 20% 58%) !important;
 }
 
 /* text-atlas-navy on cream → stay dark (the var flips to light in dark mode) */
 .dark .bg-card .text-atlas-navy, .dark .bg-popover .text-atlas-navy,
-.dark .bg-white .text-atlas-navy, .dark .bg-gray-50 .text-atlas-navy {
+.dark .bg-white .text-atlas-navy {
   color: hsl(198 45% 13%) !important;
 }
 
 /* Semantic text tokens on cream flip to card foreground */
 .dark .bg-card .text-foreground, .dark .bg-popover .text-foreground,
-.dark .bg-white .text-foreground, .dark .bg-gray-50 .text-foreground {
+.dark .bg-white .text-foreground {
   color: hsl(var(--card-foreground)) !important;
 }
 .dark .bg-card .text-muted-foreground, .dark .bg-popover .text-muted-foreground,
-.dark .bg-white .text-muted-foreground, .dark .bg-gray-50 .text-muted-foreground {
+.dark .bg-white .text-muted-foreground {
   color: hsl(199 30% 30%) !important;
 }
 
@@ -271,9 +275,7 @@
 .dark .bg-popover input, .dark .bg-popover textarea, .dark .bg-popover select,
 .dark .bg-popover button[role="combobox"], .dark .bg-popover .bg-background,
 .dark .bg-white input, .dark .bg-white textarea, .dark .bg-white select,
-.dark .bg-white button[role="combobox"], .dark .bg-white .bg-background,
-.dark .bg-gray-50 input, .dark .bg-gray-50 textarea, .dark .bg-gray-50 select,
-.dark .bg-gray-50 button[role="combobox"], .dark .bg-gray-50 .bg-background {
+.dark .bg-white button[role="combobox"], .dark .bg-white .bg-background {
   background-color: hsl(42 40% 95%) !important;
   color: hsl(198 45% 13%) !important;
   border-color: hsl(38 25% 72%) !important;

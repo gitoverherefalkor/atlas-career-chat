@@ -11,10 +11,10 @@ interface SavedJobsListProps {
 const SavedJobsList: React.FC<SavedJobsListProps> = ({ savedJobs, onUnsave }) => {
   if (savedJobs.length === 0) {
     return (
-      <div className="text-center py-12 border border-dashed border-gray-300 dark:border-gray-600 rounded-xl">
-        <Heart className="h-8 w-8 text-gray-300 dark:text-gray-500 mx-auto mb-3" />
-        <p className="text-gray-500 dark:text-gray-300 text-sm">No saved jobs yet.</p>
-        <p className="text-gray-400 dark:text-gray-400 text-xs mt-1">Search for jobs and save the ones you like.</p>
+      <div className="text-center py-12 border border-dashed border-border rounded-xl">
+        <Heart className="h-8 w-8 text-muted-foreground/50 mx-auto mb-3" />
+        <p className="text-muted-foreground text-sm">No saved jobs yet.</p>
+        <p className="text-muted-foreground/70 text-xs mt-1">Search for jobs and save the ones you like.</p>
       </div>
     );
   }

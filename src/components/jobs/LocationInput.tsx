@@ -68,8 +68,8 @@ const LocationInput: React.FC<LocationInputProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <MapPin className="h-5 w-5 text-gray-500 dark:text-atlas-teal" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Your location</h3>
+        <MapPin className="h-5 w-5 text-muted-foreground" />
+        <h3 className="text-lg font-semibold text-foreground">Your location</h3>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
