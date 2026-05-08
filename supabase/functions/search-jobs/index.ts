@@ -18,11 +18,26 @@ serve(async (req) => {
   if (rateLimited) return rateLimited;
 
   try {
-    const { career_title, country_code, location, alternate_titles } = await req.json();
+    const body = await req.json();
+    const { career_title, location, alternate_titles, remote_only } = body;
 
-    if (!career_title || !country_code) {
-      return errorResponse('career_title and country_code are required', 400, corsHeaders);
+    // Accept country_codes (array, 1-2 entries) OR country_code (legacy single).
+    // Always normalize to a sorted, deduped array internally.
+    const rawCountries: string[] = Array.isArray(body.country_codes) && body.country_codes.length > 0
+      ? body.country_codes
+      : body.country_code
+        ? [body.country_code]
+        : [];
+
+    if (!career_title || rawCountries.length === 0) {
+      return errorResponse('career_title and country_codes (or country_code) are required', 400, corsHeaders);
     }
+
+    const countries = [...new Set(rawCountries.map((c: string) => String(c).toLowerCase().trim()))]
+      .filter(Boolean)
+      .slice(0, 2)
+      .sort();
+    const remoteOnly = Boolean(remote_only);
 
     // Initialize Supabase client with service role for cache access
     const supabase = createClient(
@@ -30,9 +45,10 @@ serve(async (req) => {
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
 
-    // Normalize search query for cache lookup
+    // Cache key: sorted country list + remote suffix. Same query in NL+DE
+    // hits the same cache regardless of which order the user picked.
     const searchQuery = career_title.toLowerCase().trim();
-    const countryNormalized = country_code.toLowerCase().trim();
+    const countryNormalized = countries.join('+') + (remoteOnly ? ':remote' : '');
 
     // Check cache first
     const { data: cached } = await supabase
@@ -84,7 +100,8 @@ serve(async (req) => {
         body: JSON.stringify({
           career_title,
           alternate_titles: alternate_titles || [],
-          country_code: countryNormalized,
+          country_codes: countries,
+          remote_only: remoteOnly,
           location: location || '',
         }),
         signal: controller.signal,

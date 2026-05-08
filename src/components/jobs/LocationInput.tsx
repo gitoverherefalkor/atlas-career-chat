@@ -1,12 +1,16 @@
 
 import React from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, Globe } from 'lucide-react';
 
 interface LocationInputProps {
-  country: string;
-  onCountryChange: (value: string) => void;
+  primaryCountry: string;
+  onPrimaryCountryChange: (value: string) => void;
+  secondaryCountry: string;        // empty string = none
+  onSecondaryCountryChange: (value: string) => void;
   city: string;
   onCityChange: (value: string) => void;
+  remoteOnly: boolean;
+  onRemoteOnlyChange: (value: boolean) => void;
   disabled?: boolean;
 }
 
@@ -41,28 +45,31 @@ export function profileCountryToCode(profileCountry: string | null): string {
   if (!profileCountry) return 'us';
   const lower = profileCountry.toLowerCase().trim();
 
-  // Try exact match on label
   const exact = COUNTRIES.find(c => c.label.toLowerCase() === lower);
   if (exact) return exact.code;
 
-  // Try code match
   const byCode = COUNTRIES.find(c => c.code === lower);
   if (byCode) return byCode.code;
 
-  // Common partial matches
   if (lower.includes('united states') || lower.includes('usa') || lower.includes('u.s.')) return 'us';
   if (lower.includes('united kingdom') || lower.includes('uk') || lower.includes('britain')) return 'gb';
   if (lower.includes('netherlands') || lower.includes('holland')) return 'nl';
   if (lower.includes('new zealand')) return 'nz';
 
-  return 'us'; // Default fallback
+  return 'us';
 }
 
+const selectClass = "w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-atlas-teal focus:border-transparent disabled:opacity-50";
+
 const LocationInput: React.FC<LocationInputProps> = ({
-  country,
-  onCountryChange,
+  primaryCountry,
+  onPrimaryCountryChange,
+  secondaryCountry,
+  onSecondaryCountryChange,
   city,
   onCityChange,
+  remoteOnly,
+  onRemoteOnlyChange,
   disabled = false,
 }) => {
   return (
@@ -72,27 +79,63 @@ const LocationInput: React.FC<LocationInputProps> = ({
         <h3 className="text-lg font-semibold text-foreground">Your location</h3>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <select
-          value={country}
-          onChange={(e) => onCountryChange(e.target.value)}
-          disabled={disabled}
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-atlas-teal focus:border-transparent disabled:opacity-50"
-        >
-          {COUNTRIES.map(c => (
-            <option key={c.code} value={c.code}>{c.label}</option>
-          ))}
-        </select>
+      {/* Primary + secondary country side-by-side */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5">Country</label>
+          <select
+            value={primaryCountry}
+            onChange={(e) => onPrimaryCountryChange(e.target.value)}
+            disabled={disabled}
+            className={selectClass}
+          >
+            {COUNTRIES.map(c => (
+              <option key={c.code} value={c.code}>{c.label}</option>
+            ))}
+          </select>
+        </div>
 
-        <input
-          type="text"
-          value={city}
-          onChange={(e) => onCityChange(e.target.value)}
-          placeholder="City (optional)"
-          disabled={disabled}
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-atlas-teal focus:border-transparent disabled:opacity-50"
-        />
+        <div>
+          <label className="block text-xs font-medium text-muted-foreground mb-1.5">+ Another country (optional)</label>
+          <select
+            value={secondaryCountry}
+            onChange={(e) => onSecondaryCountryChange(e.target.value)}
+            disabled={disabled}
+            className={selectClass}
+          >
+            <option value="">— None —</option>
+            {COUNTRIES
+              .filter(c => c.code !== primaryCountry)
+              .map(c => (
+                <option key={c.code} value={c.code}>{c.label}</option>
+              ))
+            }
+          </select>
+        </div>
       </div>
+
+      {/* City — full width */}
+      <input
+        type="text"
+        value={city}
+        onChange={(e) => onCityChange(e.target.value)}
+        placeholder="City (optional)"
+        disabled={disabled}
+        className="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-atlas-teal focus:border-transparent disabled:opacity-50"
+      />
+
+      {/* Remote-only toggle */}
+      <label className={`flex items-center gap-2.5 cursor-pointer select-none ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        <input
+          type="checkbox"
+          checked={remoteOnly}
+          onChange={(e) => onRemoteOnlyChange(e.target.checked)}
+          disabled={disabled}
+          className="w-4 h-4 rounded border-gray-300 text-atlas-teal focus:ring-2 focus:ring-atlas-teal cursor-pointer disabled:cursor-not-allowed"
+        />
+        <Globe className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-foreground">Remote-friendly only</span>
+      </label>
     </div>
   );
 };

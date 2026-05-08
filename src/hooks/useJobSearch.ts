@@ -44,10 +44,11 @@ export const useJobSearch = () => {
 
   const searchJobs = async (
     careers: SearchCareer[],
-    countryCode: string,
+    countryCodes: string[],
     location?: string,
+    remoteOnly?: boolean,
   ) => {
-    if (careers.length === 0) return;
+    if (careers.length === 0 || countryCodes.length === 0) return;
 
     setIsSearching(true);
 
@@ -75,7 +76,8 @@ export const useJobSearch = () => {
         const { data, error } = await supabase.functions.invoke('search-jobs', {
           body: {
             career_title: careers[i].careerTitle,
-            country_code: countryCode,
+            country_codes: countryCodes,
+            remote_only: Boolean(remoteOnly),
             location: location || '',
             alternate_titles: careers[i].alternateTitles || [],
           },

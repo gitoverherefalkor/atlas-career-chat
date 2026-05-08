@@ -50,8 +50,10 @@ const Jobs = () => {
   // UI state
   const [activeTab, setActiveTab] = useState<Tab>('search');
   const [selectedCareers, setSelectedCareers] = useState<string[]>([]);
-  const [country, setCountry] = useState('us');
+  const [primaryCountry, setPrimaryCountry] = useState('us');
+  const [secondaryCountry, setSecondaryCountry] = useState('');
   const [city, setCity] = useState('');
+  const [remoteOnly, setRemoteOnly] = useState(false);
 
   // Build career options from report sections
   const careerOptions = useMemo(() => {
@@ -95,12 +97,19 @@ const Jobs = () => {
     return options;
   }, [sections]);
 
-  // Pre-fill country from profile
+  // Pre-fill primary country from profile
   useEffect(() => {
     if (profile?.country) {
-      setCountry(profileCountryToCode(profile.country));
+      setPrimaryCountry(profileCountryToCode(profile.country));
     }
   }, [profile?.country]);
+
+  // Defensive: if user picks the same country in both selects, clear the secondary
+  useEffect(() => {
+    if (secondaryCountry && secondaryCountry === primaryCountry) {
+      setSecondaryCountry('');
+    }
+  }, [primaryCountry, secondaryCountry]);
 
   // Pre-select career from query param
   useEffect(() => {
@@ -143,7 +152,11 @@ const Jobs = () => {
       };
     }).filter(c => c.careerTitle);
 
-    searchJobs(careers, country, city || undefined);
+    const countryCodes = secondaryCountry
+      ? [primaryCountry, secondaryCountry]
+      : [primaryCountry];
+
+    searchJobs(careers, countryCodes, city || undefined, remoteOnly);
   };
 
   // Loading states
@@ -250,10 +263,14 @@ const Jobs = () => {
 
             {/* Location */}
             <LocationInput
-              country={country}
-              onCountryChange={setCountry}
+              primaryCountry={primaryCountry}
+              onPrimaryCountryChange={setPrimaryCountry}
+              secondaryCountry={secondaryCountry}
+              onSecondaryCountryChange={setSecondaryCountry}
               city={city}
               onCityChange={setCity}
+              remoteOnly={remoteOnly}
+              onRemoteOnlyChange={setRemoteOnly}
               disabled={isSearching}
             />
 
