@@ -61,7 +61,7 @@
        reads as near-black in the same color family as the page. */
     --atlas-navy: 18 46 59;             /* #122E3B — deep teal-navy for text on cream */
 
-    --background: 199 35% 20%;          /* #213F4F — teal-navy canvas */
+    --background: 201 41% 22%;          /* #213F4F — teal-navy canvas */
     --foreground: 0 0% 96%;              /* #F5F5F5 — light text on canvas */
 
     --card: 40 28% 92%;                  /* #ECE4D2 — soft warm paper, middle ground between old cream and bright white */
