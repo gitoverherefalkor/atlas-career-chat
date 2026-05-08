@@ -59,7 +59,7 @@ const CookiePolicy = () => {
                       <td className="py-2">Session / 1 year</td>
                     </tr>
                     <tr>
-                      <td className="py-2 pr-4 font-mono text-xs">atlas-cookie-consent</td>
+                      <td className="py-2 pr-4 font-mono text-xs">cairnly-cookie-consent</td>
                       <td className="py-2 pr-4">Remembers your cookie preference</td>
                       <td className="py-2">Persistent</td>
                     </tr>
@@ -113,8 +113,8 @@ const CookiePolicy = () => {
             <h2 className="text-xl font-semibold text-atlas-navy mb-3">Contact</h2>
             <p className="text-gray-600 leading-relaxed">
               If you have questions about our use of cookies, contact us at{' '}
-              <a href="mailto:privacy@atlas-assessments.com" className="text-atlas-blue underline">
-                privacy@atlas-assessments.com
+              <a href="mailto:privacy@cairnly.io" className="text-atlas-blue underline">
+                privacy@cairnly.io
               </a>.
             </p>
           </section>

@@ -70,7 +70,7 @@ const Profile = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `atlas-assessments-data-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `cairnly-data-${new Date().toISOString().split('T')[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -96,7 +96,7 @@ const Profile = () => {
       navigate('/');
     } catch (err: any) {
       console.error('Delete error:', err);
-      toast({ title: 'Deletion failed', description: 'Something went wrong. Please contact support at privacy@atlas-assessments.com', variant: 'destructive' });
+      toast({ title: 'Deletion failed', description: 'Something went wrong. Please contact support at privacy@cairnly.io', variant: 'destructive' });
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -176,7 +176,7 @@ const Profile = () => {
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <p className="text-sm text-blue-800">
-                    <strong>Want to upload a new resume?</strong> You can upload a new resume when starting a new Atlas Assessment for the best pre-filling experience.
+                    <strong>Want to upload a new resume?</strong> You can upload a new resume when starting a new Cairnly Assessment for the best pre-filling experience.
                   </p>
                 </div>
               </div>
@@ -189,7 +189,7 @@ const Profile = () => {
                   <div>
                     <p className="font-medium">No resume uploaded</p>
                     <p className="text-sm text-gray-500">
-                      Upload your resume when starting your next Atlas Assessment for automatic pre-filling
+                      Upload your resume when starting your next Cairnly Assessment for automatic pre-filling
                     </p>
                   </div>
                 </div>

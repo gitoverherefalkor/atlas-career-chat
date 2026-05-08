@@ -36,7 +36,7 @@ const Pricing = () => {
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Invest in Your Future - Beta Access</h2>
           <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto mb-6"></div>
           <p className="text-lg text-gray-700 max-w-3xl mx-auto">
-            Atlas Assessment is currently available as a beta version, giving you early access at an introductory price. Your insights and feedback will help shape the future of personalized career guidance.
+            Cairnly is currently available as a beta version, giving you early access at an introductory price. Your insights and feedback will help shape the future of personalized career guidance.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ const Pricing = () => {
                 <Star className="h-4 w-4" fill="currentColor" />
                 <span className="font-medium">Beta Access</span>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Complete Atlas Assessment</h3>
+              <h3 className="text-2xl font-bold mb-2">Complete Cairnly Assessment</h3>
               <div className="flex items-baseline justify-center">
                 <span className="text-4xl font-bold">€39</span>
                 <span className="text-lg ml-2 opacity-80"><s>€79</s></span>

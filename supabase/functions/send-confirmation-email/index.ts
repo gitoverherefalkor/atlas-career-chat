@@ -53,7 +53,7 @@ serve(async (req) => {
     const emailActionType = emailData?.email_action_type || 'signup';
 
     if (emailData && emailData.token_hash) {
-      const redirectTo = emailData.redirect_to || "https://atlas-assessments.com/dashboard";
+      const redirectTo = emailData.redirect_to || "https://cairnly.io/dashboard";
 
       // Extract the origin from redirect_to to determine the correct base URL
       let baseUrl;
@@ -61,25 +61,25 @@ serve(async (req) => {
         const redirectUrl = new URL(redirectTo);
         baseUrl = redirectUrl.origin;
       } catch {
-        baseUrl = "https://atlas-assessments.com";
+        baseUrl = "https://cairnly.io";
       }
 
       confirmationUrl = `${baseUrl}/auth/confirm?token=${emailData.token_hash}&type=${emailActionType}&redirect_to=${encodeURIComponent(redirectTo)}`;
     } else {
-      confirmationUrl = "https://atlas-assessments.com/auth";
+      confirmationUrl = "https://cairnly.io/auth";
     }
 
     // Check if this is a password reset email
     const isPasswordReset = emailActionType === 'recovery';
 
     const { data, error } = await resend.emails.send({
-      from: "Atlas Assessment <no-reply@atlas-assessments.com>",
+      from: "Cairnly <no-reply@cairnly.io>",
       to: [user.email],
-      subject: isPasswordReset ? "Reset Your Atlas Assessment Password" : "Confirm Your Atlas Assessment Account",
+      subject: isPasswordReset ? "Reset Your Cairnly Password" : "Confirm Your Cairnly Account",
       html: isPasswordReset ? `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
           <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Atlas Assessment</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
             <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
           </div>
 
@@ -91,7 +91,7 @@ serve(async (req) => {
             </p>
 
             <p style="font-size: 16px; line-height: 1.6; margin-bottom: 28px; color: #444;">
-              We received a request to reset your Atlas Assessment password. Click the button below to create a new password:
+              We received a request to reset your Cairnly password. Click the button below to create a new password:
             </p>
 
             <div style="text-align: center; margin: 32px 0;">
@@ -117,19 +117,19 @@ serve(async (req) => {
               If you didn't request a password reset, you can safely ignore this email.
             </p>
             <p style="color: #999; font-size: 12px; margin: 16px 0 0 0;">
-              &copy; 2026 Atlas Assessment. All rights reserved.
+              &copy; 2026 Cairnly. All rights reserved.
             </p>
           </div>
         </div>
       ` : `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
           <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Atlas Assessment</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
             <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
           </div>
 
           <div style="padding: 40px; color: #333333;">
-            <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Welcome to Atlas Assessment, ${firstName}!</h2>
+            <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Welcome to Cairnly, ${firstName}!</h2>
 
             <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
               Thank you for creating your account. You're just one step away from starting your personalized career discovery journey.
@@ -169,10 +169,10 @@ serve(async (req) => {
               This confirmation link will expire in 24 hours for security reasons.
             </p>
             <p style="color: #999; font-size: 12px; margin: 4px 0;">
-              If you didn't create an Atlas Assessment account, you can safely ignore this email.
+              If you didn't create a Cairnly account, you can safely ignore this email.
             </p>
             <p style="color: #999; font-size: 12px; margin: 16px 0 0 0;">
-              &copy; 2026 Atlas Assessment. All rights reserved.
+              &copy; 2026 Cairnly. All rights reserved.
             </p>
           </div>
         </div>

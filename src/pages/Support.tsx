@@ -30,7 +30,7 @@ const Support = () => {
           </p>
 
           <p className="text-gray-600 leading-relaxed">
-            We're here to help you get the most out of your Atlas Assessment experience. Our support resources will cover common questions about the assessment process, account management, report interpretation, and technical issues. If you need immediate assistance, please reach out to our support team.
+            We're here to help you get the most out of your Cairnly experience. Our support resources will cover common questions about the assessment process, account management, report interpretation, and technical issues. If you need immediate assistance, please reach out to our support team.
           </p>
         </div>
       </div>

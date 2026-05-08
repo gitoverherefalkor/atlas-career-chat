@@ -48,7 +48,7 @@ const Footer = () => {
             <h4 className="font-semibold text-white mb-4">{t('footer.contact')}</h4>
             <ul className="space-y-2">
               <li>
-                <a href="mailto:info@atlas-assessments.com" className="hover:text-white transition-colors">info@atlas-assessments.com</a>
+                <a href="mailto:info@cairnly.io" className="hover:text-white transition-colors">info@cairnly.io</a>
               </li>
               <li>
                 <p>{t('footer.currentlyInBeta')}</p>

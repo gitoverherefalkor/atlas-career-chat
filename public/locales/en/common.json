@@ -1,7 +1,7 @@
 {
   "nav": {
     "howItWorks": "How It Works",
-    "whyAtlas": "Why Atlas",
+    "whyAtlas": "Why Cairnly",
     "pricing": "Pricing",
     "aboutUs": "About Us",
     "dashboard": "Dashboard",
@@ -9,9 +9,9 @@
     "getStarted": "Get Started"
   },
   "footer": {
-    "brand": "Atlas Assessment",
+    "brand": "Cairnly",
     "description": "Gain personalized, actionable career clarity through an expert-developed, AI-enhanced assessment delivered via a unique, interactive chat experience. Stop guessing, start directing your career.",
-    "copyright": "© {{year}} Falkor Atlas. All rights reserved.",
+    "copyright": "© {{year}} Cairnly. All rights reserved.",
     "quickLinks": "Quick Links",
     "examples": "Examples",
     "contact": "Contact",

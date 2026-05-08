@@ -64,14 +64,14 @@ serve(async (req) => {
     }
 
     const resend = new Resend(resendApiKey);
-    const chatUrl = `https://atlas-assessments.com/chat`;
+    const chatUrl = `https://cairnly.io/chat`;
 
     const firstName = profile.first_name || 'there';
     const subject = 'Your Atlas career report is ready';
     const html = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
         <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Atlas Assessment</h1>
+          <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
           <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
         </div>
 
@@ -99,14 +99,14 @@ serve(async (req) => {
             If you did not request this, you can ignore this email.
           </p>
           <p style="color: #999; font-size: 12px; margin: 16px 0 0 0;">
-            &copy; 2026 Atlas Assessment. All rights reserved.
+            &copy; 2026 Cairnly. All rights reserved.
           </p>
         </div>
       </div>
     `;
 
     const { error: emailError } = await resend.emails.send({
-      from: 'Atlas Assessment <no-reply@atlas-assessments.com>',
+      from: 'Cairnly <no-reply@cairnly.io>',
       to: [profile.email],
       subject,
       html,

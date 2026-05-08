@@ -9,7 +9,7 @@ const AuthHeader = ({ isLogin }: AuthHeaderProps) => {
   return (
     <div className="text-center mb-8">
       <img
-        src="/atlas-logo.png"
+        src="/cairnly-logo.png"
         alt="Cairnly"
         className="h-12 w-auto mx-auto mb-2"
       />

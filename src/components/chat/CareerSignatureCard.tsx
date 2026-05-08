@@ -172,7 +172,7 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
             </span>
           </div>
           <span className={`uppercase tracking-wider font-semibold text-atlas-navy/50 ${isCompact ? 'text-[10px]' : 'text-[11px]'}`}>
-            ATLAS
+            CAIRNLY
           </span>
         </div>
 
@@ -251,7 +251,7 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
           <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">
             {totalScored > 0
               ? `${totalScored} roles analyzed`
-              : 'From your Atlas Assessment'}
+              : 'From your Cairnly Assessment'}
           </span>
           {onShare ? (
             <button
@@ -268,7 +268,7 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
             </button>
           ) : (
             <span className="text-[10px] uppercase tracking-wider font-semibold text-atlas-teal">
-              {isCompact ? 'View →' : 'atlas-assessments.com'}
+              {isCompact ? 'View →' : 'cairnly.io'}
             </span>
           )}
         </div>

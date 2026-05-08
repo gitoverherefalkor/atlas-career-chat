@@ -36,8 +36,8 @@ import type { SectionType } from './boilerplate.ts';
 // Inlined CORS helper — same logic as supabase/functions/_shared/cors.ts.
 // Inlined so the deploy bundle is self-contained.
 const ALLOWED_ORIGINS = [
-  'https://atlas-assessments.com',
-  'https://www.atlas-assessments.com',
+  'https://cairnly.io',
+  'https://www.cairnly.io',
 ];
 const DEV_ORIGIN_PATTERN = /^http:\/\/localhost(:\d+)?$/;
 

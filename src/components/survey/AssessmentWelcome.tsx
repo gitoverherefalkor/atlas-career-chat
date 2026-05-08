@@ -121,7 +121,7 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
         {/* Welcome Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-atlas-navy mb-4">
-            Welcome to the Atlas Career Assessment
+            Welcome to the Cairnly Career Assessment
           </h1>
           <p className="text-xl text-gray-600 max-w-lg mx-auto">
             Discover your unique career strengths, values, and ideal work environment through our comprehensive professional assessment.

@@ -19,7 +19,7 @@ const PrivacyPolicy = () => {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Introduction</h2>
                 <p className="text-gray-700 mb-4">
-                  Falkor Atlas ("we," "our," or "us") operates the Atlas Assessment platform. This Privacy Policy explains how we collect, use, process, and protect your personal information when you use our career assessment services.
+                  Cairnly ("we," "our," or "us") operates the Cairnly platform. This Privacy Policy explains how we collect, use, process, and protect your personal information when you use our career assessment services.
                 </p>
                 <p className="text-gray-700">
                   By using our services, you agree to the collection and use of information in accordance with this Privacy Policy.
@@ -127,7 +127,7 @@ const PrivacyPolicy = () => {
                   <li><strong>Withdraw Consent:</strong> Withdraw consent at any time (e.g. disable email reminders in your Profile)</li>
                 </ul>
                 <p className="text-gray-700 mt-4">
-                  You can exercise your rights to access, export, and delete directly from your <strong>Profile Settings</strong> page. For other requests, contact us at privacy@atlas-assessments.com.
+                  You can exercise your rights to access, export, and delete directly from your <strong>Profile Settings</strong> page. For other requests, contact us at privacy@cairnly.io.
                 </p>
               </section>
 
@@ -140,7 +140,7 @@ const PrivacyPolicy = () => {
                   <strong>Important:</strong> These AI-generated recommendations are advisory only and do not constitute binding decisions about your career, employment, or any other matter. You are free to follow, modify, or disregard any recommendation.
                 </p>
                 <p className="text-gray-700">
-                  Under GDPR Article 22, you have the right to request human review of any automated assessment. Contact us at privacy@atlas-assessments.com if you wish to exercise this right.
+                  Under GDPR Article 22, you have the right to request human review of any automated assessment. Contact us at privacy@cairnly.io if you wish to exercise this right.
                 </p>
               </section>
 
@@ -187,9 +187,9 @@ const PrivacyPolicy = () => {
                   If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us:
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-gray-700"><strong>Email:</strong> privacy@atlas-assessments.com</p>
-                  <p className="text-gray-700"><strong>Address:</strong> Falkor Atlas, Utrecht, The Netherlands</p>
-                  <p className="text-gray-700"><strong>Data Protection Officer:</strong> dpo@atlas-assessments.com</p>
+                  <p className="text-gray-700"><strong>Email:</strong> privacy@cairnly.io</p>
+                  <p className="text-gray-700"><strong>Address:</strong> Cairnly, Utrecht, The Netherlands</p>
+                  <p className="text-gray-700"><strong>Data Protection Officer:</strong> dpo@cairnly.io</p>
                 </div>
               </section>
             </div>

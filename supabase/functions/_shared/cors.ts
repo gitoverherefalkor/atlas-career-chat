@@ -3,8 +3,8 @@
 // n8n-called functions use verifySharedSecret() instead
 
 const ALLOWED_ORIGINS = [
-  'https://atlas-assessments.com',
-  'https://www.atlas-assessments.com',
+  'https://cairnly.io',
+  'https://www.cairnly.io',
 ];
 
 // Allow localhost with any port in development

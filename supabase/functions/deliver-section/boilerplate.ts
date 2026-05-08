@@ -25,7 +25,7 @@ interface Boilerplate {
 export const BOILERPLATE: Record<SectionType, Boilerplate> = {
   approach: {
     intro:
-      "Hi, I'm Atlas. Let's dive into your personality profile. We'll start with your work approach - how you navigate challenges, lead teams, and engage with others.",
+      "Hi there. Let's dive into your personality profile. We'll start with your work approach - how you navigate challenges, lead teams, and engage with others.",
     outro:
       "**Does this feel like an accurate reflection of your work style?** Let me know if anything stands out or if you'd like to refine any part.",
   },
@@ -87,4 +87,4 @@ export const BOILERPLATE: Record<SectionType, Boilerplate> = {
 // Wrap-up message after the user signals they're done with dream_jobs.
 // Triggered by the "All done, wrap up session" QuickReply.
 export const DREAM_JOBS_WRAP_UP =
-  "That concludes your Atlas Assessment chat session. Behind the scenes, we're now generating your personalized executive summary based on everything we discussed, including your feedback. Your complete report with the executive summary and all career recommendations will be ready shortly in your dashboard.\n\nYou'll receive an email when it's available. You can revisit this report anytime to reflect on these findings or share it with mentors, career advisors, or anyone else who can support your next steps.\n\nYou know where you stand. Now decide where you're going.";
+  "That concludes your Cairnly career chat session. Behind the scenes, we're now generating your personalized executive summary based on everything we discussed, including your feedback. Your complete report with the executive summary and all career recommendations will be ready shortly in your dashboard.\n\nYou'll receive an email when it's available. You can revisit this report anytime to reflect on these findings or share it with mentors, career advisors, or anyone else who can support your next steps.\n\nYou know where you stand. Now decide where you're going.";

@@ -19,7 +19,7 @@ const TermsOfService = () => {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">1. Acceptance of Terms</h2>
                 <p className="text-gray-700 mb-4">
-                  By accessing and using the Atlas Assessment platform operated by Falkor Atlas ("we," "our," or "us"), you accept and agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our services.
+                  By accessing and using the Cairnly platform operated by Cairnly ("we," "our," or "us"), you accept and agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, please do not use our services.
                 </p>
                 <p className="text-gray-700">
                   These Terms apply to all visitors, users, and others who access or use our career assessment services.
@@ -29,7 +29,7 @@ const TermsOfService = () => {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">2. Description of Service</h2>
                 <p className="text-gray-700 mb-4">
-                  Atlas Assessment provides AI-enhanced career assessment services designed to deliver personalized career clarity through interactive chat-based evaluations. Our services include:
+                  Cairnly provides AI-enhanced career assessment services designed to deliver personalized career clarity through interactive chat-based evaluations. Our services include:
                 </p>
                 <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
                   <li>Comprehensive career assessments and personality evaluations</li>
@@ -95,14 +95,14 @@ const TermsOfService = () => {
                   <li>Upload malicious content or attempt to disrupt our services</li>
                   <li>Impersonate others or provide false information</li>
                   <li>Use automated scripts or bots to access our services</li>
-                  <li>Violate the intellectual property rights of Atlas Assessment or third parties</li>
+                  <li>Violate the intellectual property rights of Cairnly or third parties</li>
                 </ul>
               </section>
 
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">6. Intellectual Property Rights</h2>
                 <p className="text-gray-700 mb-4">
-                  The Atlas Assessment platform, including all content, features, functionality, and technology, is owned by Falkor Atlas and is protected by copyright, trademark, and other intellectual property laws.
+                  The Cairnly platform, including all content, features, functionality, and technology, is owned by Cairnly and is protected by copyright, trademark, and other intellectual property laws.
                 </p>
                 <h3 className="text-xl font-medium text-gray-900 mb-3">6.1 Your Content</h3>
                 <p className="text-gray-700 mb-4">
@@ -134,7 +134,7 @@ const TermsOfService = () => {
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">8. Disclaimers and Limitations</h2>
                 <h3 className="text-xl font-medium text-gray-900 mb-3">8.1 Service Disclaimers</h3>
                 <p className="text-gray-700 mb-4">
-                  Atlas Assessment provides career guidance and insights based on assessment responses. Our services are:
+                  Cairnly provides career guidance and insights based on assessment responses. Our services are:
                 </p>
                 <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
                   <li>For informational and guidance purposes only</li>
@@ -156,7 +156,7 @@ const TermsOfService = () => {
 
                 <h3 className="text-xl font-medium text-gray-900 mb-3">8.3 Limitation of Liability</h3>
                 <p className="text-gray-700">
-                  To the maximum extent permitted by law, Falkor Atlas shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities, arising from your use of our services.
+                  To the maximum extent permitted by law, Cairnly shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, or business opportunities, arising from your use of our services.
                 </p>
               </section>
 
@@ -223,7 +223,7 @@ const TermsOfService = () => {
               <section className="mb-8">
                 <h2 className="text-2xl font-semibold text-gray-900 mb-4">14. Entire Agreement</h2>
                 <p className="text-gray-700">
-                  These Terms, together with our Privacy Policy, constitute the entire agreement between you and Falkor Atlas regarding the use of our services and supersede all prior agreements and understandings.
+                  These Terms, together with our Privacy Policy, constitute the entire agreement between you and Cairnly regarding the use of our services and supersede all prior agreements and understandings.
                 </p>
               </section>
 
@@ -233,9 +233,9 @@ const TermsOfService = () => {
                   If you have any questions about these Terms of Service, please contact us:
                 </p>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-gray-700"><strong>Email:</strong> legal@atlas-assessments.com</p>
-                  <p className="text-gray-700"><strong>Support:</strong> info@atlas-assessments.com</p>
-                  <p className="text-gray-700"><strong>Address:</strong> Falkor Atlas, Utrecht, The Netherlands</p>
+                  <p className="text-gray-700"><strong>Email:</strong> legal@cairnly.io</p>
+                  <p className="text-gray-700"><strong>Support:</strong> info@cairnly.io</p>
+                  <p className="text-gray-700"><strong>Address:</strong> Cairnly, Utrecht, The Netherlands</p>
                 </div>
               </section>
             </div>

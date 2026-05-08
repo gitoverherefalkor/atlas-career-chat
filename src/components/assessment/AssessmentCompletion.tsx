@@ -17,7 +17,7 @@ export const AssessmentCompletion: React.FC = () => {
           </div>
           <h1 className="text-2xl font-bold mb-2">Assessment Complete!</h1>
           <p className="text-gray-600 mb-6">
-            Thank you for completing the Atlas Career Assessment. Your personalized report is being generated and you'll receive an email notification when it's ready.
+            Thank you for completing the Cairnly Career Assessment. Your personalized report is being generated and you'll receive an email notification when it's ready.
           </p>
           <div className="space-y-3">
             <Button onClick={() => navigate('/dashboard')} className="w-full">

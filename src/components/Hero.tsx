@@ -58,7 +58,7 @@ const Hero = () => {
                 As life unfolds and your interests, values, and priorities change, it's completely natural to question whether your current direction still fits.
               </p>
               <p className="text-lg text-gray-700 mb-6">
-                Atlas Assessment makes professional career guidance more accessible and affordable, offering personalized insights based on who you are today.
+                Cairnly makes professional career guidance more accessible and affordable, offering personalized insights based on who you are today.
               </p>
             </div>
 
@@ -88,7 +88,7 @@ const Hero = () => {
               <div className="grid grid-cols-4 gap-4">
                 <Button asChild className="btn-primary text-lg flex items-center justify-center gap-2 h-12 col-span-3 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
                   <a href="#pricing" className="py-0">
-                    Get Your Atlas Assessment Now
+                    Get Your Cairnly Assessment Now
                     <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
                   </a>
                 </Button>

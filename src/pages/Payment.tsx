@@ -39,7 +39,7 @@ export default function Payment() {
             A small investment of time and money for real clarity on where your career can go next.
           </p>
         </div>
-        <CheckoutForm assessmentTitle={survey?.title || 'Atlas Career Assessment'} />
+        <CheckoutForm assessmentTitle={survey?.title || 'Cairnly Career Assessment'} />
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 {
   "nav": {
     "howItWorks": "Hoe het werkt",
-    "whyAtlas": "Waarom Atlas",
+    "whyAtlas": "Waarom Cairnly",
     "pricing": "Prijzen",
     "aboutUs": "Over ons",
     "dashboard": "Dashboard",
@@ -9,9 +9,9 @@
     "getStarted": "Aan de slag"
   },
   "footer": {
-    "brand": "Atlas Assessment",
+    "brand": "Cairnly",
     "description": "Krijg gepersonaliseerde, bruikbare carrièreduidelijkheid via een door experts ontwikkelde, AI-versterkte assessment die wordt aangeboden via een unieke, interactieve chatervaring. Stop met gissen, begin met het sturen van je carrière.",
-    "copyright": "© {{year}} Falkor Atlas. Alle rechten voorbehouden.",
+    "copyright": "© {{year}} Cairnly. Alle rechten voorbehouden.",
     "quickLinks": "Snelle links",
     "examples": "Voorbeelden",
     "contact": "Contact",

@@ -190,7 +190,7 @@ const ColorTest = () => {
                 className="px-12 py-6 rounded-full font-bold text-white text-xl uppercase tracking-widest transition-all hover:-translate-y-0.5 active:scale-95"
                 style={{ backgroundColor: p.accent, boxShadow: `0 0 50px ${p.accent}4d` }}
               >
-                Get Your Atlas Assessment - €39
+                Get Your Cairnly Assessment - €39
               </button>
               <p className="text-[10px] font-black uppercase tracking-[0.4em] mt-6" style={{ color: `${p.textMuted}50` }}>
                 Beta access. Full refund if you're not satisfied.

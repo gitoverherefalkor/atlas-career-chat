@@ -3,7 +3,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const BASE_URL = "https://atlas-assessments.com";
+const BASE_URL = "https://cairnly.io";
 
 // All 11 chat sections in order (mirrors ReportSidebar.tsx)
 const ALL_SECTIONS = [
@@ -28,7 +28,7 @@ function wrapEmail(content: string): string {
   return `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
       <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Atlas Assessment</h1>
+        <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
         <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
       </div>
       <div style="padding: 40px; color: #333333;">
@@ -36,13 +36,13 @@ function wrapEmail(content: string): string {
       </div>
       <div style="text-align: center; padding: 24px 40px; border-top: 1px solid #e8e8e8; background-color: #f8f9fa;">
         <p style="color: #999; font-size: 12px; margin: 4px 0;">
-          You're receiving this because you have an Atlas Assessment account.
+          You're receiving this because you have a Cairnly account.
         </p>
         <p style="color: #999; font-size: 12px; margin: 4px 0;">
           To stop these reminders, visit your <a href="${BASE_URL}/profile" style="color: #27A1A1;">Profile Settings</a>.
         </p>
         <p style="color: #999; font-size: 12px; margin: 16px 0 0 0;">
-          &copy; 2026 Atlas Assessment. All rights reserved.
+          &copy; 2026 Cairnly. All rights reserved.
         </p>
       </div>
     </div>
@@ -327,7 +327,7 @@ serve(async (req) => {
 
       try {
         const { data, error } = await resend.emails.send({
-          from: "Atlas Assessment <no-reply@atlas-assessments.com>",
+          from: "Cairnly <no-reply@cairnly.io>",
           to: [user.email],
           subject: emailContent.subject,
           html: emailContent.html,

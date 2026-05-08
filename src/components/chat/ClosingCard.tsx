@@ -35,7 +35,7 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
 
         <CardContent className="space-y-6 text-center">
           <p className="text-lg text-gray-700 leading-relaxed">
-            Thank you for completing your Atlas Career Assessment!
+            Thank you for completing your Cairnly Career Assessment!
           </p>
 
           <p className="text-gray-700 leading-relaxed">
@@ -79,7 +79,7 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
 
           <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg text-left">
             <p className="text-sm text-gray-700 leading-relaxed">
-              <strong>Beta disclaimer:</strong> Atlas Career Path Assessment is in beta. Our recommendations are exploratory guidance, not definitive answers. Use this as a reflection tool alongside your experiences and ongoing career exploration.
+              <strong>Beta disclaimer:</strong> Cairnly Career Path Assessment is in beta. Our recommendations are exploratory guidance, not definitive answers. Use this as a reflection tool alongside your experiences and ongoing career exploration.
             </p>
           </div>
 

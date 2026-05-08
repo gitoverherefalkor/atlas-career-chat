@@ -45,7 +45,7 @@ serve(async (req) => {
     const paymentMethods: string[] = ["card"];
 
     // Get the origin from request headers or use the live domain
-    const origin = req.headers.get("origin") || "https://atlas-assessments.com";
+    const origin = req.headers.get("origin") || "https://cairnly.io";
 
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -55,7 +55,7 @@ serve(async (req) => {
           price_data: {
             currency: "eur",
             product_data: {
-              name: "Atlas Assessment",
+              name: "Cairnly Assessment",
               description: "Complete assessment with personalized career insights",
             },
             unit_amount: 3900, // €39.00 (beta price)

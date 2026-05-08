@@ -51,7 +51,7 @@ const WhyAtlas = () => {
           </h2>
           <div className="w-20 h-1 bg-gradient-to-r from-atlas-blue to-atlas-indigo mx-auto mb-6"></div>
           <p className="text-lg max-w-4xl mx-auto mb-8 text-gray-700">
-            Traditional career assessments often leave you with overwhelming, static reports. Atlas Assessment offers a smarter, more engaging solution that combines AI analysis and expert guidance to uncover your ideal career paths.
+            Traditional career assessments often leave you with overwhelming, static reports. Cairnly offers a smarter, more engaging solution that combines AI analysis and expert guidance to uncover your ideal career paths.
           </p>
         </div>
 

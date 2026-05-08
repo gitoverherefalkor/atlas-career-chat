@@ -895,7 +895,7 @@ const Index = () => {
                 <div className="w-20 h-20 bg-[#1A1A1A] rounded-2xl flex items-center justify-center text-white font-black text-4xl shadow-xl">SG</div>
                 <div>
                   <div className="font-black text-[#1A1A1A] text-2xl tracking-tighter">Sjoerd Geurts</div>
-                  <div className="text-[#27A1A1] uppercase tracking-[0.25em] text-[10px] font-black">Founder, Atlas Assessment</div>
+                  <div className="text-[#27A1A1] uppercase tracking-[0.25em] text-[10px] font-black">Founder, Cairnly</div>
                 </div>
               </div>
               <img src={CairnlySymbol} alt="Cairnly" className="w-28 h-28 md:w-36 md:h-36 object-contain hidden sm:block" />
@@ -905,7 +905,7 @@ const Index = () => {
               <div className={`space-y-6 overflow-hidden transition-all duration-700 ${founderExpanded ? 'max-h-[2000px]' : 'max-h-[140px] relative'}`}>
                 <p>Most of us made career decisions based on what we were "supposed" to do, what subjects we happened to be good at, or what seemed safe at the time. Then life happens - your priorities shift, the market changes, AI starts eating jobs - and suddenly you're questioning everything.</p>
                 <p>Traditional career coaching is expensive and often just as confused about the future as you are. Generic career tests give you personality types and vague suggestions. You need something that actually helps.</p>
-                <p>Atlas combines proven career coaching methodology with AI analysis to give you concrete, honest career recommendations based on who you are right now - not who your parents expected you to become.</p>
+                <p>Cairnly combines proven career coaching methodology with AI analysis to give you concrete, honest career recommendations based on who you are right now - not who your parents expected you to become.</p>
                 <p className="font-black text-[#1A1A1A]">Currently in beta. Your feedback shapes what this becomes.</p>
                 {!founderExpanded && <div className="absolute bottom-0 left-0 w-full h-28 bg-gradient-to-t from-white to-transparent" />}
               </div>
@@ -961,7 +961,7 @@ const Index = () => {
                 The problem starts early - career decisions based on limited information, parental expectations, or what subjects you happened to be good at in school. Now those choices show up as stress, regret, and Sunday night dread.
               </p>
 
-              <Button variant="outline" className="text-sm py-3 px-6" onClick={() => window.open('https://www.atlas-assessments.com/report', '_blank')}>
+              <Button variant="outline" className="text-sm py-3 px-6" onClick={() => window.open('https://www.cairnly.io/report', '_blank')}>
                 Read the Full Research Report <ArrowRight className="w-4 h-4" />
               </Button>
             </div>
@@ -979,7 +979,7 @@ const Index = () => {
           </p>
           <div className="flex justify-center">
             <Button className="text-xl md:text-2xl py-7 px-14 mb-6 uppercase tracking-widest shadow-[0_0_50px_rgba(39,161,161,0.3)]" onClick={handleGetStarted}>
-              Get Your Atlas Assessment - €39
+              Get Your Cairnly Assessment - €39
             </Button>
           </div>
           <p className="text-blue-100/30 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Beta access. Full refund if you're not satisfied.</p>

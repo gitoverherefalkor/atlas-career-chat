@@ -33,7 +33,7 @@ i18n
     detection: {
       // Priority: .nl domain → localStorage → browser language
       order: ['domainDetector', 'localStorage', 'navigator'],
-      lookupLocalStorage: 'atlas_language',
+      lookupLocalStorage: 'cairnly_language',
       caches: ['localStorage'],
     },
 

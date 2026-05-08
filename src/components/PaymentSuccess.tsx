@@ -28,7 +28,7 @@ const PaymentSuccess = () => {
     if (isDemo) {
       setIsProcessing(false);
       setIsComplete(true);
-      setAccessCode('ATLAS-DEMO12345');
+      setAccessCode('CAIRNLY-DEMO12345');
       toast({
         title: "Demo Purchase Successful!",
         description: "This is a demo purchase with a sample access code.",

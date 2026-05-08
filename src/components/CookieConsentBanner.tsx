@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
-const COOKIE_CONSENT_KEY = 'atlas-cookie-consent';
+const COOKIE_CONSENT_KEY = 'cairnly-cookie-consent';
 
 const CookieConsentBanner = () => {
   const [visible, setVisible] = useState(false);

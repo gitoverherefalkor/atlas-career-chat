@@ -3,8 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export type VoiceGender = 'female' | 'male';
 
-const STORAGE_KEY_GENDER = 'atlas:tts:gender';
-const STORAGE_KEY_READ_ALL = 'atlas:tts:read-all';
+const STORAGE_KEY_GENDER = 'cairnly:tts:gender';
+const STORAGE_KEY_READ_ALL = 'cairnly:tts:read-all';
 
 // Resolve the TTS edge function URL from the same env var the supabase client
 // uses. Prevents drift between staging/prod.

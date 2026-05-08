@@ -54,7 +54,7 @@ const HpTryout = () => {
               <div className="transform skew-y-1">
                 <div className="flex items-center gap-3 mb-6">
                   <TreePine className="h-8 w-8 text-emerald-400" />
-                  <span className="text-emerald-400 font-semibold tracking-wide">ATLAS ASSESSMENT</span>
+                  <span className="text-emerald-400 font-semibold tracking-wide">CAIRNLY</span>
                 </div>
                 
                 <h1 className="text-5xl lg:text-7xl font-bold mb-8 leading-tight">
