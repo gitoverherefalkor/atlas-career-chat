@@ -235,7 +235,7 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="/atlas-logo.png" alt="Cairnly" className="h-9 w-auto" />
+              <img src="/atlas-logo.png" alt="Cairnly" className="h-28 w-auto" />
             </div>
             <div className="flex items-center space-x-3">
               <Button variant="outline" onClick={() => navigate('/profile')}>

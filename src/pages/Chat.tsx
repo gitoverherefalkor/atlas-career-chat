@@ -386,7 +386,7 @@ const Chat = () => {
           <div className="flex justify-between items-center py-3 sm:py-4">
             <div className="flex items-center">
               <a href="/" className="flex items-center">
-                <img src="/atlas-logo.png" alt="Cairnly" className="h-7 sm:h-9 w-auto" />
+                <img src="/atlas-logo.png" alt="Cairnly" className="h-20 sm:h-28 w-auto" />
               </a>
               <span className="hidden sm:inline ml-4 text-sm text-gray-500">
                 Career Coach

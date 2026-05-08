@@ -32,7 +32,7 @@ const Navbar = () => {
               <img
                 src="/atlas-logo.png"
                 alt="Cairnly"
-                className="h-10 w-auto"
+                className="h-28 w-auto"
               />
             </a>
           </div>

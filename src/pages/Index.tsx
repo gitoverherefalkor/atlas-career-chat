@@ -574,10 +574,10 @@ const Index = () => {
     <div className="min-h-screen bg-[#fcfdfe] text-[#374151] font-sans selection:bg-[#27A1A1] selection:text-white overflow-x-hidden">
 
       {/* ========== NAVIGATION ========== */}
-      <nav className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-[#213F4F]/95 backdrop-blur-xl py-4 shadow-2xl border-b border-white/5' : 'bg-transparent py-8'}`}>
+      <nav className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-[#213F4F]/95 backdrop-blur-xl py-1 shadow-2xl border-b border-white/5' : 'bg-transparent py-2'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
           <div className="cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <img src={CairnlyWordmarkInverted} alt="Cairnly" className="h-9 w-auto" />
+            <img src={CairnlyWordmarkInverted} alt="Cairnly" className="h-28 w-auto" />
           </div>
 
           <div className="hidden lg:flex items-center gap-8">
@@ -614,7 +614,7 @@ const Index = () => {
         <div className={`fixed inset-0 bg-[#213F4F] z-[101] transition-transform duration-500 transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} lg:hidden`}>
           <div className="p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-10">
-              <img src={CairnlyWordmarkInverted} alt="Cairnly" className="h-8 w-auto" />
+              <img src={CairnlyWordmarkInverted} alt="Cairnly" className="h-12 w-auto" />
               <X className="text-white w-8 h-8 cursor-pointer" onClick={() => setMobileMenuOpen(false)} />
             </div>
             <div className="flex flex-col gap-6">
@@ -991,7 +991,7 @@ const Index = () => {
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <img src={CairnlyWordmark} alt="Cairnly" className="h-9 w-auto" />
+              <img src={CairnlyWordmark} alt="Cairnly" className="h-28 w-auto" />
             </div>
             <p className="text-gray-300 font-bold text-[10px] tracking-[0.3em] uppercase">© 2026 CAIRNLY</p>
           </div>
