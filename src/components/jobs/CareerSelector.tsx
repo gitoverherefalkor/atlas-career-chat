@@ -46,8 +46,8 @@ const CareerSelector: React.FC<CareerSelectorProps> = ({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Select careers to explore</h3>
-        <span className="text-sm text-muted-foreground">{selected.length} / {maxSelections} selected</span>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Select careers to explore</h3>
+        <span className="text-sm text-gray-500 dark:text-gray-300">{selected.length} / {maxSelections} selected</span>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -84,12 +84,12 @@ const CareerSelector: React.FC<CareerSelectorProps> = ({
               {/* Category label + tier icon */}
               <div className="flex items-center gap-2 mb-2 pr-8">
                 {meta.badge === 'number' && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-atlas-teal/10 text-atlas-teal text-[11px] font-bold">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-atlas-teal/15 text-atlas-teal dark:text-teal-400 text-[11px] font-bold">
                     {meta.number}
                   </span>
                 )}
                 {meta.badge === 'icon' && Icon && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-atlas-teal/10 text-atlas-teal">
+                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-atlas-teal/15 text-atlas-teal dark:text-teal-400">
                     <Icon className="h-3 w-3" strokeWidth={2.5} />
                   </span>
                 )}
@@ -98,8 +98,9 @@ const CareerSelector: React.FC<CareerSelectorProps> = ({
                 </span>
               </div>
 
-              {/* Career title */}
-              <h4 className="font-heading font-semibold text-atlas-navy leading-snug line-clamp-3">
+              {/* Career title — min-h reserves space for ~2 lines so a 1-line
+                  title doesn't look stranded next to 2-line ones in the same grid row */}
+              <h4 className="font-heading font-semibold text-atlas-navy leading-snug line-clamp-3 min-h-[2.75rem]">
                 {career.title}
               </h4>
             </button>
