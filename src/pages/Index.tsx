@@ -20,7 +20,9 @@ import {
   BarChart3,
   FileText
 } from 'lucide-react';
-import AtlasFigure from '@/logos/Atlas_figure_AA_live.png';
+import CairnlyWordmarkInverted from '@/logos/cairnly-logo/cairnly_logo_wordmark_inverted.png';
+import CairnlyWordmark from '@/logos/cairnly-logo/cairnly_logo_wordmark.png';
+import CairnlySymbol from '@/logos/cairnly-logo/cairnly_logo_symbol_only.png';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 // --- Reusable UI ---
@@ -574,11 +576,8 @@ const Index = () => {
       {/* ========== NAVIGATION ========== */}
       <nav className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-[#213F4F]/95 backdrop-blur-xl py-4 shadow-2xl border-b border-white/5' : 'bg-transparent py-8'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <div className="w-10 h-10 bg-gradient-to-tr from-[#27A1A1] to-[#3989AF] rounded-xl flex items-center justify-center shadow-lg">
-              <Layers className="text-white w-6 h-6" />
-            </div>
-            <span className={`text-2xl font-black tracking-tighter transition-colors ${scrolled ? 'text-white' : 'text-white'}`}>ATLAS</span>
+          <div className="cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <img src={CairnlyWordmarkInverted} alt="Cairnly" className="h-9 w-auto" />
           </div>
 
           <div className="hidden lg:flex items-center gap-8">
@@ -615,7 +614,7 @@ const Index = () => {
         <div className={`fixed inset-0 bg-[#213F4F] z-[101] transition-transform duration-500 transform ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'} lg:hidden`}>
           <div className="p-8 h-full flex flex-col">
             <div className="flex justify-between items-center mb-10">
-              <span className="text-white text-2xl font-black tracking-tighter">ATLAS</span>
+              <img src={CairnlyWordmarkInverted} alt="Cairnly" className="h-8 w-auto" />
               <X className="text-white w-8 h-8 cursor-pointer" onClick={() => setMobileMenuOpen(false)} />
             </div>
             <div className="flex flex-col gap-6">
@@ -899,7 +898,7 @@ const Index = () => {
                   <div className="text-[#27A1A1] uppercase tracking-[0.25em] text-[10px] font-black">Founder, Atlas Assessment</div>
                 </div>
               </div>
-              <img src={AtlasFigure} alt="Atlas Assessment" className="w-28 h-28 md:w-36 md:h-36 object-contain hidden sm:block" />
+              <img src={CairnlySymbol} alt="Cairnly" className="w-28 h-28 md:w-36 md:h-36 object-contain hidden sm:block" />
             </div>
             <div className="space-y-6 text-gray-600 leading-relaxed font-medium text-lg">
               <p>I've watched too many smart people stuck in careers they fell into by accident. Myself included.</p>
@@ -991,13 +990,10 @@ const Index = () => {
       <footer className="py-20 bg-white border-t border-gray-100">
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex flex-col items-center md:items-start gap-4">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <div className="w-10 h-10 bg-[#1A1A1A] rounded-xl flex items-center justify-center shadow-xl">
-                <Layers className="text-white w-6 h-6" />
-              </div>
-              <span className="text-2xl font-black tracking-tighter text-[#1A1A1A]">ATLAS</span>
+            <div className="cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              <img src={CairnlyWordmark} alt="Cairnly" className="h-9 w-auto" />
             </div>
-            <p className="text-gray-300 font-bold text-[10px] tracking-[0.3em] uppercase">© 2026 ATLAS ASSESSMENT</p>
+            <p className="text-gray-300 font-bold text-[10px] tracking-[0.3em] uppercase">© 2026 CAIRNLY</p>
           </div>
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">
             <a href="/privacy-policy" className="hover:text-[#27A1A1] transition-colors">Privacy Policy</a>

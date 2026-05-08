@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileDown, LayoutDashboard, Info, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import atlasFigure from '@/logos/Atlas_figure_AA_live.png';
+import atlasFigure from '@/logos/cairnly-logo/cairnly_logo_symbol_only.png';
 
 interface ClosingCardProps {
   firstName?: string;
@@ -27,7 +27,7 @@ export const ClosingCard: React.FC<ClosingCardProps> = ({ firstName }) => {
     <div className="w-full max-w-[800px] mx-auto py-4">
       <Card className="border-2 border-green-500/20 shadow-lg">
         <CardHeader className="text-center pb-4">
-          <img src={atlasFigure} alt="Atlas" className="mx-auto mb-4 h-40 w-auto" />
+          <img src={atlasFigure} alt="Cairnly" className="mx-auto mb-4 h-40 w-auto" />
           <CardTitle className="text-2xl font-bold text-atlas-navy">
             Session Complete{firstName ? `, ${firstName}` : ''}!
           </CardTitle>

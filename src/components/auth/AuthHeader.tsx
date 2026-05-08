@@ -10,7 +10,7 @@ const AuthHeader = ({ isLogin }: AuthHeaderProps) => {
     <div className="text-center mb-8">
       <img
         src="/atlas-logo.png"
-        alt="Atlas Assessment"
+        alt="Cairnly"
         className="h-12 w-auto mx-auto mb-2"
       />
       <p className="text-gray-600 mb-2">

@@ -31,7 +31,7 @@ const Navbar = () => {
             <a href="/" className="flex items-center">
               <img
                 src="/atlas-logo.png"
-                alt="Atlas Assessment"
+                alt="Cairnly"
                 className="h-10 w-auto"
               />
             </a>
