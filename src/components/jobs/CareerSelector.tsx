@@ -84,15 +84,25 @@ const CareerSelector: React.FC<CareerSelectorProps> = ({
                 {active && <Check className="h-4 w-4" />}
               </div>
 
-              {/* Category label + tier icon */}
+              {/* Category label + tier icon. When the card is selected, the
+                  badge inverts to solid teal with a cream icon so it stands
+                  out from the sage card background (teal-on-sage was muddy). */}
               <div className="flex items-center gap-2 mb-2 pr-8">
                 {meta.badge === 'number' && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-atlas-teal/15 text-atlas-teal dark:text-teal-400 text-[11px] font-bold">
+                  <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[11px] font-bold ${
+                    active
+                      ? 'bg-atlas-teal text-white'
+                      : 'bg-atlas-teal/15 text-atlas-teal dark:text-teal-400'
+                  }`}>
                     {meta.number}
                   </span>
                 )}
                 {meta.badge === 'icon' && Icon && (
-                  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-atlas-teal/15 text-atlas-teal dark:text-teal-400">
+                  <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full ${
+                    active
+                      ? 'bg-atlas-teal text-white'
+                      : 'bg-atlas-teal/15 text-atlas-teal dark:text-teal-400'
+                  }`}>
                     <Icon className="h-3 w-3" strokeWidth={2.5} />
                   </span>
                 )}
