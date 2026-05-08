@@ -10,11 +10,13 @@ interface JobCardProps {
   onUnsave: () => void;
 }
 
-// AI relevance badge — color tier matches what the user expects from
-// match-score patterns elsewhere in the app:
+// AI relevance badge — color tier:
 //   8-10 → emerald (strong match)
 //   5-7  → amber (decent / adjacent)
-//   0-4  → gray   (weak / cross-domain)
+//   0-4  → slate (weak / cross-domain)
+// Gray tier uses slate explicitly because bg-gray-100 is globally remapped
+// to the dark canvas in dark mode, which would make the badge invisible on
+// the cream card. Slate isn't remapped, so it works in both modes.
 // Hovering reveals the AI's one-line reason.
 const MatchScoreBadge: React.FC<{ score?: number | null; reason?: string | null }> = ({ score, reason }) => {
   if (score == null) return null;
@@ -22,7 +24,7 @@ const MatchScoreBadge: React.FC<{ score?: number | null; reason?: string | null 
   const tone =
     safe >= 8 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
     safe >= 5 ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                'bg-gray-100 text-gray-600 border-gray-200';
+                'bg-slate-100 text-slate-600 border-slate-200 dark:bg-stone-300 dark:text-stone-700 dark:border-stone-400';
   return (
     <span
       className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold ${tone}`}
