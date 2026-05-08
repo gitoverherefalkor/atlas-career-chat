@@ -659,7 +659,7 @@ const Index = () => {
             <div className="lg:w-1/2 text-center lg:text-left">
               <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white mb-8 leading-[0.95] tracking-tighter">
                 Stop Guessing. <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">Start Thriving.</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C8891A] to-[#F0C040]">Start Thriving.</span>
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-blue-100/60 mb-10 max-w-xl font-medium leading-relaxed">
                 Find a career path that actually fits you, not the one you thought you wanted at 16.
@@ -728,7 +728,7 @@ const Index = () => {
                   <h3 className="text-2xl font-black text-[#1A1A1A]">AI Analyzes Your Profile</h3>
                 </div>
                 <p className="text-gray-500 text-lg leading-relaxed font-medium ml-16">
-                  A specialized 170+ step AI workflow (not ChatGPT) analyzes your responses, generates your personality profile, and matches you to specific careers with personalized justifications.
+                  Multiple specialized AI workflows analyze your responses, generate your personality profile, and match you to specific careers with personalized justifications.
                 </p>
               </div>
             </div>
