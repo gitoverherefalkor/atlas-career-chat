@@ -54,16 +54,27 @@ interface CompanyAchievement {
 // topSkillRanks is a parallel array: 0 = unranked, 1/2/3 = the three slots the
 // user picked as their top 3. At submission we rebuild a 3-item top_skills
 // array from the ranks so n8n keeps its unchanged payload shape.
+// languages is rendered as a third section in the same question; payload key is
+// kept inside this object so n8n's existing question_id (...11111111111f) stays
+// the single source for skills + achievements + languages.
 interface SkillsAchievementsEntry {
   topSkills: string[];
   topSkillRanks?: number[];
   certifications: string[];
   achievements: CompanyAchievement[];
+  languages?: LanguagesEntry;
 }
 
 // Interests/Hobbies entry type
 interface InterestsEntry {
   interests: string[];
+}
+
+// Languages entry type — `presets` maps preset language name to proficiency value;
+// `other` is an optional single non-preset language with its own proficiency.
+interface LanguagesEntry {
+  presets: Record<string, string>;
+  other: { language: string; proficiency: string } | null;
 }
 
 // Company size and culture options
@@ -1479,14 +1490,97 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         }
       }
 
+      // Pull languages sub-object out of the existing value (may be missing).
+      const rawLanguages = value?.languages;
+      const parsedLanguages: LanguagesEntry =
+        rawLanguages && typeof rawLanguages === 'object' && !Array.isArray(rawLanguages)
+          ? {
+              presets:
+                rawLanguages.presets && typeof rawLanguages.presets === 'object'
+                  ? rawLanguages.presets
+                  : {},
+              other:
+                rawLanguages.other && typeof rawLanguages.other === 'object'
+                  ? {
+                      language: rawLanguages.other.language || '',
+                      proficiency: rawLanguages.other.proficiency || '',
+                    }
+                  : null,
+            }
+          : { presets: {}, other: null };
+
       const skillsValue: SkillsAchievementsEntry = value && typeof value === 'object'
         ? {
             topSkills: paddedSkills,
             topSkillRanks: paddedRanks,
             certifications: padArray(rawCerts, 3),
-            achievements: parsedAchievements
+            achievements: parsedAchievements,
+            languages: parsedLanguages,
           }
-        : { ...emptySkillsAchievements };
+        : { ...emptySkillsAchievements, languages: parsedLanguages };
+
+      // Languages config (defaults guard against missing config so UI still renders).
+      const DEFAULT_LANG_PROFICIENCY: Array<{ value: string; label: string }> = [
+        { value: 'native', label: 'Native' },
+        { value: 'fluent', label: 'Fluent' },
+        { value: 'conversational', label: 'Conversational' },
+        { value: 'basic', label: 'Basic' },
+      ];
+      const DEFAULT_LANG_PRESETS = [
+        'English', 'Mandarin Chinese', 'Hindi', 'Spanish', 'French', 'Arabic', 'Bengali',
+      ];
+      const langPresets: string[] = Array.isArray(question.config?.languages_presets)
+        ? question.config.languages_presets
+        : DEFAULT_LANG_PRESETS;
+      const langOtherChoices: string[] = Array.isArray(question.config?.languages_other)
+        ? question.config.languages_other
+        : [];
+      const langProficiencyLevels: Array<{ value: string; label: string }> =
+        Array.isArray(question.config?.languages_proficiency_levels) &&
+        question.config.languages_proficiency_levels.length > 0
+          ? question.config.languages_proficiency_levels
+          : DEFAULT_LANG_PROFICIENCY;
+
+      const languagesValue: LanguagesEntry = skillsValue.languages || { presets: {}, other: null };
+
+      const updateLanguages = (next: LanguagesEntry) => {
+        onChange({ ...skillsValue, languages: next });
+      };
+
+      const togglePreset = (lang: string, checked: boolean) => {
+        const nextPresets = { ...languagesValue.presets };
+        if (checked) {
+          if (!(lang in nextPresets)) nextPresets[lang] = '';
+        } else {
+          delete nextPresets[lang];
+        }
+        updateLanguages({ ...languagesValue, presets: nextPresets });
+      };
+
+      const setPresetProficiency = (lang: string, prof: string) => {
+        updateLanguages({
+          ...languagesValue,
+          presets: { ...languagesValue.presets, [lang]: prof },
+        });
+      };
+
+      const setOtherLanguage = (lang: string) => {
+        updateLanguages({
+          ...languagesValue,
+          other: { language: lang, proficiency: languagesValue.other?.proficiency || '' },
+        });
+      };
+
+      const setOtherProficiency = (prof: string) => {
+        updateLanguages({
+          ...languagesValue,
+          other: { language: languagesValue.other?.language || '', proficiency: prof },
+        });
+      };
+
+      const clearOther = () => {
+        updateLanguages({ ...languagesValue, other: null });
+      };
 
       const updateSkillsField = (field: 'topSkills' | 'certifications', index: number, newValue: string) => {
         const updated = { ...skillsValue };
@@ -1713,6 +1807,111 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                   </div>
                 );
               })()}
+            </div>
+
+            {/* Languages Section — required, at least one language with proficiency */}
+            <div className="p-5 border-2 rounded-xl bg-white shadow-sm">
+              <h3 className="text-base font-semibold text-atlas-navy mb-1">
+                Languages <span className="text-red-500">*</span>
+              </h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Which languages do you speak, and how well? Select at least one.
+              </p>
+
+              <div className="space-y-3">
+                {langPresets.map((lang) => {
+                  const isChecked = lang in languagesValue.presets;
+                  const prof = languagesValue.presets[lang] || '';
+                  return (
+                    <div
+                      key={lang}
+                      className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-lg border transition-all ${
+                        isChecked
+                          ? 'border-atlas-teal bg-atlas-teal/5'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <label className="flex items-center gap-3 flex-1 cursor-pointer">
+                        <Checkbox
+                          checked={isChecked}
+                          onCheckedChange={(c) => togglePreset(lang, !!c)}
+                        />
+                        <span className="text-base font-medium text-gray-800">{lang}</span>
+                      </label>
+                      {isChecked && (
+                        <Select
+                          value={prof}
+                          onValueChange={(v) => setPresetProficiency(lang, v)}
+                        >
+                          <SelectTrigger className="w-full sm:w-48">
+                            <SelectValue placeholder="Proficiency..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {langProficiencyLevels.map((p) => (
+                              <SelectItem key={p.value} value={p.value}>
+                                {p.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Other language picker */}
+                <div className="p-3 rounded-lg border border-dashed border-gray-300 bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-gray-700">
+                      Another language (optional)
+                    </label>
+                    {languagesValue.other &&
+                      (languagesValue.other.language || languagesValue.other.proficiency) && (
+                        <button
+                          type="button"
+                          onClick={clearOther}
+                          className="text-xs text-gray-500 hover:text-red-500"
+                        >
+                          Clear
+                        </button>
+                      )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Select
+                      value={languagesValue.other?.language || ''}
+                      onValueChange={setOtherLanguage}
+                    >
+                      <SelectTrigger className="flex-1">
+                        <SelectValue placeholder="Choose a language..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {langOtherChoices.map((lang) => (
+                          <SelectItem key={lang} value={lang}>
+                            {lang}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {languagesValue.other?.language && (
+                      <Select
+                        value={languagesValue.other?.proficiency || ''}
+                        onValueChange={setOtherProficiency}
+                      >
+                        <SelectTrigger className="w-full sm:w-48">
+                          <SelectValue placeholder="Proficiency..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {langProficiencyLevels.map((p) => (
+                            <SelectItem key={p.value} value={p.value}>
+                              {p.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -256,6 +256,29 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
       return rankedItems.length === choices.length;
     }
 
+    if (question.type === 'skills_achievements') {
+      // Only the Languages sub-section is required: at least one preset with a
+      // proficiency, or a fully filled "other" language. Skills/certs/achievements
+      // are still optional (CV-driven and can stay empty).
+      const langs = response?.languages;
+      if (!langs || typeof langs !== 'object') return false;
+      const presets = langs.presets && typeof langs.presets === 'object' ? langs.presets : {};
+      const other = langs.other && typeof langs.other === 'object' ? langs.other : null;
+
+      let validCount = 0;
+      for (const lang of Object.keys(presets)) {
+        if (!presets[lang]) return false; // checked but no proficiency picked
+        validCount++;
+      }
+      if (other) {
+        const hasLang = !!other.language;
+        const hasProf = !!other.proficiency;
+        if (hasLang !== hasProf) return false; // partially filled
+        if (hasLang && hasProf) validCount++;
+      }
+      return validCount >= 1;
+    }
+
     if (question.type === 'career_history') {
       // For career history, validate that the first 5 (active) entries with a title have companySize and companyCulture
       // Overflow entries (index >= 5) are not included in the assessment and not validated
