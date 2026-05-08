@@ -448,6 +448,35 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     ) => {
       if (isSessionCompleted || isWaitingForResponse) return;
 
+      // Infer 'advance' or 'wrap_up' intent from typed text that mirrors what
+      // a QuickReply button would have sent. Without this, a user who types
+      // "let's continue to the next section" instead of clicking the pill
+      // gets routed through the slow agent path; the agent then replies
+      // "click the Continue to next section button below" — which the user
+      // keeps responding to with the same phrase, locking the chat in a loop.
+      // We treat exact/substring matches as the equivalent button click.
+      if (!intent) {
+        const lower = message.trim().toLowerCase().replace(/[!.,?]+$/, '');
+        const looksLikeAdvance =
+          lower.includes('continue to the next section') ||
+          lower.includes('continue to next section') ||
+          lower === 'next section' ||
+          lower === 'continue' ||
+          lower === 'next' ||
+          lower === "let's continue" ||
+          lower === 'lets continue';
+        const looksLikeWrapUp =
+          lower.includes("wrap up the session") ||
+          lower.includes("all done, wrap up") ||
+          lower.includes("i'm all done") ||
+          lower === 'wrap up';
+        if (looksLikeWrapUp) {
+          intent = 'wrap_up';
+        } else if (looksLikeAdvance) {
+          intent = 'advance';
+        }
+      }
+
       // Apply the pending "Ask about <role>" prefix on free-text turns
       // only. Intent-based clicks (advance, wrap_up, etc.) shouldn't get
       // mangled. Clear the pending role after consuming it.
