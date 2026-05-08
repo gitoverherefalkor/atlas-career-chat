@@ -766,8 +766,8 @@ const Index = () => {
       <section className="py-24 md:py-32 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-black text-[#1A1A1A] mb-6 leading-tight tracking-tight">Not another <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">personality test</span></h2>
-            <p className="text-xl text-gray-500 font-medium max-w-2xl mx-auto">Atlas gives you actual job titles, salary data, and honest reality checks - not vague personality insights you'll forget by tomorrow.</p>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight tracking-tight">Not another <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">personality test</span></h2>
+            <p className="text-xl text-gray-300 font-medium max-w-2xl mx-auto">Cairnly gives you actual job titles, salary data, and honest reality checks - not vague personality insights you'll forget by tomorrow.</p>
           </div>
 
           <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -869,7 +869,7 @@ const Index = () => {
               </h3>
               <ul className="space-y-5">
                 {[
-                  "You're mainly looking to get promoted or advance within your current field (Atlas explores new directions, not optimizes existing ones)",
+                  "You're mainly looking to get promoted or advance within your current field (Cairnly explores new directions, not optimizes existing ones)",
                   "You need industry-specific technical training (we help you find the right direction first)",
                   "You want validation for a decision you've already made (we give honest assessments, not cheerleading)"
                 ].map((item, i) => (
@@ -887,7 +887,7 @@ const Index = () => {
       <section id="about" className="py-24 md:py-32 bg-gray-50 border-t border-gray-100 scroll-mt-24">
         <div className="container mx-auto px-6 max-w-3xl">
           <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-black text-[#1A1A1A] leading-tight">Why I <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">Built This</span></h2>
+            <h2 className="text-4xl md:text-5xl font-black text-white leading-tight">Why I <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#27A1A1] to-[#3989AF]">Built This</span></h2>
           </div>
           <div className="bg-white p-10 md:p-14 rounded-[3rem] shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-10">
@@ -944,16 +944,16 @@ const Index = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
                 <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                  <div className="text-3xl font-black text-[#1A1A1A] mb-2">66%</div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Career Regret</p>
+                  <div className="text-3xl font-black text-white mb-2">66%</div>
+                  <p className="text-xs font-bold text-gray-300 uppercase tracking-widest">Career Regret</p>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                  <div className="text-3xl font-black text-[#1A1A1A] mb-2">50%</div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Actively Looking</p>
+                  <div className="text-3xl font-black text-white mb-2">50%</div>
+                  <p className="text-xs font-bold text-gray-300 uppercase tracking-widest">Actively Looking</p>
                 </div>
                 <div className="bg-gray-50 rounded-2xl p-6 text-center">
-                  <div className="text-3xl font-black text-[#1A1A1A] mb-2">54%</div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Job Stress</p>
+                  <div className="text-3xl font-black text-white mb-2">54%</div>
+                  <p className="text-xs font-bold text-gray-300 uppercase tracking-widest">Job Stress</p>
                 </div>
               </div>
 
