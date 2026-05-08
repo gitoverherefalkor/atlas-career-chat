@@ -10,6 +10,29 @@ interface JobCardProps {
   onUnsave: () => void;
 }
 
+// AI relevance badge — color tier matches what the user expects from
+// match-score patterns elsewhere in the app:
+//   8-10 → emerald (strong match)
+//   5-7  → amber (decent / adjacent)
+//   0-4  → gray   (weak / cross-domain)
+// Hovering reveals the AI's one-line reason.
+const MatchScoreBadge: React.FC<{ score?: number | null; reason?: string | null }> = ({ score, reason }) => {
+  if (score == null) return null;
+  const safe = Math.max(0, Math.min(10, score));
+  const tone =
+    safe >= 8 ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+    safe >= 5 ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                'bg-gray-100 text-gray-600 border-gray-200';
+  return (
+    <span
+      className={`shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-semibold ${tone}`}
+      title={reason || `Match score: ${safe}/10`}
+    >
+      {safe}<span className="opacity-60">/10</span>
+    </span>
+  );
+};
+
 // Format salary range for display
 function formatSalary(min?: number, max?: number): string | null {
   if (!min && !max) return null;
@@ -58,8 +81,11 @@ const JobCard: React.FC<JobCardProps> = ({ job, isSaved, onSave, onUnsave }) => 
     <div className="group border border-gray-200 rounded-xl p-5 bg-white hover:shadow-md hover:border-gray-300 transition-all">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          {/* Title */}
-          <h4 className="font-semibold text-gray-900 text-base mb-1 line-clamp-1">{job.title}</h4>
+          {/* Title + AI match score */}
+          <div className="flex items-start gap-2 mb-1">
+            <h4 className="font-semibold text-gray-900 text-base line-clamp-1 flex-1">{job.title}</h4>
+            <MatchScoreBadge score={job.match_score} reason={job.match_reason} />
+          </div>
 
           {/* Company + Location */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600 mb-2">
