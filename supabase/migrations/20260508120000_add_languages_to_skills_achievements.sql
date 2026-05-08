@@ -9,6 +9,7 @@
 UPDATE questions
 SET
   required = true,
+  label = 'Skills, Achievements & Languages',
   config = config || jsonb_build_object(
     'languages_presets', jsonb_build_array(
       'English',
