@@ -576,9 +576,9 @@ const Index = () => {
       {/* ========== NAVIGATION ========== */}
       <nav className={`fixed w-full z-[100] transition-all duration-500 ${scrolled ? 'bg-[#213F4F]/95 backdrop-blur-xl py-1 shadow-2xl border-b border-white/5' : 'bg-transparent py-2'}`}>
         <div className="container mx-auto px-6 flex justify-between items-center">
-          <div className="cursor-pointer flex flex-col items-start" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <div className="cursor-pointer flex flex-col items-center" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img src={CairnlyWordmarkInverted} alt="Cairnly" className="h-28 w-auto" />
-            <p className="-mt-5 ml-1 text-[10px] font-normal tracking-[0.22em] text-[#D4A024]">career path clarity.</p>
+            <p className="-mt-5 text-[10px] font-normal tracking-[0.22em] text-[#D4A024]">career path clarity.</p>
           </div>
 
           <div className="hidden lg:flex items-center gap-8">
