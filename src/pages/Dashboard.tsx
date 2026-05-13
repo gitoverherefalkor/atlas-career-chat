@@ -125,20 +125,30 @@ const Dashboard = () => {
         // Check the answers table for a draft row tied to this code so the
         // dashboard correctly shows "Continue" instead of "Start" when the
         // user has progress server-side but empty localStorage on this device.
+        // We route through verify-access-code (service role) to get the
+        // access_code_id rather than querying access_codes directly, which
+        // is locked down by RLS and inaccessible to regular authenticated
+        // users.
         (async () => {
-          const { data: codeRow } = await supabase
-            .from('access_codes')
-            .select('id')
-            .eq('code', accessCode)
-            .maybeSingle();
-          if (!codeRow?.id) return;
-          const { data: answersRow } = await supabase
-            .from('answers')
-            .select('status')
-            .eq('access_code_id', codeRow.id)
-            .maybeSingle();
-          if (answersRow?.status === 'draft') {
-            setHasDraftAnswers(true);
+          try {
+            const { data: verifyData } = await supabase.functions.invoke(
+              'verify-access-code',
+              { body: { code: accessCode } }
+            );
+            const codeId = verifyData?.valid && verifyData?.accessCode?.id;
+            if (!codeId) return;
+            const { data: answersRow } = await supabase
+              .from('answers')
+              .select('status')
+              .eq('access_code_id', codeId)
+              .maybeSingle();
+            if (answersRow?.status === 'draft') {
+              setHasDraftAnswers(true);
+            }
+          } catch (err) {
+            // Non-fatal: dashboard just won't auto-show "Continue" — user
+            // can still proceed via the access code modal flow.
+            console.warn('[Dashboard] draft-answers check failed:', err);
           }
         })();
 
