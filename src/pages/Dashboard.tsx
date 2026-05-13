@@ -270,17 +270,17 @@ const Dashboard = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-between items-center h-20">
             <div className="flex items-center">
-              {/* h-28 was overflowing the h-16 row. Sized to h-10 so the logo
-                  fits the bar cleanly. object-left pushes the visible logo
-                  to the left edge of its image box in case the PNG carries
-                  any transparent padding — that's what was making the logo
-                  read as horizontally indented from "Welcome, {name}". */}
+              {/* Header is h-20 (80px) so the logo can be sized to h-14
+                  (56px) — visible weight without overflowing. object-left
+                  keeps the PNG's transparent left padding from pushing
+                  the visible mark inward, so it left-aligns with the
+                  "Welcome, {name}" heading below. */}
               <img
                 src="/cairnly-logo.png"
                 alt="Cairnly"
-                className="h-10 w-auto object-contain object-left"
+                className="h-14 w-auto object-contain object-left"
               />
             </div>
             <div className="flex items-center space-x-3">
