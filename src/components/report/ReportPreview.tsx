@@ -29,9 +29,9 @@ const ReportPreview: React.FC<ReportPreviewProps> = () => {
                 populated layout's chapter-header look. */}
             <div className="border-b-2 border-atlas-teal/60">
               {isAboutYou ? (
-                <PersonalityRadar sections={undefined} bare />
+                <PersonalityRadar sections={undefined} bare locked />
               ) : (
-                <CareerQuadrant sections={undefined} variant="compact" bare />
+                <CareerQuadrant sections={undefined} variant="compact" bare locked />
               )}
             </div>
 

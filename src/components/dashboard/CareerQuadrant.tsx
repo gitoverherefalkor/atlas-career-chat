@@ -136,15 +136,24 @@ interface CareerQuadrantProps {
   // inside another card (e.g. as a ChapterCard customHeader) without a
   // double border.
   bare?: boolean;
+  // 'locked' = user hasn't run an assessment yet. Render the empty grid
+  // (axes, reference line, legend) without any scatter points so the
+  // user gets a preview of the shape that's coming. Distinct from the
+  // sections-empty state which says "Mapping your matches…" (used while
+  // sections finish processing post-assessment).
+  locked?: boolean;
 }
 
 // Single chart that shows every recommended career on a Match × AI Impact
 // grid. Top Careers render larger; tooltip surfaces full title + rank.
-export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, className, variant = 'full', bare = false }) => {
+export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, className, variant = 'full', bare = false, locked = false }) => {
   const points = useMemo(() => buildPoints(sections), [sections]);
   const isCompact = variant === 'compact';
 
-  if (points.length < 2) {
+  // Locked state: skip the "Mapping your matches…" placeholder and fall
+  // through to the main render. The Scatter component below is gated on
+  // !locked so no points draw; the axes + reference line + legend stay.
+  if (!locked && points.length < 2) {
     // Compact slot keeps a placeholder so the hero row stays balanced
     // while sections are still being processed.
     if (isCompact) {
@@ -169,7 +178,10 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
 
   // Y-axis floor — every recommended career passes the suitability filter,
   // so 0 wastes space. Start at 50 unless a real point sits below it.
-  const minScore = Math.min(...points.map((p) => p.score));
+  // Locked state has no points, so fall back to 50 directly.
+  const minScore = locked || points.length === 0
+    ? 50
+    : Math.min(...points.map((p) => p.score));
   const yMin = Math.min(50, Math.floor(minScore / 5) * 5);
 
   // Wrapper varies on `bare`: when set, drop the rounded-border so the
@@ -200,17 +212,21 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
             </h3>
           )}
           <span className={`text-gray-500 ${isCompact ? 'text-[10px] uppercase tracking-wider font-semibold text-atlas-navy/40' : 'text-xs'}`}>
-            {points.length} roles
+            {locked ? '7 roles' : `${points.length} roles`}
           </span>
         </div>
         {!isCompact && (
           <p className="text-xs text-gray-500 mb-4">
-            Every recommendation plotted by how well it fits you and how AI is reshaping it.
+            {locked
+              ? 'Available after your assessment.'
+              : 'Every recommendation plotted by how well it fits you and how AI is reshaping it.'}
           </p>
         )}
         {isCompact && (
           <p className="text-[11px] text-gray-500 mb-3">
-            Match score vs AI impact, every recommended role.
+            {locked
+              ? 'Available after your assessment.'
+              : 'Match score vs AI impact, every recommended role.'}
           </p>
         )}
 
@@ -250,7 +266,11 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
                 }}
               />
               <ZAxis dataKey="weight" range={[80, 240]} />
-              <Tooltip content={<QuadrantTooltip />} cursor={{ strokeDasharray: '3 3', stroke: '#27A1A1' }} />
+              {/* Tooltip only fires on populated charts — nothing to hover
+                  on a locked grid. */}
+              {!locked && (
+                <Tooltip content={<QuadrantTooltip />} cursor={{ strokeDasharray: '3 3', stroke: '#27A1A1' }} />
+              )}
               {/* Soft horizontal at 85 — the "outstanding match" threshold so
                   users can immediately see which roles cluster above it. */}
               <ReferenceLine
@@ -269,7 +289,10 @@ export const CareerQuadrant: React.FC<CareerQuadrantProps> = ({ sections, classN
                   style: { fontSize: 10, fill: '#27A1A1', fontWeight: 600 },
                 }}
               />
-              <Scatter data={points} shape={<QuadrantDot />} />
+              {/* Scatter is omitted in locked state — the empty grid +
+                  axes + reference line + legend show users the shape
+                  that's coming without any preview data. */}
+              {!locked && <Scatter data={points} shape={<QuadrantDot />} />}
             </ScatterChart>
           </ResponsiveContainer>
         </div>

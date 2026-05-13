@@ -257,10 +257,23 @@ interface PersonalityRadarProps {
   // double border. The inner content (label, chart, legend) stays the
   // same — only the wrapping <div> changes.
   bare?: boolean;
+  // 'locked' = user hasn't run an assessment yet. Render the empty web
+  // (polar grid + axis labels) without the filled polygon, so the user
+  // gets a preview of the shape they'll fill in. Distinct from the
+  // sections-empty placeholder which says "Calibrating…" (used during
+  // the transient post-assessment processing window).
+  locked?: boolean;
 }
 
-export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, className, bare = false }) => {
+export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, className, bare = false, locked = false }) => {
   const data = useMemo(() => buildRadarData(sections), [sections]);
+  // Locked-state data: V2 axis names at value 0 so the polar grid still
+  // renders with labeled corners, but the Radar (filled polygon) is
+  // omitted entirely below.
+  const lockedData = useMemo<RadarPoint[]>(
+    () => V2_AXIS_ORDER.map((axis) => ({ axis, value: 0 })),
+    [],
+  );
 
   // Tailwind classes for the wrapping element. When `bare`, drop the
   // border + shadow + radius so the parent card owns the visual frame.
@@ -276,11 +289,10 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
     ? 'p-5 h-[380px] flex flex-col'
     : 'rounded-2xl border border-atlas-navy/10 bg-white/60 backdrop-blur-sm p-5 h-full flex flex-col';
 
-  if (data.length < 3) {
-    // Not enough axes parsed to make the radar meaningful — render a soft
-    // placeholder so the dashboard hero row stays balanced. The init_summary
-    // is usually populated within seconds of the report completing, so this
-    // state should be brief.
+  // Pre-assessment users see the empty web (labels + polar grid, no
+  // filled polygon). Don't fall through to the "Calibrating…" placeholder
+  // — that's the transient post-assessment state.
+  if (!locked && data.length < 3) {
     return (
       <div className={className}>
         <div className={placeholderWrapperClass}>
@@ -298,6 +310,10 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
     );
   }
 
+  // Locked uses placeholder axis data so the polar grid + labels render
+  // at full structure; the data layer (filled polygon) is skipped below.
+  const chartData = locked ? lockedData : data;
+
   return (
     <div className={className}>
       <div className={wrapperClass}>
@@ -313,7 +329,9 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
           </span>
         </div>
         <p className="text-[11px] text-gray-500 mb-3">
-          How you operate, plotted across five core dimensions.
+          {locked
+            ? 'Available after your assessment.'
+            : 'How you operate, plotted across five core dimensions.'}
         </p>
         {/* Explicit height so Recharts' ResponsiveContainer has something
             to measure. flex-1 broke when the parent ChapterCard didn't
@@ -322,25 +340,30 @@ export const PersonalityRadar: React.FC<PersonalityRadarProps> = ({ sections, cl
             description, and padding take their share. */}
         <div className="w-full" style={{ height: 280 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={data} cx="50%" cy="50%" outerRadius="78%">
+            <RadarChart data={chartData} cx="50%" cy="50%" outerRadius="78%">
               {/* Bumped to a darker neutral so the polar grid actually shows
                   on the warm-paper background. Previously #E5E7EB
                   disappeared into the card. */}
               <PolarGrid stroke="#9CA3AF" strokeOpacity={0.45} strokeWidth={1} />
               <PolarAngleAxis
                 dataKey="axis"
-                tick={{ fontSize: 10, fill: '#374151', fontWeight: 600 }}
+                tick={{ fontSize: 10, fill: locked ? '#9CA3AF' : '#374151', fontWeight: 600 }}
               />
               <PolarRadiusAxis domain={[0, 5]} tick={false} axisLine={false} />
-              <Tooltip content={<RadarTooltip />} cursor={false} />
-              <Radar
-                dataKey="value"
-                stroke="#27A1A1"
-                fill="#27A1A1"
-                fillOpacity={0.35}
-                strokeWidth={2}
-                isAnimationActive
-              />
+              {/* Tooltip + filled polygon only on populated data. Locked
+                  state intentionally renders just the empty web so users
+                  see the shape that's coming without anything to hover. */}
+              {!locked && <Tooltip content={<RadarTooltip />} cursor={false} />}
+              {!locked && (
+                <Radar
+                  dataKey="value"
+                  stroke="#27A1A1"
+                  fill="#27A1A1"
+                  fillOpacity={0.35}
+                  strokeWidth={2}
+                  isAnimationActive
+                />
+              )}
             </RadarChart>
           </ResponsiveContainer>
         </div>
