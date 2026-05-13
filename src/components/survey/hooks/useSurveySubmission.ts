@@ -104,16 +104,19 @@ export const useSurveySubmission = ({
         };
       }
 
-      // Submit to database with access code reference
+      // Upsert final submission. The autosave path keeps a 'draft' row in sync
+      // throughout the survey; on submit we flip status to 'submitted' on the same row.
       const answerData: any = {
         survey_id: surveyId,
         payload: sanitizedResponses,
-        access_code_id: accessCodeData?.id
+        access_code_id: accessCodeData?.id,
+        status: 'submitted',
+        submitted_at: new Date().toISOString(),
       };
 
       const { data: submissionData, error: submissionError } = await supabase
         .from('answers')
-        .insert(answerData)
+        .upsert(answerData, { onConflict: 'access_code_id' })
         .select();
 
       if (submissionError) {

@@ -19,7 +19,10 @@ import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 type ReportData = Tables<'reports'>;
 
 const Chat = () => {
-  // Session management — same localStorage keys as n8n for backward compatibility
+  // Session management — same localStorage keys as n8n for backward compatibility.
+  // Note: hasExistingSession used to drive the welcome-card decision, but a
+  // sessionId can be present from a stale visit where the user never engaged.
+  // For welcome-card logic we use a separate per-report engagement flag below.
   const hasExistingSession = localStorage.getItem('n8n-chat/sessionId') !== null;
 
   const getSessionTimestamp = () => {
@@ -43,7 +46,11 @@ const Chat = () => {
   // Career section data — used by the sidebar to surface the actual
   // career title + company size for the current top-career section.
   const { sections: reportSections } = useReportSections(reportData?.id);
-  const [showWelcome, setShowWelcome] = useState(!hasExistingSession || sessionIsStale);
+  // Welcome card defaults to visible for everyone. An effect below flips it
+  // off once we confirm the user has actually engaged with the chat for this
+  // report (per `chat_engaged_${reportId}` flag set in handleWelcomeStart) or
+  // when there's real chat history loaded from the server.
+  const [showWelcome, setShowWelcome] = useState(true);
   const [showClosing, setShowClosing] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   // Initialize from localStorage to avoid 0/11 flash on session resume
@@ -96,11 +103,47 @@ const Chat = () => {
       });
   }, [user?.id, showWelcome, hasExistingSession, sessionIsStale]);
 
-  // Auto-restore session when returning with existing (non-stale) session
+  // Once reportData is available, dismiss the welcome card if the user
+  // has either (a) explicitly clicked "I'm Ready!" before — tracked via
+  // the per-report localStorage flag — or (b) has any chat_messages rows
+  // in Supabase for this report. Either signal means "real engagement
+  // already happened, no need for the welcome card."
+  // Guards against stale sessionIds from drive-by visits suppressing
+  // the welcome card on a real first chat session, while also handling
+  // cross-device returns where localStorage is empty but server-side
+  // chat history exists.
+  useEffect(() => {
+    if (!reportData) return;
+    const engagedLocally = localStorage.getItem(`chat_engaged_${reportData.id}`) === '1';
+    if (engagedLocally) {
+      setShowWelcome(false);
+      return;
+    }
+    // Server-side check
+    supabase
+      .from('chat_messages')
+      .select('id', { count: 'exact', head: true })
+      .eq('report_id', reportData.id)
+      .then(({ count, error }) => {
+        if (!error && count && count > 0) {
+          localStorage.setItem(`chat_engaged_${reportData.id}`, '1');
+          setShowWelcome(false);
+        }
+      });
+  }, [reportData]);
+
+  // Auto-restore session when returning with existing (non-stale) session.
+  // Gated on the per-report engagement flag so a stale sessionId from a
+  // drive-by visit doesn't trigger a "Hi, I'm back!" prompt for a user
+  // who hasn't actually started chatting.
   useEffect(() => {
     if (!reportData || profileLoading || !profile) return;
     if (!hasExistingSession || sessionIsStale) return;
     if (!showWelcome) return; // Already past welcome
+    // Real engagement check — only auto-resume if the user has actually
+    // chatted before for this report.
+    const engaged = localStorage.getItem(`chat_engaged_${reportData.id}`) === '1';
+    if (!engaged) return;
 
     // Update session timestamp
     localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
@@ -245,6 +288,13 @@ const Chat = () => {
       });
       return;
     }
+    // Record real engagement so future visits know the user has actually
+    // started a chat (vs just landing on the page and bouncing). The
+    // sessionId alone doesn't prove engagement because it gets minted
+    // eagerly to allow ChatContainer to render.
+    if (reportData) {
+      localStorage.setItem(`chat_engaged_${reportData.id}`, '1');
+    }
     setShowWelcome(false);
     setAutoResumeMessage("I'm ready, let's begin!");
     trackChatStart();
@@ -293,7 +343,11 @@ const Chat = () => {
     localStorage.setItem('n8n-chat/sessionTimestamp', Date.now().toString());
 
     // For returning users with a stale session, auto-fire a resume prompt.
-    if (isNewSession && isReturningUser) {
+    // Gated on engagement flag so drive-by visits don't trigger the prompt.
+    const engaged =
+      reportData &&
+      localStorage.getItem(`chat_engaged_${reportData.id}`) === '1';
+    if (isNewSession && isReturningUser && engaged) {
       setAutoResumeMessage("Hi, I'm back! Let's continue where we left off.");
     }
 
@@ -453,7 +507,12 @@ const Chat = () => {
                 isReturningUser={isReturningUser}
                 welcomeCompletedSectionIndex={storedProgressIndex}
                 onWelcomeReady={handleWelcomeStart}
-                onUserSentMessage={() => setShowWelcome(false)}
+                onUserSentMessage={() => {
+                  if (reportData) {
+                    localStorage.setItem(`chat_engaged_${reportData.id}`, '1');
+                  }
+                  setShowWelcome(false);
+                }}
               />
               </TTSProvider>
             ) : (

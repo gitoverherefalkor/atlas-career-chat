@@ -250,8 +250,11 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
         >
           <span className="text-[10px] uppercase tracking-wider font-semibold text-gray-500">
             {totalScored > 0
-              ? `${totalScored} roles analyzed`
+              ? `${totalScored} role${totalScored === 1 ? '' : 's'} analyzed`
               : 'From your Cairnly Assessment'}
+          </span>
+          <span className={`font-semibold text-atlas-teal ${isCompact ? 'text-[10px]' : 'text-[11px]'}`}>
+            {isCompact ? 'View →' : 'cairnly.io'}
           </span>
           {onShare ? (
             <button

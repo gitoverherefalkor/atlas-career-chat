@@ -30,13 +30,22 @@ const SECTION_INDEX_TO_TYPE: Record<number, DeliverableSectionType | null> = {
 };
 
 /**
- * Feature flag for the platform-side fast-path delivery. Enabled when the
- * URL has `?fast=1`. Read once on first call so it's stable for a session.
- * Drop the param from the URL → revert to the existing n8n agent flow.
+ * Feature flag for the platform-side fast-path delivery.
+ *
+ * The WF5.3 agent prompt explicitly delegates ALL section delivery to the
+ * platform ("The platform delivers all section content directly. You do
+ * NOT deliver sections."). When the fast path is off, "Continue to next
+ * section" clicks fall through to the agent, which correctly per its
+ * prompt replies with "click the Continue to next section button below"
+ * — locking the chat in a loop because no one is actually delivering the
+ * next section.
+ *
+ * Default: ON. Add `?fast=0` to the URL to opt out for debugging or
+ * rollback to the (currently unimplemented) agent-driven delivery.
  */
 function isFastPathEnabled(): boolean {
   if (typeof window === 'undefined') return false;
-  return new URLSearchParams(window.location.search).get('fast') === '1';
+  return new URLSearchParams(window.location.search).get('fast') !== '0';
 }
 
 interface ChatContainerProps {
@@ -448,6 +457,35 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     ) => {
       if (isSessionCompleted || isWaitingForResponse) return;
 
+      // Infer 'advance' or 'wrap_up' intent from typed text that mirrors what
+      // a QuickReply button would have sent. Without this, a user who types
+      // "let's continue to the next section" instead of clicking the pill
+      // gets routed through the slow agent path; the agent then replies
+      // "click the Continue to next section button below" — which the user
+      // keeps responding to with the same phrase, locking the chat in a loop.
+      // We treat exact/substring matches as the equivalent button click.
+      if (!intent) {
+        const lower = message.trim().toLowerCase().replace(/[!.,?]+$/, '');
+        const looksLikeAdvance =
+          lower.includes('continue to the next section') ||
+          lower.includes('continue to next section') ||
+          lower === 'next section' ||
+          lower === 'continue' ||
+          lower === 'next' ||
+          lower === "let's continue" ||
+          lower === 'lets continue';
+        const looksLikeWrapUp =
+          lower.includes("wrap up the session") ||
+          lower.includes("all done, wrap up") ||
+          lower.includes("i'm all done") ||
+          lower === 'wrap up';
+        if (looksLikeWrapUp) {
+          intent = 'wrap_up';
+        } else if (looksLikeAdvance) {
+          intent = 'advance';
+        }
+      }
+
       // Apply the pending "Ask about <role>" prefix on free-text turns
       // only. Intent-based clicks (advance, wrap_up, etc.) shouldn't get
       // mangled. Clear the pending role after consuming it.
@@ -500,13 +538,22 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
       // its text reply isn't shown in chat (a toast confirms feedback saved
       // when fb_unified completes). User sees the next section immediately
       // and the feedback save happens concurrently in the background.
+      //
+      // Welcome → approach handling: when currentSectionIndex < 1 we're in
+      // the welcome state (no section delivered yet, or only the synthetic
+      // executive-summary at index 0 which is never delivered via chat).
+      // The first 'advance' click should deliver `approach`. The agent
+      // prompt explicitly says it doesn't deliver sections, so the fast
+      // path has to handle this transition too.
       const previousType = SECTION_INDEX_TO_TYPE[currentSectionIndex] ?? undefined;
-      const nextType = SECTION_INDEX_TO_TYPE[currentSectionIndex + 1] ?? undefined;
+      const isWelcomeAdvance = currentSectionIndex < 1 && intent === 'advance';
+      const nextType: DeliverableSectionType | undefined = isWelcomeAdvance
+        ? 'approach'
+        : (SECTION_INDEX_TO_TYPE[currentSectionIndex + 1] ?? undefined);
       const shouldUseFastPath =
         fastPathEnabled &&
         intent === 'advance' &&
-        nextType !== undefined &&
-        currentSectionIndex >= 1; // Welcome → approach handled separately
+        nextType !== undefined;
 
       if (shouldUseFastPath && nextType) {
         const hadDiscussion = !lastTurnWasAdvanceRef.current;
