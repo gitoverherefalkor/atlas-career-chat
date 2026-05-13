@@ -122,44 +122,69 @@ const Dashboard = () => {
       if (accessCode) {
         setUserAccessCode(accessCode);
 
-        // Check the answers table for a draft row tied to this code so the
-        // dashboard correctly shows "Continue" instead of "Start" when the
-        // user has progress server-side but empty localStorage on this device.
-        // We route through verify-access-code (service role) to get the
-        // access_code_id rather than querying access_codes directly, which
-        // is locked down by RLS and inaccessible to regular authenticated
-        // users.
+        // Combined check: ask verify-access-code (service role) for the
+        // access_code_id, then ask the answers table whether a draft row
+        // exists. Defer the modal-open decision until after this check so
+        // a returning user with progress doesn't see a "Ready to Begin /
+        // Start Assessment" modal contradicting the "Continue Assessment"
+        // card behind it.
+        const hasReport = reports && reports.length > 0;
+        const hasLocalSession = savedSession?.isVerified || savedSession?.accessCodeData ||
+          (savedSession?.responses && Object.keys(savedSession.responses).length > 0);
+
         (async () => {
           try {
             const { data: verifyData } = await supabase.functions.invoke(
               'verify-access-code',
               { body: { code: accessCode } }
             );
-            const codeId = verifyData?.valid && verifyData?.accessCode?.id;
-            if (!codeId) return;
+            const verifiedCode = verifyData?.valid ? verifyData?.accessCode : null;
+            if (!verifiedCode?.id) return;
+
             const { data: answersRow } = await supabase
               .from('answers')
               .select('status')
-              .eq('access_code_id', codeId)
+              .eq('access_code_id', verifiedCode.id)
               .maybeSingle();
-            if (answersRow?.status === 'draft') {
+            const hasDraft = answersRow?.status === 'draft';
+
+            if (hasDraft) {
               setHasDraftAnswers(true);
+
+              // Pre-populate assessment_session so the Continue card
+              // navigates straight into the survey without making the
+              // user click through the verification modal again. They've
+              // verified this code at signup or in a previous session;
+              // we have the code data right here, no need to ask twice.
+              if (!hasLocalSession) {
+                const session = {
+                  isVerified: true,
+                  accessCodeData: verifiedCode,
+                  sessionToken: verifiedCode.id,
+                  currentSectionIndex: 0,
+                  currentQuestionIndex: 0,
+                  responses: {},
+                };
+                localStorage.setItem('assessment_session', JSON.stringify(session));
+              }
+              // Make sure the modal isn't already open from a previous
+              // render — close it. (Belt and suspenders.)
+              setShowAccessCodeModal(false);
+            } else if (!hasLocalSession && !hasReport) {
+              // Genuinely new user — no draft, no local session, no report.
+              // Pop the access code modal so they can verify + start.
+              setShowAccessCodeModal(true);
             }
           } catch (err) {
-            // Non-fatal: dashboard just won't auto-show "Continue" — user
-            // can still proceed via the access code modal flow.
             console.warn('[Dashboard] draft-answers check failed:', err);
+            // Network/edge function failed. Fall back to the original
+            // "show modal for unverified users" behavior so we don't
+            // accidentally lock anyone out.
+            if (!hasLocalSession && !hasReport) {
+              setShowAccessCodeModal(true);
+            }
           }
         })();
-
-        // Only show modal if user hasn't verified/started assessment yet
-        const hasStarted = savedSession?.isVerified || savedSession?.accessCodeData ||
-          (savedSession?.responses && Object.keys(savedSession.responses).length > 0);
-        const hasReport = reports && reports.length > 0;
-
-        if (!hasStarted && !hasReport) {
-          setShowAccessCodeModal(true);
-        }
       }
 
       // Update profile with country from localStorage if available (from payment form)
