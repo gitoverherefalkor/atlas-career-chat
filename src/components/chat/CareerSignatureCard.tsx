@@ -257,7 +257,7 @@ export const CareerSignatureCard: React.FC<CareerSignatureCardProps> = ({
               : 'From your Atlas Assessment'}
           </span>
           <span className={`font-semibold text-atlas-teal ${isCompact ? 'text-[10px]' : 'text-[11px]'}`}>
-            {isCompact ? 'View →' : 'atlas-assessments.com'}
+            {isCompact ? 'View →' : 'cairnly.io'}
           </span>
         </div>
       </div>

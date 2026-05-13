@@ -3,7 +3,7 @@ import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-const BASE_URL = "https://atlas-assessments.com";
+const BASE_URL = "https://cairnly.io";
 
 // All 11 chat sections in order (mirrors ReportSidebar.tsx)
 const ALL_SECTIONS = [

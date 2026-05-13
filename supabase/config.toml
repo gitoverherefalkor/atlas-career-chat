@@ -55,8 +55,8 @@ verify_jwt = true
 verify_jwt = true
 
 [auth]
-site_url = "https://atlas-assessments.com"
-additional_redirect_urls = ["https://atlas-career-chat.lovable.app", "http://localhost:3000"]
+site_url = "https://cairnly.io"
+additional_redirect_urls = ["https://www.cairnly.io", "https://atlas-assessments.com", "https://www.atlas-assessments.com", "https://atlas-career-chat.lovable.app", "http://localhost:3000"]
 
 [auth.email]
 enable_confirmations = true

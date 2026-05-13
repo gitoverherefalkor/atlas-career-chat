@@ -64,7 +64,7 @@ serve(async (req) => {
     }
 
     const resend = new Resend(resendApiKey);
-    const chatUrl = `https://atlas-assessments.com/chat`;
+    const chatUrl = `https://cairnly.io/chat`;
 
     const firstName = profile.first_name || 'there';
     const subject = 'Your Atlas career report is ready';

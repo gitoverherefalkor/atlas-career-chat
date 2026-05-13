@@ -45,7 +45,7 @@ serve(async (req) => {
     const paymentMethods: string[] = ["card"];
 
     // Get the origin from request headers or use the live domain
-    const origin = req.headers.get("origin") || "https://atlas-assessments.com";
+    const origin = req.headers.get("origin") || "https://cairnly.io";
 
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({

@@ -962,7 +962,7 @@ const Index = () => {
                 The problem starts early - career decisions based on limited information, parental expectations, or what subjects you happened to be good at in school. Now those choices show up as stress, regret, and Sunday night dread.
               </p>
 
-              <Button variant="outline" className="text-sm py-3 px-6" onClick={() => window.open('https://www.atlas-assessments.com/report', '_blank')}>
+              <Button variant="outline" className="text-sm py-3 px-6" onClick={() => window.open('https://www.cairnly.io/report', '_blank')}>
                 Read the Full Research Report <ArrowRight className="w-4 h-4" />
               </Button>
             </div>

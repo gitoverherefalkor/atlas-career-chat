@@ -53,7 +53,7 @@ serve(async (req) => {
     const emailActionType = emailData?.email_action_type || 'signup';
 
     if (emailData && emailData.token_hash) {
-      const redirectTo = emailData.redirect_to || "https://atlas-assessments.com/dashboard";
+      const redirectTo = emailData.redirect_to || "https://cairnly.io/dashboard";
 
       // Extract the origin from redirect_to to determine the correct base URL
       let baseUrl;
@@ -61,12 +61,12 @@ serve(async (req) => {
         const redirectUrl = new URL(redirectTo);
         baseUrl = redirectUrl.origin;
       } catch {
-        baseUrl = "https://atlas-assessments.com";
+        baseUrl = "https://cairnly.io";
       }
 
       confirmationUrl = `${baseUrl}/auth/confirm?token=${emailData.token_hash}&type=${emailActionType}&redirect_to=${encodeURIComponent(redirectTo)}`;
     } else {
-      confirmationUrl = "https://atlas-assessments.com/auth";
+      confirmationUrl = "https://cairnly.io/auth";
     }
 
     // Check if this is a password reset email

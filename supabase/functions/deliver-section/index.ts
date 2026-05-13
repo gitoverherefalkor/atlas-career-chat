@@ -38,6 +38,8 @@ import type { SectionType } from './boilerplate.ts';
 const ALLOWED_ORIGINS = [
   'https://atlas-assessments.com',
   'https://www.atlas-assessments.com',
+  'https://cairnly.io',
+  'https://www.cairnly.io',
 ];
 const DEV_ORIGIN_PATTERN = /^http:\/\/localhost(:\d+)?$/;
 

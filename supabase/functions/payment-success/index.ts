@@ -59,13 +59,13 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
 
             <p style="font-size: 16px; line-height: 1.6; margin-bottom: 8px; color: #444;">To use your access code:</p>
             <ol style="color: #555; font-size: 15px; line-height: 1.8; padding-left: 20px; margin: 0 0 24px 0;">
-              <li>Visit <a href="https://atlas-assessments.com/assessment" style="color: #3989AF; text-decoration: none; font-weight: 500;">atlas-assessments.com/assessment</a></li>
+              <li>Visit <a href="https://cairnly.io/assessment" style="color: #3989AF; text-decoration: none; font-weight: 500;">cairnly.io/assessment</a></li>
               <li>Enter your access code when prompted</li>
               <li>Complete your personalized career assessment</li>
             </ol>
 
             <div style="text-align: center; margin: 32px 0;">
-              <a href="https://atlas-assessments.com/assessment"
+              <a href="https://cairnly.io/assessment"
                  style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
                 Start Assessment Now
               </a>
