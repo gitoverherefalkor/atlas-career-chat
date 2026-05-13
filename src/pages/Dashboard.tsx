@@ -272,7 +272,16 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="/cairnly-logo.png" alt="Cairnly" className="h-28 w-auto" />
+              {/* h-28 was overflowing the h-16 row. Sized to h-10 so the logo
+                  fits the bar cleanly. object-left pushes the visible logo
+                  to the left edge of its image box in case the PNG carries
+                  any transparent padding — that's what was making the logo
+                  read as horizontally indented from "Welcome, {name}". */}
+              <img
+                src="/cairnly-logo.png"
+                alt="Cairnly"
+                className="h-10 w-auto object-contain object-left"
+              />
             </div>
             <div className="flex items-center space-x-3">
               <Button variant="outline" onClick={() => navigate('/profile')}>
