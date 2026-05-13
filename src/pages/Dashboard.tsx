@@ -42,6 +42,12 @@ const Dashboard = () => {
   const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [showExecSummaryModal, setShowExecSummaryModal] = useState(false);
   const [userAccessCode, setUserAccessCode] = useState<string | null>(null);
+  // True when this user has a 'draft' row in the answers table — i.e., they've
+  // started the survey on a different device (or after clearing localStorage)
+  // but haven't submitted yet. Without this signal, the dashboard shows
+  // "Start Your Assessment" to anyone with empty localStorage, even if they're
+  // halfway through and just landed on a fresh device.
+  const [hasDraftAnswers, setHasDraftAnswers] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -115,6 +121,27 @@ const Dashboard = () => {
       }
       if (accessCode) {
         setUserAccessCode(accessCode);
+
+        // Check the answers table for a draft row tied to this code so the
+        // dashboard correctly shows "Continue" instead of "Start" when the
+        // user has progress server-side but empty localStorage on this device.
+        (async () => {
+          const { data: codeRow } = await supabase
+            .from('access_codes')
+            .select('id')
+            .eq('code', accessCode)
+            .maybeSingle();
+          if (!codeRow?.id) return;
+          const { data: answersRow } = await supabase
+            .from('answers')
+            .select('status')
+            .eq('access_code_id', codeRow.id)
+            .maybeSingle();
+          if (answersRow?.status === 'draft') {
+            setHasDraftAnswers(true);
+          }
+        })();
+
         // Only show modal if user hasn't verified/started assessment yet
         const hasStarted = savedSession?.isVerified || savedSession?.accessCodeData ||
           (savedSession?.responses && Object.keys(savedSession.responses).length > 0);
@@ -183,6 +210,11 @@ const Dashboard = () => {
 
   // Check if there's meaningful assessment progress or a started session
   const hasMeaningfulProgress = () => {
+    // Server-side draft row wins regardless of local state — covers the
+    // fresh-device / cleared-cache case where localStorage has nothing
+    // but the user genuinely has a half-finished survey in Supabase.
+    if (hasDraftAnswers) return true;
+
     if (!savedSession) return false;
 
     // Show continue if:

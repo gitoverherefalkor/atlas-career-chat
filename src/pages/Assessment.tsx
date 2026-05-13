@@ -7,6 +7,7 @@ import { AssessmentCompletion } from '@/components/assessment/AssessmentCompleti
 import { PreSurveyUpload } from '@/components/assessment/PreSurveyUpload';
 import { useAssessmentLogic } from '@/components/assessment/useAssessmentLogic';
 import { AssessmentSessionProvider } from '@/components/assessment/AssessmentSessionContext';
+import { useProfile } from '@/hooks/useProfile';
 
 const AssessmentPage = () => {
   const {
@@ -24,11 +25,25 @@ const AssessmentPage = () => {
     handleExitAssessment,
   } = useAssessmentLogic();
 
-  // Check if pre-survey upload is complete (either uploaded or skipped)
-  const preSurveyUploadComplete = localStorage.getItem('pre_survey_upload_complete') === 'true';
+  const { profile, isLoading: profileLoading } = useProfile();
 
-  // Show loading while checking auth
-  if (authLoading) {
+  // PreSurveyUpload is the optional CV upload screen between access-code
+  // verification and the actual survey. We consider it "complete" if either:
+  // - localStorage flag is set (user previously uploaded or explicitly skipped
+  //   on this device), OR
+  // - profile.resume_uploaded_at is set in the DB (user uploaded a CV at any
+  //   point, on any device — no need to prompt again).
+  // This prevents the upload screen popping back up for returning users on
+  // fresh devices when they've already uploaded a CV.
+  const hasResumeOnServer = !!profile?.resume_uploaded_at;
+  const preSurveyUploadComplete =
+    localStorage.getItem('pre_survey_upload_complete') === 'true' || hasResumeOnServer;
+
+  // Show loading while checking auth or profile.
+  // We need profile too so the resume-uploaded check below is accurate,
+  // otherwise we'd briefly show the PreSurveyUpload screen for users who
+  // already uploaded a CV.
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
