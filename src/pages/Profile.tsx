@@ -91,8 +91,8 @@ const Profile = () => {
       const { error } = await supabase.functions.invoke('delete-user-data');
       if (error) throw error;
 
-      // Sign out and redirect
-      await supabase.auth.signOut();
+      // Sign out and redirect — local scope (global is 403-ing on this project)
+      await supabase.auth.signOut({ scope: 'local' });
       navigate('/');
     } catch (err: any) {
       console.error('Delete error:', err);

@@ -145,7 +145,12 @@ const Dashboard = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      // Local-scope signout: clear the local session without calling
+      // /auth/v1/logout?scope=global, which has been 403-ing on this
+      // project (likely a Supabase config quirk). User stays logged out
+      // on this device, sessions on other devices stay alive until they
+      // expire naturally — acceptable UX for our flow.
+      const { error } = await supabase.auth.signOut({ scope: 'local' });
       if (error) {
         toast({
           title: "Error",
