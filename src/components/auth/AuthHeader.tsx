@@ -9,11 +9,11 @@ const AuthHeader = ({ isLogin }: AuthHeaderProps) => {
   return (
     <div className="text-center mb-8">
       <img
-        src="/cairnly-logo.png"
+        src="/cairnly-logo-white.png"
         alt="Cairnly"
         className="h-12 w-auto mx-auto mb-2"
       />
-      <p className="text-gray-600 mb-2">
+      <p className="text-white mb-2">
         {isLogin ? 'Sign in to your account' : 'Create your account to get started'}
       </p>
       {!isLogin && (
