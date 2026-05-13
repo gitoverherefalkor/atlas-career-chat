@@ -100,6 +100,37 @@ const COMPANY_CULTURE_OPTIONS = [
   { value: 'Small Business Owner (up to 5 FTE)', label: 'Small Business Owner (up to 5 FTE)', description: 'Running my own company with employees or contractors' },
 ];
 
+// Textarea that grows with its content (no inner scrollbar). Used for free-text
+// achievement fields where users paste bullet lists of varying length.
+const AutoResizeTextarea: React.FC<
+  React.TextareaHTMLAttributes<HTMLTextAreaElement> & { minHeightPx?: number }
+> = ({ minHeightPx = 60, value, onChange, className, ...rest }) => {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  const resize = () => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${Math.max(minHeightPx, el.scrollHeight)}px`;
+  };
+  useEffect(() => {
+    resize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => {
+        onChange?.(e);
+        resize();
+      }}
+      className={className}
+      style={{ minHeight: `${minHeightPx}px`, overflow: 'hidden' }}
+      {...rest}
+    />
+  );
+};
+
 // Responsive Ranking Component
 const ResponsiveRanking: React.FC<{
   question: any;
@@ -1796,11 +1827,11 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         <div className="w-1 h-4 bg-gray-300 rounded-full" />
                         <label className="text-sm font-medium text-gray-500">Other Achievements (optional)</label>
                       </div>
-                      <textarea
+                      <AutoResizeTextarea
                         value={skillsValue.achievements.find(a => a.company === 'Other')?.text || ''}
                         onChange={(e) => updateCompanyAchievement('Other', '', e.target.value)}
-                        className="w-full rounded-md border border-gray-300 bg-background text-foreground px-3 py-2 text-sm leading-relaxed resize-y min-h-[60px]"
-                        rows={2}
+                        className="w-full rounded-md border border-gray-300 bg-background text-foreground px-3 py-2 text-sm leading-relaxed"
+                        minHeightPx={60}
                         placeholder="Any other achievements not tied to a specific company..."
                       />
                     </div>
