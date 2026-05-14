@@ -82,9 +82,16 @@ serve(async (req) => {
     return errorResponse('chatInput too long (max 8000 chars)', 400, corsHeaders);
   }
 
-  // Forward with x-shared-secret. 90s timeout (n8n agent calls are slow);
-  // shorter than the frontend's 120s so we surface a clear error before
-  // the user's fetch times out.
+  // Forward to n8n with auth. We send BOTH x-shared-secret AND Basic Auth
+  // because the n8n Chat Trigger node only supports Basic Auth — not Header
+  // Auth — but other downstream consumers may still validate x-shared-secret.
+  // Basic Auth username is arbitrary; password is the shared secret value.
+  // Over HTTPS this is equivalent in security to the header approach.
+  const basicAuthUser = Deno.env.get('N8N_BASIC_AUTH_USER') ?? 'atlas-chat-proxy';
+  const basicAuthHeader = `Basic ${btoa(`${basicAuthUser}:${sharedSecret}`)}`;
+
+  // 90s timeout (n8n agent calls are slow); shorter than the frontend's
+  // 120s so we surface a clear error before the user's fetch times out.
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 90_000);
 
@@ -95,6 +102,7 @@ serve(async (req) => {
       headers: {
         'Content-Type': 'application/json',
         'x-shared-secret': sharedSecret,
+        Authorization: basicAuthHeader,
       },
       body: JSON.stringify(body),
       signal: controller.signal,
