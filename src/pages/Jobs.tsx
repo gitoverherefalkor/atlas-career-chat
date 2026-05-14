@@ -187,7 +187,7 @@ const Jobs = () => {
       ? [primaryCountry, secondaryCountry]
       : [primaryCountry];
 
-    searchJobs(careers, countryCodes, city || undefined, remoteOnly, userLanguages);
+    searchJobs(careers, countryCodes, city || undefined, remoteOnly, userLanguages, latestReport?.id);
   };
 
   // Loading states

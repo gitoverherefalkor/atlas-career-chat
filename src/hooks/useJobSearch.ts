@@ -60,6 +60,7 @@ export const useJobSearch = () => {
     location?: string,
     remoteOnly?: boolean,
     userLanguages?: UserLanguage[],
+    reportId?: string,
   ) => {
     if (careers.length === 0 || countryCodes.length === 0) return;
 
@@ -94,6 +95,9 @@ export const useJobSearch = () => {
             location: location || '',
             alternate_titles: careers[i].alternateTitles || [],
             user_languages: userLanguages || [],
+            // report_id lets the n8n workflow look up enriched_jobs.alternate_titles
+            // for this career when the primary search returns sparse results.
+            report_id: reportId || null,
           },
         });
 

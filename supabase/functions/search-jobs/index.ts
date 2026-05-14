@@ -19,7 +19,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { career_title, location, alternate_titles, remote_only } = body;
+    const { career_title, location, alternate_titles, remote_only, report_id } = body;
 
     // Accept country_codes (array, 1-2 entries) OR country_code (legacy single).
     // Always normalize to a sorted, deduped array internally.
@@ -59,11 +59,38 @@ serve(async (req) => {
       .sort()
       .join('+') || 'any';
 
-    // Initialize Supabase client with service role for cache access
+    // Initialize Supabase client with service role for cache + enriched_jobs access
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
+
+    // Look up alternate_titles for this career upfront. n8n's anon-keyed
+    // Supabase node would be blocked by RLS, so we pre-fetch here using the
+    // service role and forward to n8n. n8n's conditional fallback then
+    // decides whether to actually use these.
+    let dbAlternateTitles: string[] = [];
+    if (report_id && career_title) {
+      const { data: enrichedRow, error: enrichedErr } = await supabase
+        .from('enriched_jobs')
+        .select('alternate_titles')
+        .eq('career_title', career_title)
+        .eq('report_id', report_id)
+        .limit(1)
+        .maybeSingle();
+
+      if (!enrichedErr && enrichedRow?.alternate_titles) {
+        const raw = enrichedRow.alternate_titles;
+        // alternate_titles is jsonb — could be array or object
+        if (Array.isArray(raw)) {
+          dbAlternateTitles = raw.map((t: any) => String(t || '').trim()).filter(Boolean);
+        } else if (raw && typeof raw === 'object') {
+          dbAlternateTitles = Object.values(raw)
+            .map((t: any) => String(t || '').trim())
+            .filter(Boolean);
+        }
+      }
+    }
 
     // Cache key: sorted country list + remote suffix + language signature.
     // Same query in NL+DE hits the same cache regardless of which order the
@@ -129,6 +156,11 @@ serve(async (req) => {
           // user_languages drives the scoring step's language-awareness.
           // Forwarded as-is; n8n decides how aggressively to weight it.
           user_languages: userLanguages,
+          report_id: report_id || null,
+          // alternate_titles pulled from enriched_jobs server-side (RLS-safe).
+          // n8n's conditional alt-search path will use these when the primary
+          // result count is below the threshold.
+          alternate_titles_db: dbAlternateTitles,
         }),
         signal: controller.signal,
       });
