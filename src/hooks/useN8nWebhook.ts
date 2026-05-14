@@ -1,5 +1,9 @@
-// Hook for communicating with the n8n chat webhook
-// Replaces the @n8n/chat library's internal HTTP layer
+// Hook for communicating with the n8n chat agent via the Supabase
+// `chat-proxy` edge function. We no longer hit n8n directly from the
+// browser — the n8n webhook URL is server-side only, and the proxy
+// authenticates the user JWT + rate-limits before forwarding.
+
+import { supabase } from '@/integrations/supabase/client';
 
 interface WebhookMetadata {
   report_id: string;
@@ -16,12 +20,28 @@ interface PreviousSessionResponse {
   data?: PreviousMessage[];
 }
 
-const WEBHOOK_URL = import.meta.env.VITE_N8N_CHAT_WEBHOOK_URL as string;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+const PROXY_URL = `${SUPABASE_URL}/functions/v1/chat-proxy`;
 const TIMEOUT_MS = 120_000; // 2 minutes — these AI responses can take a while
+
+async function buildHeaders(): Promise<Record<string, string>> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+  // chat-proxy requires a real user JWT — anon key won't work.
+  if (!token) {
+    throw new Error('Not signed in — cannot call chat-proxy without a user session');
+  }
+  return {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${token}`,
+    apikey: SUPABASE_ANON_KEY,
+  };
+}
 
 export function useN8nWebhook() {
 
-  // Send a chat message to n8n and get the bot response
+  // Send a chat message to n8n (via chat-proxy) and get the bot response
   const sendMessage = async (
     sessionId: string,
     message: string,
@@ -31,9 +51,10 @@ export function useN8nWebhook() {
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
     try {
-      const res = await fetch(WEBHOOK_URL, {
+      const headers = await buildHeaders();
+      const res = await fetch(PROXY_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         mode: 'cors',
         signal: controller.signal,
         body: JSON.stringify({
@@ -45,7 +66,7 @@ export function useN8nWebhook() {
       });
 
       if (!res.ok) {
-        throw new Error(`Webhook returned ${res.status}: ${res.statusText}`);
+        throw new Error(`chat-proxy returned ${res.status}: ${res.statusText}`);
       }
 
       const data = await res.json();
@@ -67,9 +88,10 @@ export function useN8nWebhook() {
     metadata: WebhookMetadata
   ): Promise<Array<{ sender: 'user' | 'bot'; content: string }>> => {
     try {
-      const res = await fetch(WEBHOOK_URL, {
+      const headers = await buildHeaders();
+      const res = await fetch(PROXY_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         mode: 'cors',
         body: JSON.stringify({
           action: 'loadPreviousSession',

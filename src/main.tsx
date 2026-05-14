@@ -2,5 +2,15 @@ import { createRoot } from 'react-dom/client'
 import './i18n'
 import App from './App.tsx'
 import './index.css'
+import { initSentry, Sentry } from './lib/sentry'
+import { GlobalErrorFallback } from './components/GlobalErrorFallback'
 
-createRoot(document.getElementById("root")!).render(<App />);
+initSentry();
+
+createRoot(document.getElementById("root")!).render(
+  <Sentry.ErrorBoundary
+    fallback={({ resetError }) => <GlobalErrorFallback resetError={resetError} />}
+  >
+    <App />
+  </Sentry.ErrorBoundary>
+);
