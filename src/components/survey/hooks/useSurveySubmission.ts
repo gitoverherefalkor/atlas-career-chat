@@ -32,34 +32,13 @@ export const useSurveySubmission = ({
   const markAccessCodeAsUsed = useCallback(async () => {
     if (!accessCodeData?.id) return;
 
-    try {
-      // First get the current usage count
-      const { data: currentCode, error: fetchError } = await supabase
-        .from('access_codes')
-        .select('usage_count')
-        .eq('id', accessCodeData.id)
-        .single();
+    // Atomic increment via RPC — the previous read-then-write was racy and
+    // was also being called from a second hook, causing double-increments.
+    const { error } = await supabase.rpc('consume_access_code', {
+      p_code_id: accessCodeData.id,
+    });
 
-      if (fetchError) {
-        console.error('Error fetching current usage count:', fetchError);
-        return;
-      }
-
-      // Increment the usage count
-      const newUsageCount = (currentCode.usage_count || 0) + 1;
-      
-      const { error } = await supabase
-        .from('access_codes')
-        .update({ 
-          usage_count: newUsageCount,
-          used_at: new Date().toISOString()
-        })
-        .eq('id', accessCodeData.id);
-
-      if (error) {
-        console.error('Error marking access code as used:', error);
-      }
-    } catch (error) {
+    if (error) {
       console.error('Error marking access code as used:', error);
     }
   }, [accessCodeData]);

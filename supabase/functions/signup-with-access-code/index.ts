@@ -103,6 +103,24 @@ serve(async (req) => {
       });
     }
 
+    // If the code is already bound to a different user, reject. Prevents
+    // multiple signups racing against the same code before any survey is
+    // submitted.
+    if (codeRecord.user_id && codeRecord.user_id !== null) {
+      // Check if it's bound to a user whose email matches the signup email.
+      // If so, this is a re-signup attempt — let the "email already exists"
+      // path below handle it (or we'd block legit re-signup of the bound user).
+      const { data: boundUser } = await supabase.auth.admin.getUserById(codeRecord.user_id);
+      if (boundUser?.user?.email && boundUser.user.email.toLowerCase() !== trimmedEmail) {
+        return new Response(JSON.stringify({
+          error: 'This access code is already in use by another account.'
+        }), {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     // --- Create pre-verified user ---
 
     const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
@@ -140,6 +158,36 @@ serve(async (req) => {
     }
 
     console.log('User created successfully:', newUser.user?.id);
+
+    // Atomically bind the access code to this user. The CAS predicate
+    // (user_id IS NULL OR user_id = newUser.id) blocks a race where two
+    // signups try to claim the same code. usage_count is not incremented
+    // here — that happens once at survey submission via the
+    // consume_access_code RPC.
+    const { data: bindResult, error: bindError } = await supabase
+      .from('access_codes')
+      .update({ user_id: newUser.user!.id })
+      .eq('id', codeRecord.id)
+      .or(`user_id.is.null,user_id.eq.${newUser.user!.id}`)
+      .select('id');
+
+    if (bindError) {
+      console.error('Failed to bind access code to user:', bindError);
+      // Don't roll back the user — they exist and can sign in. Bind can be
+      // retried on next survey load.
+    } else if (!bindResult || bindResult.length === 0) {
+      // Lost the race: the code was bound to a different user between the
+      // check above and this update. The user is created but cannot use this
+      // code. Surface a clear error so they contact support.
+      console.error('Access code was claimed by another user during signup', { codeId: codeRecord.id });
+      return new Response(JSON.stringify({
+        error: 'This access code is already in use by another account. Please contact support.',
+        userId: newUser.user?.id
+      }), {
+        status: 409,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(JSON.stringify({
       success: true,
