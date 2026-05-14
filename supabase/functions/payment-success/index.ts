@@ -148,6 +148,34 @@ serve(async (req) => {
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
 
+    // Idempotency: if a purchase row already exists for this Stripe session,
+    // return the previously-minted access code rather than minting a new one.
+    // Without this guard, Stripe webhook retries or duplicate success-page
+    // calls would mint duplicate codes and re-email the customer.
+    const { data: existingPurchase } = await supabase
+      .from("purchases")
+      .select("access_code_id")
+      .eq("stripe_session_id", session.id)
+      .maybeSingle();
+
+    if (existingPurchase?.access_code_id) {
+      const { data: existingCode } = await supabase
+        .from("access_codes")
+        .select("code")
+        .eq("id", existingPurchase.access_code_id)
+        .maybeSingle();
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          accessCode: existingCode?.code ?? null,
+          alreadyProcessed: true,
+          message: "Payment already processed",
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Generate a new access code
     const accessCode = generateAccessCode();
 
@@ -183,7 +211,9 @@ serve(async (req) => {
     const lastName = session.metadata?.lastName || "";
     const country = session.metadata?.country || "Unknown";
 
-    // Store the purchase details
+    // Store the purchase details. Race-safe: if another concurrent call won
+    // the insert, the UNIQUE constraint on stripe_session_id throws and we
+    // fall back to the existing code (whoever inserted wins).
     const { error: purchaseError } = await supabase
       .from("purchases")
       .insert({
@@ -196,6 +226,31 @@ serve(async (req) => {
       });
 
     if (purchaseError) {
+      // 23505 = unique_violation — another concurrent call beat us to it.
+      // Roll back our orphaned access_codes row and return the winner's code.
+      if (purchaseError.code === '23505') {
+        console.warn(`Race detected on stripe_session_id=${session.id}, falling back to existing code`);
+        await supabase.from("access_codes").delete().eq("id", codeData.id);
+
+        const { data: winnerPurchase } = await supabase
+          .from("purchases")
+          .select("access_code_id")
+          .eq("stripe_session_id", session.id)
+          .maybeSingle();
+        const { data: winnerCode } = winnerPurchase?.access_code_id
+          ? await supabase.from("access_codes").select("code").eq("id", winnerPurchase.access_code_id).maybeSingle()
+          : { data: null };
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            accessCode: winnerCode?.code ?? null,
+            alreadyProcessed: true,
+            message: "Payment already processed",
+          }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
       console.error("Error recording purchase:", purchaseError);
       return errorResponse("Failed to record purchase. Please contact support.", 500, corsHeaders);
     }
