@@ -26,45 +26,18 @@
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
+  getCorsHeaders,
+  handleCorsPreFlight,
+  errorResponse,
+  getAuthenticatedUser,
+} from '../_shared/cors.ts';
+import {
   renderSection,
   buildAiChatMessage,
   buildHumanChatMessage,
   type ReportSectionRow,
 } from './renderer.ts';
 import type { SectionType } from './boilerplate.ts';
-
-// Inlined CORS helper — same logic as supabase/functions/_shared/cors.ts.
-// Inlined so the deploy bundle is self-contained.
-const ALLOWED_ORIGINS = [
-  'https://cairnly.io',
-  'https://www.cairnly.io',
-];
-const DEV_ORIGIN_PATTERN = /^http:\/\/localhost(:\d+)?$/;
-
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get('origin') || '';
-  const isAllowed =
-    ALLOWED_ORIGINS.includes(origin) || DEV_ORIGIN_PATTERN.test(origin);
-  return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-}
-
-function handleCorsPreFlight(req: Request): Response | null {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: getCorsHeaders(req) });
-  }
-  return null;
-}
-
-function errorResponse(message: string, status: number, corsHeaders: Record<string, string>) {
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
 
 const VALID_SECTION_TYPES = new Set<SectionType>([
   'approach',
@@ -91,6 +64,12 @@ serve(async (req) => {
     return errorResponse('Method not allowed', 405, corsHeaders);
   }
 
+  // Auth: derive userId from JWT. Body-supplied user_id is ignored — it
+  // would let an attacker write chat messages under another user's account.
+  const authed = await getAuthenticatedUser(req, corsHeaders);
+  if (authed instanceof Response) return authed;
+  const { userId: authUserId } = authed;
+
   let body: {
     report_id?: string;
     section_type?: string;
@@ -112,9 +91,10 @@ serve(async (req) => {
     previous_section_type,
     user_message,
     session_id,
-    user_id,
     skip_history_user_write,
   } = body;
+  // Body user_id is intentionally NOT destructured — we use authUserId only.
+  const user_id = authUserId;
 
   if (!report_id || typeof report_id !== 'string') {
     return errorResponse('report_id required', 400, corsHeaders);
@@ -141,6 +121,22 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
+
+  // Ownership check: confirm the report belongs to the authenticated user.
+  // Service role bypasses RLS, so we must enforce ownership in app code.
+  const { data: reportRow, error: reportLookupErr } = await supabase
+    .from('reports')
+    .select('user_id')
+    .eq('id', report_id)
+    .maybeSingle();
+
+  if (reportLookupErr) {
+    console.error('[deliver-section] report ownership lookup failed:', reportLookupErr);
+    return errorResponse('Failed to verify report access', 500, corsHeaders);
+  }
+  if (!reportRow || reportRow.user_id !== authUserId) {
+    return errorResponse('Forbidden', 403, corsHeaders);
+  }
 
   // 1. Fetch the section row(s) we need to render.
   const { data: rows, error: fetchErr } = await supabase

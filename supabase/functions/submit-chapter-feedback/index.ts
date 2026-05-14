@@ -25,30 +25,12 @@
 
 import { serve } from 'https://deno.land/std@0.224.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const ALLOWED_ORIGINS = [
-  'https://cairnly.io',
-  'https://www.cairnly.io',
-];
-const DEV_ORIGIN_PATTERN = /^http:\/\/localhost(:\d+)?$/;
-
-function getCorsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get('origin') || '';
-  const isAllowed =
-    ALLOWED_ORIGINS.includes(origin) || DEV_ORIGIN_PATTERN.test(origin);
-  return {
-    'Access-Control-Allow-Origin': isAllowed ? origin : ALLOWED_ORIGINS[0],
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-}
-
-function errorResponse(message: string, status: number, corsHeaders: Record<string, string>) {
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
+import {
+  getCorsHeaders,
+  handleCorsPreFlight,
+  errorResponse,
+  getAuthenticatedUser,
+} from '../_shared/cors.ts';
 
 interface ChapterFeedback {
   quality?: string[];
@@ -74,14 +56,17 @@ const VALID_SUBSECTION = new Set([
 ]);
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: getCorsHeaders(req) });
-  }
+  const preflight = handleCorsPreFlight(req);
+  if (preflight) return preflight;
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method !== 'POST') {
     return errorResponse('Method not allowed', 405, corsHeaders);
   }
+
+  const authed = await getAuthenticatedUser(req, corsHeaders);
+  if (authed instanceof Response) return authed;
+  const { userId: authUserId } = authed;
 
   let body: { report_id?: string; feedback?: ChapterFeedback };
   try {
@@ -137,6 +122,21 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
   );
+
+  // Ownership check: confirm the report belongs to the authenticated user.
+  const { data: reportRow, error: reportLookupErr } = await supabase
+    .from('reports')
+    .select('user_id')
+    .eq('id', report_id)
+    .maybeSingle();
+
+  if (reportLookupErr) {
+    console.error('[submit-chapter-feedback] report ownership lookup failed:', reportLookupErr);
+    return errorResponse('Failed to verify report access', 500, corsHeaders);
+  }
+  if (!reportRow || reportRow.user_id !== authUserId) {
+    return errorResponse('Forbidden', 403, corsHeaders);
+  }
 
   const payload = {
     report_id,

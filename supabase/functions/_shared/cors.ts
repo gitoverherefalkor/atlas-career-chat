@@ -81,6 +81,64 @@ export function errorResponse(
   );
 }
 
+/**
+ * Resolves the authenticated user from the request's Authorization header by
+ * calling Supabase's GoTrue auth/v1/user endpoint. Avoids pulling supabase-js
+ * into the _shared bundle.
+ *
+ * Returns the user on success, or a Response (401) on failure.
+ *
+ * Caller should:
+ *   const authed = await getAuthenticatedUser(req, corsHeaders);
+ *   if (authed instanceof Response) return authed;
+ *   const { userId } = authed;
+ *
+ * NOTE: ANY function that takes a user-scoped resource ID (report_id, etc.) from
+ *       the request body MUST additionally verify ownership against `userId`
+ *       before reading or writing. JWT auth alone only proves SOME user is
+ *       logged in.
+ */
+export async function getAuthenticatedUser(
+  req: Request,
+  corsHeaders: Record<string, string>,
+): Promise<{ userId: string; email?: string } | Response> {
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return errorResponse('Authorization required', 401, corsHeaders);
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  if (!supabaseUrl || !anonKey) {
+    console.error('SUPABASE_URL or SUPABASE_ANON_KEY missing in environment');
+    return errorResponse('Server misconfigured', 500, corsHeaders);
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${supabaseUrl}/auth/v1/user`, {
+      headers: {
+        Authorization: authHeader,
+        apikey: anonKey,
+      },
+    });
+  } catch (e) {
+    console.error('auth/v1/user fetch failed:', e);
+    return errorResponse('Authentication service unreachable', 503, corsHeaders);
+  }
+
+  if (!res.ok) {
+    return errorResponse('Invalid authentication', 401, corsHeaders);
+  }
+
+  const user = await res.json().catch(() => null);
+  if (!user?.id || typeof user.id !== 'string') {
+    return errorResponse('Invalid authentication', 401, corsHeaders);
+  }
+
+  return { userId: user.id, email: user.email };
+}
+
 // --- Rate Limiting ---
 // Lightweight in-memory rate limiter for Supabase Edge Functions.
 // Each function instance has its own Map, so this works best for sustained abuse

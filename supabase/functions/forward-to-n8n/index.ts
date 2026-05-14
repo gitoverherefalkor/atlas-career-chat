@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { getCorsHeaders, handleCorsPreFlight, errorResponse } from "../_shared/cors.ts";
+import { getCorsHeaders, handleCorsPreFlight, errorResponse, getAuthenticatedUser } from "../_shared/cors.ts";
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -11,6 +11,13 @@ serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   try {
+    // Authenticate the caller. user_id is derived from the JWT — never from
+    // the request body — to prevent attackers from creating reports under
+    // another user's account.
+    const authed = await getAuthenticatedUser(req, corsHeaders);
+    if (authed instanceof Response) return authed;
+    const { userId } = authed;
+
     // Get the request body
     const requestBody = await req.json();
 
@@ -26,23 +33,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
-
-    // Determine user ID strictly from request body; do not use hardcoded emails
-    let userId = requestBody.user_id;
-    const userEmail = requestBody.user_email as string | undefined;
-
-    if (!userId && userEmail) {
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', userEmail)
-        .maybeSingle();
-      userId = profileData?.id;
-    }
-
-    if (!userId) {
-      return errorResponse('user_id or user_email required', 400, corsHeaders);
-    }
 
     // Step 1: Create a report record first
     const { data: reportData, error: reportError } = await supabase.from('reports').insert({

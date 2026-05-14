@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
-import { getCorsHeaders, handleCorsPreFlight, errorResponse } from "../_shared/cors.ts";
+import { getCorsHeaders, handleCorsPreFlight, errorResponse, getAuthenticatedUser } from "../_shared/cors.ts";
 
 serve(async (req) => {
   const preflight = handleCorsPreFlight(req);
@@ -8,10 +8,25 @@ serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
 
   try {
-    const { file_url, user_id } = await req.json();
+    // Derive user_id from JWT. Body user_id is ignored — would let an
+    // attacker overwrite another user's parsed-resume profile.
+    const authed = await getAuthenticatedUser(req, corsHeaders);
+    if (authed instanceof Response) return authed;
+    const { userId: user_id } = authed;
 
-    if (!file_url || !user_id) {
-      return errorResponse('file_url and user_id are required', 400, corsHeaders);
+    const { file_url } = await req.json();
+
+    if (!file_url || typeof file_url !== 'string') {
+      return errorResponse('file_url is required', 400, corsHeaders);
+    }
+
+    // Verify the file_url points into this user's storage prefix. The frontend
+    // uploads to `<user_id>/<filename>` in the resumes bucket, so the URL path
+    // must contain `/${user_id}/`. Blocks an attacker from sending a victim's
+    // file_url through n8n.
+    if (!file_url.includes(`/${user_id}/`)) {
+      console.error('[forward-resume-to-n8n] file_url does not match authenticated user prefix', { user_id });
+      return errorResponse('file_url does not belong to authenticated user', 403, corsHeaders);
     }
 
     const n8nWebhookUrl = Deno.env.get("N8N_RESUME_WEBHOOK_URL");
