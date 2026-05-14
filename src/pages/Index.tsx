@@ -995,16 +995,16 @@ const Index = () => {
       <section className="py-32 md:py-40 bg-[#213F4F] text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-tr from-[#213F4F] via-transparent to-[#27A1A1]/10 pointer-events-none" />
         <div className="container mx-auto px-6 relative z-10">
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-tight">Ready to Stop Guessing?</h2>
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-black mb-8 tracking-tighter leading-tight text-transparent bg-clip-text bg-gradient-to-r from-[#C8891A] to-[#F0C040]">Ready to Stop Guessing?</h2>
           <p className="text-lg md:text-xl text-blue-100/70 mb-12 max-w-2xl mx-auto font-medium leading-relaxed">
-            Get clarity on your career direction. Take the assessment, get honest recommendations, make informed decisions.
+            Take the assessment, get honest recommendations, make informed decisions.
           </p>
           <div className="flex justify-center">
             <Button className="text-xl md:text-2xl py-7 px-14 mb-6 uppercase tracking-widest shadow-[0_0_50px_rgba(39,161,161,0.3)]" onClick={handleGetStarted}>
-              Get Your Cairnly Assessment - €39
+              Get career path clarity now!
             </Button>
           </div>
-          <p className="text-blue-100/70 text-[10px] font-black uppercase tracking-[0.4em] mt-4">Beta access. Full refund if you're not satisfied.</p>
+          <p className="text-blue-100/70 text-[10px] font-black uppercase tracking-[0.4em] mt-4">During beta full refund if you're not satisfied!</p>
         </div>
       </section>
 
