@@ -63,7 +63,7 @@ const Footer = () => {
         </div>
 
         <div className="border-t border-gray-800 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <div className="text-sm text-gray-500 mb-4 md:mb-0">
               <Link to="/privacy-policy" className="hover:text-white transition-colors">
                 {t('footer.privacyPolicy')}
@@ -72,7 +72,14 @@ const Footer = () => {
               <Link to="/terms-conditions" className="hover:text-white transition-colors">
                 {t('footer.termsOfService')}
               </Link>
+              <span className="mx-2">|</span>
+              <Link to="/security" className="hover:text-white transition-colors">
+                Security
+              </Link>
             </div>
+            <p className="text-xs text-gray-600 text-center md:text-right">
+              Built in the Netherlands. GDPR compliant. Payments by Stripe.
+            </p>
           </div>
         </div>
       </div>

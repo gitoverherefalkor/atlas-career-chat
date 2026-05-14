@@ -698,6 +698,27 @@ const Index = () => {
         </div>
       </section>
 
+      {/* ========== TRUST STRIP ========== */}
+      <section className="py-10 bg-white border-b border-gray-100">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            {[
+              { icon: '🇪🇺', title: 'GDPR compliant', desc: 'European servers. Your data stays in Europe.' },
+              { icon: '🔒', title: 'Payments by Stripe', desc: 'We never see your card.' },
+              { icon: '🗑️', title: 'One-click delete', desc: 'Your data is yours. Take it back anytime.' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-gray-50">
+                <span className="text-2xl">{item.icon}</span>
+                <div>
+                  <p className="font-black text-sm text-[#1A1A1A]">{item.title}</p>
+                  <p className="text-xs text-gray-500 font-medium mt-0.5">{item.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ========== HOW IT WORKS ========== */}
       <section id="how-it-works" className="py-24 md:py-32 bg-white scroll-mt-24">
         <div className="container mx-auto px-6">
@@ -1001,7 +1022,9 @@ const Index = () => {
             <a href="/terms-conditions" className="hover:text-[#27A1A1] transition-colors">Terms of Service</a>
             <a href="/cookie-policy" className="hover:text-[#27A1A1] transition-colors">Cookie Policy</a>
             <a href="/support" className="hover:text-[#27A1A1] transition-colors">Support</a>
+            <a href="/security" className="hover:text-[#27A1A1] transition-colors">Security</a>
           </div>
+          <p className="text-[10px] text-gray-400 text-center mt-4">Built in the Netherlands. GDPR compliant. Payments by Stripe.</p>
         </div>
       </footer>
     </div>

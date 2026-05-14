@@ -375,9 +375,10 @@ export function CheckoutForm() {
           <Button type="submit" className="w-full bg-atlas-teal hover:bg-atlas-teal/90 text-white font-bold py-3 rounded-lg shadow-lg shadow-teal-500/20 hover:shadow-teal-400/40 transition-all duration-150" disabled={isLoading}>
           {isLoading ? "Processing..." : "Proceed to Checkout"}
         </Button>
-          <p className="text-xs text-center text-muted-foreground mt-2">
-          You'll be securely redirected to <span className="font-medium text-foreground">Stripe</span> to complete your payment
-        </p>
+          <div className="pt-2 space-y-2 text-center">
+            <p className="text-xs text-muted-foreground">Your payment is handled by Stripe. We never see or store your card details.</p>
+            <p className="text-xs text-muted-foreground">Your assessment data stays yours. We don't sell it, we don't share it, and you can permanently delete everything from your account at any time.</p>
+          </div>
       </form>
     </Form>
     </div>

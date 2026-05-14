@@ -35,6 +35,7 @@ const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/TermsOfService"));
 const CookiePolicy = lazy(() => import("./pages/CookiePolicy"));
 const Support = lazy(() => import("./pages/Support"));
+const Security = lazy(() => import("./pages/Security"));
 const ColorTest = lazy(() => import("./pages/ColorTest"));
 const Jobs = lazy(() => import("./pages/Jobs"));
 // Note: Payment is intentionally NOT lazy-loaded — see eager imports above.
@@ -93,6 +94,7 @@ const App = () => {
               <Route path="/terms-conditions" element={<TermsOfService />} />
               <Route path="/cookie-policy" element={<CookiePolicy />} />
               <Route path="/support" element={<Support />} />
+              <Route path="/security" element={<Security />} />
               <Route path="/payment" element={<Payment />} />
               <Route path="/color-test" element={<ColorTest />} />
               <Route path="/jobs" element={<Jobs />} />
