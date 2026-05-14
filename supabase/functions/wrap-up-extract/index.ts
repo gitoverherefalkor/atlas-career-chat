@@ -186,7 +186,7 @@ serve(async (req) => {
       Authorization: `Bearer ${openaiKey}`,
     },
     body: JSON.stringify({
-      model: 'gpt-5.4-mini',
+      model: 'gpt-5.4-mini-2026-03-17',
       temperature: 0.4,
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
