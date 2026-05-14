@@ -11,7 +11,7 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.forward-to-n8n]
-verify_jwt = false
+verify_jwt = true
 
 [functions.test-survey-integration]
 verify_jwt = false
