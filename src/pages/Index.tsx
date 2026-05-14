@@ -1013,7 +1013,7 @@ const Index = () => {
         <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="flex flex-col items-center md:items-start gap-4">
             <div className="cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <img src={CairnlyWordmark} alt="Cairnly" className="h-28 w-auto" />
+              <img src={CairnlyWordmark} alt="Cairnly" className="h-10 w-auto" />
             </div>
             <p className="text-gray-500 font-bold text-[10px] tracking-[0.3em] uppercase">© 2026 CAIRNLY</p>
           </div>
