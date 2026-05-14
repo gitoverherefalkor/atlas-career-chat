@@ -92,7 +92,11 @@ Current development focus: building out the platform features and establishing n
 - **Auth header**: `X-N8N-API-KEY`
 - **Usage**: `curl -s -H "X-N8N-API-KEY: $(grep N8N_API_KEY .env | cut -d'"' -f2)" https://falkoratlas.app.n8n.cloud/api/v1/workflows`
 - **Capabilities**: List/get/update workflows, check executions, activate/deactivate
-- **Important**: Never modify n8n workflows or question mappings without explicit approval
+- **Modification policy**: n8n workflows and question mappings are critical production pipelines. Never edit them speculatively. You **may** modify a workflow when ALL of these are true:
+  1. The user has given explicit approval for that specific workflow (a per-workflow yes, not a blanket one)
+  2. You have presented a clear plan: which nodes change, what the change is, why it's needed, and what could break
+  3. The user has confirmed the plan before you call the n8n API
+  Prefer frontend / edge function fixes when both are viable. When you do edit, always export the current state to `n8n_aa/` first so we can roll back.
 - **Workflow exports**: JSON backups are in `n8n_aa/` folder
 
 ### Workflow IDs (current architecture)
