@@ -39,16 +39,39 @@ serve(async (req) => {
       .sort();
     const remoteOnly = Boolean(remote_only);
 
+    // User languages — the frontend extracts these from the user's report payload
+    // when the survey collected them. Format: [{ language: 'Dutch', proficiency: 'fluent' }, ...]
+    // Older reports (pre-language-question) will pass an empty array, which we treat
+    // as "no language gating" so behavior is unchanged for legacy users.
+    type UserLanguage = { language: string; proficiency: string };
+    const userLanguages: UserLanguage[] = Array.isArray(body.user_languages)
+      ? body.user_languages.filter((l: any) => l && typeof l.language === 'string')
+      : [];
+
+    // Cache signature for languages: sorted list of languages the user holds at
+    // conversational+ (so basic/none don't affect the cache). Two users sharing
+    // the same conversational+ language set get the same cached result.
+    const CONVERSATIONAL_OR_BETTER = new Set(['native', 'fluent', 'conversational']);
+    const langSignature = userLanguages
+      .filter((l) => CONVERSATIONAL_OR_BETTER.has((l.proficiency || '').toLowerCase()))
+      .map((l) => (l.language || '').toLowerCase().trim())
+      .filter(Boolean)
+      .sort()
+      .join('+') || 'any';
+
     // Initialize Supabase client with service role for cache access
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('NEW_N8N_SERVICE_ROLE_KEY')!
     );
 
-    // Cache key: sorted country list + remote suffix. Same query in NL+DE
-    // hits the same cache regardless of which order the user picked.
+    // Cache key: sorted country list + remote suffix + language signature.
+    // Same query in NL+DE hits the same cache regardless of which order the
+    // user picked; same query for users with the same language profile reuses.
     const searchQuery = career_title.toLowerCase().trim();
-    const countryNormalized = countries.join('+') + (remoteOnly ? ':remote' : '');
+    const countryNormalized = countries.join('+')
+      + (remoteOnly ? ':remote' : '')
+      + ':lang=' + langSignature;
 
     // Check cache first
     const { data: cached } = await supabase
@@ -103,6 +126,9 @@ serve(async (req) => {
           country_codes: countries,
           remote_only: remoteOnly,
           location: location || '',
+          // user_languages drives the scoring step's language-awareness.
+          // Forwarded as-is; n8n decides how aggressively to weight it.
+          user_languages: userLanguages,
         }),
         signal: controller.signal,
       });

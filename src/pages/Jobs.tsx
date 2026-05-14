@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
-import { useJobSearch } from '@/hooks/useJobSearch';
+import { useJobSearch, type UserLanguage } from '@/hooks/useJobSearch';
 import { useSavedJobs } from '@/hooks/useSavedJobs';
 import CareerSelector, { CareerTier } from '@/components/jobs/CareerSelector';
 import LocationInput, { profileCountryToCode } from '@/components/jobs/LocationInput';
@@ -97,6 +97,37 @@ const Jobs = () => {
     return options;
   }, [sections]);
 
+  // Extract languages from the Skills & Achievements answer in the report payload.
+  // Question id for Skills/Achievements/Languages: 11111111-1111-1111-1111-11111111111f.
+  // Payload shape (when present):
+  //   payload.responses[questionId].languages = {
+  //     presets: { English: 'fluent', Dutch: 'native', ... },
+  //     other:   { 'Swahili': 'basic', ... } | null
+  //   }
+  // Older reports (pre-language-question) lack this and we return [], which the
+  // backend treats as "no language gating" so behavior is unchanged.
+  const userLanguages = useMemo<UserLanguage[]>(() => {
+    const SKILLS_QID = '11111111-1111-1111-1111-11111111111f';
+    const payload = (latestReport as any)?.payload;
+    const langs = payload?.responses?.[SKILLS_QID]?.languages;
+    if (!langs) return [];
+
+    const out: UserLanguage[] = [];
+    const validProf = new Set(['native', 'fluent', 'conversational', 'basic']);
+    const collect = (obj: Record<string, unknown> | null | undefined) => {
+      if (!obj || typeof obj !== 'object') return;
+      for (const [lang, prof] of Object.entries(obj)) {
+        const p = String(prof || '').toLowerCase();
+        if (lang && validProf.has(p)) {
+          out.push({ language: lang, proficiency: p as UserLanguage['proficiency'] });
+        }
+      }
+    };
+    collect(langs.presets);
+    collect(langs.other);
+    return out;
+  }, [latestReport]);
+
   // Pre-fill primary country from profile
   useEffect(() => {
     if (profile?.country) {
@@ -156,7 +187,7 @@ const Jobs = () => {
       ? [primaryCountry, secondaryCountry]
       : [primaryCountry];
 
-    searchJobs(careers, countryCodes, city || undefined, remoteOnly);
+    searchJobs(careers, countryCodes, city || undefined, remoteOnly, userLanguages);
   };
 
   // Loading states

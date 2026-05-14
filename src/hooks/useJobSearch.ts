@@ -36,6 +36,14 @@ interface SearchCareer {
   alternateTitles?: string[];
 }
 
+// Languages spoken by the user, extracted from the report payload's
+// Skills & Achievements answer. Empty array for older reports — backend
+// treats this as "no language gating" so legacy users see unchanged behavior.
+export interface UserLanguage {
+  language: string;
+  proficiency: 'native' | 'fluent' | 'conversational' | 'basic';
+}
+
 /**
  * Hook for searching jobs sequentially (one career at a time).
  * Returns per-career results and an overall progress state.
@@ -51,6 +59,7 @@ export const useJobSearch = () => {
     countryCodes: string[],
     location?: string,
     remoteOnly?: boolean,
+    userLanguages?: UserLanguage[],
   ) => {
     if (careers.length === 0 || countryCodes.length === 0) return;
 
@@ -84,6 +93,7 @@ export const useJobSearch = () => {
             remote_only: Boolean(remoteOnly),
             location: location || '',
             alternate_titles: careers[i].alternateTitles || [],
+            user_languages: userLanguages || [],
           },
         });
 
