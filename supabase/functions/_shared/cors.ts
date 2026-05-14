@@ -39,14 +39,22 @@ export function handleCorsPreFlight(req: Request): Response | null {
 
 /**
  * Verifies a shared secret for server-to-server calls (n8n → edge function).
- * Returns an error Response if verification fails, or null if valid.
+ * Fails closed: if N8N_SHARED_SECRET is not configured, the request is rejected
+ * with 503. Misconfiguration must never produce an open endpoint.
+ *
+ * Set the secret on every environment that calls these functions:
+ *   Supabase Edge Function secrets:  N8N_SHARED_SECRET=<value>
+ *   Supabase Vault (for pg_net):     vault.create_secret('<value>', 'n8n_shared_secret', '...')
+ *   n8n side (for outbound calls):   same value, sent as x-shared-secret header
  */
 export function verifySharedSecret(req: Request): Response | null {
   const secret = Deno.env.get('N8N_SHARED_SECRET');
   if (!secret) {
-    // If no secret is configured, skip check (graceful degradation during setup)
-    console.warn('N8N_SHARED_SECRET not set — skipping auth check');
-    return null;
+    console.error('N8N_SHARED_SECRET is not set — rejecting request');
+    return new Response(
+      JSON.stringify({ error: 'Server misconfigured: shared secret not set' }),
+      { status: 503, headers: { 'Content-Type': 'application/json' } },
+    );
   }
 
   const provided = req.headers.get('x-shared-secret') || '';

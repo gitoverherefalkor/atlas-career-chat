@@ -49,17 +49,8 @@ export const useSurveyCompletion = () => {
         throw edgeFunctionError;
       }
 
-      // Update access code usage count
-      if (accessCodeData?.id && accessCodeData.id !== 'existing-session') {
-        await supabase
-          .from('access_codes')
-          .update({ 
-            usage_count: (accessCodeData.usage_count || 0) + 1,
-            used_at: new Date().toISOString(),
-            user_id: user?.id
-          })
-          .eq('id', accessCodeData.id);
-      }
+      // usage_count increment is owned by useSurveySubmission.markAccessCodeAsUsed
+      // (atomic via consume_access_code RPC). Don't re-increment here.
 
       onSessionClear();
       
