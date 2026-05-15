@@ -70,3 +70,6 @@ content_path = "./supabase/templates/confirmation.html"
 # enabled = true
 # uri = "https://pcoyafgsirrznhmdaiji.supabase.co/functions/v1/send-confirmation-email"
 # secrets = ["SEND_EMAIL_HOOK_SECRET"]
+
+[functions.submit-support-request]
+verify_jwt = false
