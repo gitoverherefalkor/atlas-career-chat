@@ -66,80 +66,80 @@ interface CpbConfig {
 
 const cpbConfigs: CpbConfig[] = [
   {
-    // Bottom-left → rightward plateau → upper-right
-    oldRise: "M-30 820 C 60 790, 120 740, 180 680 S 280 560, 340 500 S 420 430, 480 410",
-    plateau: "M480 410 C 520 405, 560 400, 600 396 C 640 393, 680 392, 720 391 C 780 390, 840 392, 900 394 C 960 396, 1020 398, 1080 400",
-    ghost: "M1080 400 C 1160 402, 1260 404, 1380 405 L 1500 406",
+    // Bottom-left → gentle rise → flat plateau through the cairn → upper-right
+    oldRise: "M-150 510 C 120 470, 280 391, 460 391",
+    plateau: "M460 391 C 620 391, 800 391, 980 391 C 1080 391, 1180 391, 1260 391",
+    ghost: "M1260 391 C 1340 391, 1440 391, 1540 391",
     sx: 660, sy: 391,
     oldDots: [
-      { cx: 120, cy: 740, r: 2.5 }, { cx: 260, cy: 570, r: 2.5 }, { cx: 400, cy: 440, r: 2.5 },
-      { cx: 540, cy: 400, r: 2 }, { cx: 700, cy: 391, r: 2 }, { cx: 860, cy: 393, r: 2 }, { cx: 1000, cy: 398, r: 2 },
+      { cx: 0, cy: 482, r: 2.5 }, { cx: 160, cy: 443, r: 2.5 }, { cx: 300, cy: 409, r: 2.5 },
+      { cx: 500, cy: 391, r: 2 }, { cx: 720, cy: 391, r: 2 }, { cx: 940, cy: 391, r: 2 }, { cx: 1140, cy: 391, r: 2 },
     ],
     newPath: "M660 391 C 720 351, 790 291, 860 241 S 1000 141, 1080 91 S 1220 21, 1340 -20",
     branches: [
-      { d: "M860 241 C 890 261, 930 276, 970 266", color: "#27A1A1", width: "1.5", dash: "4 8" },
-      { d: "M1080 91 C 1100 116, 1130 131, 1170 121", color: "#27A1A1", width: "1.5", dash: "4 8" },
+      { d: "M860 241 C 890 261, 930 276, 970 266", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M1080 91 C 1100 116, 1130 131, 1170 121", color: "#E3B04D", width: "1.5", dash: "4 8" },
       { d: "M960 171 C 980 146, 1010 131, 1050 141", color: "white", width: "1.2", dash: "3 9" },
     ],
-    newDots: [{ cx: 800, cy: 323 }, { cx: 970, cy: 235 }, { cx: 1160, cy: 167 }],
-    newNodes: [{ cx: 860, cy: 289 }, { cx: 1080, cy: 187 }],
+    newDots: [{ cx: 800, cy: 291 }, { cx: 970, cy: 161 }, { cx: 1160, cy: 61 }],
+    newNodes: [{ cx: 860, cy: 241 }, { cx: 1080, cy: 91 }],
   },
   {
-    // Bottom-right → leftward plateau → upper-left
-    oldRise: "M1470 800 C 1400 770, 1340 720, 1280 660 S 1180 540, 1120 490 S 1040 430, 960 410",
-    plateau: "M960 410 C 920 407, 880 404, 840 402 C 800 400, 760 399, 700 399 C 640 400, 580 402, 520 404 C 460 406, 400 408, 360 410",
-    ghost: "M360 410 C 280 412, 180 414, 60 415 L -60 416",
+    // Bottom-right → gentle rise → flat plateau through the cairn → upper-left
+    oldRise: "M1590 510 C 1320 470, 1160 400, 980 400",
+    plateau: "M980 400 C 820 400, 640 400, 460 400 C 360 400, 260 400, 180 400",
+    ghost: "M180 400 C 100 400, 0 400, -100 400",
     sx: 780, sy: 400,
     oldDots: [
-      { cx: 1340, cy: 720, r: 2.5 }, { cx: 1200, cy: 550, r: 2.5 }, { cx: 1060, cy: 440, r: 2.5 },
-      { cx: 900, cy: 405, r: 2 }, { cx: 740, cy: 399, r: 2 }, { cx: 580, cy: 402, r: 2 }, { cx: 440, cy: 408, r: 2 },
+      { cx: 1440, cy: 483, r: 2.5 }, { cx: 1279, cy: 446, r: 2.5 }, { cx: 1140, cy: 416, r: 2.5 },
+      { cx: 920, cy: 400, r: 2 }, { cx: 700, cy: 400, r: 2 }, { cx: 500, cy: 400, r: 2 }, { cx: 320, cy: 400, r: 2 },
     ],
     newPath: "M780 400 C 720 360, 650 300, 580 250 S 440 150, 360 100 S 200 30, 80 -20",
     branches: [
-      { d: "M580 250 C 550 270, 510 285, 470 275", color: "#27A1A1", width: "1.5", dash: "4 8" },
-      { d: "M360 100 C 340 125, 310 140, 270 130", color: "#27A1A1", width: "1.5", dash: "4 8" },
+      { d: "M580 250 C 550 270, 510 285, 470 275", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M360 100 C 340 125, 310 140, 270 130", color: "#E3B04D", width: "1.5", dash: "4 8" },
       { d: "M470 180 C 450 155, 420 140, 380 150", color: "white", width: "1.2", dash: "3 9" },
     ],
-    newDots: [{ cx: 640, cy: 332 }, { cx: 460, cy: 250 }, { cx: 240, cy: 169 }],
-    newNodes: [{ cx: 580, cy: 298 }, { cx: 360, cy: 196 }],
+    newDots: [{ cx: 640, cy: 300 }, { cx: 460, cy: 180 }, { cx: 240, cy: 60 }],
+    newNodes: [{ cx: 580, cy: 250 }, { cx: 360, cy: 100 }],
   },
   {
-    // Bottom-center-left → rightward plateau → upper-right
-    oldRise: "M200 920 C 240 870, 280 800, 320 720 S 380 600, 420 540 S 480 460, 530 430",
-    plateau: "M530 430 C 570 426, 620 423, 670 420 C 720 418, 780 417, 840 417 C 900 418, 960 420, 1020 422 C 1060 424, 1100 426, 1140 428",
-    ghost: "M1140 428 C 1220 430, 1320 432, 1440 433 L 1500 434",
+    // Bottom-left → gentle rise → flat plateau through the cairn → upper-right
+    oldRise: "M-150 540 C 120 500, 290 417, 470 417",
+    plateau: "M470 417 C 630 417, 810 417, 990 417 C 1090 417, 1190 417, 1270 417",
+    ghost: "M1270 417 C 1350 417, 1450 417, 1550 417",
     sx: 840, sy: 417,
     oldDots: [
-      { cx: 260, cy: 810, r: 2.5 }, { cx: 340, cy: 670, r: 2.5 }, { cx: 400, cy: 560, r: 2.5 },
-      { cx: 470, cy: 460, r: 2 }, { cx: 670, cy: 420, r: 2 }, { cx: 840, cy: 417, r: 2 }, { cx: 1020, cy: 422, r: 2 },
+      { cx: 1, cy: 512, r: 2.5 }, { cx: 164, cy: 471, r: 2.5 }, { cx: 308, cy: 436, r: 2.5 },
+      { cx: 510, cy: 417, r: 2 }, { cx: 720, cy: 417, r: 2 }, { cx: 930, cy: 417, r: 2 }, { cx: 1140, cy: 417, r: 2 },
     ],
     newPath: "M840 417 C 900 377, 970 317, 1040 267 S 1180 167, 1260 107 S 1380 27, 1460 -20",
     branches: [
-      { d: "M1040 267 C 1070 287, 1110 302, 1150 292", color: "#27A1A1", width: "1.5", dash: "4 8" },
-      { d: "M1260 107 C 1280 132, 1310 147, 1350 137", color: "#27A1A1", width: "1.5", dash: "4 8" },
+      { d: "M1040 267 C 1070 287, 1110 302, 1150 292", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M1260 107 C 1280 132, 1310 147, 1350 137", color: "#E3B04D", width: "1.5", dash: "4 8" },
       { d: "M1150 190 C 1170 165, 1200 150, 1240 160", color: "white", width: "1.2", dash: "3 9" },
     ],
-    newDots: [{ cx: 980, cy: 349 }, { cx: 1140, cy: 274 }, { cx: 1320, cy: 186 }],
-    newNodes: [{ cx: 1040, cy: 315 }, { cx: 1260, cy: 206 }],
+    newDots: [{ cx: 980, cy: 317 }, { cx: 1140, cy: 207 }, { cx: 1320, cy: 77 }],
+    newNodes: [{ cx: 1040, cy: 267 }, { cx: 1260, cy: 107 }],
   },
   {
-    // Bottom-center-right → leftward plateau → upper-left
-    oldRise: "M1240 920 C 1200 870, 1160 800, 1120 720 S 1060 600, 1020 540 S 960 460, 910 430",
-    plateau: "M910 430 C 870 426, 820 423, 770 420 C 720 418, 660 417, 600 417 C 540 418, 480 420, 420 422 C 380 424, 340 426, 300 428",
-    ghost: "M300 428 C 220 430, 120 432, 0 433 L -60 434",
+    // Bottom-right → gentle rise → flat plateau through the cairn → upper-left
+    oldRise: "M1590 540 C 1320 500, 1150 417, 970 417",
+    plateau: "M970 417 C 810 417, 630 417, 450 417 C 350 417, 250 417, 170 417",
+    ghost: "M170 417 C 90 417, -10 417, -110 417",
     sx: 600, sy: 417,
     oldDots: [
-      { cx: 1180, cy: 810, r: 2.5 }, { cx: 1100, cy: 670, r: 2.5 }, { cx: 1040, cy: 560, r: 2.5 },
-      { cx: 970, cy: 460, r: 2 }, { cx: 770, cy: 420, r: 2 }, { cx: 600, cy: 417, r: 2 }, { cx: 420, cy: 422, r: 2 },
+      { cx: 1439, cy: 512, r: 2.5 }, { cx: 1275, cy: 471, r: 2.5 }, { cx: 1132, cy: 436, r: 2.5 },
+      { cx: 920, cy: 417, r: 2 }, { cx: 700, cy: 417, r: 2 }, { cx: 490, cy: 417, r: 2 }, { cx: 300, cy: 417, r: 2 },
     ],
     newPath: "M600 417 C 540 377, 470 317, 400 267 S 260 167, 180 107 S 60 27, -20 -20",
     branches: [
-      { d: "M400 267 C 370 287, 330 302, 290 292", color: "#27A1A1", width: "1.5", dash: "4 8" },
-      { d: "M180 107 C 160 132, 130 147, 90 137", color: "#27A1A1", width: "1.5", dash: "4 8" },
+      { d: "M400 267 C 370 287, 330 302, 290 292", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M180 107 C 160 132, 130 147, 90 137", color: "#E3B04D", width: "1.5", dash: "4 8" },
       { d: "M290 190 C 270 165, 240 150, 200 160", color: "white", width: "1.2", dash: "3 9" },
     ],
-    newDots: [{ cx: 460, cy: 349 }, { cx: 300, cy: 274 }, { cx: 120, cy: 186 }],
-    newNodes: [{ cx: 400, cy: 315 }, { cx: 180, cy: 206 }],
+    newDots: [{ cx: 460, cy: 317 }, { cx: 300, cy: 207 }, { cx: 120, cy: 77 }],
+    newNodes: [{ cx: 400, cy: 267 }, { cx: 180, cy: 107 }],
   },
 ];
 
@@ -221,7 +221,7 @@ const CareerPathBg = () => {
           {/* Ghost continuation - where it's heading: nowhere */}
           <path
             d={config.ghost}
-            stroke="white"
+            stroke="#9AA7B0"
             strokeWidth="1.5"
             strokeOpacity="0"
             strokeLinecap="round"
@@ -232,7 +232,7 @@ const CareerPathBg = () => {
 
           {/* Milestone dots along old path - getting dimmer */}
           {config.oldDots.map((dot, i) => (
-            <circle key={i} cx={dot.cx} cy={dot.cy} r={dot.r} fill="white" fillOpacity="0" className={`cpb-dot-old cpb-dot-${i + 1}`} />
+            <circle key={i} cx={dot.cx} cy={dot.cy} r={dot.r} fill="#9AA7B0" fillOpacity="0" className={`cpb-dot-old cpb-dot-${i + 1}`} />
           ))}
 
           {/* ====== ACT 2: The spark ====== */}
@@ -272,55 +272,52 @@ const CareerPathBg = () => {
             <circle cx={sx - 18} cy={sy + 16} r="1" fill="white" fillOpacity="0" className="cpb-sparkle cpb-sp4" />
           </g>
 
-          {/* ====== ACT 3: New thriving path from spark ====== */}
-          {/* Flattened vertically around the spark for a gentler curve */}
-          <g transform={`translate(0 ${sy}) scale(1 0.68) translate(0 ${-sy})`}>
+          {/* ====== ACT 3: New thriving path from spark - the golden career path ====== */}
+          <path
+            d={config.newPath}
+            stroke="url(#newPathGrad)"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+            fill="none"
+            className="cpb-new-path"
+          />
+
+          {/* Branches off new path - possibilities opening */}
+          {config.branches.map((b, i) => (
             <path
-              d={config.newPath}
-              stroke="url(#newPathGrad)"
-              strokeWidth="3"
-              strokeLinecap="round"
-              fill="none"
-              className="cpb-new-path"
+              key={i}
+              d={b.d}
+              stroke={b.color} strokeWidth={b.width} strokeOpacity="0"
+              strokeLinecap="round" strokeDasharray={b.dash} fill="none"
+              className={`cpb-branch cpb-br${i + 1}`}
             />
+          ))}
 
-            {/* Branches off new path - possibilities opening */}
-            {config.branches.map((b, i) => (
-              <path
-                key={i}
-                d={b.d}
-                stroke={b.color} strokeWidth={b.width} strokeOpacity="0"
-                strokeLinecap="round" strokeDasharray={b.dash} fill="none"
-                className={`cpb-branch cpb-br${i + 1}`}
-              />
-            ))}
-          </g>
-
-          {/* Dots on new path (positioned on the flattened path) */}
+          {/* Dots on new path */}
           {config.newDots.map((dot, i) => (
-            <circle key={i} cx={dot.cx} cy={dot.cy} r="3" fill="#AAB4BC" fillOpacity="0" className={`cpb-dot-new cpb-dn${i + 1}`} />
+            <circle key={i} cx={dot.cx} cy={dot.cy} r="3" fill="#E3B04D" fillOpacity="0" className={`cpb-dot-new cpb-dn${i + 1}`} />
           ))}
 
           {/* Branch nodes with subtle pulse */}
           {config.newNodes.map((node, i) => (
-            <circle key={i} cx={node.cx} cy={node.cy} r="5" fill="#AAB4BC" fillOpacity="0" className={`cpb-node-new cpb-nn${i + 1}`} />
+            <circle key={i} cx={node.cx} cy={node.cy} r="5" fill="#E3B04D" fillOpacity="0" className={`cpb-node-new cpb-nn${i + 1}`} />
           ))}
 
           <defs>
             <linearGradient id="oldPathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="white" stopOpacity="0.08" />
-              <stop offset="50%" stopColor="white" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="white" stopOpacity="0.14" />
+              <stop offset="0%" stopColor="#9AA7B0" stopOpacity="0.16" />
+              <stop offset="50%" stopColor="#9AA7B0" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#9AA7B0" stopOpacity="0.46" />
             </linearGradient>
             <linearGradient id="plateauGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="white" stopOpacity="0.18" />
-              <stop offset="50%" stopColor="white" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="white" stopOpacity="0.06" />
+              <stop offset="0%" stopColor="#9AA7B0" stopOpacity="0.46" />
+              <stop offset="50%" stopColor="#9AA7B0" stopOpacity="0.32" />
+              <stop offset="100%" stopColor="#9AA7B0" stopOpacity="0.18" />
             </linearGradient>
             <linearGradient id="newPathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#AAB4BC" stopOpacity="0.78" />
-              <stop offset="50%" stopColor="#AAB4BC" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#AAB4BC" stopOpacity="0.42" />
+              <stop offset="0%" stopColor="#EFBE48" stopOpacity="0.85" />
+              <stop offset="50%" stopColor="#E3B04D" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#E3B04D" stopOpacity="0.5" />
             </linearGradient>
           </defs>
         </svg>
@@ -415,7 +412,7 @@ const CareerPathBg = () => {
           to { stroke-dashoffset: 0; }
         }
         @keyframes cpb-dot-fade {
-          to { fill-opacity: 0.15; }
+          to { fill-opacity: 0.3; }
         }
         @keyframes cpb-ghost-in {
           to { stroke-opacity: 0.10; }
