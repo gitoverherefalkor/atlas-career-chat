@@ -285,7 +285,7 @@ const ResponsiveRanking: React.FC<{
                   ${isDropTarget ? 'border-blue-400 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}
                 `}
               >
-                <div className="flex items-center justify-center w-8 h-8 bg-atlas-navy text-white rounded-full font-bold text-sm mr-4 flex-shrink-0">
+                <div className="flex items-center justify-center w-8 h-8 bg-background text-white rounded-full font-bold text-sm mr-4 flex-shrink-0">
                   {index + 1}
                 </div>
                 
@@ -338,7 +338,7 @@ const ResponsiveRanking: React.FC<{
                 className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-white rounded-lg border border-gray-200 space-y-3 sm:space-y-0"
               >
                 <div className="flex items-center space-x-3 flex-1">
-                  <div className="flex items-center justify-center w-8 h-8 bg-atlas-navy text-white rounded-full font-bold text-sm flex-shrink-0">
+                  <div className="flex items-center justify-center w-8 h-8 bg-background text-white rounded-full font-bold text-sm flex-shrink-0">
                     {currentRank}
                   </div>
                   <span 
