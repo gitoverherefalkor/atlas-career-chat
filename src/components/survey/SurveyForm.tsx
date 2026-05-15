@@ -461,7 +461,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           completedSections={completedSections}
           onSectionClick={handleSectionNavigation}
         />
-        <div className="flex gap-6 max-w-7xl mx-auto px-3 sm:px-6">
+        <div className="flex flex-row-reverse gap-6 max-w-7xl mx-auto px-3 sm:px-6">
           <SurveyNavigation
             sections={survey.sections}
             currentSectionIndex={currentSectionIndex}
@@ -495,7 +495,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           completedSections={completedSections}
           onSectionClick={handleSectionNavigation}
         />
-        <div className="flex gap-6 max-w-7xl mx-auto px-3 sm:px-6">
+        <div className="flex flex-row-reverse gap-6 max-w-7xl mx-auto px-3 sm:px-6">
           <SurveyNavigation
             sections={survey.sections}
             currentSectionIndex={currentSectionIndex}
@@ -541,7 +541,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
         onSectionClick={handleSectionNavigation}
       />
 
-      <div className="flex gap-6 max-w-7xl mx-auto px-3 sm:px-6">
+      <div className="flex flex-row-reverse gap-6 max-w-7xl mx-auto px-3 sm:px-6">
         <SurveyNavigation
           sections={survey.sections}
           currentSectionIndex={currentSectionIndex}
