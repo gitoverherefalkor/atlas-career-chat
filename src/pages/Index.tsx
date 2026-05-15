@@ -18,7 +18,10 @@ import {
   Monitor,
   MessageSquare,
   BarChart3,
-  FileText
+  FileText,
+  Shield,
+  Lock,
+  Trash2
 } from 'lucide-react';
 import CairnlyWordmarkInverted from '@/logos/cairnly-logo/cairnly_logo_wordmark_inverted.png';
 import CairnlyWordmark from '@/logos/cairnly-logo/cairnly_logo_wordmark.png';
@@ -699,16 +702,18 @@ const Index = () => {
       </section>
 
       {/* ========== TRUST STRIP ========== */}
-      <section className="py-10 bg-white border-b border-gray-100">
+      <section className="py-10 bg-[#fcfdfe] border-b border-gray-100">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto">
             {[
-              { icon: '🇪🇺', title: 'GDPR compliant', desc: 'European servers. Your data stays in Europe.' },
-              { icon: '🔒', title: 'Payments by Stripe', desc: 'We never see your card.' },
-              { icon: '🗑️', title: 'One-click delete', desc: 'Your data is yours. Take it back anytime.' },
+              { Icon: Shield, title: 'GDPR compliant', desc: 'European servers. Your data stays in Europe.' },
+              { Icon: Lock, title: 'Payments by Stripe', desc: 'We never see your card.' },
+              { Icon: Trash2, title: 'One-click delete', desc: 'Your data is yours. Take it back anytime.' },
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-4 p-4 rounded-xl bg-gray-50">
-                <span className="text-2xl">{item.icon}</span>
+              <div key={i} className="flex items-center gap-4 p-5 rounded-2xl bg-white border border-gray-100 shadow-sm">
+                <div className="w-10 h-10 bg-gradient-to-br from-[#27A1A1] to-[#3989AF] rounded-xl flex items-center justify-center text-white shrink-0">
+                  <item.Icon className="w-5 h-5" />
+                </div>
                 <div>
                   <p className="font-black text-sm text-[#1A1A1A]">{item.title}</p>
                   <p className="text-xs text-gray-500 font-medium mt-0.5">{item.desc}</p>
@@ -1000,7 +1005,7 @@ const Index = () => {
             Take the assessment, get honest recommendations, make informed decisions.
           </p>
           <div className="flex justify-center">
-            <Button className="text-xl md:text-2xl py-7 px-14 mb-6 uppercase tracking-widest shadow-[0_0_50px_rgba(39,161,161,0.3)]" onClick={handleGetStarted}>
+            <Button className="text-xl md:text-2xl py-7 px-14 mb-6 uppercase tracking-widest shadow-[0_0_50px_rgba(39,161,161,0.3)]" onClick={() => navigate('/payment')}>
               Get career path clarity now!
             </Button>
           </div>
