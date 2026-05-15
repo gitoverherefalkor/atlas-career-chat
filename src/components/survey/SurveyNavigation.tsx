@@ -111,7 +111,6 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
   return (
     <Card className="hidden md:block w-80 h-fit">
       <CardContent className="px-4 pt-6 pb-4">
-        <h3 className="text-xl font-semibold text-atlas-navy mb-4">Survey Progress</h3>
         <div className="space-y-2">
           {sections.map((section, index) => {
             const status = getSectionStatus(index);
