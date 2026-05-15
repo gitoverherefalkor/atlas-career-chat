@@ -45,13 +45,18 @@ const Auth = () => {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <AuthHeader isLogin={isLogin} />
+        <AuthHeader />
 
         <Card>
           <CardHeader>
             <CardTitle className="text-center">
               {isLogin ? 'Sign In' : 'Create Account'}
             </CardTitle>
+            {!isLogin && (
+              <p className="text-center text-sm text-muted-foreground">
+                Your personal info stays secure in the survey, and you can easily find your results later.
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             <AuthForm isLogin={isLogin} />

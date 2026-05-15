@@ -24,12 +24,15 @@ const ALL_SECTIONS = [
 // Email templates
 // ──────────────────────────────────────────────────────────────────────────────
 
+const LOGO_URL = "https://cairnly.io/cairnly-logo-white.png";
+
 function wrapEmail(content: string): string {
   return `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-      <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
-        <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
-        <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
+      <div style="background-color: #27A1A1; height: 4px; font-size: 0; line-height: 0;">&nbsp;</div>
+      <div style="background-color: #213F4F; padding: 32px 40px 28px; text-align: center;">
+        <img src="${LOGO_URL}" alt="Cairnly" width="180" style="max-width: 180px; height: auto; display: block; margin: 0 auto;" />
+        <p style="color: #27A1A1; margin: 12px 0 0 0; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;">Career Discovery Platform</p>
       </div>
       <div style="padding: 40px; color: #333333;">
         ${content}
@@ -39,7 +42,7 @@ function wrapEmail(content: string): string {
           You're receiving this because you have a Cairnly account.
         </p>
         <p style="color: #999; font-size: 12px; margin: 4px 0;">
-          To stop these reminders, visit your <a href="${BASE_URL}/profile" style="color: #27A1A1;">Profile Settings</a>.
+          To stop these reminders, visit your <a href="${BASE_URL}/profile" style="color: #27A1A1; text-decoration: none;">Profile Settings</a>.
         </p>
         <p style="color: #999; font-size: 12px; margin: 16px 0 0 0;">
           &copy; 2026 Cairnly. All rights reserved.
@@ -51,9 +54,9 @@ function wrapEmail(content: string): string {
 
 function ctaButton(text: string, url: string): string {
   return `
-    <div style="text-align: center; margin: 32px 0;">
+    <div style="text-align: center; margin: 36px 0;">
       <a href="${url}"
-         style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
+         style="background-color: #27A1A1; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; letter-spacing: 0.3px;">
         ${text}
       </a>
     </div>
@@ -66,7 +69,7 @@ function signupNoStartEmail(firstName: string): { subject: string; html: string 
   return {
     subject: `Your career assessment is waiting, ${firstName}`,
     html: wrapEmail(`
-      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+      <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
         Ready to discover your ideal career path?
       </h2>
 
@@ -79,7 +82,7 @@ function signupNoStartEmail(firstName: string): { subject: string; html: string 
       </p>
 
       <div style="background-color: #f0f7fa; border-left: 4px solid #27A1A1; padding: 20px; margin-bottom: 28px; border-radius: 0 8px 8px 0;">
-        <p style="color: #012F64; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">Here's what you'll discover:</p>
+        <p style="color: #213F4F; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">Here's what you'll discover:</p>
         <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
           <li>Your unique personality profile and working style</li>
           <li>Your core strengths and development areas</li>
@@ -111,7 +114,7 @@ function surveyAbandonedEmail(
   return {
     subject: `Pick up where you left off, ${firstName}`,
     html: wrapEmail(`
-      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+      <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
         You're ${percentDone}% through your assessment
       </h2>
 
@@ -125,10 +128,12 @@ function surveyAbandonedEmail(
 
       <!-- Progress bar -->
       <div style="margin: 24px 0 28px 0;">
-        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-          <span style="font-size: 13px; color: #666;">Section ${section + 1} of ${total}</span>
-          <span style="font-size: 13px; font-weight: 600; color: #27A1A1;">${percentDone}% complete</span>
-        </div>
+        <table style="width: 100%; margin-bottom: 8px;" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="font-size: 13px; color: #666;">Section ${section + 1} of ${total}</td>
+            <td style="font-size: 13px; font-weight: 600; color: #27A1A1; text-align: right;">${percentDone}% complete</td>
+          </tr>
+        </table>
         <div style="height: 8px; background-color: #e8e8e8; border-radius: 4px; overflow: hidden;">
           <div style="height: 100%; width: ${percentDone}%; background-color: #27A1A1; border-radius: 4px;"></div>
         </div>
@@ -176,7 +181,7 @@ function chatNotCompletedEmail(
   return {
     subject: `Your career insights are waiting, ${firstName}`,
     html: wrapEmail(`
-      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+      <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
         You've unlocked ${sectionsCompleted} of ${totalSections} career insights
       </h2>
 
@@ -192,7 +197,7 @@ function chatNotCompletedEmail(
         remainingSections.length > 0
           ? `
       <div style="background-color: #f0f7fa; border-left: 4px solid #27A1A1; padding: 20px; margin-bottom: 28px; border-radius: 0 8px 8px 0;">
-        <p style="color: #012F64; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">Insights you haven't explored yet:</p>
+        <p style="color: #213F4F; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">Insights you haven't explored yet:</p>
         <ul style="list-style: none; padding: 0; margin: 0; font-size: 14px; color: #444; line-height: 1.8;">
           ${sectionListHtml}
           ${moreHtml}
@@ -217,7 +222,7 @@ function reportNotViewedEmail(firstName: string): { subject: string; html: strin
   return {
     subject: `Your full career report is ready, ${firstName}`,
     html: wrapEmail(`
-      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+      <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
         Your personalized career report is waiting
       </h2>
 
@@ -230,7 +235,7 @@ function reportNotViewedEmail(firstName: string): { subject: string; html: strin
       </p>
 
       <div style="background-color: #f0f7fa; border-left: 4px solid #27A1A1; padding: 20px; margin-bottom: 28px; border-radius: 0 8px 8px 0;">
-        <p style="color: #012F64; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">What's in your report:</p>
+        <p style="color: #213F4F; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">What's in your report:</p>
         <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
           <li><strong>Executive Summary</strong> — your personality, strengths, and top career matches at a glance</li>
           <li><strong>Detailed Career Matches</strong> — with your coaching feedback incorporated</li>
@@ -240,7 +245,7 @@ function reportNotViewedEmail(firstName: string): { subject: string; html: strin
       </div>
 
       <p style="font-size: 16px; line-height: 1.6; margin-bottom: 24px; color: #444;">
-        We're also adding new features to your dashboard soon — including CV optimization and job search tools. Check back regularly to get the most out of your assessment.
+        Your report is saved permanently and you can return to it anytime. We keep improving the platform, so check back regularly to get the most out of your assessment.
       </p>
 
       ${ctaButton("View Your Report", `${BASE_URL}/dashboard`)}

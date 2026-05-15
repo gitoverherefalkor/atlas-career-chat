@@ -67,29 +67,35 @@ serve(async (req) => {
     const chatUrl = `https://cairnly.io/chat`;
 
     const firstName = profile.first_name || 'there';
-    const subject = 'Your Atlas career report is ready';
+    const subject = 'Your Cairnly career report is ready';
     const html = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-        <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
-          <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
+        <div style="background-color: #27A1A1; height: 4px; font-size: 0; line-height: 0;">&nbsp;</div>
+        <div style="background-color: #213F4F; padding: 32px 40px 28px; text-align: center;">
+          <img src="https://cairnly.io/cairnly-logo-white.png" alt="Cairnly" width="180" style="max-width: 180px; height: auto; display: block; margin: 0 auto;" />
+          <p style="color: #27A1A1; margin: 12px 0 0 0; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;">Career Discovery Platform</p>
         </div>
 
         <div style="padding: 40px; color: #333333;">
-          <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Your report is ready, ${firstName}!</h2>
+          <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Your career analysis is ready, ${firstName}</h2>
 
           <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
-            Your career report${updated.title ? ` "${updated.title}"` : ''} is now available.
+            Your assessment${updated.title ? ` "${updated.title}"` : ''} has been analyzed and your AI career coach is ready to walk you through the results.
           </p>
 
-          <p style="font-size: 16px; line-height: 1.6; margin-bottom: 28px; color: #444;">
-            Log in to view your personalized career assessment and chat with your AI career coach:
+          <p style="font-size: 16px; line-height: 1.6; margin-bottom: 24px; color: #444;">
+            The coaching chat is the core of the Cairnly experience. It covers your personality profile, strengths, career matches, and dream job analysis, section by section, with you in the driver's seat.
           </p>
+
+          <div style="background-color: #f0f7fa; border-left: 4px solid #27A1A1; padding: 16px 20px; margin-bottom: 28px; border-radius: 0 8px 8px 0;">
+            <p style="color: #213F4F; font-weight: 600; margin: 0 0 4px 0; font-size: 15px;">Typically takes 20-30 minutes</p>
+            <p style="color: #666; font-size: 14px; margin: 0;">Your session is saved if you need to pause and come back.</p>
+          </div>
 
           <div style="text-align: center; margin: 32px 0;">
             <a href="${chatUrl}"
-               style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
-              Chat with Your Career Coach
+               style="background-color: #27A1A1; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; letter-spacing: 0.3px;">
+              Start Your Coaching Session
             </a>
           </div>
         </div>

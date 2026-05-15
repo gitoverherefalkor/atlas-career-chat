@@ -78,13 +78,14 @@ serve(async (req) => {
       subject: isPasswordReset ? "Reset Your Cairnly Password" : "Confirm Your Cairnly Account",
       html: isPasswordReset ? `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-          <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
-            <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
+          <div style="background-color: #27A1A1; height: 4px; font-size: 0; line-height: 0;">&nbsp;</div>
+          <div style="background-color: #213F4F; padding: 32px 40px 28px; text-align: center;">
+            <img src="https://cairnly.io/cairnly-logo-white.png" alt="Cairnly" width="180" style="max-width: 180px; height: auto; display: block; margin: 0 auto;" />
+            <p style="color: #27A1A1; margin: 12px 0 0 0; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;">Career Discovery Platform</p>
           </div>
 
           <div style="padding: 40px; color: #333333;">
-            <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Password Reset Request</h2>
+            <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Password Reset Request</h2>
 
             <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
               Hi ${firstName},
@@ -96,7 +97,7 @@ serve(async (req) => {
 
             <div style="text-align: center; margin: 32px 0;">
               <a href="${confirmationUrl}"
-                 style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
+                 style="background-color: #27A1A1; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; letter-spacing: 0.3px;">
                 Reset Your Password
               </a>
             </div>
@@ -123,13 +124,14 @@ serve(async (req) => {
         </div>
       ` : `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-          <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
-            <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
+          <div style="background-color: #27A1A1; height: 4px; font-size: 0; line-height: 0;">&nbsp;</div>
+          <div style="background-color: #213F4F; padding: 32px 40px 28px; text-align: center;">
+            <img src="https://cairnly.io/cairnly-logo-white.png" alt="Cairnly" width="180" style="max-width: 180px; height: auto; display: block; margin: 0 auto;" />
+            <p style="color: #27A1A1; margin: 12px 0 0 0; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;">Career Discovery Platform</p>
           </div>
 
           <div style="padding: 40px; color: #333333;">
-            <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Welcome to Cairnly, ${firstName}!</h2>
+            <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Welcome to Cairnly, ${firstName}!</h2>
 
             <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
               Thank you for creating your account. You're just one step away from starting your personalized career discovery journey.
@@ -141,7 +143,7 @@ serve(async (req) => {
 
             <div style="text-align: center; margin: 32px 0;">
               <a href="${confirmationUrl}"
-                 style="background-color: #27A1A1; color: #ffffff; padding: 14px 36px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600; font-size: 16px;">
+                 style="background-color: #27A1A1; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; letter-spacing: 0.3px;">
                 Confirm Your Email Address
               </a>
             </div>
@@ -155,7 +157,7 @@ serve(async (req) => {
           </div>
 
           <div style="padding: 24px 40px; background-color: #f0f7fa; border-left: 4px solid #27A1A1;">
-            <h3 style="color: #012F64; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">What's Next?</h3>
+            <h3 style="color: #213F4F; margin: 0 0 12px 0; font-size: 16px; font-weight: 600;">What's Next?</h3>
             <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
               <li>Confirm your email address</li>
               <li>Complete your personalized career assessment</li>

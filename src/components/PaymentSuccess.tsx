@@ -134,7 +134,7 @@ const PaymentSuccess = () => {
             {accessCode && (
               <div className="mb-6">
                 <p className="text-gray-600 mb-2">Your access code:</p>
-                <div className="bg-gray-100 p-3 rounded font-mono text-lg tracking-wide">
+                <div className="bg-muted border border-border text-atlas-navy p-4 rounded-lg font-mono text-lg tracking-widest">
                   {accessCode}
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
