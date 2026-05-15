@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
   const { data: survey, isLoading, error } = useSurvey(surveyId);
-  const { getStoredSession, saveSession, clearSession } = useSurveySession(surveyId);
+  const { getStoredSession, saveSession, clearSession } = useSurveySession(surveyId, accessCodeId);
   
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -98,9 +98,10 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
       setCompletedSections(completed);
     };
 
-    // No access code → can only use localStorage
+    // No access code → no per-user scope, so don't restore anything from
+    // localStorage (a shared slot is how cross-user answers leaked). The live
+    // flow always has an access code by the time the survey renders.
     if (!accessCodeId) {
-      if (localKeyCount > 0) applyFromLocal();
       setIsSessionLoaded(true);
       return;
     }

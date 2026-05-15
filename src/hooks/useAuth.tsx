@@ -41,10 +41,17 @@ const USER_STORAGE_KEYS = [
 // Clear all user-specific localStorage when signing out or switching users
 function clearUserStorage() {
   USER_STORAGE_KEYS.forEach(key => localStorage.removeItem(key));
-  // Also clear dynamic keys (chat messages, section indices)
+  // Also clear dynamic keys (chat messages, section indices, survey progress).
+  // survey_session_* holds a user's full survey answers — it MUST be cleared on
+  // a user switch, otherwise the next person on this browser restores it.
   const allKeys = Object.keys(localStorage);
   allKeys.forEach(key => {
-    if (key.startsWith('n8n-chat/') || key.startsWith('chat_section_index_') || key.startsWith('resume_prefilled_')) {
+    if (
+      key.startsWith('n8n-chat/') ||
+      key.startsWith('chat_section_index_') ||
+      key.startsWith('resume_prefilled_') ||
+      key.startsWith('survey_session_')
+    ) {
       localStorage.removeItem(key);
     }
   });

@@ -14,8 +14,14 @@ interface SurveySession {
   showPreSurveyUpload?: boolean;
 }
 
-export const useSurveySession = (surveyId: string) => {
-  const sessionKey = `survey_session_${surveyId}`;
+export const useSurveySession = (surveyId: string, scopeId?: string) => {
+  // Scope the storage key to the access code so two users (or two codes) on
+  // the same browser never share a survey-progress slot. The unscoped key is
+  // a defensive fallback only — the live flow always has an access code by
+  // the time the survey renders.
+  const sessionKey = scopeId
+    ? `survey_session_${surveyId}_${scopeId}`
+    : `survey_session_${surveyId}`;
 
   const getStoredSession = (): SurveySession | null => {
     try {
