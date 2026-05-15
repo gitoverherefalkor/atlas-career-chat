@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { GripVertical, Mic } from 'lucide-react';
+import { GripVertical, Mic, Loader2 } from 'lucide-react';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
 interface QuestionRendererProps {
@@ -2024,9 +2024,10 @@ const LongTextWithVoice: React.FC<{
   formatTextWithEmphasis: (text: string) => { __html: string };
   renderDescription: () => React.ReactNode;
 }> = ({ question, value, onChange, formatTextWithEmphasis, renderDescription }) => {
-  const { isListening, isSupported, toggleListening } = useSpeechRecognition({
+  const { isListening, isCleaning, isSupported, toggleListening } = useSpeechRecognition({
     onTranscript: onChange,
     existingText: value || '',
+    cleanOnStop: true,
   });
 
   return (
@@ -2041,7 +2042,8 @@ const LongTextWithVoice: React.FC<{
           value={value || ''}
           onChange={(e) => onChange(e.target.value)}
           placeholder="Enter your response..."
-          className="w-full rounded-md border border-gray-300 bg-background text-foreground px-3 py-2 pr-12 text-base leading-relaxed resize-y min-h-[350px]"
+          disabled={isCleaning}
+          className="w-full rounded-md border border-gray-300 bg-background text-foreground px-3 py-2 pr-12 text-base leading-relaxed resize-y min-h-[350px] disabled:opacity-70"
           rows={10}
           maxLength={question.config?.max_length}
         />
@@ -2049,17 +2051,24 @@ const LongTextWithVoice: React.FC<{
           <button
             type="button"
             onClick={toggleListening}
+            disabled={isCleaning}
             title={isListening ? 'Stop recording' : 'Voice input'}
             className={`absolute bottom-3 right-3 flex items-center justify-center w-9 h-9 rounded-md transition-colors ${
               isListening
                 ? 'text-red-500 bg-red-50 animate-mic-pulse'
                 : 'text-gray-400 hover:text-atlas-teal hover:bg-atlas-teal/5'
-            }`}
+            } ${isCleaning ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <Mic size={18} />
+            {isCleaning ? <Loader2 size={18} className="animate-spin" /> : <Mic size={18} />}
           </button>
         )}
       </div>
+      {isCleaning && (
+        <p className="text-sm text-atlas-teal mt-2 flex items-center gap-1.5">
+          <Loader2 size={14} className="animate-spin" />
+          Tidying up your transcript...
+        </p>
+      )}
       {question.config?.max_length && (
         <p className="text-sm text-gray-500 mt-2">
           {(value || '').length} / {question.config.max_length} characters

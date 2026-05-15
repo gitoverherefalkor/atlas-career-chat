@@ -73,3 +73,8 @@ content_path = "./supabase/templates/confirmation.html"
 
 [functions.submit-support-request]
 verify_jwt = false
+
+# Transcript cleanup is for logged-in users only — keep the JWT check on so the
+# Gemini call cannot be hit anonymously.
+[functions.clean-transcript]
+verify_jwt = true

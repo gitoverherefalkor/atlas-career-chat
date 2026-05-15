@@ -2,36 +2,99 @@
 // Used by ChatInput and assessment long_text questions
 
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const SpeechRecognitionAPI =
   typeof window !== 'undefined'
     ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     : null;
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+const CLEAN_ENDPOINT = `${SUPABASE_URL}/functions/v1/clean-transcript`;
+
+// Sends the raw dictated text to the clean-transcript edge function, which adds
+// punctuation and paragraph breaks. Returns the tidied text, or null on any
+// failure (caller keeps the raw text in that case — nothing is lost).
+async function cleanTranscript(text: string): Promise<string | null> {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return null; // function requires a real JWT
+    const res = await fetch(CLEAN_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json().catch(() => null);
+    return typeof data?.text === 'string' && data.text.trim().length > 0
+      ? data.text
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 interface UseSpeechRecognitionOptions {
   /** Called with accumulated text on each recognition result */
   onTranscript: (text: string) => void;
   /** Existing text to prepend to transcript (e.g. current textarea value) */
   existingText?: string;
+  /**
+   * When true, the final transcript is sent through the clean-transcript edge
+   * function (adds punctuation/paragraphs) once the user stops dictating.
+   */
+  cleanOnStop?: boolean;
 }
 
-export function useSpeechRecognition({ onTranscript, existingText = '' }: UseSpeechRecognitionOptions) {
+export function useSpeechRecognition({
+  onTranscript,
+  existingText = '',
+  cleanOnStop = false,
+}: UseSpeechRecognitionOptions) {
   const [isListening, setIsListening] = useState(false);
+  const [isCleaning, setIsCleaning] = useState(false);
   const isListeningRef = useRef(false);
   const recognitionRef = useRef<any>(null);
   const finalTranscriptRef = useRef('');
   const onTranscriptRef = useRef(onTranscript);
+  const cleanOnStopRef = useRef(cleanOnStop);
+  const unmountedRef = useRef(false);
 
-  // Keep callback ref fresh without re-creating recognition
+  // Keep callback/option refs fresh without re-creating recognition
   useEffect(() => {
     onTranscriptRef.current = onTranscript;
   }, [onTranscript]);
+  useEffect(() => {
+    cleanOnStopRef.current = cleanOnStop;
+  }, [cleanOnStop]);
+
+  // Tidy up the raw transcript via the edge function. On any failure the raw
+  // text already shown in the field is left as-is.
+  const runCleanup = useCallback(async (raw: string) => {
+    const trimmed = raw.trim();
+    if (!trimmed) return;
+    setIsCleaning(true);
+    try {
+      const cleaned = await cleanTranscript(trimmed);
+      if (cleaned && !unmountedRef.current) {
+        onTranscriptRef.current(cleaned);
+      }
+    } finally {
+      if (!unmountedRef.current) setIsCleaning(false);
+    }
+  }, []);
 
   const stopListening = useCallback(() => {
+    // Stops recognition; the `onend` handler captures the final transcript and
+    // triggers cleanup (when enabled), so finalTranscriptRef is NOT cleared here.
     recognitionRef.current?.stop();
     setIsListening(false);
     isListeningRef.current = false;
-    finalTranscriptRef.current = '';
   }, []);
 
   const startListening = useCallback(async () => {
@@ -76,6 +139,13 @@ export function useSpeechRecognition({ onTranscript, existingText = '' }: UseSpe
         } catch {
           // Ignore restart failures
         }
+        return;
+      }
+      // Recognition has fully stopped. Optionally tidy up the transcript.
+      const raw = finalTranscriptRef.current;
+      finalTranscriptRef.current = '';
+      if (cleanOnStopRef.current && !unmountedRef.current) {
+        void runCleanup(raw);
       }
     };
 
@@ -96,7 +166,7 @@ export function useSpeechRecognition({ onTranscript, existingText = '' }: UseSpe
       setIsListening(false);
       isListeningRef.current = false;
     }
-  }, [existingText, stopListening]);
+  }, [existingText, stopListening, runCleanup]);
 
   // Toggle convenience
   const toggleListening = useCallback(async () => {
@@ -110,6 +180,7 @@ export function useSpeechRecognition({ onTranscript, existingText = '' }: UseSpe
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      unmountedRef.current = true;
       recognitionRef.current?.stop();
       isListeningRef.current = false;
     };
@@ -117,6 +188,7 @@ export function useSpeechRecognition({ onTranscript, existingText = '' }: UseSpe
 
   return {
     isListening,
+    isCleaning,
     isSupported: !!SpeechRecognitionAPI,
     toggleListening,
     stopListening,
