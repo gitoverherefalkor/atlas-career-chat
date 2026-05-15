@@ -564,7 +564,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         </div>
       );
 
-    case 'multiple_choice':
+    case 'multiple_choice': {
+      // Two-column layout for long lists of short options — 8+ choices, each
+      // <=50 chars. Sentence-style option lists stay single-column.
+      const mcChoices = question.config?.choices ?? [];
+      const useTwoCol = mcChoices.length >= 8 && mcChoices.every((c) => c.length <= 50);
+      const mcListClass = useTwoCol ? 'grid grid-cols-1 md:grid-cols-2 gap-2' : 'space-y-2';
       if (!question.allow_multiple) {
         // Single selection with enhanced interaction
         return (
@@ -574,7 +579,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
             />
             {renderDescription()}
-            <RadioGroup value={value || ''} onValueChange={onChange} className="space-y-2">
+            <RadioGroup value={value || ''} onValueChange={onChange} className={mcListClass}>
               {question.config?.choices?.map((choice) => {
                 const isSelected = value === choice;
                 return (
@@ -624,7 +629,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                   className={`
                     group relative flex items-center p-4 rounded-lg border-2 cursor-pointer
                     transition-all duration-200 hover:shadow-md
-                    ${value === 'other' 
+                    ${useTwoCol ? 'md:col-span-2' : ''}
+                    ${value === 'other'
                       ? 'border-atlas-teal bg-atlas-teal/5 shadow-sm' 
                       : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                     }
@@ -685,7 +691,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
               dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
             />
             {renderDescription()}
-            <div className="space-y-2">
+            <div className={mcListClass}>
               {question.config?.choices?.map((choice) => {
                 const isChecked = currentValues.includes(choice);
                 
@@ -738,8 +744,8 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 );
               })}
               {question.allow_other && (
-                <div className="space-y-2">
-                  <div 
+                <div className={`space-y-2 ${useTwoCol ? 'md:col-span-2' : ''}`}>
+                  <div
                     onClick={(e) => {
                       e.preventDefault();
                       const hasOtherResponse = currentValues.some((v: string) => v.startsWith('Other: '));
@@ -819,6 +825,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           </div>
         );
       }
+    }
 
     case 'rating':
       const min = question.config?.min || 1;
