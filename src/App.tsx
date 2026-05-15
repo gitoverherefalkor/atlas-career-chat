@@ -17,6 +17,7 @@ import Index from "./pages/Index";
 import Payment from "./pages/Payment";
 import NotFound from "./pages/NotFound";
 import CookieConsentBanner from "./components/CookieConsentBanner";
+import SupportButton from "./components/support/SupportButton";
 import { ChunkLoadErrorBoundary } from "./components/ChunkLoadErrorBoundary";
 
 // Lazy load all other routes — only downloaded when the user navigates to them
@@ -104,6 +105,7 @@ const App = () => {
             </Suspense>
           </ChunkLoadErrorBoundary>
           <CookieConsentBanner />
+          <SupportButton />
         </BrowserRouter>
       </TooltipProvider>
       </LanguageSync>
