@@ -666,7 +666,7 @@ const Index = () => {
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#C8891A] to-[#F0C040]">Start Thriving.</span>
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-blue-100/60 mb-10 max-w-xl font-medium leading-relaxed">
-                Find a career path that actually fits you, not the one you thought you wanted at 16.
+                Comprehensive AI coaching session discussing personality and career goals resulting in up to 10 suitable career titles.
               </p>
 
               <div className="space-y-3 mb-10 text-blue-100/80 font-medium">
