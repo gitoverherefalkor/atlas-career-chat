@@ -7,6 +7,13 @@ import { mapExtractedDataToSurvey } from '../utils/resumeDataMapper';
 // Resume extraction is proxied through a Supabase Edge Function
 // (eliminates CORS issues and hides the n8n webhook URL from the client)
 
+// Question 4d ("topics or fields you know far more about than most people")
+// is an interests-style question a CV can't reliably answer — the n8n parser
+// tends to just echo the skills list into it. Never pre-fill it from a resume.
+const SKIP_PREFILL_QUESTION_IDS = new Set([
+  '44444444-4444-4444-4444-444444444444',
+]);
+
 interface UseAIResumeUploadProps {
   onSuccess?: (data: any) => void;
   onError?: (error: string) => void;
@@ -111,6 +118,7 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
         console.log('[ResumeUpload] Using pre-mapped resume_parsed_data from n8n');
         surveyPreFillData = {};
         for (const [questionId, wrapper] of Object.entries(payload.resume_parsed_data)) {
+          if (SKIP_PREFILL_QUESTION_IDS.has(questionId)) continue;
           surveyPreFillData[questionId] = (wrapper as any)?.value ?? wrapper;
         }
       } else {
