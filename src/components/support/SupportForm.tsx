@@ -50,6 +50,26 @@ function readAccessCode(): string | null {
   return null;
 }
 
+// Best-guess default category from the page support was opened on. Page-level
+// granularity only — the user can still change it. Returns '' (no default) for
+// pages where the topic is genuinely ambiguous.
+function defaultCategoryForPath(pathname: string): string {
+  if (pathname.startsWith('/assessment')) return 'assessment_survey';
+  if (pathname.startsWith('/chat')) return 'ai_chat';
+  if (pathname.startsWith('/jobs')) return 'job_openings';
+  if (pathname.startsWith('/report')) return 'my_report';
+  if (pathname.startsWith('/payment')) return 'access_code_payment';
+  if (pathname.startsWith('/profile')) return 'account_login';
+  if (
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/forgot-password') ||
+    pathname.startsWith('/reset-password')
+  ) {
+    return 'account_login';
+  }
+  return '';
+}
+
 interface SupportFormProps {
   onSuccess?: () => void;
 }
@@ -58,7 +78,9 @@ const SupportForm = ({ onSuccess }: SupportFormProps) => {
   const { user } = useAuth();
   const location = useLocation();
 
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState(() =>
+    defaultCategoryForPath(location.pathname),
+  );
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
