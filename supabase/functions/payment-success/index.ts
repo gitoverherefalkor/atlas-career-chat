@@ -49,28 +49,24 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
             </p>
 
             <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px; color: #444;">
-              Thank you for purchasing Cairnly. Your access code is:
+              Thank you for purchasing Cairnly. You can continue right where you left off, your assessment is ready on the platform.
             </p>
 
-            <div style="background-color: #213F4F; padding: 20px; border-radius: 8px; text-align: center; margin: 24px 0;">
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 8px; color: #444;">
+              <strong>Keep this access code safe.</strong> It's your backup, use it to log back in any time and pick up your assessment.
+            </p>
+
+            <div style="background-color: #213F4F; padding: 20px; border-radius: 8px; text-align: center; margin: 16px 0 24px 0;">
               <span style="color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 2px; font-family: 'Courier New', monospace;">
                 ${accessCode}
               </span>
             </div>
 
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 8px; color: #444;">To use your access code:</p>
-            <ol style="color: #555; font-size: 15px; line-height: 1.8; padding-left: 20px; margin: 0 0 24px 0;">
-              <li>Visit <a href="https://cairnly.io/assessment" style="color: #3989AF; text-decoration: none; font-weight: 500;">cairnly.io/assessment</a></li>
-              <li>Enter your access code when prompted</li>
-              <li>Complete your personalized career assessment</li>
-            </ol>
-
-            <div style="text-align: center; margin: 32px 0;">
-              <a href="https://cairnly.io/assessment"
-                 style="background-color: #27A1A1; color: #ffffff; padding: 15px 40px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 16px; letter-spacing: 0.3px;">
-                Start Assessment Now
-              </a>
-            </div>
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 0; color: #444;">
+              Need to get back to your assessment? Head to your
+              <a href="https://cairnly.io/dashboard" style="color: #3989AF; text-decoration: none; font-weight: 500;">dashboard</a>,
+              you can start a new assessment or continue an existing one from there.
+            </p>
 
             <p style="font-size: 14px; color: #888; margin-top: 24px;">
               Your access code is valid for one year from today. If you have any questions, please contact our support team.
