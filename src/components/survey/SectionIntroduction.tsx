@@ -44,18 +44,18 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
     <div className="max-w-4xl mx-auto">
       <Card>
         <CardContent className="text-center py-12 px-8">
-          {Icon && (
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-atlas-teal/10">
-              <Icon className="h-8 w-8 text-atlas-teal" />
-            </div>
-          )}
           <h2 className="text-3xl font-medium text-atlas-navy mb-4">
             Section {sectionNumber}
           </h2>
           <h3 className="text-xl font-semibold text-atlas-teal mb-6">
             {sectionTitle}
           </h3>
-          <div 
+          {Icon && (
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-atlas-teal/10">
+              <Icon className="h-8 w-8 text-atlas-teal" />
+            </div>
+          )}
+          <div
             className="text-gray-600 text-lg mb-8 max-w-2xl mx-auto"
             dangerouslySetInnerHTML={formatTextWithEmphasis(description)}
           />
