@@ -49,120 +49,413 @@ const Button: React.FC<ButtonProps> = ({ children, variant = 'primary', classNam
   );
 };
 
+// --- Career Path Configurations ---
+// Each config defines a different visual trajectory so every loop looks unique
+interface CpbConfig {
+  oldRise: string;
+  plateau: string;
+  ghost: string;
+  sx: number;
+  sy: number;
+  oldDots: Array<{ cx: number; cy: number; r: number }>;
+  newPath: string;
+  branches: Array<{ d: string; color: string; width: string; dash: string }>;
+  newDots: Array<{ cx: number; cy: number }>;
+  newNodes: Array<{ cx: number; cy: number }>;
+}
+
+const cpbConfigs: CpbConfig[] = [
+  {
+    // Bottom-left → gentle rise → flat plateau through the cairn → upper-right
+    oldRise: "M-150 510 C 120 470, 280 391, 460 391",
+    plateau: "M460 391 C 620 391, 800 391, 980 391 C 1080 391, 1180 391, 1260 391",
+    ghost: "M1260 391 C 1340 391, 1440 391, 1540 391",
+    sx: 660, sy: 391,
+    oldDots: [
+      { cx: 0, cy: 482, r: 2.5 }, { cx: 160, cy: 443, r: 2.5 }, { cx: 300, cy: 409, r: 2.5 },
+      { cx: 500, cy: 391, r: 2 }, { cx: 720, cy: 391, r: 2 }, { cx: 940, cy: 391, r: 2 }, { cx: 1140, cy: 391, r: 2 },
+    ],
+    newPath: "M660 391 C 720 351, 790 291, 860 241 S 1000 141, 1080 91 S 1220 21, 1340 -20",
+    branches: [
+      { d: "M860 241 C 890 261, 930 276, 970 266", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M1080 91 C 1100 116, 1130 131, 1170 121", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M960 171 C 980 146, 1010 131, 1050 141", color: "white", width: "1.2", dash: "3 9" },
+    ],
+    newDots: [{ cx: 800, cy: 291 }, { cx: 970, cy: 161 }, { cx: 1160, cy: 61 }],
+    newNodes: [{ cx: 860, cy: 241 }, { cx: 1080, cy: 91 }],
+  },
+  {
+    // Bottom-right → gentle rise → flat plateau through the cairn → upper-left
+    oldRise: "M1590 510 C 1320 470, 1160 400, 980 400",
+    plateau: "M980 400 C 820 400, 640 400, 460 400 C 360 400, 260 400, 180 400",
+    ghost: "M180 400 C 100 400, 0 400, -100 400",
+    sx: 780, sy: 400,
+    oldDots: [
+      { cx: 1440, cy: 483, r: 2.5 }, { cx: 1279, cy: 446, r: 2.5 }, { cx: 1140, cy: 416, r: 2.5 },
+      { cx: 920, cy: 400, r: 2 }, { cx: 700, cy: 400, r: 2 }, { cx: 500, cy: 400, r: 2 }, { cx: 320, cy: 400, r: 2 },
+    ],
+    newPath: "M780 400 C 720 360, 650 300, 580 250 S 440 150, 360 100 S 200 30, 80 -20",
+    branches: [
+      { d: "M580 250 C 550 270, 510 285, 470 275", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M360 100 C 340 125, 310 140, 270 130", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M470 180 C 450 155, 420 140, 380 150", color: "white", width: "1.2", dash: "3 9" },
+    ],
+    newDots: [{ cx: 640, cy: 300 }, { cx: 460, cy: 180 }, { cx: 240, cy: 60 }],
+    newNodes: [{ cx: 580, cy: 250 }, { cx: 360, cy: 100 }],
+  },
+  {
+    // Bottom-left → gentle rise → flat plateau through the cairn → upper-right
+    oldRise: "M-150 540 C 120 500, 290 417, 470 417",
+    plateau: "M470 417 C 630 417, 810 417, 990 417 C 1090 417, 1190 417, 1270 417",
+    ghost: "M1270 417 C 1350 417, 1450 417, 1550 417",
+    sx: 840, sy: 417,
+    oldDots: [
+      { cx: 1, cy: 512, r: 2.5 }, { cx: 164, cy: 471, r: 2.5 }, { cx: 308, cy: 436, r: 2.5 },
+      { cx: 510, cy: 417, r: 2 }, { cx: 720, cy: 417, r: 2 }, { cx: 930, cy: 417, r: 2 }, { cx: 1140, cy: 417, r: 2 },
+    ],
+    newPath: "M840 417 C 900 377, 970 317, 1040 267 S 1180 167, 1260 107 S 1380 27, 1460 -20",
+    branches: [
+      { d: "M1040 267 C 1070 287, 1110 302, 1150 292", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M1260 107 C 1280 132, 1310 147, 1350 137", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M1150 190 C 1170 165, 1200 150, 1240 160", color: "white", width: "1.2", dash: "3 9" },
+    ],
+    newDots: [{ cx: 980, cy: 317 }, { cx: 1140, cy: 207 }, { cx: 1320, cy: 77 }],
+    newNodes: [{ cx: 1040, cy: 267 }, { cx: 1260, cy: 107 }],
+  },
+  {
+    // Bottom-right → gentle rise → flat plateau through the cairn → upper-left
+    oldRise: "M1590 540 C 1320 500, 1150 417, 970 417",
+    plateau: "M970 417 C 810 417, 630 417, 450 417 C 350 417, 250 417, 170 417",
+    ghost: "M170 417 C 90 417, -10 417, -110 417",
+    sx: 600, sy: 417,
+    oldDots: [
+      { cx: 1439, cy: 512, r: 2.5 }, { cx: 1275, cy: 471, r: 2.5 }, { cx: 1132, cy: 436, r: 2.5 },
+      { cx: 920, cy: 417, r: 2 }, { cx: 700, cy: 417, r: 2 }, { cx: 490, cy: 417, r: 2 }, { cx: 300, cy: 417, r: 2 },
+    ],
+    newPath: "M600 417 C 540 377, 470 317, 400 267 S 260 167, 180 107 S 60 27, -20 -20",
+    branches: [
+      { d: "M400 267 C 370 287, 330 302, 290 292", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M180 107 C 160 132, 130 147, 90 137", color: "#E3B04D", width: "1.5", dash: "4 8" },
+      { d: "M290 190 C 270 165, 240 150, 200 160", color: "white", width: "1.2", dash: "3 9" },
+    ],
+    newDots: [{ cx: 460, cy: 317 }, { cx: 300, cy: 207 }, { cx: 120, cy: 77 }],
+    newNodes: [{ cx: 400, cy: 267 }, { cx: 180, cy: 107 }],
+  },
+];
+
 // --- Career Path Background ---
-// A single still scene: a grey "guessing" path that rises gently then flattens
-// into stagnation, a cairn marking the turning point, and a gold "thriving"
-// path climbing away from it. Only soft opacity animations - nothing draws or
-// reveals geometry, so every line stays whole and connected to the cairn.
+// Narrative loop: slow rise → long plateau drag → spark → upward path → fade → repeat
 const CareerPathBg = () => {
-  const cx = 720; // cairn x - the change-of-direction point
-  const cy = 430; // cairn y
+  const [cycle, setCycle] = useState(0);
+  const [visible, setVisible] = useState(true);
+
+  // Cycle duration: 4s draw + 2.5s plateau + 1s spark + 3s new path + 2s hold + 2s fade + 1.5s pause = 16s
+  const CYCLE_MS = 16000;
+  const FADE_START_MS = 12500; // start fade at 12.5s
+
+  useEffect(() => {
+    // Only animate while hero is in view
+    const handleScroll = () => {
+      setVisible(window.scrollY < window.innerHeight);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    const timer = setInterval(() => {
+      setCycle(c => c + 1);
+    }, CYCLE_MS);
+    return () => clearInterval(timer);
+  }, [visible]);
+
+  // Fade wrapper: fades out near end of each cycle, then resets on new cycle
+  const [fading, setFading] = useState(false);
+  useEffect(() => {
+    if (!visible) return;
+    setFading(false);
+    const fadeTimer = setTimeout(() => setFading(true), FADE_START_MS);
+    return () => clearTimeout(fadeTimer);
+  }, [cycle, visible]);
+
+  if (!visible && cycle > 0) return null;
+
+  // Pick a different path configuration each cycle
+  const config = cpbConfigs[cycle % cpbConfigs.length];
+  const { sx, sy } = config;
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
-      <svg
-        viewBox="0 0 1440 900"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-        className="absolute inset-0 w-full h-full"
-        preserveAspectRatio="xMidYMid slice"
+      <div
+        key={cycle}
+        className="absolute inset-0 transition-opacity duration-[2000ms]"
+        style={{ opacity: fading ? 0 : 1 }}
       >
-        <defs>
-          {/* grey gentle-rise: faint off-screen, brightening toward the cairn */}
-          <linearGradient id="cpbRise" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#9AA7B0" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="#9AA7B0" stopOpacity="0.42" />
-          </linearGradient>
-          {/* grey plateau: solid through the cairn, fading out shortly past it */}
-          <linearGradient id="cpbFlat" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#9AA7B0" stopOpacity="0.42" />
-            <stop offset="60%" stopColor="#9AA7B0" stopOpacity="0.34" />
-            <stop offset="100%" stopColor="#9AA7B0" stopOpacity="0.06" />
-          </linearGradient>
-          {/* gold thriving path: brightest at the cairn, fading as it climbs */}
-          <linearGradient id="cpbGold" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#EFC457" stopOpacity="0.95" />
-            <stop offset="55%" stopColor="#E3B04D" stopOpacity="0.78" />
-            <stop offset="100%" stopColor="#E3B04D" stopOpacity="0.42" />
-          </linearGradient>
-        </defs>
+        <svg
+          viewBox="0 0 1440 900"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute inset-0 w-full h-full"
+          preserveAspectRatio="xMidYMid slice"
+        >
+          {/* ====== ACT 1: Old path - rises, then long painful plateau ====== */}
+          {/* Early rise - some momentum */}
+          <path
+            d={config.oldRise}
+            stroke="url(#oldPathGrad)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+            className="cpb-old-rise"
+          />
+          {/* The plateau - long, flat, going nowhere */}
+          <path
+            d={config.plateau}
+            stroke="url(#plateauGrad)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+            className="cpb-plateau"
+          />
+          {/* Ghost continuation - stagnation petering out into dots */}
+          <path
+            d={config.ghost}
+            stroke="#9AA7B0"
+            strokeWidth="2.2"
+            strokeOpacity="0"
+            strokeLinecap="round"
+            strokeDasharray="0.5 13"
+            fill="none"
+            className="cpb-ghost"
+          />
 
-        <g className="cpb-scene">
-          {/* ---- Grey "guessing" path: gentle rise easing into stagnation ---- */}
-          <path
-            d="M-160 566 C 110 524, 210 430, 400 430"
-            stroke="url(#cpbRise)" strokeWidth="2.5" strokeLinecap="round" fill="none"
-          />
-          <path
-            d="M400 430 C 560 430, 760 430, 980 430"
-            stroke="url(#cpbFlat)" strokeWidth="2.5" strokeLinecap="round" fill="none"
-          />
-          {/* dotted continuation - stagnation petering out */}
-          <path
-            d="M980 430 C 1130 430, 1300 430, 1520 430"
-            stroke="#9AA7B0" strokeWidth="2.5" strokeOpacity="0.2"
-            strokeLinecap="round" strokeDasharray="0.5 17" fill="none"
-          />
-          {/* milestone dots along the grey path */}
-          {[[40, 524], [200, 452], [350, 431], [560, 430], [770, 430]].map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r="2.4" fill="#9AA7B0" fillOpacity="0.32" />
+          {/* Milestone dots along old path - getting dimmer */}
+          {config.oldDots.map((dot, i) => (
+            <circle key={i} cx={dot.cx} cy={dot.cy} r={dot.r} fill="#9AA7B0" fillOpacity="0" className={`cpb-dot-old cpb-dot-${i + 1}`} />
           ))}
 
-          {/* ---- Gold "thriving" path: climbing away from the cairn ---- */}
+          {/* ====== ACT 2: The spark ====== */}
+          <g className="cpb-spark-group">
+            {/* Outer glow */}
+            <circle cx={sx} cy={sy} r="35" fill="#E3B04D" fillOpacity="0" className="cpb-spark-ring" />
+            {/* Core: the cairn — the change-of-direction point */}
+            <image
+              href={CairnSymbolInvert}
+              x={sx - 14} y={sy - 24}
+              width="28" height="48"
+              preserveAspectRatio="xMidYMid meet"
+              opacity="0"
+              className="cpb-spark-core"
+            />
+            {/* Rays */}
+            {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
+              const rad = (angle * Math.PI) / 180;
+              const r1 = 28, r2 = 38 + (i % 2) * 8;
+              return (
+                <line
+                  key={angle}
+                  x1={sx + Math.cos(rad) * r1} y1={sy + Math.sin(rad) * r1}
+                  x2={sx + Math.cos(rad) * r2} y2={sy + Math.sin(rad) * r2}
+                  stroke="#E3B04D"
+                  strokeWidth={i % 2 === 0 ? "1.5" : "1"}
+                  strokeLinecap="round"
+                  strokeOpacity="0"
+                  className="cpb-spark-ray"
+                />
+              );
+            })}
+            {/* Sparkle particles */}
+            <circle cx={sx - 20} cy={sy - 22} r="1.5" fill="#E3B04D" fillOpacity="0" className="cpb-sparkle cpb-sp1" />
+            <circle cx={sx + 24} cy={sy - 14} r="1" fill="white" fillOpacity="0" className="cpb-sparkle cpb-sp2" />
+            <circle cx={sx + 14} cy={sy + 20} r="1.2" fill="#E3B04D" fillOpacity="0" className="cpb-sparkle cpb-sp3" />
+            <circle cx={sx - 18} cy={sy + 16} r="1" fill="white" fillOpacity="0" className="cpb-sparkle cpb-sp4" />
+          </g>
+
+          {/* ====== ACT 3: New thriving path from spark - the golden career path ====== */}
           <path
-            d={`M${cx} ${cy} C 824 356, 944 262, 1046 178 C 1148 94, 1268 0, 1392 -86`}
-            stroke="url(#cpbGold)" strokeWidth="2.25" strokeLinecap="round" fill="none"
+            d={config.newPath}
+            stroke="url(#newPathGrad)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            fill="none"
+            className="cpb-new-path"
           />
-          {/* gold step dots */}
-          {[[872, 312], [1046, 178], [1222, 38]].map(([x, y], i) => (
-            <circle
-              key={i} cx={x} cy={y} r="3" fill="#E3B04D"
-              className={`cpb-twinkle cpb-tw${i + 1}`}
+
+          {/* Branches off new path - possibilities opening */}
+          {config.branches.map((b, i) => (
+            <path
+              key={i}
+              d={b.d}
+              stroke={b.color} strokeWidth={b.width} strokeOpacity="0"
+              strokeLinecap="round" strokeDasharray={b.dash} fill="none"
+              className={`cpb-branch cpb-br${i + 1}`}
             />
           ))}
 
-          {/* ---- Spark + cairn: the change-of-direction point ---- */}
-          <circle cx={cx} cy={cy} r="34" fill="#E3B04D" className="cpb-glow" />
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
-            const rad = (angle * Math.PI) / 180;
-            const r1 = 30;
-            const r2 = 41 + (i % 2) * 8;
-            return (
-              <line
-                key={angle}
-                x1={cx + Math.cos(rad) * r1} y1={cy + Math.sin(rad) * r1}
-                x2={cx + Math.cos(rad) * r2} y2={cy + Math.sin(rad) * r2}
-                stroke="#E3B04D" strokeWidth={i % 2 === 0 ? 1.5 : 1}
-                strokeLinecap="round" strokeOpacity="0.5"
-              />
-            );
-          })}
-          <image
-            href={CairnSymbolInvert}
-            x={cx - 15} y={cy - 27}
-            width="30" height="54"
-            preserveAspectRatio="xMidYMid meet"
-          />
-        </g>
-      </svg>
+          {/* Dots on new path */}
+          {config.newDots.map((dot, i) => (
+            <circle key={i} cx={dot.cx} cy={dot.cy} r="3" fill="#E3B04D" fillOpacity="0" className={`cpb-dot-new cpb-dn${i + 1}`} />
+          ))}
+
+          {/* Branch nodes with subtle pulse */}
+          {config.newNodes.map((node, i) => (
+            <circle key={i} cx={node.cx} cy={node.cy} r="5" fill="#E3B04D" fillOpacity="0" className={`cpb-node-new cpb-nn${i + 1}`} />
+          ))}
+
+          <defs>
+            <linearGradient id="oldPathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#9AA7B0" stopOpacity="0.16" />
+              <stop offset="50%" stopColor="#9AA7B0" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#9AA7B0" stopOpacity="0.46" />
+            </linearGradient>
+            <linearGradient id="plateauGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#9AA7B0" stopOpacity="0.46" />
+              <stop offset="50%" stopColor="#9AA7B0" stopOpacity="0.32" />
+              <stop offset="100%" stopColor="#9AA7B0" stopOpacity="0.18" />
+            </linearGradient>
+            <linearGradient id="newPathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="#EFBE48" stopOpacity="0.85" />
+              <stop offset="50%" stopColor="#E3B04D" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#E3B04D" stopOpacity="0.5" />
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
 
       <style>{`
-        .cpb-scene { opacity: 0; animation: cpb-fade-in 1.6s ease-out 0.25s forwards; }
-        @keyframes cpb-fade-in { to { opacity: 1; } }
+        /* ============ TIMING ============
+           0.0s - 4.0s : Old rise draws (slow, deliberate)
+           2.5s - 6.5s : Plateau draws (really drags)
+           5.5s - 6.5s : Ghost line appears
+           6.5s - 7.5s : Spark fires
+           7.5s - 10.5s: New path draws (moderate, confident)
+           9.5s - 11s  : Branches appear
+           12.5s       : Wrapper starts fading (handled by React)
+        ================================= */
 
-        .cpb-glow { fill-opacity: 0.12; animation: cpb-breathe 5s ease-in-out infinite; }
-        @keyframes cpb-breathe {
-          0%, 100% { fill-opacity: 0.09; }
-          50% { fill-opacity: 0.17; }
+        /* ACT 1: Old rise - slow and deliberate */
+        .cpb-old-rise {
+          stroke-dasharray: 1400;
+          stroke-dashoffset: 1400;
+          animation: cpb-draw 4s ease-in-out 0.5s forwards;
         }
 
-        .cpb-twinkle { fill-opacity: 0.65; animation: cpb-twinkle-kf 3.8s ease-in-out infinite; }
-        .cpb-tw1 { animation-delay: 0s; }
-        .cpb-tw2 { animation-delay: 1.3s; }
-        .cpb-tw3 { animation-delay: 2.6s; }
-        @keyframes cpb-twinkle-kf {
-          0%, 100% { fill-opacity: 0.5; }
-          50% { fill-opacity: 0.9; }
+        /* Plateau - even slower, the drag */
+        .cpb-plateau {
+          stroke-dasharray: 1200;
+          stroke-dashoffset: 1200;
+          animation: cpb-draw 4s cubic-bezier(0.4, 0, 0.6, 1) 2.5s forwards;
+        }
+
+        /* Ghost flatline */
+        .cpb-ghost {
+          animation: cpb-ghost-in 2s ease-out 5.5s forwards;
+        }
+
+        /* Old dots - fade in along the path */
+        .cpb-dot-old { animation: cpb-dot-fade 0.4s ease-out forwards; }
+        .cpb-dot-1 { animation-delay: 1s; }
+        .cpb-dot-2 { animation-delay: 1.8s; }
+        .cpb-dot-3 { animation-delay: 2.6s; }
+        .cpb-dot-4 { animation-delay: 3.8s; }
+        .cpb-dot-5 { animation-delay: 4.6s; }
+        .cpb-dot-6 { animation-delay: 5.4s; }
+        .cpb-dot-7 { animation-delay: 6s; }
+
+        /* Old path dims after spark */
+        .cpb-old-rise {
+          animation: cpb-draw 4s ease-in-out 0.5s forwards, cpb-dim 2s ease-out 7.5s forwards;
+        }
+        .cpb-plateau {
+          animation: cpb-draw 4s cubic-bezier(0.4, 0, 0.6, 1) 2.5s forwards, cpb-dim 2s ease-out 7.5s forwards;
+        }
+
+        /* ACT 2: Spark at 6.5s */
+        .cpb-spark-core {
+          animation: cpb-spark-core-in 0.7s ease-out 6.5s forwards, cpb-pulse 3s ease-in-out 7.2s infinite;
+        }
+        .cpb-spark-ring {
+          animation: cpb-spark-ring-in 1s ease-out 6.5s forwards, cpb-ring-breathe 4s ease-in-out 7.5s infinite;
+        }
+        .cpb-spark-ray {
+          animation: cpb-ray-in 0.8s ease-out 6.6s forwards;
+        }
+        .cpb-sp1 { animation: cpb-sparkle 2.5s ease-in-out 6.8s infinite; }
+        .cpb-sp2 { animation: cpb-sparkle 3s ease-in-out 7s infinite; }
+        .cpb-sp3 { animation: cpb-sparkle 2.8s ease-in-out 6.9s infinite; }
+        .cpb-sp4 { animation: cpb-sparkle 3.2s ease-in-out 7.1s infinite; }
+
+        /* ACT 3: New path draws from spark - moderate speed, confident */
+        .cpb-new-path {
+          stroke-dasharray: 1400;
+          stroke-dashoffset: 1400;
+          animation: cpb-draw 3s ease-out 7.5s forwards;
+        }
+
+        /* Branches appear */
+        .cpb-br1 { animation: cpb-branch-in 1s ease-out 9.5s forwards; }
+        .cpb-br2 { animation: cpb-branch-in 1s ease-out 10s forwards; }
+        .cpb-br3 { animation: cpb-branch-in 1s ease-out 10.3s forwards; }
+
+        /* New dots */
+        .cpb-dn1 { animation: cpb-dot-new-in 0.5s ease-out 8.5s forwards; }
+        .cpb-dn2 { animation: cpb-dot-new-in 0.5s ease-out 9.2s forwards; }
+        .cpb-dn3 { animation: cpb-dot-new-in 0.5s ease-out 10s forwards; }
+
+        /* New nodes */
+        .cpb-nn1 { animation: cpb-dot-new-in 0.5s ease-out 9s forwards; }
+        .cpb-nn2 { animation: cpb-dot-new-in 0.5s ease-out 10s forwards; }
+
+        /* ============ KEYFRAMES ============ */
+        @keyframes cpb-draw {
+          to { stroke-dashoffset: 0; }
+        }
+        @keyframes cpb-dot-fade {
+          to { fill-opacity: 0.3; }
+        }
+        @keyframes cpb-ghost-in {
+          to { stroke-opacity: 0.2; }
+        }
+        @keyframes cpb-dim {
+          to { opacity: 0.3; }
+        }
+
+        @keyframes cpb-spark-core-in {
+          0%   { opacity: 0; }
+          50%  { opacity: 1; }
+          100% { opacity: 0.95; }
+        }
+        @keyframes cpb-pulse {
+          0%, 100% { opacity: 0.88; }
+          50% { opacity: 1; }
+        }
+        @keyframes cpb-spark-ring-in {
+          0%   { fill-opacity: 0; }
+          40%  { fill-opacity: 0.3; }
+          100% { fill-opacity: 0.1; }
+        }
+        @keyframes cpb-ring-breathe {
+          0%, 100% { fill-opacity: 0.07; }
+          50% { fill-opacity: 0.15; }
+        }
+        @keyframes cpb-ray-in {
+          0%   { stroke-opacity: 0; }
+          40%  { stroke-opacity: 0.6; }
+          100% { stroke-opacity: 0.2; }
+        }
+        @keyframes cpb-sparkle {
+          0%, 100% { fill-opacity: 0; transform: translate(0, 0); }
+          25% { fill-opacity: 0.55; }
+          50% { fill-opacity: 0.25; transform: translate(2px, -3px); }
+          75% { fill-opacity: 0.5; }
+        }
+
+        @keyframes cpb-branch-in {
+          to { stroke-opacity: 0.18; }
+        }
+        @keyframes cpb-dot-new-in {
+          to { fill-opacity: 0.55; }
         }
       `}</style>
     </div>
