@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSurvey } from '@/hooks/useSurvey';
 import { useSurveySession } from '@/hooks/useSurveySession';
 import { supabase } from '@/integrations/supabase/client';
+import { isQuestionAnswered } from '../questionValidation';
 
 export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
   const { data: survey, isLoading, error } = useSurvey(surveyId);
@@ -66,16 +67,20 @@ export const useSurveyState = (surveyId: string, accessCodeId?: string) => {
       for (let sIdx = 0; sIdx < survey.sections.length; sIdx++) {
         const section = survey.sections[sIdx];
         const questions = getFilteredQuestions(section);
+        // A section is complete only when every question is satisfied — an
+        // empty array (cleared multi-select) is NOT a valid answer.
         const allAnswered = questions.every(
-          (q: any) => savedResponses[q.id] !== undefined && savedResponses[q.id] !== null && savedResponses[q.id] !== ''
+          (q: any) => isQuestionAnswered(q, savedResponses[q.id])
         );
         if (allAnswered) completed.push(sIdx);
 
         if (!found) {
+          // Resume on the first question that still needs an answer. Using the
+          // shared validator (not a bare empty-string check) means a question
+          // that was answered then cleared is correctly treated as unanswered.
           for (let qIdx = 0; qIdx < questions.length; qIdx++) {
             const q = questions[qIdx];
-            const ans = savedResponses[q.id];
-            if (ans === undefined || ans === null || ans === '') {
+            if (!isQuestionAnswered(q, savedResponses[q.id])) {
               resumeSectionIdx = sIdx;
               resumeQIdx = qIdx;
               found = true;

@@ -1,0 +1,80 @@
+/**
+ * Whether a survey question is satisfied: either it is not required, or it has
+ * a valid answer for its type.
+ *
+ * Shared by the Continue gate (SurveyForm), the resume cursor and
+ * section-complete calc (useSurveyState), and the pre-submit completeness
+ * check — so every part of the survey agrees on what "answered" means.
+ *
+ * The per-type rules matter because answers come in different shapes: a
+ * cleared multi-select is an empty array, ranking/career-history answers are
+ * objects/arrays. A naive `!== '' && !== null` check wrongly treats those
+ * empty-but-present values as answered.
+ */
+export function isQuestionAnswered(question: any, response: any): boolean {
+  if (!question || !question.required) return true;
+
+  if (question.type === 'multiple_choice' && question.allow_multiple) {
+    const minSelections = question.min_selections;
+    const maxSelections = question.max_selections;
+
+    if (Array.isArray(response)) {
+      if (minSelections && response.length < minSelections) return false;
+      if (!minSelections && response.length === 0) return false;
+      if (maxSelections && response.length > maxSelections) return false;
+      return true;
+    }
+
+    if (minSelections && minSelections > 0) return false;
+    return response !== undefined && response !== null && response !== '';
+  }
+
+  if (question.type === 'ranking') {
+    const choices = question.config?.choices || [];
+    if (!response || typeof response !== 'object') return false;
+    const rankedItems = Object.keys(response).filter(
+      (key) => response[key] !== null && response[key] !== undefined
+    );
+    return rankedItems.length === choices.length;
+  }
+
+  if (question.type === 'skills_achievements') {
+    // Only the Languages sub-section is required: at least one preset with a
+    // proficiency, or a fully filled "other" language.
+    const langs = response?.languages;
+    if (!langs || typeof langs !== 'object') return false;
+    const presets = langs.presets && typeof langs.presets === 'object' ? langs.presets : {};
+    const other = langs.other && typeof langs.other === 'object' ? langs.other : null;
+
+    let validCount = 0;
+    for (const lang of Object.keys(presets)) {
+      if (!presets[lang]) return false; // checked but no proficiency picked
+      validCount++;
+    }
+    if (other) {
+      const hasLang = !!other.language;
+      const hasProf = !!other.proficiency;
+      if (hasLang !== hasProf) return false; // partially filled
+      if (hasLang && hasProf) validCount++;
+    }
+    return validCount >= 1;
+  }
+
+  if (question.type === 'career_history') {
+    // Validate the first 5 (active) entries: any entry with a title must have
+    // companySize, companyCulture and startYear. At least one active entry
+    // must have a title.
+    if (!Array.isArray(response)) return false;
+    const activeEntries = response.slice(0, 5);
+    for (const entry of activeEntries) {
+      if (entry.title && entry.title.trim()) {
+        if (!entry.companySize || !entry.companyCulture || !entry.startYear) {
+          return false;
+        }
+      }
+    }
+    return activeEntries.some((entry: any) => entry.title && entry.title.trim());
+  }
+
+  return response !== undefined && response !== null && response !== '';
+}

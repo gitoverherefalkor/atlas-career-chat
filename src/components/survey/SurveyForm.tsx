@@ -13,6 +13,8 @@ import { useSurveyNavigation } from './hooks/useSurveyNavigation';
 import { useSurveySubmission } from './hooks/useSurveySubmission';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
 import { useAssessmentSession } from '@/components/assessment/AssessmentSessionContext';
+import { useToast } from '@/hooks/use-toast';
+import { isQuestionAnswered } from './questionValidation';
 
 class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean}> {
   constructor(props: any) {
@@ -69,6 +71,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   accessCodeData
 }) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { triggerSave } = useAssessmentSession();
 
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL LOGIC
@@ -213,97 +216,38 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   const { handleSubmit: rawHandleSubmit, handleRetrySubmission } = surveySubmission;
 
   const handleSubmit = useCallback(() => {
-    triggerSave();
-    return rawHandleSubmit();
-  }, [rawHandleSubmit, triggerSave]);
-
-  // Helper function to check if current question is complete
-  const checkIfCurrentQuestionComplete = useCallback((question: any) => {
-    if (!question || !question.required) return true;
-    const response = responses[question.id];
-
-    // Special handling for different question types
-    if (question.type === 'multiple_choice' && question.allow_multiple) {
-      const minSelections = question.min_selections;
-      const maxSelections = question.max_selections;
-
-      if (Array.isArray(response)) {
-        // Check minimum selections requirement
-        if (minSelections && response.length < minSelections) return false;
-        // For required questions, need at least one selection if no minimum is set
-        if (!minSelections && response.length === 0) return false;
-        // Check maximum selections (all selections count, including Other)
-        if (maxSelections && response.length > maxSelections) return false;
-        return true;
-      }
-
-      // If no response but minimum required
-      if (minSelections && minSelections > 0) return false;
-      return response !== undefined && response !== null && response !== '';
-    }
-
-    if (question.type === 'ranking') {
-      // For ranking questions, ensure all items are ranked
-      const choices = question.config?.choices || [];
-
-      // Check if response is an object with rankings
-      if (!response || typeof response !== 'object') return false;
-
-      // Check if all items have been ranked
-      const rankedItems = Object.keys(response).filter(key =>
-        response[key] !== null && response[key] !== undefined
-      );
-
-      // All choices must be ranked
-      return rankedItems.length === choices.length;
-    }
-
-    if (question.type === 'skills_achievements') {
-      // Only the Languages sub-section is required: at least one preset with a
-      // proficiency, or a fully filled "other" language. Skills/certs/achievements
-      // are still optional (CV-driven and can stay empty).
-      const langs = response?.languages;
-      if (!langs || typeof langs !== 'object') return false;
-      const presets = langs.presets && typeof langs.presets === 'object' ? langs.presets : {};
-      const other = langs.other && typeof langs.other === 'object' ? langs.other : null;
-
-      let validCount = 0;
-      for (const lang of Object.keys(presets)) {
-        if (!presets[lang]) return false; // checked but no proficiency picked
-        validCount++;
-      }
-      if (other) {
-        const hasLang = !!other.language;
-        const hasProf = !!other.proficiency;
-        if (hasLang !== hasProf) return false; // partially filled
-        if (hasLang && hasProf) validCount++;
-      }
-      return validCount >= 1;
-    }
-
-    if (question.type === 'career_history') {
-      // For career history, validate that the first 5 (active) entries with a title have companySize and companyCulture
-      // Overflow entries (index >= 5) are not included in the assessment and not validated
-      if (!Array.isArray(response)) return false;
-
-      const activeEntries = response.slice(0, 5);
-
-      // Check each active entry that has a title
-      for (const entry of activeEntries) {
-        if (entry.title && entry.title.trim()) {
-          if (!entry.companySize || !entry.companyCulture || !entry.startYear) {
-            return false; // Active entry missing required fields
+    // Completeness backstop: a question can end up unanswered if it was
+    // cleared after being answered (the per-question Continue gate only
+    // covers the question you are on). Catch any gap before submitting and
+    // send the user straight to it.
+    if (survey) {
+      for (let s = 0; s < survey.sections.length; s++) {
+        const qs = getFilteredQuestions(survey.sections[s]);
+        for (let q = 0; q < qs.length; q++) {
+          if (!isQuestionAnswered(qs[q], responses[qs[q].id])) {
+            setCurrentSectionIndex(s);
+            setCurrentQuestionIndex(q);
+            setShowSectionIntro(false);
+            toast({
+              title: 'A question still needs an answer',
+              description: "We've taken you back to it. Fill it in to submit.",
+              variant: 'destructive',
+            });
+            return;
           }
         }
       }
-
-      // At least one active entry must have a title
-      const hasActiveEntry = activeEntries.some(entry => entry.title && entry.title.trim());
-      return hasActiveEntry;
     }
+    triggerSave();
+    return rawHandleSubmit();
+  }, [survey, getFilteredQuestions, responses, setCurrentSectionIndex, setCurrentQuestionIndex, setShowSectionIntro, toast, rawHandleSubmit, triggerSave]);
 
-    return response !== undefined && response !== null && response !== '';
-  }, [responses]);
+  // Whether a question is satisfied — delegates to the shared validator so the
+  // Continue gate, resume cursor and submit check all agree on "answered".
+  const checkIfCurrentQuestionComplete = useCallback(
+    (question: any) => isQuestionAnswered(question, responses[question?.id]),
+    [responses]
+  );
 
   const handleSectionIntroContinue = useCallback(() => {
     setActiveMilestone(null);
