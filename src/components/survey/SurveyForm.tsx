@@ -616,43 +616,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
           >
             <Card>
               <CardContent className="space-y-6 pt-4 sm:pt-6 px-3 sm:px-6">
-                {/* Navigation — top of card on desktop */}
-                <div className="hidden sm:flex justify-between items-center -mt-1">
-                  <Button
-                    variant="ghost"
-                    onClick={handleBack}
-                    disabled={isFirstQuestion() || submissionStatus === 'submitted'}
-                    className={`px-0 hover:bg-transparent ${isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}`}
-                  >
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back
-                  </Button>
-                  <Button
-                    onClick={isLastQuestion() ? handleSubmit : handleNext}
-                    disabled={
-                      submissionStatus === 'submitted' ||
-                      !isCurrentQuestionComplete() ||
-                      isLoading ||
-                      isSubmitting
-                    }
-                    className="bg-atlas-teal text-white hover:bg-atlas-teal/90"
-                  >
-                    {isSubmitting ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : isLastQuestion() ? (
-                      <>
-                        Submit
-                        <Send className="h-4 w-4 ml-2" />
-                      </>
-                    ) : (
-                      <>
-                        Continue
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </>
-                    )}
-                  </Button>
-                </div>
-
                 <div className="text-base sm:text-lg font-light text-gray-900">
                   <QuestionRenderer
                     question={currentQuestion}
@@ -665,14 +628,14 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             </Card>
           </div>
 
-          {/* Mobile-only navigation — sticky at bottom */}
-          <div className="sm:hidden sticky bottom-0 z-20 bg-gray-50 border-t border-gray-200 px-1 py-3 -mx-3 mt-4">
+          {/* Navigation — sticky at the bottom of the viewport, all screen sizes */}
+          <div className="sticky bottom-0 z-20 bg-gray-50 border-t border-gray-200 px-1 py-3 -mx-3 mt-4">
             <div className="flex justify-between gap-3">
               <Button
                 variant="ghost"
                 onClick={handleBack}
                 disabled={isFirstQuestion() || submissionStatus === 'submitted'}
-                className={`flex-1 ${isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}`}
+                className={`flex-1 sm:flex-none ${isFirstQuestion() ? "text-muted-foreground" : "text-atlas-teal hover:text-atlas-teal"}`}
               >
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back
@@ -685,7 +648,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
                   isLoading ||
                   isSubmitting
                 }
-                className="flex-1 bg-atlas-teal text-white hover:bg-atlas-teal/90"
+                className="flex-1 sm:flex-none bg-atlas-teal text-white hover:bg-atlas-teal/90"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
