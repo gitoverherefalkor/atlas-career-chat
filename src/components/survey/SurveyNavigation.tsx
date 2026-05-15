@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CheckCircle, Lock, LockOpen, Loader2 } from 'lucide-react';
+import { CheckCircle, Lock, LockOpen, Loader2, Mountain } from 'lucide-react';
 import { useAssessmentSession } from '@/components/assessment/AssessmentSessionContext';
 
 interface Section {
@@ -15,7 +15,21 @@ interface SurveyNavigationProps {
   onSectionClick: (sectionIndex: number) => void;
   currentQuestionInSection?: number;
   totalQuestionsInSection?: number;
+  /** When set, the autosave block is temporarily replaced by this encouragement message. */
+  activeMilestone?: string | null;
 }
+
+// Encouragement message — temporarily takes the autosave block's place in the
+// sidebar when the user crosses a progress milestone. Mustard card so it reads
+// as a distinct, positive beat rather than blending into the survey chrome.
+const MilestoneNotice: React.FC<{ message: string }> = ({ message }) => (
+  <div className="mt-4 pt-4 border-t border-gray-100 px-3">
+    <div className="flex items-start gap-3 rounded-lg bg-atlas-gold p-3 animate-in fade-in slide-in-from-bottom-1 duration-300">
+      <Mountain className="h-5 w-5 text-white flex-shrink-0 mt-0.5" />
+      <p className="text-sm font-medium text-white leading-relaxed">{message}</p>
+    </div>
+  </div>
+);
 
 // Small reassurance block — tells users their progress is safely stored and they can close
 // the tab at any time. Briefly flashes a spinner when an actual save is triggered.
@@ -64,7 +78,8 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
   completedSections,
   onSectionClick,
   currentQuestionInSection,
-  totalQuestionsInSection
+  totalQuestionsInSection,
+  activeMilestone
 }) => {
   const getSectionStatus = (sectionIndex: number) => {
     // `current` wins over `completed` — the section you're working on shouldn't
@@ -157,7 +172,7 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
             );
           })}
         </div>
-        <AutoSaveNotice />
+        {activeMilestone ? <MilestoneNotice message={activeMilestone} /> : <AutoSaveNotice />}
       </CardContent>
     </Card>
   );

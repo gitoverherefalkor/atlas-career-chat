@@ -5,7 +5,7 @@ import { SectionCompleteFlash } from './SectionCompleteFlash';
 import { SurveyNavigation, MobileStepIndicator } from './SurveyNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, Send, Loader2, CheckCircle, RefreshCw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send, Loader2, CheckCircle, RefreshCw, Mountain } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSurveyState } from './hooks/useSurveyState';
 import { useResumePreFill } from './hooks/useResumePreFill';
@@ -191,11 +191,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   // Wrap navigation handlers to flash the "auto-saved" indicator
   const handleNext = useCallback(() => {
+    setActiveMilestone(null);
     triggerSave();
     rawHandleNext();
   }, [rawHandleNext, triggerSave]);
 
   const handleBack = useCallback(() => {
+    setActiveMilestone(null);
     triggerSave();
     rawHandleBack();
   }, [rawHandleBack, triggerSave]);
@@ -304,6 +306,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   }, [responses]);
 
   const handleSectionIntroContinue = useCallback(() => {
+    setActiveMilestone(null);
     triggerSave();
     setShowSectionIntro(false);
   }, [setShowSectionIntro, triggerSave]);
@@ -436,11 +439,13 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     </div>
   );
 
-  // Milestone message banner — bottom-center toast, shown briefly at key thresholds
+  // Milestone message banner — mobile only (desktop shows it in the sidebar,
+  // replacing the autosave block). Mustard pill with a white mountain icon.
   const MilestoneBanner = activeMilestone ? (
-    <div className="fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none px-4 w-full max-w-md">
-      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 bg-white border border-gray-200 rounded-full px-5 py-2.5 text-sm text-gray-700 shadow-lg text-center">
-        {activeMilestone}
+    <div className="md:hidden fixed bottom-20 sm:bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none px-4 w-full max-w-md">
+      <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 flex items-center gap-2.5 bg-atlas-gold rounded-full px-5 py-3 shadow-lg">
+        <Mountain className="h-4 w-4 text-white flex-shrink-0" />
+        <span className="text-sm font-medium text-white">{activeMilestone}</span>
       </div>
     </div>
   ) : null;
@@ -464,6 +469,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             onSectionClick={handleSectionNavigation}
             currentQuestionInSection={currentQuestionInSection}
             totalQuestionsInSection={totalQuestionsInSection}
+            activeMilestone={activeMilestone}
           />
           <div className="flex-1">
             <SectionCompleteFlash sectionTitle={completedSectionTitle} />
@@ -497,6 +503,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             onSectionClick={handleSectionNavigation}
             currentQuestionInSection={currentQuestionInSection}
             totalQuestionsInSection={totalQuestionsInSection}
+            activeMilestone={activeMilestone}
           />
           <div className="flex-1">
             <SectionIntroduction
