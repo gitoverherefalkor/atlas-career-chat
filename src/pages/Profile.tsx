@@ -301,7 +301,7 @@ const Profile = () => {
                 </div>
               </div>
 
-              <div>
+              <div className="w-1/3 min-w-[160px]">
                 <label htmlFor="pronouns" className="block text-sm font-medium mb-2">
                   Pronouns
                 </label>
@@ -319,7 +319,7 @@ const Profile = () => {
                 </Select>
               </div>
 
-              <div>
+              <div className="w-1/3 min-w-[160px]">
                 <label htmlFor="age_range" className="block text-sm font-medium mb-2">
                   Age Range
                 </label>
