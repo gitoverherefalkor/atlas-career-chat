@@ -35,13 +35,13 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
       subject: "Your Cairnly Access Code",
       html: `
         <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-          <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
+          <div style="background-color: #213F4F; padding: 30px 40px; text-align: center;">
             <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
-            <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
+            <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">career path clarity.</p>
           </div>
 
           <div style="padding: 40px; color: #333333;">
-            <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Your Purchase was Successful!</h2>
+            <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Your Purchase was Successful!</h2>
 
             <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
               Hello ${firstName} ${lastName},
@@ -51,7 +51,7 @@ async function sendAccessCodeEmail(email: string, firstName: string, lastName: s
               Thank you for purchasing Cairnly. Your access code is:
             </p>
 
-            <div style="background-color: #012F64; padding: 20px; border-radius: 8px; text-align: center; margin: 24px 0;">
+            <div style="background-color: #213F4F; padding: 20px; border-radius: 8px; text-align: center; margin: 24px 0;">
               <span style="color: #ffffff; font-size: 26px; font-weight: 700; letter-spacing: 2px; font-family: 'Courier New', monospace;">
                 ${accessCode}
               </span>

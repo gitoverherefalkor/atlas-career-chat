@@ -27,9 +27,9 @@ const ALL_SECTIONS = [
 function wrapEmail(content: string): string {
   return `
     <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-      <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
+      <div style="background-color: #213F4F; padding: 30px 40px; text-align: center;">
         <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
-        <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
+        <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">career path clarity.</p>
       </div>
       <div style="padding: 40px; color: #333333;">
         ${content}
@@ -66,7 +66,7 @@ function signupNoStartEmail(firstName: string): { subject: string; html: string 
   return {
     subject: `Your career assessment is waiting, ${firstName}`,
     html: wrapEmail(`
-      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+      <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
         Ready to discover your ideal career path?
       </h2>
 
@@ -79,7 +79,7 @@ function signupNoStartEmail(firstName: string): { subject: string; html: string 
       </p>
 
       <div style="background-color: #f0f7fa; border-left: 4px solid #27A1A1; padding: 20px; margin-bottom: 28px; border-radius: 0 8px 8px 0;">
-        <p style="color: #012F64; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">Here's what you'll discover:</p>
+        <p style="color: #213F4F; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">Here's what you'll discover:</p>
         <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
           <li>Your unique personality profile and working style</li>
           <li>Your core strengths and development areas</li>
@@ -111,7 +111,7 @@ function surveyAbandonedEmail(
   return {
     subject: `Pick up where you left off, ${firstName}`,
     html: wrapEmail(`
-      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+      <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
         You're ${percentDone}% through your assessment
       </h2>
 
@@ -176,7 +176,7 @@ function chatNotCompletedEmail(
   return {
     subject: `Your career insights are waiting, ${firstName}`,
     html: wrapEmail(`
-      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+      <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
         You've unlocked ${sectionsCompleted} of ${totalSections} career insights
       </h2>
 
@@ -192,7 +192,7 @@ function chatNotCompletedEmail(
         remainingSections.length > 0
           ? `
       <div style="background-color: #f0f7fa; border-left: 4px solid #27A1A1; padding: 20px; margin-bottom: 28px; border-radius: 0 8px 8px 0;">
-        <p style="color: #012F64; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">Insights you haven't explored yet:</p>
+        <p style="color: #213F4F; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">Insights you haven't explored yet:</p>
         <ul style="list-style: none; padding: 0; margin: 0; font-size: 14px; color: #444; line-height: 1.8;">
           ${sectionListHtml}
           ${moreHtml}
@@ -217,7 +217,7 @@ function reportNotViewedEmail(firstName: string): { subject: string; html: strin
   return {
     subject: `Your full career report is ready, ${firstName}`,
     html: wrapEmail(`
-      <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
+      <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">
         Your personalized career report is waiting
       </h2>
 
@@ -230,7 +230,7 @@ function reportNotViewedEmail(firstName: string): { subject: string; html: strin
       </p>
 
       <div style="background-color: #f0f7fa; border-left: 4px solid #27A1A1; padding: 20px; margin-bottom: 28px; border-radius: 0 8px 8px 0;">
-        <p style="color: #012F64; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">What's in your report:</p>
+        <p style="color: #213F4F; font-weight: 600; margin: 0 0 12px 0; font-size: 15px;">What's in your report:</p>
         <ul style="color: #555; font-size: 14px; line-height: 1.8; margin: 0; padding-left: 20px;">
           <li><strong>Executive Summary</strong> — your personality, strengths, and top career matches at a glance</li>
           <li><strong>Detailed Career Matches</strong> — with your coaching feedback incorporated</li>

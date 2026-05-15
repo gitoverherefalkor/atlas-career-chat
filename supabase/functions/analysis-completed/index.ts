@@ -70,13 +70,13 @@ serve(async (req) => {
     const subject = 'Your Atlas career report is ready';
     const html = `
       <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff;">
-        <div style="background-color: #012F64; padding: 30px 40px; text-align: center;">
+        <div style="background-color: #213F4F; padding: 30px 40px; text-align: center;">
           <h1 style="color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px;">Cairnly</h1>
-          <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Career Discovery Platform</p>
+          <p style="color: #27A1A1; margin: 8px 0 0 0; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">career path clarity.</p>
         </div>
 
         <div style="padding: 40px; color: #333333;">
-          <h2 style="color: #012F64; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Your report is ready, ${firstName}!</h2>
+          <h2 style="color: #213F4F; margin: 0 0 20px 0; font-size: 22px; font-weight: 600;">Your report is ready, ${firstName}!</h2>
 
           <p style="font-size: 16px; line-height: 1.6; margin-bottom: 16px; color: #444;">
             Your career report${updated.title ? ` "${updated.title}"` : ''} is now available.
