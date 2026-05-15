@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ShoppingCart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SupportDialog from '@/components/support/SupportDialog';
 
 interface AccessCodeVerificationProps {
   onVerified: (accessCodeData: any) => void;
@@ -20,6 +21,7 @@ export const AccessCodeVerification: React.FC<AccessCodeVerificationProps> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
   const [needsPurchase, setNeedsPurchase] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const navigate = useNavigate();
 
   // Set the prefilled code when component mounts
@@ -150,8 +152,15 @@ export const AccessCodeVerification: React.FC<AccessCodeVerificationProps> = ({
 
           <div className="text-center pt-2">
             <p className="text-xs text-gray-500">
-              Having trouble? Contact support or{' '}
-              <button 
+              Having trouble?{' '}
+              <button
+                onClick={() => setSupportOpen(true)}
+                className="text-atlas-blue hover:underline"
+              >
+                Contact support
+              </button>{' '}
+              or{' '}
+              <button
                 onClick={() => navigate('/')}
                 className="text-atlas-blue hover:underline"
               >
@@ -159,6 +168,7 @@ export const AccessCodeVerification: React.FC<AccessCodeVerificationProps> = ({
               </button>
             </p>
           </div>
+          <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
         </CardContent>
       </Card>
     </div>

@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, CheckCircle2, ArrowRight, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import SupportDialog from '@/components/support/SupportDialog';
 
 interface AccessCodeModalProps {
   accessCode: string;
@@ -19,6 +20,7 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
   const [code, setCode] = useState(initialCode);
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
+  const [supportOpen, setSupportOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleVerify = async () => {
@@ -144,13 +146,14 @@ export const AccessCodeModal: React.FC<AccessCodeModalProps> = ({
             <p className="text-xs text-gray-500">
               Having trouble?{' '}
               <button
-                onClick={onClose}
+                onClick={() => setSupportOpen(true)}
                 className="text-atlas-blue hover:underline font-medium"
               >
                 Contact support
               </button>
             </p>
           </div>
+          <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
         </CardContent>
       </Card>
     </div>

@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, ShoppingCart, CheckCircle2, ArrowRight, Smartphone, Monitor } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
+import SupportDialog from '@/components/support/SupportDialog';
 
 // Helper to get purchase data from localStorage (set after payment)
 const getPurchaseData = () => {
@@ -36,6 +37,7 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState('');
   const [needsPurchase, setNeedsPurchase] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -208,8 +210,15 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
             {/* Help Section */}
             <div className="text-center pt-4 border-t">
               <p className="text-xs text-gray-500">
-                Having trouble? Contact support or{' '}
-                <button 
+                Having trouble?{' '}
+                <button
+                  onClick={() => setSupportOpen(true)}
+                  className="text-atlas-blue hover:underline font-medium"
+                >
+                  Contact support
+                </button>{' '}
+                or{' '}
+                <button
                   onClick={() => navigate('/')}
                   className="text-atlas-blue hover:underline font-medium"
                 >
@@ -217,6 +226,7 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
                 </button>
               </p>
             </div>
+            <SupportDialog open={supportOpen} onOpenChange={setSupportOpen} />
           </CardContent>
         </Card>
 
