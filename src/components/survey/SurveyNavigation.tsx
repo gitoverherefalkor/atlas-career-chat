@@ -66,7 +66,7 @@ const AutoSaveNotice: React.FC<{ compact?: boolean }> = ({ compact = false }) =>
         </p>
       </div>
       <p className="text-xs text-gray-500 leading-relaxed pl-8">
-        You can safely close this tab and return later. Your answers stay where you left off.
+        Safe to close this tab and return later. Your answers stay where you left off.
       </p>
     </div>
   );
