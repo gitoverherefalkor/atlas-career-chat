@@ -451,6 +451,28 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     return { __html: DOMPurify.sanitize(formattedText, { ALLOWED_TAGS: ['strong', 'br', 'em'] }) };
   };
 
+  // Renders a choice label with the bold title on the first line and any
+  // trailing "(e.g., ...)" description on its own line below, smaller and
+  // muted. Display only — the choice string and stored value never change.
+  const renderChoiceLabel = (choice: string) => {
+    const match = choice.match(/^\*\*(.+?)\*\*\s*([\s\S]*)$/);
+    if (!match) {
+      return <span dangerouslySetInnerHTML={formatTextWithEmphasis(choice)} />;
+    }
+    const [, title, description] = match;
+    const trimmedDescription = description.trim();
+    return (
+      <>
+        <span className="font-semibold">{title}</span>
+        {trimmedDescription && (
+          <span className="block text-sm font-normal text-gray-500 mt-0.5">
+            {trimmedDescription}
+          </span>
+        )}
+      </>
+    );
+  };
+
   const renderDescription = () => {
     if (!question.config?.description) return null;
     
@@ -610,8 +632,9 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                         transition-colors duration-200
                         ${isSelected ? 'text-atlas-navy font-medium' : 'text-gray-700 group-hover:text-gray-900'}
                       `}
-                      dangerouslySetInnerHTML={formatTextWithEmphasis(choice)}
-                    />
+                    >
+                      {renderChoiceLabel(choice)}
+                    </Label>
                     {/* Selection indicator */}
                     {isSelected && (
                       <div className="absolute right-4 text-atlas-teal">
@@ -725,13 +748,14 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       className={`
                         text-base font-light leading-relaxed cursor-pointer ml-4 flex-1
                         transition-colors duration-200
-                        ${isChecked 
-                          ? 'text-atlas-navy font-medium' 
+                        ${isChecked
+                          ? 'text-atlas-navy font-medium'
                           : 'text-gray-700 group-hover:text-gray-900'
                         }
                       `}
-                      dangerouslySetInnerHTML={formatTextWithEmphasis(choice)}
-                    />
+                    >
+                      {renderChoiceLabel(choice)}
+                    </Label>
                     {/* Selection indicator for checkboxes */}
                     {isChecked && (
                       <div className="absolute right-4 text-atlas-teal">
