@@ -33,22 +33,23 @@ function isChunkLoadError(error: unknown): boolean {
   );
 }
 
-const RELOAD_FLAG = 'chunk_reload_attempted';
+const RELOAD_TS_KEY = 'chunk_reload_ts';
+// If a reload happens again within this window, the chunk is genuinely
+// broken (not just stale) — stop reloading to avoid an infinite loop.
+const RELOAD_LOOP_WINDOW_MS = 10_000;
 
 export class ChunkLoadErrorBoundary extends React.Component<Props, State> {
   state: State = { hasError: false };
 
   static getDerivedStateFromError(error: unknown): State {
     if (isChunkLoadError(error)) {
-      // Only reload once per session to avoid infinite loops if the chunk
-      // is truly broken (not just stale)
-      const alreadyReloaded = sessionStorage.getItem(RELOAD_FLAG);
-      if (!alreadyReloaded) {
-        sessionStorage.setItem(RELOAD_FLAG, '1');
+      const lastReload = Number(sessionStorage.getItem(RELOAD_TS_KEY) || 0);
+      // Reload for each genuine stale-deploy event, but back off if we just
+      // reloaded — that means the chunk is broken, not merely out of date.
+      if (Date.now() - lastReload > RELOAD_LOOP_WINDOW_MS) {
+        sessionStorage.setItem(RELOAD_TS_KEY, String(Date.now()));
         window.location.reload();
-        return { hasError: true };
       }
-      return { hasError: true };
     }
     return { hasError: true };
   }
@@ -68,7 +69,7 @@ export class ChunkLoadErrorBoundary extends React.Component<Props, State> {
             <p className="text-muted-foreground mb-6">Please refresh the page to continue.</p>
             <button
               onClick={() => {
-                sessionStorage.removeItem(RELOAD_FLAG);
+                sessionStorage.removeItem(RELOAD_TS_KEY);
                 window.location.reload();
               }}
               className="px-6 py-3 bg-[#27A1A1] hover:bg-[#1f8282] text-white rounded-full font-bold"
