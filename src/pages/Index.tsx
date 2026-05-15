@@ -26,6 +26,7 @@ import {
 import CairnlyWordmarkInverted from '@/logos/cairnly-logo/cairnly_logo_wordmark_inverted.png';
 import CairnlyWordmark from '@/logos/cairnly-logo/cairnly_logo_wordmark.png';
 import CairnlySymbol from '@/logos/cairnly-logo/cairnly_logo_symbol_only.png';
+import CairnSymbolInvert from '@/logos/cairnly-logo/cairn_symbol_invert.png';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 // --- Reusable UI ---
@@ -80,8 +81,8 @@ const cpbConfigs: CpbConfig[] = [
       { d: "M1080 91 C 1100 116, 1130 131, 1170 121", color: "#27A1A1", width: "1.5", dash: "4 8" },
       { d: "M960 171 C 980 146, 1010 131, 1050 141", color: "white", width: "1.2", dash: "3 9" },
     ],
-    newDots: [{ cx: 800, cy: 291 }, { cx: 970, cy: 161 }, { cx: 1160, cy: 61 }],
-    newNodes: [{ cx: 860, cy: 241 }, { cx: 1080, cy: 91 }],
+    newDots: [{ cx: 800, cy: 323 }, { cx: 970, cy: 235 }, { cx: 1160, cy: 167 }],
+    newNodes: [{ cx: 860, cy: 289 }, { cx: 1080, cy: 187 }],
   },
   {
     // Bottom-right → leftward plateau → upper-left
@@ -99,8 +100,8 @@ const cpbConfigs: CpbConfig[] = [
       { d: "M360 100 C 340 125, 310 140, 270 130", color: "#27A1A1", width: "1.5", dash: "4 8" },
       { d: "M470 180 C 450 155, 420 140, 380 150", color: "white", width: "1.2", dash: "3 9" },
     ],
-    newDots: [{ cx: 640, cy: 300 }, { cx: 460, cy: 180 }, { cx: 240, cy: 60 }],
-    newNodes: [{ cx: 580, cy: 250 }, { cx: 360, cy: 100 }],
+    newDots: [{ cx: 640, cy: 332 }, { cx: 460, cy: 250 }, { cx: 240, cy: 169 }],
+    newNodes: [{ cx: 580, cy: 298 }, { cx: 360, cy: 196 }],
   },
   {
     // Bottom-center-left → rightward plateau → upper-right
@@ -118,8 +119,8 @@ const cpbConfigs: CpbConfig[] = [
       { d: "M1260 107 C 1280 132, 1310 147, 1350 137", color: "#27A1A1", width: "1.5", dash: "4 8" },
       { d: "M1150 190 C 1170 165, 1200 150, 1240 160", color: "white", width: "1.2", dash: "3 9" },
     ],
-    newDots: [{ cx: 980, cy: 317 }, { cx: 1140, cy: 207 }, { cx: 1320, cy: 77 }],
-    newNodes: [{ cx: 1040, cy: 267 }, { cx: 1260, cy: 107 }],
+    newDots: [{ cx: 980, cy: 349 }, { cx: 1140, cy: 274 }, { cx: 1320, cy: 186 }],
+    newNodes: [{ cx: 1040, cy: 315 }, { cx: 1260, cy: 206 }],
   },
   {
     // Bottom-center-right → leftward plateau → upper-left
@@ -137,8 +138,8 @@ const cpbConfigs: CpbConfig[] = [
       { d: "M180 107 C 160 132, 130 147, 90 137", color: "#27A1A1", width: "1.5", dash: "4 8" },
       { d: "M290 190 C 270 165, 240 150, 200 160", color: "white", width: "1.2", dash: "3 9" },
     ],
-    newDots: [{ cx: 460, cy: 317 }, { cx: 300, cy: 207 }, { cx: 120, cy: 77 }],
-    newNodes: [{ cx: 400, cy: 267 }, { cx: 180, cy: 107 }],
+    newDots: [{ cx: 460, cy: 349 }, { cx: 300, cy: 274 }, { cx: 120, cy: 186 }],
+    newNodes: [{ cx: 400, cy: 315 }, { cx: 180, cy: 206 }],
   },
 ];
 
@@ -237,19 +238,26 @@ const CareerPathBg = () => {
           {/* ====== ACT 2: The spark ====== */}
           <g className="cpb-spark-group">
             {/* Outer glow */}
-            <circle cx={sx} cy={sy} r="35" fill="#27A1A1" fillOpacity="0" className="cpb-spark-ring" />
-            {/* Core */}
-            <circle cx={sx} cy={sy} r="6" fill="#27A1A1" fillOpacity="0" className="cpb-spark-core" />
+            <circle cx={sx} cy={sy} r="35" fill="#E3B04D" fillOpacity="0" className="cpb-spark-ring" />
+            {/* Core: the cairn — the change-of-direction point */}
+            <image
+              href={CairnSymbolInvert}
+              x={sx - 14} y={sy - 24}
+              width="28" height="48"
+              preserveAspectRatio="xMidYMid meet"
+              opacity="0"
+              className="cpb-spark-core"
+            />
             {/* Rays */}
             {[0, 45, 90, 135, 180, 225, 270, 315].map((angle, i) => {
               const rad = (angle * Math.PI) / 180;
-              const r1 = 10, r2 = 20 + (i % 2) * 10;
+              const r1 = 28, r2 = 38 + (i % 2) * 8;
               return (
                 <line
                   key={angle}
                   x1={sx + Math.cos(rad) * r1} y1={sy + Math.sin(rad) * r1}
                   x2={sx + Math.cos(rad) * r2} y2={sy + Math.sin(rad) * r2}
-                  stroke="#27A1A1"
+                  stroke="#E3B04D"
                   strokeWidth={i % 2 === 0 ? "1.5" : "1"}
                   strokeLinecap="round"
                   strokeOpacity="0"
@@ -258,41 +266,44 @@ const CareerPathBg = () => {
               );
             })}
             {/* Sparkle particles */}
-            <circle cx={sx - 20} cy={sy - 22} r="1.5" fill="#27A1A1" fillOpacity="0" className="cpb-sparkle cpb-sp1" />
+            <circle cx={sx - 20} cy={sy - 22} r="1.5" fill="#E3B04D" fillOpacity="0" className="cpb-sparkle cpb-sp1" />
             <circle cx={sx + 24} cy={sy - 14} r="1" fill="white" fillOpacity="0" className="cpb-sparkle cpb-sp2" />
-            <circle cx={sx + 14} cy={sy + 20} r="1.2" fill="#27A1A1" fillOpacity="0" className="cpb-sparkle cpb-sp3" />
+            <circle cx={sx + 14} cy={sy + 20} r="1.2" fill="#E3B04D" fillOpacity="0" className="cpb-sparkle cpb-sp3" />
             <circle cx={sx - 18} cy={sy + 16} r="1" fill="white" fillOpacity="0" className="cpb-sparkle cpb-sp4" />
           </g>
 
           {/* ====== ACT 3: New thriving path from spark ====== */}
-          <path
-            d={config.newPath}
-            stroke="url(#newPathGrad)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            fill="none"
-            className="cpb-new-path"
-          />
-
-          {/* Branches off new path - possibilities opening */}
-          {config.branches.map((b, i) => (
+          {/* Flattened vertically around the spark for a gentler curve */}
+          <g transform={`translate(0 ${sy}) scale(1 0.68) translate(0 ${-sy})`}>
             <path
-              key={i}
-              d={b.d}
-              stroke={b.color} strokeWidth={b.width} strokeOpacity="0"
-              strokeLinecap="round" strokeDasharray={b.dash} fill="none"
-              className={`cpb-branch cpb-br${i + 1}`}
+              d={config.newPath}
+              stroke="url(#newPathGrad)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              fill="none"
+              className="cpb-new-path"
             />
-          ))}
 
-          {/* Dots on new path */}
+            {/* Branches off new path - possibilities opening */}
+            {config.branches.map((b, i) => (
+              <path
+                key={i}
+                d={b.d}
+                stroke={b.color} strokeWidth={b.width} strokeOpacity="0"
+                strokeLinecap="round" strokeDasharray={b.dash} fill="none"
+                className={`cpb-branch cpb-br${i + 1}`}
+              />
+            ))}
+          </g>
+
+          {/* Dots on new path (positioned on the flattened path) */}
           {config.newDots.map((dot, i) => (
-            <circle key={i} cx={dot.cx} cy={dot.cy} r="3" fill="#27A1A1" fillOpacity="0" className={`cpb-dot-new cpb-dn${i + 1}`} />
+            <circle key={i} cx={dot.cx} cy={dot.cy} r="3" fill="#AAB4BC" fillOpacity="0" className={`cpb-dot-new cpb-dn${i + 1}`} />
           ))}
 
           {/* Branch nodes with subtle pulse */}
           {config.newNodes.map((node, i) => (
-            <circle key={i} cx={node.cx} cy={node.cy} r="5" fill="#27A1A1" fillOpacity="0" className={`cpb-node-new cpb-nn${i + 1}`} />
+            <circle key={i} cx={node.cx} cy={node.cy} r="5" fill="#AAB4BC" fillOpacity="0" className={`cpb-node-new cpb-nn${i + 1}`} />
           ))}
 
           <defs>
@@ -307,9 +318,9 @@ const CareerPathBg = () => {
               <stop offset="100%" stopColor="white" stopOpacity="0.06" />
             </linearGradient>
             <linearGradient id="newPathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#27A1A1" stopOpacity="0.55" />
-              <stop offset="50%" stopColor="#27A1A1" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#27A1A1" stopOpacity="0.15" />
+              <stop offset="0%" stopColor="#AAB4BC" stopOpacity="0.78" />
+              <stop offset="50%" stopColor="#AAB4BC" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#AAB4BC" stopOpacity="0.42" />
             </linearGradient>
           </defs>
         </svg>
@@ -414,13 +425,13 @@ const CareerPathBg = () => {
         }
 
         @keyframes cpb-spark-core-in {
-          0%   { fill-opacity: 0; }
-          50%  { fill-opacity: 0.9; }
-          100% { fill-opacity: 0.5; }
+          0%   { opacity: 0; }
+          50%  { opacity: 1; }
+          100% { opacity: 0.95; }
         }
         @keyframes cpb-pulse {
-          0%, 100% { fill-opacity: 0.45; }
-          50% { fill-opacity: 0.7; }
+          0%, 100% { opacity: 0.88; }
+          50% { opacity: 1; }
         }
         @keyframes cpb-spark-ring-in {
           0%   { fill-opacity: 0; }
@@ -447,7 +458,7 @@ const CareerPathBg = () => {
           to { stroke-opacity: 0.18; }
         }
         @keyframes cpb-dot-new-in {
-          to { fill-opacity: 0.4; }
+          to { fill-opacity: 0.55; }
         }
       `}</style>
     </div>
