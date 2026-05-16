@@ -3,12 +3,17 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ClipboardList, Brain, Compass, Briefcase, Users, HeartHandshake, Target, type LucideIcon } from 'lucide-react';
+import CairnProgress from './CairnProgress';
 
 interface SectionIntroductionProps {
   sectionNumber: number;
   sectionTitle: string;
   description: string;
   onContinue: () => void;
+  /** Sections finished so far — drives the cairn. 0 on the very first intro. */
+  completedCount?: number;
+  /** Title of the section just finished; null on the very first intro. */
+  justCompletedTitle?: string | null;
 }
 
 // Icon per section (1-indexed) — shown at the top of each section intro so the
@@ -27,7 +32,9 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
   sectionNumber,
   sectionTitle,
   description,
-  onContinue
+  onContinue,
+  completedCount = 0,
+  justCompletedTitle = null,
 }) => {
   const Icon = SECTION_ICONS[sectionNumber - 1];
 
@@ -44,10 +51,26 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
     <div className="max-w-4xl mx-auto">
       <Card>
         <CardContent className="text-center py-12 px-8">
-          <h2 className="text-3xl font-medium text-atlas-navy mb-4">
-            Section {sectionNumber}
-          </h2>
-          <h3 className="text-xl font-semibold text-atlas-teal mb-6">
+          {justCompletedTitle && (
+            <div className="mb-8 pb-8 border-b border-border">
+              <CairnProgress
+                key={completedCount}
+                stones={completedCount}
+                className="mx-auto h-44 w-auto"
+              />
+              <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-atlas-gold">
+                Section complete
+              </p>
+              <h2 className="mt-1 text-2xl font-bold text-atlas-navy">
+                Great job finishing {justCompletedTitle}
+              </h2>
+            </div>
+          )}
+
+          <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-2">
+            {justCompletedTitle ? 'Up next' : `Section ${sectionNumber}`}
+          </p>
+          <h3 className="text-2xl font-semibold text-atlas-teal mb-5">
             {sectionTitle}
           </h3>
           {Icon && (

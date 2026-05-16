@@ -1,7 +1,6 @@
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { QuestionRenderer } from './QuestionRenderer';
 import { SectionIntroduction } from './SectionIntroduction';
-import { SectionCompleteFlash } from './SectionCompleteFlash';
 import { SurveyNavigation, MobileStepIndicator } from './SurveyNavigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -101,10 +100,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     clearSession
   } = surveyState;
 
-  // Section complete flash state
-  const [showSectionComplete, setShowSectionComplete] = useState(false);
-  const [completedSectionTitle, setCompletedSectionTitle] = useState('');
-
   // Milestone state
   const [activeMilestone, setActiveMilestone] = useState<string | null>(null);
   const firedMilestonesRef = useRef<Set<number>>(new Set());
@@ -167,17 +162,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   // IMPORTANT: Call ALL hooks unconditionally
   useResumePreFill({ isSessionLoaded, responses, setResponses, surveyId });
 
-  // Callback for the section complete flash — intercepts section transitions
-  const handleSectionComplete = useCallback((proceed: () => void) => {
-    const title = survey?.sections[currentSectionIndex]?.title ?? '';
-    setCompletedSectionTitle(title);
-    setShowSectionComplete(true);
-    setTimeout(() => {
-      setShowSectionComplete(false);
-      proceed();
-    }, 1200);
-  }, [survey, currentSectionIndex]);
-
   const surveyNavigation = useSurveyNavigation({
     survey,
     currentSectionIndex,
@@ -188,7 +172,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     setShowSectionIntro,
     setCompletedSections,
     getFilteredQuestions,
-    onSectionComplete: handleSectionComplete,
   });
   const { handleNext: rawHandleNext, handleBack: rawHandleBack, handleSectionNavigation, navigationDirection } = surveyNavigation;
 
@@ -394,35 +377,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     </div>
   ) : null;
 
-  // Section complete flash
-  if (showSectionComplete) {
-    return (
-      <div className="min-h-screen pt-10 pb-6 sm:pt-20 sm:pb-12">
-        {GlobalProgressBar}
-        <MobileStepIndicator
-          sections={survey.sections}
-          currentSectionIndex={currentSectionIndex}
-          completedSections={completedSections}
-          onSectionClick={handleSectionNavigation}
-        />
-        <div className="flex flex-row-reverse gap-6 max-w-7xl mx-auto px-3 sm:px-6">
-          <SurveyNavigation
-            sections={survey.sections}
-            currentSectionIndex={currentSectionIndex}
-            completedSections={completedSections}
-            onSectionClick={handleSectionNavigation}
-            currentQuestionInSection={currentQuestionInSection}
-            totalQuestionsInSection={totalQuestionsInSection}
-            activeMilestone={activeMilestone}
-          />
-          <div className="flex-1">
-            <SectionCompleteFlash sectionTitle={completedSectionTitle} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   // Show section introduction for all sections (including first)
   if (showSectionIntro) {
     // Unlock the current section as soon as its intro is shown
@@ -455,6 +409,8 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
               sectionTitle={currentSection.title}
               description={sectionDescription}
               onContinue={handleSectionIntroContinue}
+              completedCount={currentSectionIndex}
+              justCompletedTitle={currentSectionIndex > 0 ? (survey.sections[currentSectionIndex - 1]?.title ?? null) : null}
             />
           </div>
         </div>

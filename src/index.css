@@ -361,6 +361,24 @@
 .palette-beige section.bg-gray-50 .border-gray-100,
 .palette-beige section.bg-gray-50 .border-gray-200 { border-color: rgba(255,255,255,0.1) !important; }
 
+/* Cairn progress — the newest stone drops in and settles; the crown pops
+   in shortly after when the final stone is placed. */
+@keyframes cairn-stone-drop {
+  0%   { transform: translateY(-46px); opacity: 0; }
+  70%  { transform: translateY(4px); opacity: 1; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.cairn-stone-drop { animation: cairn-stone-drop 0.6s ease-out both; }
+
+@keyframes cairn-crown-pop {
+  0%   { opacity: 0; transform: translateY(-8px) scale(0.6); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cairn-crown-pop {
+  animation: cairn-crown-pop 0.4s ease-out 0.55s both;
+  transform-origin: 120px 102px;
+}
+
 /* Survey background — the cairn-trail photo, heavily overlaid with the
    teal-navy canvas colour (#213F4F) so it reads as a subtle atmospheric
    backdrop rather than a distracting image. The overlay is slightly lighter
