@@ -86,6 +86,26 @@ serve(async (req) => {
       });
     }
 
+    // Best-effort: link this code to the verifying user so their account can
+    // recover the assessment on any device / browser. Claims the code only if
+    // it is still unclaimed. Never blocks verification if anything here fails.
+    try {
+      const authHeader = req.headers.get('Authorization') || '';
+      const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+      if (token) {
+        const { data: { user } } = await supabase.auth.getUser(token);
+        if (user && !accessCode.user_id) {
+          await supabase
+            .from('access_codes')
+            .update({ user_id: user.id })
+            .eq('id', accessCode.id)
+            .is('user_id', null);
+        }
+      }
+    } catch (linkErr) {
+      console.warn('Could not link access code to user:', linkErr);
+    }
+
     return new Response(JSON.stringify({
       valid: true,
       accessCode: {

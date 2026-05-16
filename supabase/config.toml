@@ -19,6 +19,11 @@ verify_jwt = false
 [functions.verify-access-code]
 verify_jwt = false
 
+# Identifies the caller from their JWT inside the function (via getUser), so
+# gateway verify_jwt stays off — consistent with the publishable-key note below.
+[functions.get-my-access-code]
+verify_jwt = false
+
 # Signup happens BEFORE the user has a session, so the function must run
 # without JWT verification. Defaults to true otherwise, which broke after
 # the anon key migrated from JWT format to sb_publishable_* — the gateway

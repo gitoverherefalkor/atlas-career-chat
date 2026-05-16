@@ -17,6 +17,7 @@ const AssessmentPage = () => {
     sessionToken,
     accessCodeData,
     authLoading,
+    isRecovering,
     user,
     getSurveyIdFromAccessCode,
     handleAccessCodeVerified,
@@ -39,11 +40,10 @@ const AssessmentPage = () => {
   const preSurveyUploadComplete =
     localStorage.getItem('pre_survey_upload_complete') === 'true' || hasResumeOnServer;
 
-  // Show loading while checking auth or profile.
-  // We need profile too so the resume-uploaded check below is accurate,
-  // otherwise we'd briefly show the PreSurveyUpload screen for users who
-  // already uploaded a CV.
-  if (authLoading || profileLoading) {
+  // Show loading while checking auth or profile, or while recovering a
+  // logged-in user's access code from the database — otherwise the
+  // access-code entry screen would flash before recovery completes.
+  if (authLoading || profileLoading || isRecovering) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

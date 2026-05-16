@@ -120,12 +120,13 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
           </Alert>
         )}
 
-        {/* Welcome Header */}
+        {/* Welcome Header — cream text: this sits directly on the dark
+            teal-navy canvas, so dark `text-atlas-navy` would be illegible. */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-atlas-navy mb-4">
+          <h1 className="text-4xl font-bold text-[#F5F5F5] mb-4">
             Welcome to the Cairnly Career Assessment
           </h1>
-          <p className="text-xl text-gray-600 max-w-lg mx-auto">
+          <p className="text-xl text-[#F5F5F5]/80 max-w-lg mx-auto">
             Discover your unique career strengths, values, and ideal work environment through our comprehensive professional assessment.
           </p>
         </div>
@@ -230,23 +231,24 @@ export const AssessmentWelcome: React.FC<AssessmentWelcomeProps> = ({
           </CardContent>
         </Card>
 
-        {/* Assessment Info */}
+        {/* Assessment Info — also on the dark canvas: subtle tinted boxes
+            with cream text instead of the milky bg-white/50 + dark text. */}
         <div className="mt-8 text-center">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-            <div className="bg-white/50 rounded-lg p-4">
+            <div className="bg-white/10 rounded-lg p-4">
               <div className="text-2xl font-bold text-atlas-teal mb-1">⏱️</div>
-              <div className="text-sm font-medium text-gray-700">15-20 minutes</div>
-              <div className="text-xs text-gray-500">Completion time</div>
+              <div className="text-sm font-medium text-[#F5F5F5]">15-20 minutes</div>
+              <div className="text-xs text-[#F5F5F5]/60">Completion time</div>
             </div>
-            <div className="bg-white/50 rounded-lg p-4">
+            <div className="bg-white/10 rounded-lg p-4">
               <div className="text-2xl font-bold text-atlas-teal mb-1">📊</div>
-              <div className="text-sm font-medium text-gray-700">7 sections</div>
-              <div className="text-xs text-gray-500">Comprehensive analysis</div>
+              <div className="text-sm font-medium text-[#F5F5F5]">7 sections</div>
+              <div className="text-xs text-[#F5F5F5]/60">Comprehensive analysis</div>
             </div>
-            <div className="bg-white/50 rounded-lg p-4">
+            <div className="bg-white/10 rounded-lg p-4">
               <div className="text-2xl font-bold text-atlas-teal mb-1">🎯</div>
-              <div className="text-sm font-medium text-gray-700">Personalized</div>
-              <div className="text-xs text-gray-500">Custom insights</div>
+              <div className="text-sm font-medium text-[#F5F5F5]">Personalized</div>
+              <div className="text-xs text-[#F5F5F5]/60">Custom insights</div>
             </div>
           </div>
         </div>

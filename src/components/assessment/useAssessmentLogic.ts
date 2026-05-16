@@ -1,5 +1,6 @@
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { getSurveyIdFromAccessCode } from './constants';
 import { useAssessmentSession } from './AssessmentSessionContext';
@@ -40,6 +41,29 @@ export const useAssessmentLogic = () => {
     });
   }, [updateSession]);
 
+  // Recover the assessment for a logged-in user whose browser has no stored
+  // session (fresh device / incognito / social signup). Looks up their access
+  // code in the database so they skip the access-code entry screen entirely.
+  const [isRecovering, setIsRecovering] = useState(false);
+  const recoveryAttempted = useRef(false);
+  useEffect(() => {
+    if (authLoading || !user || session.isVerified || recoveryAttempted.current) return;
+    recoveryAttempted.current = true;
+    setIsRecovering(true);
+    (async () => {
+      try {
+        const { data } = await supabase.functions.invoke('get-my-access-code');
+        if (data?.found && data.accessCode?.id) {
+          handleAccessCodeVerified(data.accessCode);
+        }
+      } catch (err) {
+        console.warn('[Assessment] access code recovery failed:', err);
+      } finally {
+        setIsRecovering(false);
+      }
+    })();
+  }, [authLoading, user, session.isVerified, handleAccessCodeVerified]);
+
   // Handler for when pre-survey upload is complete
   const handlePreSurveyUploadComplete = useCallback(() => {
     updateSession({ showPreSurveyUpload: false });
@@ -57,6 +81,7 @@ export const useAssessmentLogic = () => {
     sessionToken: session.sessionToken,
     accessCodeData: session.accessCodeData,
     authLoading,
+    isRecovering,
     user,
     getSurveyIdFromAccessCode,
     handleAccessCodeVerified,

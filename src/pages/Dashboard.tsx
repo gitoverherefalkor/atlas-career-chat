@@ -104,104 +104,96 @@ const Dashboard = () => {
     }, 50);
   };
 
-  // Check if user has an access code in metadata or localStorage (social signup fallback)
+  // Resolve the user's access code and recover any in-progress assessment.
+  // Code sources, in order: user_metadata (email signup) → purchase_data in
+  // localStorage (payment flow) → get-my-access-code (DB lookup by user id).
+  // The DB lookup is what makes a social-signup user on a fresh browser /
+  // incognito recover their assessment instead of being treated as new.
   useEffect(() => {
-    if (user && !authLoading && !profileLoading && !reportsLoading) {
-      // Check user_metadata first (email signups), then localStorage (social signups from payment flow)
-      let accessCode = user.user_metadata?.access_code;
-      if (!accessCode) {
-        try {
-          const purchaseData = localStorage.getItem('purchase_data');
-          if (purchaseData) {
-            accessCode = JSON.parse(purchaseData).accessCode || null;
-          }
-        } catch {
-          // Ignore parse errors
-        }
-      }
-      if (accessCode) {
-        setUserAccessCode(accessCode);
+    if (!(user && !authLoading && !profileLoading && !reportsLoading)) return;
 
-        // Combined check: ask verify-access-code (service role) for the
-        // access_code_id, then ask the answers table whether a draft row
-        // exists. Defer the modal-open decision until after this check so
-        // a returning user with progress doesn't see a "Ready to Begin /
-        // Start Assessment" modal contradicting the "Continue Assessment"
-        // card behind it.
-        const hasReport = reports && reports.length > 0;
-        const hasLocalSession = savedSession?.isVerified || savedSession?.accessCodeData ||
-          (savedSession?.responses && Object.keys(savedSession.responses).length > 0);
+    const hasReport = reports && reports.length > 0;
+    const hasLocalSession = savedSession?.isVerified || savedSession?.accessCodeData ||
+      (savedSession?.responses && Object.keys(savedSession.responses).length > 0);
 
-        (async () => {
+    (async () => {
+      try {
+        // Step 1 — find the access code object {id, code, survey_type}.
+        let verifiedCode: any = null;
+
+        let codeString: string | null = user.user_metadata?.access_code || null;
+        if (!codeString) {
           try {
-            const { data: verifyData } = await supabase.functions.invoke(
-              'verify-access-code',
-              { body: { code: accessCode } }
-            );
-            const verifiedCode = verifyData?.valid ? verifyData?.accessCode : null;
-            if (!verifiedCode?.id) return;
-
-            const { data: answersRow } = await supabase
-              .from('answers')
-              .select('status')
-              .eq('access_code_id', verifiedCode.id)
-              .maybeSingle();
-            const hasDraft = answersRow?.status === 'draft';
-
-            if (hasDraft) {
-              setHasDraftAnswers(true);
-
-              // Pre-populate assessment_session so the Continue card
-              // navigates straight into the survey without making the
-              // user click through the verification modal again. They've
-              // verified this code at signup or in a previous session;
-              // we have the code data right here, no need to ask twice.
-              if (!hasLocalSession) {
-                const session = {
-                  isVerified: true,
-                  accessCodeData: verifiedCode,
-                  sessionToken: verifiedCode.id,
-                  currentSectionIndex: 0,
-                  currentQuestionIndex: 0,
-                  responses: {},
-                };
-                localStorage.setItem('assessment_session', JSON.stringify(session));
-              }
-              // Make sure the modal isn't already open from a previous
-              // render — close it. (Belt and suspenders.)
-              setShowAccessCodeModal(false);
-            } else if (!hasLocalSession && !hasReport) {
-              // Genuinely new user — no draft, no local session, no report.
-              // Pop the access code modal so they can verify + start.
-              setShowAccessCodeModal(true);
-            }
-          } catch (err) {
-            console.warn('[Dashboard] draft-answers check failed:', err);
-            // Network/edge function failed. Fall back to the original
-            // "show modal for unverified users" behavior so we don't
-            // accidentally lock anyone out.
-            if (!hasLocalSession && !hasReport) {
-              setShowAccessCodeModal(true);
-            }
+            const purchaseData = localStorage.getItem('purchase_data');
+            if (purchaseData) codeString = JSON.parse(purchaseData).accessCode || null;
+          } catch {
+            // Ignore parse errors
           }
-        })();
-      }
+        }
 
-      // Update profile with country from localStorage if available (from payment form)
-      const paymentCountry = localStorage.getItem('payment_country');
-      if (paymentCountry && profile && !profile.country) {
-        supabase
-          .from('profiles')
-          .update({ country: paymentCountry })
-          .eq('id', user.id)
-          .then(() => {
-            console.log('Profile updated with country from payment:', paymentCountry);
-            localStorage.removeItem('payment_country');
-          })
-          .catch((error) => {
-            console.error('Error updating profile with country:', error);
-          });
+        if (codeString) {
+          const { data: verifyData } = await supabase.functions.invoke(
+            'verify-access-code',
+            { body: { code: codeString } }
+          );
+          if (verifyData?.valid) verifiedCode = verifyData.accessCode;
+        } else {
+          // No code on this device — recover it from the database by user id.
+          const { data: lookupData } = await supabase.functions.invoke('get-my-access-code');
+          if (lookupData?.found) verifiedCode = lookupData.accessCode;
+        }
+
+        if (!verifiedCode?.id) return; // genuinely no access code yet
+
+        setUserAccessCode(verifiedCode.code);
+
+        // Step 2 — does this code have an in-progress (draft) survey?
+        const { data: answersRow } = await supabase
+          .from('answers')
+          .select('status')
+          .eq('access_code_id', verifiedCode.id)
+          .maybeSingle();
+        const hasDraft = answersRow?.status === 'draft';
+
+        if (hasDraft) {
+          setHasDraftAnswers(true);
+          // Pre-populate assessment_session so the Continue card navigates
+          // straight into the survey without the verification modal.
+          if (!hasLocalSession) {
+            const session = {
+              isVerified: true,
+              accessCodeData: verifiedCode,
+              sessionToken: verifiedCode.id,
+              currentSectionIndex: 0,
+              currentQuestionIndex: 0,
+              responses: {},
+            };
+            localStorage.setItem('assessment_session', JSON.stringify(session));
+          }
+          setShowAccessCodeModal(false);
+        } else if (!hasLocalSession && !hasReport) {
+          // Genuinely new user — no draft, no local session, no report.
+          setShowAccessCodeModal(true);
+        }
+      } catch (err) {
+        console.warn('[Dashboard] assessment recovery failed:', err);
       }
+    })();
+
+    // Update profile with country from localStorage if available (from payment form)
+    const paymentCountry = localStorage.getItem('payment_country');
+    if (paymentCountry && profile && !profile.country) {
+      supabase
+        .from('profiles')
+        .update({ country: paymentCountry })
+        .eq('id', user.id)
+        .then(() => {
+          console.log('Profile updated with country from payment:', paymentCountry);
+          localStorage.removeItem('payment_country');
+        })
+        .catch((error) => {
+          console.error('Error updating profile with country:', error);
+        });
     }
   }, [user, authLoading, profileLoading, reportsLoading, reports, profile]);
 

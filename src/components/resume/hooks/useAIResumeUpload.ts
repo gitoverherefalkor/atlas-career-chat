@@ -56,6 +56,19 @@ export const useAIResumeUpload = ({ onSuccess, onError }: UseAIResumeUploadProps
 
       console.log('[ResumeUpload] File uploaded:', uploadData.path);
 
+      // Mark the resume as uploaded on the user's profile. This is the durable
+      // signal — localStorage flags are lost on a fresh browser / new device,
+      // so the dashboard and the pre-survey upload gate rely on this column.
+      supabase
+        .from('profiles')
+        .update({ resume_uploaded_at: new Date().toISOString() })
+        .eq('id', user.id)
+        .then(({ error: stampError }) => {
+          if (stampError) {
+            console.warn('[ResumeUpload] Could not stamp profile resume_uploaded_at:', stampError);
+          }
+        });
+
       // Step 2: Get a signed URL (expires in 5 minutes — enough for n8n to download)
       const { data: urlData, error: signError } = await supabase.storage
         .from('resumes')
