@@ -429,7 +429,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   return (
     <ErrorBoundary>
-    <div className="min-h-screen pt-10 pb-6 sm:pt-20 sm:pb-12">
+    <div className="min-h-screen flex flex-col pt-10 pb-6 sm:pt-20 sm:pb-12">
       {GlobalProgressBar}
       {MilestoneBanner}
 
@@ -565,6 +565,15 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             </Card>
           </div>
         </div>
+      </div>
+
+      {/* Subtle brand mark, bottom-left, aligned with the question card column */}
+      <div className="mt-auto hidden sm:block w-full max-w-7xl mx-auto px-3 sm:px-6 pt-10">
+        <img
+          src="/cairnly-logo-white.png"
+          alt="Cairnly"
+          className="w-[150px] h-auto opacity-70"
+        />
       </div>
     </div>
     </ErrorBoundary>
