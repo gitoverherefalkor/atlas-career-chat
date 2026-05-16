@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, CheckCircle2, Mail, AlertCircle, ArrowRight } from 'lucide-react';
+import CairnProgress from '@/components/survey/CairnProgress';
 
 // Stepper stages — timed to feel like real progress
 const STEPS = [
@@ -95,9 +96,8 @@ const ReportProcessing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50/30 flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-6">
-        {/* Main card */}
+    <div className="min-h-screen survey-bg bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
         <Card className="shadow-lg border-0">
           <CardContent className="pt-8 pb-6 px-6">
             {phase === 'failed' ? (
@@ -110,49 +110,42 @@ const ReportProcessing = () => {
               <NormalState
                 timeElapsed={timeElapsed}
                 phase={phase}
+                onDashboard={() => navigate('/dashboard')}
               />
             )}
           </CardContent>
         </Card>
-
-        {/* Navigate away hint — only in normal/soft-warning */}
-        {(phase === 'normal' || phase === 'soft-warning') && (
-          <div className="flex items-start gap-3 px-2 animate-in fade-in duration-500">
-            <Mail className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-gray-500">
-              You can safely leave this page — we'll email you when your coach is ready.
-            </p>
-          </div>
-        )}
-
-        {/* Subtle dashboard link */}
-        {phase !== 'end-state' && phase !== 'redirecting' && (
-          <div className="text-center">
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2 transition-colors"
-            >
-              Go to Dashboard
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
 };
 
 // ─── Normal + soft-warning state ─────────────────────────────────────
-function NormalState({ timeElapsed, phase }: { timeElapsed: number; phase: Phase }) {
+function NormalState({
+  timeElapsed,
+  phase,
+  onDashboard,
+}: {
+  timeElapsed: number;
+  phase: Phase;
+  onDashboard: () => void;
+}) {
   return (
     <div className="space-y-6">
+      {/* Completed cairn — the payoff for finishing all seven sections */}
+      <CairnProgress stones={7} className="mx-auto h-40 w-auto" />
+
       {/* Header */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-1.5">
+        <p className="text-xs font-semibold uppercase tracking-widest text-atlas-gold">
+          All seven sections done
+        </p>
         <h1 className="text-xl font-bold text-atlas-navy">
           Building Your Profile
         </h1>
         <p className="text-sm text-gray-500">
           {phase === 'soft-warning'
-            ? 'Almost there — just finishing up.'
+            ? 'Almost there, just finishing up.'
             : 'This usually takes 2-3 minutes.'}
         </p>
       </div>
@@ -199,6 +192,19 @@ function NormalState({ timeElapsed, phase }: { timeElapsed: number; phase: Phase
             width: `${Math.min(100, phase === 'soft-warning' ? 100 : (timeElapsed / SOFT_WARNING_AT) * 100)}%`,
           }}
         />
+      </div>
+
+      {/* Leave-page reassurance + dashboard, kept inside the card */}
+      <div className="space-y-3 border-t border-border pt-4">
+        <div className="flex items-start gap-2.5">
+          <Mail className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-gray-500">
+            You can safely leave this page. We'll email you when your coach is ready.
+          </p>
+        </div>
+        <Button variant="outline" onClick={onDashboard} className="w-full">
+          Go to Dashboard
+        </Button>
       </div>
     </div>
   );
