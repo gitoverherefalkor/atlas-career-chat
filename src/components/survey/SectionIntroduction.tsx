@@ -50,7 +50,7 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
   return (
     <div className="max-w-4xl mx-auto">
       <Card>
-        <CardContent className="text-center py-12 px-8">
+        <CardContent className="text-center pt-6 pb-12 px-8">
           {justCompletedTitle && (
             <div className="mb-8 pb-8 border-b border-border">
               <CairnProgress
