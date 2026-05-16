@@ -11,6 +11,21 @@
  * objects/arrays. A naive `!== '' && !== null` check wrongly treats those
  * empty-but-present values as answered.
  */
+
+// An "Other" answer stores its free-text as `Other: <text>`. It counts as
+// answered only once at least this many characters are typed; a bare `other`
+// (option picked, nothing typed) never counts.
+const OTHER_MIN_CHARS = 4;
+
+function isOtherValueComplete(value: unknown): boolean {
+  if (typeof value !== 'string') return true;
+  if (value === 'other') return false;
+  if (value.startsWith('Other: ')) {
+    return value.slice('Other: '.length).trim().length >= OTHER_MIN_CHARS;
+  }
+  return true; // a regular choice, not an "Other" value
+}
+
 export function isQuestionAnswered(question: any, response: any): boolean {
   if (!question || !question.required) return true;
 
@@ -19,6 +34,8 @@ export function isQuestionAnswered(question: any, response: any): boolean {
     const maxSelections = question.max_selections;
 
     if (Array.isArray(response)) {
+      // A picked-but-unfilled "Other" entry blocks completion.
+      if (response.some((v) => !isOtherValueComplete(v))) return false;
       if (minSelections && response.length < minSelections) return false;
       if (!minSelections && response.length === 0) return false;
       if (maxSelections && response.length > maxSelections) return false;
@@ -26,6 +43,7 @@ export function isQuestionAnswered(question: any, response: any): boolean {
     }
 
     if (minSelections && minSelections > 0) return false;
+    if (!isOtherValueComplete(response)) return false;
     return response !== undefined && response !== null && response !== '';
   }
 
@@ -76,5 +94,7 @@ export function isQuestionAnswered(question: any, response: any): boolean {
     return activeEntries.some((entry: any) => entry.title && entry.title.trim());
   }
 
+  // Single-select "Other": needs enough text typed; a bare `other` fails.
+  if (!isOtherValueComplete(response)) return false;
   return response !== undefined && response !== null && response !== '';
 }
