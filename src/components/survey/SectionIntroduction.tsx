@@ -48,9 +48,9 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Card>
-        <CardContent className="text-center pt-6 pb-12 px-8">
+    <div className="max-w-4xl mx-auto h-full">
+      <Card className="h-full">
+        <CardContent className="text-center pt-6 pb-12 px-8 h-full flex flex-col justify-center">
           {justCompletedTitle && (
             <div className="mb-8 pb-8 border-b border-border">
               <CairnProgress
