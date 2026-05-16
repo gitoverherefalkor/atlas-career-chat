@@ -650,7 +650,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 <div 
                   onClick={() => onChange('other')}
                   className={`
-                    group relative flex items-center p-4 rounded-lg border-2 cursor-pointer
+                    group relative flex items-center p-4 rounded-lg border cursor-pointer
                     transition-all duration-200 hover:shadow-md
                     ${useTwoCol ? 'md:col-span-2' : ''}
                     ${value === 'other'
@@ -785,7 +785,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                       }
                     }}
                     className={`
-                      group relative flex items-center p-4 rounded-lg border-2 cursor-pointer
+                      group relative flex items-center p-4 rounded-lg border cursor-pointer
                       transition-all duration-200 hover:shadow-md
                       ${(showOther || currentValues.some((v: string) => v.startsWith('Other: ')))
                         ? 'border-atlas-teal bg-atlas-teal/5 shadow-sm'
