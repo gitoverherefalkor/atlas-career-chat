@@ -4,28 +4,28 @@ import React from 'react';
 // match the section-complete checkmarks; a small hexagon crown appears once
 // all seven are placed. The newest stone drops in to mark the moment.
 
-// Base rock — a flattish slab with defined ends, centred at the origin (~150 x 36).
-const ROCK =
-  'M -73,-1 C -74,-10 -68,-16 -57,-15 L -30,-16 C -6,-17 22,-16 45,-15 ' +
-  'L 60,-14 C 71,-13 76,-6 74,2 C 75,10 68,16 57,16 L 22,17 ' +
-  'C -2,18 -32,17 -53,15 L -63,14 C -72,13 -72,7 -73,-1 Z';
+// Two angular, faceted rock shapes — rugged straight-edged slabs, centred at
+// the origin (~150 wide x 38 tall). Alternating them keeps the stack natural.
+const ROCKS = [
+  'M -75,2 L -62,-12 L -34,-17 L 6,-14 L 40,-18 L 66,-10 L 75,2 L 64,14 L 30,19 L -10,16 L -46,18 L -68,10 Z',
+  'M -74,-2 L -56,-15 L -20,-16 L 22,-18 L 52,-13 L 73,0 L 67,13 L 38,17 L 2,19 L -34,15 L -60,16 L -73,6 Z',
+];
 
 // Per-stone placement, bottom (index 0) to top (index 6):
 // [scale, centreY, xOffset, rotationDeg, flipX]
 const STONES: ReadonlyArray<[number, number, number, number, number]> = [
-  [1.0, 298, 0, -2, 1],
-  [0.92, 266, -8, 3, -1],
-  [0.85, 235, 7, -3, 1],
-  [0.75, 206, -5, 2, -1],
-  [0.65, 178, 8, -4, 1],
-  [0.54, 152, -4, 3, -1],
-  [0.44, 128, 3, -2, 1],
+  [1.0, 298, 0, -3, 1],
+  [0.92, 266, -8, 4, -1],
+  [0.85, 235, 7, -4, 1],
+  [0.75, 206, -5, 3, -1],
+  [0.65, 178, 8, -5, 1],
+  [0.54, 152, -4, 4, -1],
+  [0.44, 128, 3, -3, 1],
 ];
 
 const CX = 120;
 const GOLD = '#D4A024';
-const GOLD_ALT = '#C8951E';
-const GOLD_EDGE = '#A87C16';
+const GOLD_ALT = '#C39019';
 
 interface CairnProgressProps {
   /** How many stones to show (0-7). */
@@ -53,12 +53,7 @@ const CairnProgress = ({ stones, animateNewest = true, className }: CairnProgres
             transform={`translate(${CX + dx},${cy}) rotate(${rot}) scale(${s * flip},${s})`}
           >
             <g className={isNewest ? 'cairn-stone-drop' : undefined}>
-              <path
-                d={ROCK}
-                fill={i % 2 === 0 ? GOLD : GOLD_ALT}
-                stroke={GOLD_EDGE}
-                strokeWidth={2.5}
-              />
+              <path d={ROCKS[i % 2]} fill={i % 2 === 0 ? GOLD : GOLD_ALT} />
             </g>
           </g>
         );
