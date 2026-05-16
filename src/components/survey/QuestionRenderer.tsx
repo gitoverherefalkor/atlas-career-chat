@@ -593,15 +593,19 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       const useTwoCol = mcChoices.length >= 8 && mcChoices.every((c) => c.length <= 50);
       const mcListClass = useTwoCol ? 'grid grid-cols-1 md:grid-cols-2 gap-2' : 'space-y-2';
       if (!question.allow_multiple) {
-        // Single selection with enhanced interaction
+        // Single selection with enhanced interaction.
+        // "Other" stays active once selected even after the value becomes
+        // `Other: <text>` — otherwise the text box unmounts on first keystroke.
+        const isOtherActive =
+          value === 'other' || (typeof value === 'string' && value.startsWith('Other: '));
         return (
           <div>
-            <div 
+            <div
               className="text-xl font-semibold mb-6"
               dangerouslySetInnerHTML={formatTextWithEmphasis(question.label)}
             />
             {renderDescription()}
-            <RadioGroup value={value || ''} onValueChange={onChange} className={mcListClass}>
+            <RadioGroup value={isOtherActive ? 'other' : (value || '')} onValueChange={onChange} className={mcListClass}>
               {question.config?.choices?.map((choice) => {
                 const isSelected = value === choice;
                 return (
@@ -653,7 +657,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     group relative flex items-center p-4 rounded-lg border cursor-pointer
                     transition-all duration-200 hover:shadow-md
                     ${useTwoCol ? 'md:col-span-2' : ''}
-                    ${value === 'other'
+                    ${isOtherActive
                       ? 'border-atlas-teal bg-atlas-teal/5 shadow-sm' 
                       : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
                     }
@@ -664,7 +668,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     id="other"
                     className={`
                       transition-all duration-200 flex-shrink-0
-                      ${value === 'other' ? 'border-atlas-teal' : 'border-gray-300 group-hover:border-gray-400'}
+                      ${isOtherActive ? 'border-atlas-teal' : 'border-gray-300 group-hover:border-gray-400'}
                     `}
                   />
                   <Label 
@@ -672,12 +676,12 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                     className={`
                       text-base font-light leading-relaxed cursor-pointer ml-4 flex-1
                       transition-colors duration-200
-                      ${value === 'other' ? 'text-atlas-navy font-medium' : 'text-gray-700 group-hover:text-gray-900'}
+                      ${isOtherActive ? 'text-atlas-navy font-medium' : 'text-gray-700 group-hover:text-gray-900'}
                     `}
                   >
                     Other
                   </Label>
-                  {value === 'other' && (
+                  {isOtherActive && (
                     <div className="absolute right-4 text-atlas-teal">
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -687,7 +691,7 @@ export const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                 </div>
               )}
             </RadioGroup>
-            {question.allow_other && value === 'other' && (
+            {question.allow_other && isOtherActive && (
               <div className="mt-4 animate-in slide-in-from-top-2 duration-200">
                 <Input
                   value={otherValue}
