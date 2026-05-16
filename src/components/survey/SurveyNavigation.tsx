@@ -109,9 +109,9 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
   };
 
   return (
-    <Card className="hidden md:block w-80 h-fit">
-      <CardContent className="px-4 pt-6 pb-4">
-        <div className="space-y-2">
+    <Card className="hidden md:block w-80">
+      <CardContent className="px-4 pt-6 pb-4 h-full flex flex-col">
+        <div className="space-y-2 flex-1">
           {sections.map((section, index) => {
             const status = getSectionStatus(index);
             const isClickable = status === 'completed' || status === 'accessible' || status === 'current';
@@ -141,7 +141,7 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
                   {getSectionIcon(status)}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-sm font-medium truncate ${
+                      <p className={`text-base font-medium truncate ${
                         status === 'locked' ? 'text-gray-300' : 'text-gray-700'
                       }`}>
                         Section {index + 1}
@@ -152,7 +152,7 @@ export const SurveyNavigation: React.FC<SurveyNavigationProps> = ({
                         </span>
                       )}
                     </div>
-                    <p className={`text-xs truncate ${
+                    <p className={`text-sm truncate ${
                       status === 'locked' ? 'text-gray-200' : 'text-gray-500'
                     }`}>
                       {section.title}

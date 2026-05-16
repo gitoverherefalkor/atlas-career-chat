@@ -38,20 +38,12 @@ interface CairnProgressProps {
 const CairnProgress = ({ stones, animateNewest = true, className }: CairnProgressProps) => {
   const count = Math.max(0, Math.min(STONES.length, Math.round(stones)));
 
-  // Crop the viewBox to just the stones shown (with headroom for the drop-in
-  // animation), so the SVG never reserves empty space above a partial cairn.
-  const BOTTOM_Y = 324;
-  let topY = BOTTOM_Y - 40;
-  if (count >= STONES.length) {
-    topY = 70; // leave room for the crown
-  } else if (count > 0) {
-    const [scale, cy] = STONES[count - 1];
-    topY = cy - 70 * scale - 6;
-  }
-
+  // Fixed viewBox = the full 7-stone cairn's bounding box. Partial cairns sit
+  // at the bottom and grow upward into the same frame, so every section
+  // transition card reserves identical cairn height.
   return (
     <svg
-      viewBox={`0 ${topY} 240 ${BOTTOM_Y - topY}`}
+      viewBox="0 60 240 264"
       className={className}
       role="img"
       aria-label={`Cairn progress: ${count} of ${STONES.length} stones placed`}

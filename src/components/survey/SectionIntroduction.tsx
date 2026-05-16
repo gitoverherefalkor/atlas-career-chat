@@ -56,7 +56,7 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
               <CairnProgress
                 key={completedCount}
                 stones={completedCount}
-                className="mx-auto w-40 h-auto"
+                className="mx-auto h-44 w-auto"
               />
               <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-atlas-gold">
                 Great! You finished:
