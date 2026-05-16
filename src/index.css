@@ -367,7 +367,7 @@
    at the top (sky shows through faintly) and darker at the bottom. */
 .survey-bg {
   background-image:
-    linear-gradient(hsl(201 41% 22% / 0.82), hsl(201 41% 22% / 0.93)),
+    linear-gradient(hsl(201 41% 22% / 0.55), hsl(201 41% 22% / 0.72)),
     url('/canvas_image_cairn_trail_hr.jpg');
   background-size: cover;
   background-position: center;
