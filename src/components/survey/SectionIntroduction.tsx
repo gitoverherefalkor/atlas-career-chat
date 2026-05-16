@@ -59,10 +59,10 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
                 className="mx-auto h-44 w-auto"
               />
               <p className="mt-2 text-xs font-semibold uppercase tracking-widest text-atlas-gold">
-                Section complete
+                Great! You finished:
               </p>
               <h2 className="mt-1 text-2xl font-bold text-atlas-navy">
-                Great job finishing {justCompletedTitle}
+                {justCompletedTitle}
               </h2>
             </div>
           )}
