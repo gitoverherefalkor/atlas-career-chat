@@ -377,6 +377,21 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     </div>
   ) : null;
 
+  // Subtle Cairnly brand mark, bottom-left. Mirrors the support button's
+  // bottom-6 anchor; the inner max-w-7xl container aligns the logo's left
+  // edge with the question card column.
+  const SurveyLogo = (
+    <div className="hidden sm:block fixed bottom-6 left-0 right-0 z-40 pointer-events-none">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6">
+        <img
+          src="/cairnly-logo-white.png"
+          alt="Cairnly"
+          className="w-[150px] h-auto opacity-70"
+        />
+      </div>
+    </div>
+  );
+
   // Show section introduction for all sections (including first)
   if (showSectionIntro) {
     // Unlock the current section as soon as its intro is shown
@@ -387,6 +402,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     return (
       <div className="min-h-screen pt-10 pb-6 sm:pt-20 sm:pb-12">
         {GlobalProgressBar}
+        {SurveyLogo}
         <MobileStepIndicator
           sections={survey.sections}
           currentSectionIndex={currentSectionIndex}
@@ -429,9 +445,10 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   return (
     <ErrorBoundary>
-    <div className="min-h-screen flex flex-col pt-10 pb-6 sm:pt-20 sm:pb-12">
+    <div className="min-h-screen pt-10 pb-6 sm:pt-20 sm:pb-12">
       {GlobalProgressBar}
       {MilestoneBanner}
+      {SurveyLogo}
 
       {/* Mobile step indicator */}
       <MobileStepIndicator
@@ -565,15 +582,6 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
             </Card>
           </div>
         </div>
-      </div>
-
-      {/* Subtle brand mark, bottom-left, aligned with the question card column */}
-      <div className="mt-auto hidden sm:block w-full max-w-7xl mx-auto px-3 sm:px-6 pt-10">
-        <img
-          src="/cairnly-logo-white.png"
-          alt="Cairnly"
-          className="w-[150px] h-auto opacity-70"
-        />
       </div>
     </div>
     </ErrorBoundary>
