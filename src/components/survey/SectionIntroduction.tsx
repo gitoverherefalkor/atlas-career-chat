@@ -84,7 +84,7 @@ export const SectionIntroduction: React.FC<SectionIntroductionProps> = ({
           />
           <Button
             onClick={onContinue}
-            className="bg-atlas-teal hover:bg-atlas-teal/90 px-8 py-3 text-lg"
+            className="self-center bg-atlas-teal hover:bg-atlas-teal/90 px-8 py-3 text-lg"
           >
             Continue
             <ArrowRight className="h-5 w-5 ml-2" />
