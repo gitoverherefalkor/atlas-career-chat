@@ -397,7 +397,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
   // Section complete flash
   if (showSectionComplete) {
     return (
-      <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="min-h-screen bg-gray-50 survey-bg py-4 sm:py-8">
         {GlobalProgressBar}
         <MobileStepIndicator
           sections={survey.sections}
@@ -431,7 +431,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
     }
     const sectionDescription = currentSection.description || "Let's continue with the next set of questions.";
     return (
-      <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+      <div className="min-h-screen bg-gray-50 survey-bg py-4 sm:py-8">
         {GlobalProgressBar}
         <MobileStepIndicator
           sections={survey.sections}
@@ -473,7 +473,7 @@ export const SurveyForm: React.FC<SurveyFormProps> = ({
 
   return (
     <ErrorBoundary>
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
+    <div className="min-h-screen bg-gray-50 survey-bg py-4 sm:py-8">
       {GlobalProgressBar}
       {MilestoneBanner}
 

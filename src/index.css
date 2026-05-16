@@ -360,3 +360,16 @@
 /* Card borders inside green-ocean bands: subtle white rather than warm tan */
 .palette-beige section.bg-gray-50 .border-gray-100,
 .palette-beige section.bg-gray-50 .border-gray-200 { border-color: rgba(255,255,255,0.1) !important; }
+
+/* Survey background — the cairn-trail photo, heavily overlaid with the
+   teal-navy canvas colour (#213F4F) so it reads as a subtle atmospheric
+   backdrop rather than a distracting image. The overlay is slightly lighter
+   at the top (sky shows through faintly) and darker at the bottom. */
+.survey-bg {
+  background-image:
+    linear-gradient(hsl(201 41% 22% / 0.82), hsl(201 41% 22% / 0.93)),
+    url('/canvas_image_cairn_trail_hr.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
