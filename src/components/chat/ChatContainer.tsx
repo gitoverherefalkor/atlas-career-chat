@@ -767,13 +767,7 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
     };
 
     return (
-      <div
-        className="flex-1 flex flex-col h-full relative bg-atlas-navy bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/trail_over_water.png')" }}
-      >
-        {/* Section-style dark overlay so chat content stays readable over the photo */}
-        <div className="absolute inset-0 bg-black/40 pointer-events-none" aria-hidden="true" />
-        <div className="relative z-10 flex flex-col flex-1 min-h-0">
+      <div className="flex-1 flex flex-col h-full relative">
         <ChatMessages
           ref={ref}
           messages={messages}
@@ -848,7 +842,6 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           }
           isSidebarCollapsed={isSidebarCollapsed}
         />
-        </div>
 
         <ChapterFeedbackModal
           open={chapterFeedbackOpen}

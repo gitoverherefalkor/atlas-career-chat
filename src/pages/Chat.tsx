@@ -444,11 +444,11 @@ const Chat = () => {
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container-atlas">
+        <div className="px-4 sm:px-6">
           <div className="flex justify-between items-center py-2.5">
             <div className="flex items-center gap-3">
               <a href="/" className="flex items-center">
-                <img src="/cairnly-logo.png" alt="Cairnly" className="h-10 w-auto" />
+                <img src="/cairnly-logo.png" alt="Cairnly" className="h-12 w-auto" />
               </a>
               <span className="hidden sm:flex items-center gap-3 text-sm font-medium text-atlas-navy">
                 <span className="h-4 w-px bg-gray-200" aria-hidden="true" />
@@ -481,9 +481,14 @@ const Chat = () => {
           <ClosingCard firstName={profile?.first_name || undefined} />
         </div>
       ) : (
-        <div className="flex-1 flex relative">
+        <div
+          className="flex-1 flex relative bg-atlas-navy bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/trail_over_water.png')" }}
+        >
+          {/* Section-style dark overlay so chat content stays readable over the photo */}
+          <div className="absolute inset-0 bg-black/40 pointer-events-none" aria-hidden="true" />
           {/* Chat Area */}
-          <div className={`flex-1 flex flex-col bg-gray-50 transition-all ${isSidebarCollapsed ? 'md:mr-20' : 'md:mr-80'}`}>
+          <div className={`relative z-10 flex-1 flex flex-col transition-all ${isSidebarCollapsed ? 'md:mr-20' : 'md:mr-80'}`}>
             {/* Session Restored Banner */}
             {showSessionBanner && (
               <div className="bg-atlas-teal/10 border-b border-atlas-teal/20 px-4 py-2 flex items-center justify-center gap-2 text-sm text-atlas-navy">

@@ -413,8 +413,8 @@ const SectionButton: React.FC<SectionButtonProps> = ({ sectionId, title, state, 
       {/* Section icon or number badge */}
       {state !== 'past' && (
         careerNumber ? (
-          <span className={`w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5 ${
-            state === 'current' ? 'bg-white/20 text-white' : 'bg-atlas-teal/15 text-atlas-teal'
+          <span className={`w-3.5 text-center text-xs font-bold flex-shrink-0 mt-1 ${
+            state === 'current' ? 'text-white' : 'text-atlas-teal'
           }`}>
             {careerNumber}
           </span>
