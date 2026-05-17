@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Search, Heart, Briefcase, Loader2 } from 'lucide-react';
+import { ArrowLeft, Search, Heart, Briefcase, Loader2, Lock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
 import { useReports } from '@/hooks/useReports';
+import { useReferralStatus, REFERRAL_DISCOUNT_PERCENT } from '@/hooks/useReferralStatus';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import { useJobSearch, type UserLanguage } from '@/hooks/useJobSearch';
 import { useSavedJobs } from '@/hooks/useSavedJobs';
@@ -36,6 +37,7 @@ const Jobs = () => {
   const { user, isLoading: authLoading } = useAuth();
   const { profile, isLoading: profileLoading } = useProfile();
   const { reports, isLoading: reportsLoading } = useReports();
+  const { features: referralFeatures, isLoading: referralLoading } = useReferralStatus();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -191,7 +193,8 @@ const Jobs = () => {
   };
 
   // Loading states
-  const isPageLoading = authLoading || profileLoading || reportsLoading || sectionsLoading;
+  const isPageLoading =
+    authLoading || profileLoading || reportsLoading || sectionsLoading || referralLoading;
 
   if (isPageLoading) {
     return (
@@ -216,6 +219,34 @@ const Jobs = () => {
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-atlas-teal text-white rounded-lg hover:bg-atlas-teal/90 transition-colors font-medium"
           >
             Go to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Referral gate — job search unlocks after one successful referral.
+  const jobsFeature = referralFeatures.find((f) => f.key === 'jobs');
+  if (jobsFeature && !jobsFeature.unlocked) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
+        <div className="max-w-2xl mx-auto text-center py-16">
+          <div className="w-14 h-14 rounded-full bg-atlas-teal/10 flex items-center justify-center mx-auto mb-4">
+            <Lock className="h-7 w-7 text-atlas-teal" />
+          </div>
+          <h2 className="text-xl font-semibold text-foreground mb-2">
+            Invite a friend to unlock job search
+          </h2>
+          <p className="text-muted-foreground mb-6">
+            Job search unlocks as soon as one friend you invite joins Cairnly. They get
+            {' '}{REFERRAL_DISCOUNT_PERCENT}% off, and you get the keys to live job openings
+            matched to your report.
+          </p>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-atlas-teal text-white rounded-lg hover:bg-atlas-teal/90 transition-colors font-medium"
+          >
+            Get your invite code
           </button>
         </div>
       </div>

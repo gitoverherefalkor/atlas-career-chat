@@ -53,6 +53,12 @@ verify_jwt = false
 [functions.search-jobs]
 verify_jwt = false
 
+# Called by logged-in users only. JWT is verified inside the function via
+# getAuthenticatedUser; gateway verify_jwt stays off to avoid the
+# publishable-key rejection issue noted on signup-with-access-code above.
+[functions.ensure-referral-code]
+verify_jwt = false
+
 [functions.delete-user-data]
 verify_jwt = true
 

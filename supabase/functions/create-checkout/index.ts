@@ -33,7 +33,7 @@ serve(async (req) => {
       return errorResponse("Payment system is temporarily unavailable. Please try again later.", 500, corsHeaders);
     }
 
-    const { firstName, lastName, email, country } = await req.json();
+    const { firstName, lastName, email, country, referralCode } = await req.json();
 
     if (!firstName || !lastName || !email || !country) {
       return errorResponse("First name, last name, email, and country are required", 400, corsHeaders);
@@ -47,8 +47,26 @@ serve(async (req) => {
     // Get the origin from request headers or use the live domain
     const origin = req.headers.get("origin") || "https://cairnly.io";
 
-    // Create a Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
+    // If the buyer arrived via a referral code, resolve it to a live Stripe
+    // promotion code so we can pre-apply the 25% discount.
+    let referralPromo: Stripe.PromotionCode | null = null;
+    if (referralCode && typeof referralCode === "string") {
+      try {
+        const promoList = await stripe.promotionCodes.list({
+          code: referralCode.trim(),
+          active: true,
+          limit: 1,
+        });
+        referralPromo = promoList.data[0] ?? null;
+      } catch (e) {
+        console.warn("Could not resolve referral code:", e);
+      }
+    }
+
+    // Build the session. Stripe forbids `discounts` and `allow_promotion_codes`
+    // together — so pre-apply the referral discount when we have one, otherwise
+    // leave the manual promotion-code field open at Stripe checkout.
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: paymentMethods,
       line_items: [
         {
@@ -64,7 +82,6 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      allow_promotion_codes: true,
       success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/#pricing`,
       customer_email: email,
@@ -75,7 +92,15 @@ serve(async (req) => {
         country,
       },
       locale: country === "Netherlands" ? "nl" : country === "Germany" ? "de" : "auto",
-    });
+    };
+
+    if (referralPromo) {
+      sessionParams.discounts = [{ promotion_code: referralPromo.id }];
+    } else {
+      sessionParams.allow_promotion_codes = true;
+    }
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return new Response(
       JSON.stringify({

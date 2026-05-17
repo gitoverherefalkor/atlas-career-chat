@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, LogOut, Settings, Play, FileText, Download, Briefcase, Search, PlusCircle } from 'lucide-react';
+import { Loader2, LogOut, Settings, Play, FileText, Download, Briefcase, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
@@ -20,6 +20,9 @@ import { CareerSignatureModal } from '@/components/dashboard/CareerSignatureModa
 import { PersonalityRadar } from '@/components/dashboard/PersonalityRadar';
 import { useReportSections, SECTION_TYPE_MAP } from '@/hooks/useReportSections';
 import { useEngagementTracking } from '@/hooks/useEngagementTracking';
+import { useReferralStatus } from '@/hooks/useReferralStatus';
+import { ReferralPanel } from '@/components/dashboard/ReferralPanel';
+import { FeatureTeaserCard } from '@/components/dashboard/FeatureTeaserCard';
 
 // Helper to get assessment session from localStorage
 const getAssessmentSession = () => {
@@ -67,6 +70,15 @@ const Dashboard = () => {
   const execSummarySection = reportSections.find(
     (s) => s.section_type === 'exec_summary' || s.section_type === 'executive_summary'
   );
+
+  // Referral / virality status — invite code, count, feature unlocks
+  const referralStatus = useReferralStatus();
+
+  const scrollToReferralPanel = () => {
+    document
+      .getElementById('referral-panel-anchor')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
 
   // Track dashboard visit for users who have completed chat
   const { trackDashboardVisit } = useEngagementTracking();
@@ -383,16 +395,6 @@ const Dashboard = () => {
                           <span className="text-xs text-gray-400 ml-auto">Coming soon</span>
                         </button>
                         <button className="w-full flex items-center gap-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
-                          <Briefcase className="h-4 w-4 shrink-0" />
-                          <span className="text-sm font-medium">CV Optimizer</span>
-                          <span className="text-xs text-gray-400 ml-auto">Coming soon</span>
-                        </button>
-                        <button className="w-full flex items-center gap-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
-                          <Search className="h-4 w-4 shrink-0" />
-                          <span className="text-sm font-medium">Check Job Openings</span>
-                          <span className="text-xs text-gray-400 ml-auto">Coming soon</span>
-                        </button>
-                        <button className="w-full flex items-center gap-3 text-left p-2 rounded-lg text-gray-400 cursor-not-allowed">
                           <PlusCircle className="h-4 w-4 shrink-0" />
                           <span className="text-sm font-medium">More Assessments</span>
                           <span className="text-xs text-gray-400 ml-auto">Coming soon</span>
@@ -412,6 +414,30 @@ const Dashboard = () => {
                   variant="full"
                   onShare={() => setShowSignatureModal(true)}
                 />
+              </div>
+            )}
+
+            {/* Unlock more features — referral teasers + invite panel. Shown
+                once the report is completed (the unlockable features all
+                build on the report). */}
+            {latestReport && latestReport.status === 'completed' && (
+              <div className="mb-8">
+                <h3 className="text-xl font-bold text-[#F5F5F5] mb-1">Unlock more features</h3>
+                <p className="text-sm text-[#F5F5F5]/70 mb-4">
+                  Invite friends to Cairnly and unlock powerful job-hunting tools.
+                </p>
+                <div id="referral-panel-anchor" className="mb-6">
+                  <ReferralPanel />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {referralStatus.features.map((feature) => (
+                    <FeatureTeaserCard
+                      key={feature.key}
+                      feature={feature}
+                      onInviteClick={scrollToReferralPanel}
+                    />
+                  ))}
+                </div>
               </div>
             )}
 

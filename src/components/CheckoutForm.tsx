@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from '@/hooks/useAuth';
 import { useProfile } from '@/hooks/useProfile';
+import { getStoredReferralCode } from '@/lib/referral';
 
 import {
   Form,
@@ -196,6 +197,9 @@ export function CheckoutForm() {
           country: values.country,
           businessName: values.businessName,
           vatNumber: values.vatNumber,
+          // Pre-applies the 25% referral discount if the visitor arrived via
+          // a ?ref= link.
+          referralCode: getStoredReferralCode(),
         },
       });
 

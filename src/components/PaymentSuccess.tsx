@@ -5,6 +5,7 @@ import { CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { clearStoredReferralCode } from '@/lib/referral';
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -69,6 +70,10 @@ const PaymentSuccess = () => {
           }));
         }
         
+        // A referral code (if any) has now been spent on this purchase —
+        // clear it so it can't apply to a later unrelated checkout.
+        clearStoredReferralCode();
+
         setIsComplete(true);
         toast({
           title: "Purchase Successful!",

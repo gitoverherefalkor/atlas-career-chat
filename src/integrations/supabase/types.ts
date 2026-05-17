@@ -458,10 +458,12 @@ export type Database = {
           last_name: string | null
           privacy_consent_at: string | null
           pronouns: string | null
+          referral_code: string | null
           region: string | null
           resume_data: Json | null
           resume_parsed_data: Json | null
           resume_uploaded_at: string | null
+          stripe_promotion_code_id: string | null
           terms_consent_at: string | null
           updated_at: string
         }
@@ -477,10 +479,12 @@ export type Database = {
           last_name?: string | null
           privacy_consent_at?: string | null
           pronouns?: string | null
+          referral_code?: string | null
           region?: string | null
           resume_data?: Json | null
           resume_parsed_data?: Json | null
           resume_uploaded_at?: string | null
+          stripe_promotion_code_id?: string | null
           terms_consent_at?: string | null
           updated_at?: string
         }
@@ -496,10 +500,12 @@ export type Database = {
           last_name?: string | null
           privacy_consent_at?: string | null
           pronouns?: string | null
+          referral_code?: string | null
           region?: string | null
           resume_data?: Json | null
           resume_parsed_data?: Json | null
           resume_uploaded_at?: string | null
+          stripe_promotion_code_id?: string | null
           terms_consent_at?: string | null
           updated_at?: string
         }
@@ -566,6 +572,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      referrals: {
+        Row: {
+          amount_paid: number | null
+          created_at: string
+          currency: string | null
+          id: string
+          invitee_email: string | null
+          invitee_user_id: string | null
+          promotion_code_used: string | null
+          referrer_user_id: string
+          stripe_session_id: string
+        }
+        Insert: {
+          amount_paid?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          invitee_email?: string | null
+          invitee_user_id?: string | null
+          promotion_code_used?: string | null
+          referrer_user_id: string
+          stripe_session_id: string
+        }
+        Update: {
+          amount_paid?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          invitee_email?: string | null
+          invitee_user_id?: string | null
+          promotion_code_used?: string | null
+          referrer_user_id?: string
+          stripe_session_id?: string
+        }
+        Relationships: []
       }
       questions: {
         Row: {

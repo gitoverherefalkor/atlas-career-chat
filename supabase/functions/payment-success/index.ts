@@ -139,6 +139,28 @@ serve(async (req) => {
       return errorResponse("Payment is not complete", 400, corsHeaders);
     }
 
+    // Re-retrieve the session with discount details expanded so we can see
+    // which referral promotion code (if any) was used. Required for BOTH
+    // entry paths — neither the raw webhook event object nor a plain
+    // retrieve() carries the expanded promotion-code data.
+    let referralPromoCode: string | null = null;
+    let referrerUserId: string | null = null;
+    try {
+      const expandedSession = await stripe.checkout.sessions.retrieve(session.id, {
+        expand: ["discounts.promotion_code", "total_details.breakdown.discounts"],
+      });
+      // deno-lint-ignore no-explicit-any
+      const applied: any =
+        (expandedSession.discounts && expandedSession.discounts[0]?.promotion_code) ||
+        expandedSession.total_details?.breakdown?.discounts?.[0]?.discount?.promotion_code;
+      if (applied && typeof applied === "object") {
+        referralPromoCode = applied.code ?? null;
+        referrerUserId = applied.metadata?.referrer_user_id ?? null;
+      }
+    } catch (e) {
+      console.warn("Could not read discount info from session:", e);
+    }
+
     // Create a Supabase client (using service role key to bypass RLS)
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
@@ -250,6 +272,48 @@ serve(async (req) => {
       }
       console.error("Error recording purchase:", purchaseError);
       return errorResponse("Failed to record purchase. Please contact support.", 500, corsHeaders);
+    }
+
+    // --- Referral credit -------------------------------------------------
+    // If the buyer used a referral promotion code, credit the referrer with
+    // one successful referral. This is purely additive — any failure here is
+    // logged but never fails the purchase response.
+    if (referrerUserId) {
+      try {
+        // Self-referral guard: a user cannot credit themselves by buying with
+        // their own code. Compare the buyer email to the referrer's email.
+        const { data: referrerProfile } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("id", referrerUserId)
+          .maybeSingle();
+
+        const isSelfReferral =
+          !!referrerProfile?.email &&
+          !!customerEmail &&
+          referrerProfile.email.toLowerCase() === customerEmail.toLowerCase();
+
+        if (isSelfReferral) {
+          console.warn("Self-referral blocked", { referrerUserId });
+        } else {
+          const { error: referralError } = await supabase
+            .from("referrals")
+            .insert({
+              referrer_user_id: referrerUserId,
+              invitee_email: customerEmail,
+              stripe_session_id: session.id,
+              promotion_code_used: referralPromoCode,
+              amount_paid: amountTotal,
+              currency: currency,
+            });
+          // 23505 = duplicate stripe_session_id — already credited. Fine.
+          if (referralError && referralError.code !== "23505") {
+            console.error("Failed to record referral:", referralError);
+          }
+        }
+      } catch (e) {
+        console.error("Referral processing error (non-fatal):", e);
+      }
     }
 
     // Try to update the profile if user exists with this email

@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
+import { captureReferralFromUrl } from "@/lib/referral";
 import { Loader2 } from "lucide-react";
 
 // Eagerly load the landing page, payment route, and global components.
@@ -62,6 +63,8 @@ const LanguageSync = ({ children }: { children: React.ReactNode }) => {
 const ThemeScopeGuard = () => {
   React.useEffect(() => {
     document.documentElement.classList.add('dark');
+    // Capture a referral code if the visitor arrived via a ?ref= link.
+    captureReferralFromUrl();
   }, []);
   return null;
 };
