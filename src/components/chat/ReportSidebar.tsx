@@ -254,23 +254,6 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         </div>
       )}
 
-      {/* Progress indicator. NOTE: currentSectionIndex is the canonical
-          index into ALL_SECTIONS (which still contains Executive Summary
-          at idx 0). For the visible label/bar we treat Exec Summary as
-          shifted-out — so 'Approach' (canonical idx 1) shows as 1/10 in a
-          10-section visible list. */}
-      <div className="p-4 border-t border-gray-100 flex-shrink-0">
-        <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-          <span>{t('chat:session.progress')}</span>
-          <span>{Math.max(0, currentSectionIndex)} / {VISIBLE_SECTIONS_COUNT}</span>
-        </div>
-        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-atlas-teal rounded-full transition-all duration-500"
-            style={{ width: `${Math.max(0, (currentSectionIndex / VISIBLE_SECTIONS_COUNT) * 100)}%` }}
-          />
-        </div>
-      </div>
     </>
   );
 

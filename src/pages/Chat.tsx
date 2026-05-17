@@ -432,18 +432,27 @@ const Chat = () => {
     );
   }
 
+  // Visible section count excludes the hidden Executive Summary (canonical
+  // index 0), matching the sidebar's "N / M" progress label.
+  const visibleSectionCount = ALL_SECTIONS.length - 1;
+  const chatProgressPct = Math.min(
+    100,
+    Math.max(0, (currentSectionIndex / visibleSectionCount) * 100)
+  );
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
-      <nav className="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200">
+      <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="container-atlas">
-          <div className="flex justify-between items-center py-3 sm:py-4">
-            <div className="flex items-center">
+          <div className="flex justify-between items-center py-2.5">
+            <div className="flex items-center gap-3">
               <a href="/" className="flex items-center">
-                <img src="/cairnly-logo.png" alt="Cairnly" className="h-20 sm:h-28 w-auto" />
+                <img src="/cairnly-logo.png" alt="Cairnly" className="h-10 w-auto" />
               </a>
-              <span className="hidden sm:inline ml-4 text-sm text-gray-500">
-                Career Coach
+              <span className="hidden sm:flex items-center gap-3 text-sm font-medium text-atlas-navy">
+                <span className="h-4 w-px bg-gray-200" aria-hidden="true" />
+                AI Coaching Session
               </span>
             </div>
             <Button
@@ -456,6 +465,13 @@ const Chat = () => {
               <span className="hidden sm:inline">Dashboard</span>
             </Button>
           </div>
+        </div>
+        {/* Top progress bar — mirrors the assessment's global progress indicator */}
+        <div className="h-[3px] bg-gray-100">
+          <div
+            className="h-full bg-atlas-teal transition-all duration-500 ease-out"
+            style={{ width: `${chatProgressPct}%` }}
+          />
         </div>
       </nav>
 
