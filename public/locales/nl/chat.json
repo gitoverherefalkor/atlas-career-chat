@@ -1,9 +1,9 @@
 {
   "welcome": {
     "title": "Welkom bij je carrière-inzichtensessie",
-    "intro": "Welkom! Ik neem je persoonlijkheidsprofiel en carrièreaanbevelingen met je door, te beginnen met wie je bent als professional, gevolgd door de carrièrepaden die het beste bij je doelen en sterke punten passen.",
-    "encouragement": "Stel gerust vragen, geef je mening of verken een carrière verder tijdens het gesprek.",
-    "tip": "Je hoeft geen aantekeningen te maken. Alles komt terecht in een volledig rapport op je dashboard. Reacties kunnen even duren omdat er meerdere AI-tools op de achtergrond werken.",
+    "intro": "Hoi, ik ben je Cairnly loopbaancoach. Ik neem je persoonlijkheidsprofiel en carrièreaanbevelingen sectie voor sectie met je door. Onderweg kun je vragen stellen, tegengas geven of een carrièrepad verder verkennen.",
+    "encouragement": "Zodra je hieronder klikt, gaan we meteen door naar je eerste persoonlijkheidsanalyse. Geen lange inleiding, we beginnen gewoon.",
+    "tip": "Je hoeft geen aantekeningen te maken. Elk bericht heeft een Save-knop om het te bewaren zodat je het later makkelijk terugvindt, en je volledige rapport verschijnt op je dashboard zodra we klaar zijn.",
     "ready": "Ik ben er klaar voor!",
     "preparing": "Je sessie wordt voorbereid..."
   },

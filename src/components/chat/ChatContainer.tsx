@@ -473,7 +473,12 @@ export const ChatContainer = forwardRef<ChatMessagesHandle, ChatContainerProps>(
           lower === 'continue' ||
           lower === 'next' ||
           lower === "let's continue" ||
-          lower === 'lets continue';
+          lower === 'lets continue' ||
+          // Kickoff: clicking "I'm Ready!" auto-sends this exact phrase.
+          // Treating it as an advance makes the platform deliver the first
+          // section (approach) straight away instead of routing to the agent.
+          lower === "i'm ready, let's begin" ||
+          lower === "im ready, lets begin";
         const looksLikeWrapUp =
           lower.includes("wrap up the session") ||
           lower.includes("all done, wrap up") ||
