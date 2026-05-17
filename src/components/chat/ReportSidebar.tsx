@@ -308,7 +308,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
 
       {/* Collapsed desktop sidebar */}
       {isCollapsed ? (
-        <div className="hidden md:flex w-12 bg-white border-l border-gray-200 flex-col items-center py-4 space-y-2 fixed right-0 top-[73px] h-[calc(100vh-73px)] overflow-y-auto z-40">
+        <div className="hidden md:flex w-12 bg-white border border-gray-200 rounded-xl shadow-lg flex-col items-center py-4 space-y-2 fixed right-4 top-[89px] max-h-[calc(100vh-105px)] overflow-y-auto z-40">
           <Button
             variant="ghost"
             size="sm"
@@ -348,7 +348,7 @@ export const ReportSidebar: React.FC<ReportSidebarProps> = ({
         </div>
       ) : (
         /* Expanded desktop sidebar */
-        <div className="hidden md:flex w-72 bg-white border-l border-gray-200 flex-col fixed right-0 top-[73px] h-[calc(100vh-73px)] z-40">
+        <div className="hidden md:flex w-72 bg-white border border-gray-200 rounded-xl shadow-lg flex-col fixed right-4 top-[89px] max-h-[calc(100vh-105px)] overflow-hidden z-40">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-100 flex-shrink-0">
             <div className="flex items-center space-x-2">

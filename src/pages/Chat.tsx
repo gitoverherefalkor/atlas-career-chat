@@ -483,7 +483,7 @@ const Chat = () => {
       ) : (
         <div className="flex-1 flex relative">
           {/* Chat Area */}
-          <div className={`flex-1 flex flex-col bg-gray-50 transition-all ${isSidebarCollapsed ? 'md:mr-12' : 'md:mr-72'}`}>
+          <div className={`flex-1 flex flex-col bg-gray-50 transition-all ${isSidebarCollapsed ? 'md:mr-20' : 'md:mr-80'}`}>
             {/* Session Restored Banner */}
             {showSessionBanner && (
               <div className="bg-atlas-teal/10 border-b border-atlas-teal/20 px-4 py-2 flex items-center justify-center gap-2 text-sm text-atlas-navy">

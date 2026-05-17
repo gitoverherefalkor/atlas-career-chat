@@ -1,9 +1,9 @@
 {
   "welcome": {
     "title": "Welcome to Your Career Insights Session",
-    "intro": "Welcome! I'll walk you through your personality profile and career recommendations — starting with who you are professionally, then exploring the career paths that best match your goals and strengths.",
+    "intro": "Welcome! I'll walk you through your personality profile and career recommendations, starting with who you are professionally, then exploring the career paths that best match your goals and strengths.",
     "encouragement": "Feel free to ask questions, push back, or explore any career further along the way.",
-    "tip": "No need to take notes — everything lands in a full report on your dashboard. Responses may take a moment as multiple AI tools work in the background.",
+    "tip": "No need to take notes. Everything lands in a full report on your dashboard. Responses may take a moment as multiple AI tools work in the background.",
     "ready": "I'm Ready!",
     "preparing": "Preparing your session..."
   },
