@@ -110,7 +110,7 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(({
             {/* Buttons container — vertically centered against the textarea.
                 Tried bottom-anchoring earlier but it visually drifted off-center
                 at the default single-line height. Center is the better default. */}
-            <div className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            <div className="absolute right-2 sm:right-3 top-[calc(50%-3px)] -translate-y-1/2 flex items-center gap-1">
               {/* Mic button — only show if browser supports speech recognition */}
               {hasSpeechRecognition && (
                 <button
